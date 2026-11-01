@@ -28,6 +28,10 @@ LEDGER = ".pr-cost/ledger/2026-11/entry.jsonl"
 CONTENT = '{"model":"example"}\n'
 
 
+def git(cwd: Path, env: dict[str, str], *args: str) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(["git", *args], cwd=cwd, env=env, capture_output=True, text=True)
+
+
 @dataclass(frozen=True)
 class Clone:
     path: Path
@@ -37,13 +41,7 @@ class Clone:
     def git(
         self, *args: str, extra: dict[str, str] | None = None
     ) -> subprocess.CompletedProcess[str]:
-        return subprocess.run(
-            ["git", *args],
-            cwd=self.path,
-            env={**self.env, **(extra or {})},
-            capture_output=True,
-            text=True,
-        )
+        return git(self.path, {**self.env, **(extra or {})}, *args)
 
     def has_blob(self) -> bool:
         """Whether the clone holds the blob, read without asking any remote for it."""
@@ -68,7 +66,7 @@ def isolated_env(folder: Path) -> dict[str, str]:
 
 
 def run(env: dict[str, str], cwd: Path, *args: str) -> str:
-    done = subprocess.run(["git", *args], cwd=cwd, env=env, capture_output=True, text=True)
+    done = git(cwd, env, *args)
     assert done.returncode == 0, f"git {' '.join(args)}: {done.stderr}"
     return done.stdout.strip()
 
@@ -95,7 +93,8 @@ def clone(tmp_path: Path) -> Clone:
 
 def test_git_no_lazy_fetch_keeps_a_partial_clone_from_fetching(clone: Clone) -> None:
     held = clone.git("cat-file", "-s", clone.blob, extra={"GIT_NO_LAZY_FETCH": "1"})
-    assert held.returncode != 0, "git fetched the blob although GIT_NO_LAZY_FETCH was set"
+    # The design records that git was seen to exit with 128, its fatal error.
+    assert held.returncode == 128, f"git exited with {held.returncode}: {held.stderr}"
     assert not clone.has_blob()
 
     fetched = clone.git("cat-file", "-s", clone.blob)

@@ -18,13 +18,13 @@ The assumptions about git: what its commands, options, attributes, locks and con
 
 ## A11. git 2.43 stands for every later git.
 
-- **Rests on it:** R32, R52, R110, R113, R117, T2, T8, T10, T56, DR-027, DR-037, DR-055, DR-107, DR-130, DR-154
+- **Rests on it:** R32, R52, R110, R113, R117, T2, T8, T10, T45, T56, DR-027, DR-037, DR-055, DR-107, DR-130, DR-154
 - **If it is wrong:** A later git that changes index locking, intent-to-add entries, sparse checkouts or option parsing would still pass the floor, and could make the step disturb work or lose calls (T10, T56, T8), while the README's ways to detect, prevent and recover could lose ledger files or a person's changes (T2).
 - **Fact:** The design's account, in its risk of a removed ledger file, of the commands that an untracked or intent-to-add ledger file stops, lets run or drops the entry of, and of what a crash leaves behind, holds in git 2.43 and every later release.
   - **Relied on:** R52, R110, R113, R117, T2, T8, T10, DR-055, DR-130, `openspec/changes/add-pr-cost-calculator/design.md`
   - **Checked:** not yet: `add-pr-cost-calculator` task 4.4 checks it
-- **Fact:** The git behaviour that the design relies on holds in git 2.43 and in every later release, so the CI runner's git and git 2.43 stand for what adopters run, and a version check is enough to refuse a git that behaves otherwise.
-  - **Relied on:** R32, T8, T10, T56, DR-027, DR-037, DR-107, DR-154
+- **Fact:** The git behaviour that the design relies on holds in git 2.43 and in every later release, so the CI runner's git and git 2.43 stand for what adopters run, and a version check is enough to refuse a git that behaves otherwise. Reading `GIT_NO_LAZY_FETCH` is the exception that A63 records: a plain git 2.43.0 to 2.43.3 or 2.44.0 does not read it.
+  - **Relied on:** R32, T8, T10, T45, T56, DR-027, DR-037, DR-107, DR-154
   - **Checked:** not yet: `add-pr-cost-calculator` task 4.4 and `add-pr-cost-calculator` task 6.5 check it in part
 
 ## A12. History, refs and tags behave as the checks expect.
@@ -194,9 +194,9 @@ The assumptions about git: what its commands, options, attributes, locks and con
 - **Fact:** With `GIT_NO_LAZY_FETCH=1`, git fails a command that needs an object that a partial clone lacks, rather than fetching it.
   - **Relied on:** R30, R45, R111, T45, DR-060, DR-090
   - **Checked:** observed: `tests/test_git_lazy_fetch.py`, 2026-11-01, git, version `git version 2.43.0`, build `1:2.43.0-1ubuntu7.3`
-- **Fact:** A plain git 2.43.0 to 2.43.3 or 2.44.0, which the step's floor admits, does not read `GIT_NO_LAZY_FETCH`: its source names the variable in no file, while 2.43.4 and 2.44.1 read it in `promisor-remote.c` and 2.45.0 in `environment.c`.
+- **Fact:** A plain git 2.43.0 to 2.43.3 or 2.44.0, which the step's floor admits, does not read `GIT_NO_LAZY_FETCH`: its source names the variable in no file, while 2.43.4 and 2.44.1 read it in `promisor-remote.c`, and 2.45.0 in `environment.c`, through a name that `environment.h` defines. The links give each release's file in which the later releases read it; that the earlier ones name it in no file rests on the design's context, since one file cannot show what a whole source leaves out.
   - **Relied on:** R32, R111, T45, T56, T86, DR-027, DR-060
-  - **Checked:** documented: <https://github.com/git/git/blob/564d0252ca632e0264ed670534a51d18a689ef5d/promisor-remote.c>, <https://github.com/git/git/blob/3526e67d917bcd03f317a058208fa02737654637/promisor-remote.c>, <https://github.com/git/git/blob/efb050becb6bc703f76382e1f1b6273100e6ace3/promisor-remote.c>, <https://github.com/git/git/blob/0d464a4e6a5a19bd8fbea1deae22d48d14dccb01/promisor-remote.c>, <https://github.com/git/git/blob/3c2a3fdc388747b9eaf4a4a4f2035c1c9ddb26d0/promisor-remote.c>, <https://github.com/git/git/blob/1f2e64e22dee75db96b92d526d14003ba59a154e/promisor-remote.c>, <https://github.com/git/git/blob/10dc9846b82b5f4927d57c6bb657a9352121bebf/promisor-remote.c>, <https://github.com/git/git/blob/786a3e4b8d754d2b14b1208b98eeb0a554ef19a8/environment.c>, read 2026-11-01
+  - **Checked:** documented: <https://github.com/git/git/blob/564d0252ca632e0264ed670534a51d18a689ef5d/promisor-remote.c>, <https://github.com/git/git/blob/3526e67d917bcd03f317a058208fa02737654637/promisor-remote.c>, <https://github.com/git/git/blob/efb050becb6bc703f76382e1f1b6273100e6ace3/promisor-remote.c>, <https://github.com/git/git/blob/0d464a4e6a5a19bd8fbea1deae22d48d14dccb01/promisor-remote.c>, <https://github.com/git/git/blob/3c2a3fdc388747b9eaf4a4a4f2035c1c9ddb26d0/promisor-remote.c>, <https://github.com/git/git/blob/1f2e64e22dee75db96b92d526d14003ba59a154e/promisor-remote.c>, <https://github.com/git/git/blob/10dc9846b82b5f4927d57c6bb657a9352121bebf/promisor-remote.c>, <https://github.com/git/git/blob/786a3e4b8d754d2b14b1208b98eeb0a554ef19a8/environment.c>, <https://github.com/git/git/blob/786a3e4b8d754d2b14b1208b98eeb0a554ef19a8/environment.h>, read 2026-11-01
 - **Fact:** `GIT_TERMINAL_PROMPT=0` keeps git from prompting on the terminal, as when it asks for HTTP authentication.
   - **Relied on:** R111, T45, DR-060
   - **Checked:** documented: <https://github.com/git/git/blob/564d0252ca632e0264ed670534a51d18a689ef5d/Documentation/git.txt>, read 2026-11-01

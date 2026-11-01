@@ -3,8 +3,8 @@
 - **Type:** process
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`, as the owner asked on 2026-10-28
-- **Requirements:** R135, R140
-- **Threats:** T32, T82, T86, T88, T95, T96, T97, T100
+- **Requirements:** R135, R140, R143
+- **Threats:** T32, T82, T86, T88, T95, T96, T97, T100, T101
 - **Replaces:** none
 - **Closed by:** none
 
@@ -14,7 +14,7 @@ The design rests on facts about Claude Code, GitHub, git, Python, the developmen
 
 ## Decision
 
-The assumptions are written down in one place, each with what rests on it, by requirement, threat or record, and what changes if it is wrong, and each of its facts with where it is relied on and how it is checked: by a test, an observation, documentation, or not yet, with the task that will check it or why none will; a threat that rests on an assumption and the assumption name each other (R135). A fact whose subject no test may reach is never checked by a test alone, an observation names the file that reproduces what was seen, its date and the program, version and build it was seen on, and documentation is linked by its address, on a host that the test lists or at a full commit, with the date it was read (R140).
+The assumptions are written down in one place, each with what rests on it, by requirement, threat or record, and what changes if it is wrong, and each of its facts with where it is relied on and how it is checked: by a test, an observation, documentation, or not yet, with the task that will check it or why none will; a threat that rests on an assumption and the assumption name each other (R135). A fact whose subject no test may reach is never checked by a test alone, an observation names the file that reproduces what was seen, its date and the program, version and build it was seen on, and documentation is linked by its address, on a host that the test lists or at a full commit of a repository that it lists, with the date it was read (R140); no page of the assumptions gives another web address (R143).
 
 ## Alternatives
 
@@ -36,4 +36,4 @@ This covers what is written down about each assumption and how each of its facts
 
 ## What reversing it would change
 
-R135 and R140 in `project-standards` would change, with their scenarios, and so would R136, the design's decision 14, task 1.19, `docs/assumptions/` and `tests/test_assumptions.py`, the threat model's section on assumptions and the field in which its threats name them, and the feature page for `project-standards`. DR-163 would be revisited. The assumptions are not part of the public surface, so the change would not be a breaking one for adopters.
+R135, R140 and R143 in `project-standards` would change, with their scenarios, and so would R136, the design's decision 14, task 1.19, `docs/assumptions/` and `tests/test_assumptions.py`, the threat model's section on assumptions and the field in which its threats name them, and the feature page for `project-standards`. DR-163 would be revisited. The assumptions are not part of the public surface, so the change would not be a breaking one for adopters.

@@ -145,7 +145,7 @@ The assumptions about GitHub: this repository's settings there, and its workflow
 
 ## A26. Runs for a pull request from a fork get no secrets, and run the code that its author chose.
 
-- **Rests on it:** R27, R34, R68, T37, T58, T63, DR-018, DR-068, DR-078, DR-115, DR-122, DR-156
+- **Rests on it:** R27, R34, R68, T37, T58, T63, T95, DR-018, DR-068, DR-078, DR-115, DR-122, DR-156
 - **If it is wrong:** A secret added later could be read by a fork's pull request (T37), and pull requests from forks would get no report if their merge's push ran elsewhere. If GitHub did not run an action pinned to a commit that only a fork holds, the defences against such commits would be more than needed (T58, T63).
 - **Fact:** Apart from `GITHUB_TOKEN`, GitHub passes no secrets to a run that a pull request from a fork triggers.
   - **Relied on:** T37, DR-078
@@ -157,7 +157,7 @@ The assumptions about GitHub: this repository's settings there, and its workflow
   - **Relied on:** R68, DR-018
   - **Checked:** not yet: none will, since no test may reach GitHub
 - **Fact:** GitHub serves a commit that only a fork holds under the parent repository's address, and resolves a commit id in `uses:` across the fork network, so it runs an action pinned to such a commit.
-  - **Relied on:** R27, R34, T58, T63, DR-068, DR-122, DR-156
+  - **Relied on:** R27, R34, T58, T63, T95, DR-068, DR-122, DR-156
   - **Checked:** not yet: none will, since no test may reach GitHub
 
 ## A27. Tags and releases can be protected from change.
@@ -258,7 +258,7 @@ The assumptions about GitHub: this repository's settings there, and its workflow
 - **Fact:** The jobs API gives a job that has not finished no end time.
   - **Relied on:** R64, T22, DR-038
   - **Checked:** not yet: none will, since no test may reach GitHub; `add-pr-cost-calculator` task 3.3 tests only what this repository does with it
-- **Fact:** GitHub's per-run billable timing cannot be relied on, since it was seen returning zero.
+- **Fact:** GitHub's per-run billable timing cannot be relied on to give the minutes that a run used.
   - **Relied on:** DR-038
   - **Checked:** not yet: none will, since no test may reach GitHub
 - **Fact:** The jobs API gives each job's runner labels, from which the runner type that the price table is keyed on can be read.

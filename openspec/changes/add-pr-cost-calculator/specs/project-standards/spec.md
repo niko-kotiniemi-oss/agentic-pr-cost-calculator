@@ -251,11 +251,11 @@ Tests SHALL fail when a commit removes, renames or moves a record that the base 
 
 ### Requirement: IDs that the default branch holds stay held or retired
 
-Tests SHALL fail when a requirement or threat ID that the base commit's register or threat model holds or retires is neither held nor retired at HEAD, so that no record comes to cite another requirement or threat.
+Tests SHALL fail when a requirement, threat or assumption ID that the base commit's register, threat model or assumptions' index holds or retires is neither held nor retired at HEAD, so that no record or threat comes to cite another requirement, threat or assumption.
 
 #### Scenario: An ID that vanishes fails CI
 
-- **WHEN** a commit drops a requirement or a threat, or a retired ID, that the base holds, without retiring it
+- **WHEN** a commit drops a requirement, a threat or an assumption, or a retired ID, that the base holds, without retiring it
 - **THEN** a test fails and names the ID
 
 ### Requirement: A record and the threats it lists name each other
@@ -315,22 +315,37 @@ The repository SHALL keep the assumptions that the specs, design, threat model a
 
 #### Scenario: An assumption without its check fails CI
 
-- **WHEN** an assumption names nothing that rests on it or does not say what changes if it is wrong, or one of its facts does not say where it is relied on or how it is checked
+- **WHEN** an assumption names nothing that rests on it or does not say what changes if it is wrong, or one of its facts does not say where it is relied on or how it is checked, or names a task that is done as the one that will check it
 - **THEN** a test fails and names the assumption
 
 #### Scenario: A citation of nothing fails CI
 
-- **WHEN** an assumption or one of its facts names a requirement, a threat, a record or a task that does not exist, or a test that is not collected
+- **WHEN** an assumption or one of its facts names a requirement, a threat, a record or a task that does not exist, or a test that is not collected or that a mark skips or expects to fail
 - **THEN** a test fails and names the assumption and what it names
+
+#### Scenario: An assumption that names what does not rest on it fails CI
+
+- **WHEN** an assumption names a requirement, a threat or a record, in what changes if it is wrong or in a fact, that it does not name as resting on it, or names as resting on it one that none of its facts is relied on by
+- **THEN** a test fails and names the assumption and what it names
+
+#### Scenario: A subject without its page fails CI
+
+- **WHEN** a subject that the design gives a page of its own, such as Claude Code or GitHub, has no page under `docs/assumptions/`
+- **THEN** a test fails and names the page
 
 #### Scenario: An assumption and a threat that do not name each other fail CI
 
 - **WHEN** a threat names an assumption that does not name the threat, or an assumption names a threat that does not name the assumption
 - **THEN** a test fails and names both
 
+#### Scenario: A threat that names its assumptions in prose fails CI
+
+- **WHEN** a threat's field `Assumptions` holds text that is not an assumption's ID
+- **THEN** a test fails and names the threat
+
 ### Requirement: Each fact's check can be followed
 
-A fact whose subject no test may reach, such as Claude Code or GitHub, SHALL NOT be checked by a test alone. An observation SHALL name the file under `tests/` that reproduces what was seen, the date, and the program, version and build it was seen on, and never whose work it was seen in. Documentation SHALL be linked by its address, as a vendor's page on a host that the test lists or a GitHub file at a full commit, with the date it was read. Tests SHALL fail otherwise.
+A fact whose subject no test may reach, such as Claude Code or GitHub, SHALL NOT be checked by a test alone. An observation SHALL name the file under `tests/` that reproduces what was seen, the date, and the program, version and build it was seen on, and never whose work it was seen in. Documentation SHALL be linked by its address, as a vendor's page on a host or a file at a full commit of a GitHub repository that the test lists, with the date it was read. Tests SHALL fail otherwise.
 
 #### Scenario: A fact that no test can reach, checked by a test alone, fails CI
 
@@ -339,18 +354,27 @@ A fact whose subject no test may reach, such as Claude Code or GitHub, SHALL NOT
 
 #### Scenario: An observation that cannot be followed fails CI
 
-- **WHEN** a fact checked by observation names no file under `tests/` that exists, gives no date, or does not name the program, the version that it prints and its build
+- **WHEN** a fact checked by observation names no file under `tests/` that exists and holds a test that no mark skips or expects to fail, gives no date or one later than the day the test runs, or does not name the program, the version that it prints and its build
 - **THEN** a test fails and names the assumption and the fact
 
 #### Scenario: A documented fact that links elsewhere fails CI
 
-- **WHEN** a fact checked by documentation links anything but an `https` address on a vendor's documentation host that the test lists or a GitHub file at a full commit, shows link text other than its address, or gives no date
+- **WHEN** a fact checked by documentation links anything but an `https` address of a page on a vendor's documentation host that the test lists, or of a file at a full commit of a GitHub repository that it lists by a path with no `.` or `..` segment, shows link text other than its address, or gives no date or one later than the day the test runs
 - **THEN** a test fails and names the assumption and the link
 
 #### Scenario: An assumption that names a private source fails CI
 
 - **WHEN** a page of the assumptions, or a file that a fact names as reproducing what was seen, holds a path under a home folder or a session identifier
 - **THEN** a test fails and names the file and the line, and quotes neither
+
+### Requirement: The assumptions give no other web address
+
+No page of the assumptions SHALL give a web address but in the check of a fact checked by documentation, so that a link that no check reads cannot lead an agent elsewhere. Tests SHALL fail otherwise.
+
+#### Scenario: A web address outside a documented check fails CI
+
+- **WHEN** a page of the assumptions holds a web address anywhere but in the check of a fact checked by documentation
+- **THEN** a test fails and names the file and the line
 
 ### Requirement: The assumptions with the most at stake come first
 

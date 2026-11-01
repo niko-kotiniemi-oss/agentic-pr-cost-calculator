@@ -6,14 +6,14 @@ These pages describe and never steer: where one differs from `CLAUDE.md` or a sp
 
 A fact is checked in one of four ways:
 
-- `tested`: a test that pytest collects holds it, named as `` `tests/<file>.py::<name>` ``.
-- `observed`: a file under `tests/` reproduces what was seen, and the fact gives that file, the date, and the program, the version that it prints and its build.
-- `documented`: the vendor's documentation says it. The fact links each page by its address, on a documentation host that the test lists or as a GitHub file at a full commit, and gives the day the pages were read.
-- `not yet`: nothing checks it yet, and the fact names the task that will, or says why none will.
+- `tested`: a test that pytest collects, and that no mark skips or expects to fail, holds it, named as `` `tests/<file>.py::<name>` ``.
+- `observed`: a file under `tests/` holds such a test, which reproduces what was seen, and the fact gives that file, the date, and the program, the version that it prints and its build.
+- `documented`: the vendor's documentation says it. The fact links each page by its address, on a documentation host that the test lists or as a file at a full commit of a GitHub repository that it lists, and gives the day the pages were read. No page gives a web address anywhere else.
+- `not yet`: nothing checks it yet, and the fact names the task, still to be done, that will, or says why none will.
 
 Tests never use the network (DR-090), so no test may reach Claude Code, GitHub, a vendor's prices, or adopters and people, and a fact about them is never `tested` alone. Such a fact may name, beside its check, the test that holds the tool's handling of it.
 
-The list puts first the assumptions behind the threats of highest impact, then, among those, the least checked, an assumption being as checked as its least checked fact, from `not yet` through `documented` and `observed` to `tested`, then those behind the highest risk. The assumptions that no threat rests on come last, and each page keeps the list's order. Impact and risk are read from the threat model, so a changed rating or check changes the order. A risk below is rated with the assumption true, since the threat model rates each threat with its answer in place (DR-112).
+The list puts first the assumptions behind the threats of highest impact, then, among those, the least checked, an assumption being as checked as its least checked fact, from `not yet` through `documented` and `observed` to `tested`, then those behind the highest risk. The assumptions that no threat rests on come last, and each page keeps the list's order within each of its sections. Impact and risk are read from the threat model, so a changed rating or check changes the order. A risk below is rated with the assumption true, since the threat model rates each threat with its answer in place (DR-112).
 
 ## The assumptions, most at stake first
 
@@ -41,6 +41,7 @@ The list puts first the assumptions behind the threats of highest impact, then, 
 - **A22.** The test tools can do what the testing records ask of them. Impact 3, risk 4. Page: [Python, the development tools and prices](python-tools-and-prices.md).
 - **A23.** Adopters pin released commits, and update the hook and the pin together. Impact 3, risk 4. Page: [Adopters and people](adopters-and-people.md).
 - **A24.** The machine running a session, and the programs that a hook starts on it, are the person's own. Impact 3, risk 4. Page: [Adopters and people](adopters-and-people.md).
+- **A57.** The reviews and the planned tests get done. Impact 3, risk 4. Page: [Adopters and people](adopters-and-people.md).
 - **A25.** Claude Code keeps the hook registrations it read at session start. Impact 3, risk 3. Page: [Claude Code](claude-code.md).
 - **A26.** Runs for a pull request from a fork get no secrets, and run the code that its author chose. Impact 3, risk 3. Page: [GitHub](github.md).
 - **A27.** Tags and releases can be protected from change. Impact 3, risk 3. Page: [GitHub](github.md).
@@ -73,11 +74,10 @@ The list puts first the assumptions behind the threats of highest impact, then, 
 - **A54.** The clock of the machine that runs a session agrees with its transcripts and with the runner's day. Impact 2, risk 4. Page: [Python, the development tools and prices](python-tools-and-prices.md).
 - **A55.** Anthropic prices each token type at its own rate for each model. Impact 2, risk 4. Page: [Python, the development tools and prices](python-tools-and-prices.md).
 - **A56.** Only the facts that the ledger records set a call's price, and prices change rarely and from a given day. Impact 2, risk 4. Page: [Python, the development tools and prices](python-tools-and-prices.md).
-- **A57.** The reviews and the planned tests get done. Impact 2, risk 4. Page: [Adopters and people](adopters-and-people.md).
 - **A58.** Someone reads the comments and keeps the prices current. Impact 2, risk 4. Page: [Adopters and people](adopters-and-people.md).
 - **A59.** The development tools support Python 3.11, and report code that needs a newer Python. Impact 2, risk 2. Page: [Python, the development tools and prices](python-tools-and-prices.md).
 - **A60.** Adopters' machines and runners meet the floors, and their policies allow the workflow. Impact 2, risk 2. Page: [Adopters and people](adopters-and-people.md).
-- **A61.** Claude Code runs the hooks that a repository's settings register, in every session that works in that repository. Impact 2, risk 6. Page: [Claude Code](claude-code.md).
+- **A61.** A session that starts in a repository's folder runs the hooks that the repository's settings register, once the folder is trusted, unless it is a cloud thread of a project or a cloud session with several repositories. Impact 2, risk 6. Page: [Claude Code](claude-code.md).
 - **A62.** A repository opened in Claude Code can already run any hook its own settings register, including one that changes a person's git configuration. Impact 2, risk 4. Page: [Claude Code](claude-code.md).
 - **A63.** git can be kept offline and from asking for credentials. Impact 2, risk 4. Page: [git](git.md).
 - **A64.** GitHub bills job minutes from job times. Impact 1, risk 2. Page: [GitHub](github.md).

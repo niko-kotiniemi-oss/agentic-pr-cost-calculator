@@ -50,7 +50,7 @@ The assumptions about Claude Code: what its transcripts hold, when its hooks run
 - **Fact:** The usage fields the capture step knows keep their meaning in later versions, and a field it does not know can only add to a call's cost.
   - **Relied on:** R43, R95, T39, DR-135
   - **Checked:** not yet: none will, since no test may reach Claude Code
-- **Fact:** Synthetic fixtures copy the transcript shapes that Claude Code writes, so a change in Claude Code's format makes a fixture test fail.
+- **Fact:** The transcript shapes that the synthetic fixtures copy are the ones that Claude Code writes.
   - **Relied on:** DR-003, DR-009, DR-092
   - **Checked:** not yet: `add-pr-cost-calculator` task 1.1 checks it in part
 - **Fact:** Every transcript line carries a timestamp, with its offset, in a form the capture step can read.
@@ -65,7 +65,7 @@ The assumptions about Claude Code: what its transcripts hold, when its hooks run
 - **Fact:** Claude Code keeps a `cd` from one command to the next only while it stays inside the project directory and the directories added to the session, resets it after a command that leaves them, and never keeps one for a subagent.
   - **Relied on:** R3, T2, DR-057
   - **Checked:** not yet: none will, since no test may reach Claude Code
-- **Fact:** The branch a transcript line names cannot be trusted, since it was seen reading `HEAD` while a branch was checked out, so capture does not use it.
+- **Fact:** The branch that a transcript line names can differ from the branch that is checked out when its call is made.
   - **Relied on:** R78, DR-012
   - **Checked:** not yet: none will, since no test may reach Claude Code
 - **Fact:** Each tool call in a transcript names its tool, the names of the edit, write, read, search, shell and subagent tools are known in advance, and an MCP tool can be recognised from its name.
@@ -111,7 +111,7 @@ The assumptions about Claude Code: what its transcripts hold, when its hooks run
 - **Fact:** No one sees the standard error of a hook that succeeds, so only the ledger and the comment can show what the step refused or did not know.
   - **Relied on:** R43, R89, T6, T39, DR-031, DR-135
   - **Checked:** not yet: none will, since no test may reach Claude Code
-- **Fact:** A hook that exits with success and prints nothing on standard output does not steer the agent, while exit 2, or JSON on standard output, can block a call or send Claude back to work. A hook that fails otherwise lets the command and the session go on.
+- **Fact:** A hook that exits with success and prints nothing on standard output does not steer the agent, while exit 2, or JSON on standard output, can block a call or send Claude back to work. A hook that fails otherwise lets the command and the session go on, unless it sets `onFailure` to `block`.
   - **Relied on:** R13, T14, DR-031
   - **Checked:** documented: <https://code.claude.com/docs/en/hooks>, read 2026-11-01
 - **Fact:** A command hook runs in the current directory, or, where that no longer exists, in the first that still exists of the directory the session started in, the project root, the home directory and the system's temporary directory.
@@ -181,7 +181,7 @@ The assumptions about Claude Code: what its transcripts hold, when its hooks run
 - **Fact:** An agent can read back the text it posted and remove such a link before it does harm.
   - **Relied on:** R33, T32, T65, DR-070
   - **Checked:** not yet: `add-pr-cost-calculator` task 1.9 and `add-pr-cost-calculator` task 1.14 check it in part
-- **Fact:** Capture can split a Bash command's text into its separate commands the way the shell does.
+- **Fact:** The shell splits a Bash command's text into its separate commands by rules that the text alone shows.
   - **Relied on:** R79, R80, T8, T10, DR-128
   - **Checked:** not yet: `add-pr-cost-calculator` task 2.2 checks it
 
@@ -206,7 +206,7 @@ The assumptions about Claude Code: what its transcripts hold, when its hooks run
 - **Fact:** Every line of a call that gives a stop reason gives the same final usage.
   - **Relied on:** R41, T7, DR-032, DR-033
   - **Checked:** not yet: none will, since no test may reach Claude Code
-- **Fact:** Every call's lines follow one of the shapes seen so far: every line gives a stop reason, only the last line does, or no line does.
+- **Fact:** Every call's lines follow one of three shapes: every line gives a stop reason, only the last line does, or no line does.
   - **Relied on:** R41, R42, R95, T7, DR-032, DR-033
   - **Checked:** not yet: none will, since no test may reach Claude Code
 - **Fact:** The lines of a call that give no stop reason only ever under-count it, never over-count it.
@@ -312,10 +312,10 @@ The assumptions about Claude Code: what its transcripts hold, when its hooks run
   - **Relied on:** R113, R116, T10
   - **Checked:** not yet: none will, since no test may reach Claude Code
 
-## A61. Claude Code runs the hooks that a repository's settings register, in every session that works in that repository.
+## A61. A session that starts in a repository's folder runs the hooks that the repository's settings register, once the folder is trusted, unless it is a cloud thread of a project or a cloud session with several repositories.
 
 - **Rests on it:** R7, T8, DR-009, DR-126
-- **If it is wrong:** The calls of a session that runs none of the repository's hooks are never recorded, and the comment shows less than was used, with nothing to say why (T8). By Claude Code's documentation, such sessions are every cloud thread of a project and every cloud session with several repositories, where the start-up hook that installs the development tools does not run either (DR-126), and an interactive session whose folder the person has not trusted.
+- **If it is wrong:** The calls of a session that starts in the repository's trusted folder and runs none of its hooks are never recorded, and the comment shows less than was used, with nothing to say why (T8).
 - **Fact:** A cloud session with one repository, outside a project's threads, reads that repository's `.claude/settings.json`, since the file is part of the clone and the session starts inside it.
   - **Relied on:** R7, T8, DR-009
   - **Checked:** documented: <https://code.claude.com/docs/en/settings>, read 2026-11-01
@@ -328,8 +328,8 @@ The assumptions about Claude Code: what its transcripts hold, when its hooks run
 
 ## A62. A repository opened in Claude Code can already run any hook its own settings register, including one that changes a person's git configuration.
 
-- **Rests on it:** R1, R37, R39, T3, DR-046, DR-048, DR-050
+- **Rests on it:** R1, R37, R39, T3, T84, DR-046, DR-048, DR-050
 - **If it is wrong:** If a repository could not already run such a hook, the capture step's own hook would ask a person for trust that they had not given, and T3's residual would need an answer instead (T3). While it holds, the capture step adds no trust beyond that.
 - **Fact:** Claude Code runs a command hook with the person's full user permissions, so that it can change any file their account can.
-  - **Relied on:** R1, R37, R39, T3, DR-046, DR-048, DR-050
+  - **Relied on:** R1, R37, R39, T3, T84, DR-046, DR-048, DR-050
   - **Checked:** documented: <https://code.claude.com/docs/en/hooks>, read 2026-11-01

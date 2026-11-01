@@ -73,7 +73,7 @@ The assumptions about Python, about the tools that develop and check this reposi
 - **If it is wrong:** A later Python, or another system, that drops or changes what the tool uses would break capture for the adopters who meet it first, and the command's `; exit 0` would hide it. A changed schedule would move when the oldest supported Python should rise.
 - **Fact:** Every Python release after 3.11 keeps the standard-library modules and behaviours that the tool uses.
   - **Relied on:** R25, DR-023, DR-025
-  - **Checked:** not yet: `add-pr-cost-calculator` task 1.11 checks it in part
+  - **Checked:** not yet: none will, since no test can run a Python that is not released yet; the CI job that `add-pr-cost-calculator` task 1.11 set up runs the tests on the newest release in every pull request
 - **Fact:** The standard library offers what the hook needs on every operating system that adopters use, Windows included.
   - **Relied on:** R12, R25, DR-023, DR-111
   - **Checked:** not yet: `add-pr-cost-calculator` task 2.3 and `add-pr-cost-calculator` task 2.4 check it in part
@@ -173,7 +173,7 @@ The assumptions about Python, about the tools that develop and check this reposi
 - **If it is wrong:** A tool's update that drops Python 3.11 would force a choice between the tool's floor and its test tools (T56), and code that needs a newer Python, or a newer Python that breaks the tool, could ship unseen (T55).
 - **Fact:** The development tools keep supporting Python 3.11.
   - **Relied on:** R25, T56, DR-025
-  - **Checked:** not yet: `add-pr-cost-calculator` task 1.11 checks it
+  - **Checked:** not yet: none will, since installing the tools needs the network, which no test uses; the CI job that `add-pr-cost-calculator` task 1.11 set up installs them on Python 3.11 in every pull request
 - **Fact:** `actions/setup-python` reads the matrix entry `3.x` as the newest Python release.
   - **Relied on:** R25, T55, DR-026
   - **Checked:** not yet: none will, since it holds on GitHub's runners, which no test may reach

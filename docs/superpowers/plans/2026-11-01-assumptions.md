@@ -8,7 +8,7 @@
 
 **Tech Stack:** Python 3.11 standard library, pytest, git.
 
-**Spec:** `openspec/changes/add-pr-cost-calculator/specs/project-standards/spec.md` ("The assumptions the design rests on are written down", "Each fact's check can be followed", "The assumptions with the most at stake come first"), design decision 14 and task 1.19 of the same change, DR-162 and DR-163.
+**Spec:** `openspec/changes/add-pr-cost-calculator/specs/project-standards/spec.md` ("The assumptions the design rests on are written down", "Each fact's check can be followed", "The assumptions give no other web address", "The assumptions with the most at stake come first"), design decision 14 and task 1.19 of the same change, DR-162 and DR-163.
 
 ## Global Constraints
 
@@ -16,7 +16,7 @@
 - Tests never use the network (DR-090). The git observation runs against a repository on the local disk, over `file://`.
 - No test may reach Claude Code, GitHub, a vendor's prices, or adopters and people, so a fact about them is never `tested` alone.
 - An observation names the file under `tests/` that reproduces what was seen, the date, and the program, the version that it prints and its build, and never whose work it was seen in. It gives no figure measured on someone's private work.
-- Documentation is linked by its address, shown as its text, on a vendor's documentation host that the test lists or as a GitHub file at a full commit, with the date it was read.
+- Documentation is linked by its address, shown as its text, on a vendor's documentation host that the test lists or as a file at a full commit of a GitHub repository that it lists, by a path with no `.` or `..` segment, with the date it was read, and no page gives a web address anywhere else.
 - The pages describe and never steer (`CLAUDE.md`): where one differs from `CLAUDE.md` or a spec, those hold.
 - Records keep their words: no file under `docs/decisions/` changes.
 - Every number written in the pages, the commit messages or the pull request is computed in the session that writes it.
@@ -111,11 +111,26 @@ A fact may also give `- **Handled by:**`, indented as its other fields, naming t
 
 ### Task 5: Review
 
-- [ ] **Step 1:** In a context separate from the builder's, rate each threat again against what was built, and add the threats that it brings.
+- [x] **Step 1:** In a context separate from the builder's, rate each threat again against what was built, and add the threats that it brings.
 - [ ] **Step 2:** Run `/simplify`, `/security-review`, `/code-review` and `/verify`, each in its own context; post the findings, their resolutions and the index on the pull request.
+
+### Task 6: The review's fixes
+
+**Files:** Modify `tests/test_assumptions.py`, `tests/test_decisions.py`, `tests/test_git_lazy_fetch.py`, `docs/assumptions/*.md`, `docs/threat-model.md`, the spec of `project-standards` in the change, its design, `docs/requirements.md`, `docs/features/project-standards.md`, DR-162, DR-166, `docs/decisions/README.md` and `README.md`.
+
+**Interfaces:**
+- `problems(root: Path, collected: frozenset[str], marked: frozenset[str] = frozenset()) -> tuple[list[str], int]`: as before, with the collected tests that a mark skips or expects to fail.
+- `marked_tests(root: Path) -> frozenset[str]`: the collected tests that a mark skips or expects to fail.
+
+- [x] **Step 1:** Update the change first, for each finding that changes what must hold: the requirements and scenarios of `project-standards`, design decision 14 and its risks, the register's row, the feature page, and DR-162 and DR-166, which the default branch does not hold yet.
+- [x] **Step 2:** Write a failing test for each finding that the checks fix, planting its defect in the passing fixture, and see each fail for the reason that the finding gives, or, where the check was written first, fail once the check's line is removed.
+- [x] **Step 3:** Write the checks until the synthetic tests pass. The repository's test then fails on the facts that the new checks read.
+- [x] **Step 4:** Fix the pages and the threat model: each fact that stated what the tool does, each threat that rests on an assumption without naming it, the threats that the review found, and the matrix.
+- [x] **Step 5:** Run the move's script again, and `pytest`, `ruff check .`, `ruff format --check .`, `mypy` and `scripts/verify-openspec.sh`. Expected: each exits 0.
+- [x] **Step 6:** Commit by file name and push.
 
 ## Self-review
 
-- Every scenario of the three requirements maps to a test of Task 2, and every defect in task 1.19's list to one of Step 2's tests.
+- Every scenario of the four requirements maps to a test of Task 2 or Task 6, and every defect in task 1.19's list to one of the tests of Task 2's Step 2.
 - The defect lists in Task 2 and in the task match word for word where the task names them.
 - The plan is executed inline by its author, so its code blocks give the grammar and the interfaces, and the test file holds the code.

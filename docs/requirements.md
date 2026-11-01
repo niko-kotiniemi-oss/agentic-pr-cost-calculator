@@ -154,6 +154,7 @@ The capability names the spec that holds the requirement. Each capability is one
 | R140 | non-functional | `project-standards` | Each fact's check can be followed |
 | R141 | non-functional | `project-standards` | A golden figure changes only with the spec that gives it |
 | R142 | non-functional | `project-standards` | Each ledger format that a release wrote keeps its golden figures |
+| R143 | non-functional | `project-standards` | The assumptions give no other web address |
 
 IDs are stable: a requirement keeps its ID while it exists, and a new one takes the next free number, so the rows follow the order in which requirements were added rather than the order of the specs. A requirement that a later change removes leaves the table, and its ID is listed below with the change that removed it, never to be used again.
 

@@ -24,7 +24,7 @@ The glossary, the assumptions and the pages that a file in the repository links 
 ## Consequences
 
 - `CLAUDE.md`'s section on what is data names the glossary, the assumptions and the pages that a file here links to, and says that where the glossary or an assumption differs from `CLAUDE.md` or a spec, those steer, and the agent tells the owner. This record lands in the same pull request as that change.
-- An assumption's entry says what would change if it is wrong, never how to change it, and a documented fact links only a vendor's page on a host that the test lists or a file at a full commit (DR-162).
+- An assumption's entry says what would change if it is wrong, never how to change it, and a documented fact links only a vendor's page on a host that the test lists or a file at a full commit of a repository that it lists, while a page of the assumptions gives no other web address (DR-162).
 - A meaning that narrows a rule without contradicting its words rests on the owner's review of the glossary's diff.
 
 ## Scope

@@ -2,7 +2,7 @@
 
 What could go wrong with the calculator, for the people who use it and for this repository, and what answers each threat. Every change revisits this file (see `CLAUDE.md`).
 
-It was written for the first change, `add-pr-cost-calculator`, before any code, so the answers are requirements and tasks rather than code. It holds 100 threats across 8 trust boundaries. T38 to T69 were found by the design-stage review, T70 to T78 by the design-stage review of the decision records in `docs/decisions/`, T79 to T81 by the implementation-stage review of those records and their checks, and T82 to T100 by the design-stage review of the assumptions, the glossary and the golden set; they follow T37, each under a heading for its boundary, so that the numbers stay in order, and a threat that a change removes keeps its ID out of use (see Retired IDs). Where an answer can be a scenario in a spec, it is one, so that an acceptance test holds it. `tests/test_threat_model.py` checks that every citation below names a scenario, task, decision, decision record or file that exists.
+It was written for the first change, `add-pr-cost-calculator`, before any code, so the answers are requirements and tasks rather than code. It holds 101 threats across 8 trust boundaries. T38 to T69 were found by the design-stage review, T70 to T78 by the design-stage review of the decision records in `docs/decisions/`, T79 to T81 by the implementation-stage review of those records and their checks, T82 to T100 by the design-stage review of the assumptions, the glossary and the golden set, and T101 by the implementation-stage review of the assumptions; they follow T37, each under a heading for its boundary, so that the numbers stay in order, and a threat that a change removes keeps its ID out of use (see Retired IDs). Where an answer can be a scenario in a spec, it is one, so that an acceptance test holds it. `tests/test_threat_model.py` checks that every citation below names a scenario, task, decision, decision record or file that exists.
 
 ## How it was built
 
@@ -140,7 +140,7 @@ The trust boundaries:
 - **Risk:** 6
 - **What could happen:** a session's machine can be disposable, so a call that is recorded but never committed is lost with it. The newest calls can be missing from the transcript when capture runs, because Claude Code writes it asynchronously. A turn that ends in an API error runs no `Stop` hook, and a session that ends after one turn has no later turn to carry its calls. A commit made with git's own options before `commit`, or a ledger file that an ignore rule matches, could be missed. A commit whose command stages its files first, as `git add f && git commit` does, looks empty to a run that comes before the command, and a commit whose message comes from a here-document runs `cat` before git. A commit made with `-a` has nothing staged before it runs.
 - **Answer:** capture runs before and after each of the agent's Bash commands that the hook's condition `Bash(git *)` matches, and when a turn, a subagent, a failed turn or the session ends. It stages for a `git commit` in this repository, including one whose command stages its own files first, one made with `-a`, and one whose message comes from a here-document whose delimiter is quoted, and recognises it whatever options git is given first, and when a later option undoes one that would make it a dry run. So each commit it stages for carries the calls recorded on its branch up to that moment, including those of the turn that commits. A call that one run missed is recorded by a later one, and neither an ignore rule nor a sparse checkout can drop the ledger file.
-- **Residual:** some calls reach no commit, and the README names these cases. They are the calls made after the agent's last commit on a branch that capture staged for, such as pushing and opening the pull request, and the call that runs that commit when that commit's run cannot yet read it as over, and any call that that run leaves unread at its time budget; calls recorded on a branch that gets no later commit, in a worktree where nobody commits or that Claude Code removes, or while no branch is checked out, as during a rebase that stops at a conflict; and calls whose only later commits were made in a way that capture does not stage for: by `git merge`, `git cherry-pick` or `git rebase --continue`, by a script, an API or Claude Code's PowerShell tool, which is on by default on Windows for claude.ai and Console accounts, in the background, in a pipeline, a subshell or a group, joined to another command by `||` or behind a wrapper such as `timeout`, after another command in the same input, with a message that another command writes or that a here-document whose delimiter is not quoted holds, by git written in a form that the hook's condition does not match, such as by its path or through an alias, or while a repository's own git hook refused the ledger file. In a repository whose attributes give the ledger path a filter or a working-tree encoding, or where git refuses to add the file, no call reaches a commit. Once a run has found a commit holding a ledger file, its calls are not staged again in that run's clone, however the file leaves the branch, so in that clone the calls of a commit that is reverted, reset away in any mode but `--soft` or split in an interactive rebase are not counted, even when its changes are committed again, unless the file itself is committed again, as a squash made with a mixed `git reset` and `git add -A` commits it, except where a sparse checkout leaves `.pr-cost/` out, or an ignore rule matches it while it is untracked, as after a reset without `-N`. After a take-back, a `git stash` made before the run that puts the file back, or a mixed `git reset` back to the commit that took the file once a run has found another commit checked out, leaves the file deleted in the working tree, so that in that clone a `git commit -a` removes it, with its calls, and after a mixed `git reset` without `-N` in the commit's own command, a `git reset --soft` back to that commit leaves it deleted in the index as well, so that in that clone any next commit removes it, with its calls. Checking out or restoring from the index the path of a ledger file that has an intent-to-add entry writes empty content over the file, so that its calls are lost, as the design's risks say. A damaged index, which git 2.43 can write in a cone-mode `git sparse-checkout` command that runs with the sparse index on or is given `--sparse-index` while any file has an intent-to-add entry, or, with the sparse index on, in a squash made with `git reset -N` of commits that add a file that the sparse checkout leaves out, can make the next commit delete ledger files from the branch, with their calls, as the design's risks say. The comment counts what the pull request's commits carry. A subagent that never finishes leaves its last call unread when that call gives no stop reason. The design leaves commits made through the PowerShell tool out of this change.
+- **Residual:** some calls reach no commit, and the README names these cases. They are the calls made after the agent's last commit on a branch that capture staged for, such as pushing and opening the pull request, and the call that runs that commit when that commit's run cannot yet read it as over, and any call that that run leaves unread at its time budget; calls recorded on a branch that gets no later commit, in a worktree where nobody commits or that Claude Code removes, or while no branch is checked out, as during a rebase that stops at a conflict; and calls whose only later commits were made in a way that capture does not stage for: by `git merge`, `git cherry-pick` or `git rebase --continue`, by a script, an API or Claude Code's PowerShell tool, which is on by default on Windows for claude.ai and Console accounts, in the background, in a pipeline, a subshell or a group, joined to another command by `||` or behind a wrapper such as `timeout`, after another command in the same input, with a message that another command writes or that a here-document whose delimiter is not quoted holds, by git written in a form that the hook's condition does not match, such as by its path or through an alias, or while a repository's own git hook refused the ledger file. In a repository whose attributes give the ledger path a filter or a working-tree encoding, or where git refuses to add the file, no call reaches a commit. Once a run has found a commit holding a ledger file, its calls are not staged again in that run's clone, however the file leaves the branch, so in that clone the calls of a commit that is reverted, reset away in any mode but `--soft` or split in an interactive rebase are not counted, even when its changes are committed again, unless the file itself is committed again, as a squash made with a mixed `git reset` and `git add -A` commits it, except where a sparse checkout leaves `.pr-cost/` out, or an ignore rule matches it while it is untracked, as after a reset without `-N`. After a take-back, a `git stash` made before the run that puts the file back, or a mixed `git reset` back to the commit that took the file once a run has found another commit checked out, leaves the file deleted in the working tree, so that in that clone a `git commit -a` removes it, with its calls, and after a mixed `git reset` without `-N` in the commit's own command, a `git reset --soft` back to that commit leaves it deleted in the index as well, so that in that clone any next commit removes it, with its calls. Checking out or restoring from the index the path of a ledger file that has an intent-to-add entry writes empty content over the file, so that its calls are lost, as the design's risks say. A damaged index, which git 2.43 can write in a cone-mode `git sparse-checkout` command that runs with the sparse index on or is given `--sparse-index` while any file has an intent-to-add entry, or, with the sparse index on, in a squash made with `git reset -N` of commits that add a file that the sparse checkout leaves out, can make the next commit delete ledger files from the branch, with their calls, as the design's risks say. The comment counts what the pull request's commits carry. A subagent that never finishes leaves its last call unread when that call gives no stop reason. The design leaves commits made through the PowerShell tool out of this change. A session that runs none of the repository's hooks records none of its calls, and by Claude Code's documentation such sessions are every cloud thread of a project, every cloud session with several repositories, and an interactive session whose folder the person has not trusted (A61).
 - **Held by:** `usage-capture`: "A one-turn session's commit carries its calls"; `usage-capture`: "A commit carries the calls that another session recorded on its branch"; `usage-capture`: "A commit that stages its own files carries a ledger file"; `usage-capture`: "A commit of all changes with nothing staged carries a ledger file"; `usage-capture`: "A turn that ends in an API error is still recorded"; `usage-capture`: "A call still being written is recorded later"; `usage-capture`: "A commit with git's own options is still a commit"; `usage-capture`: "A dry-run option that a later option undoes is still a commit"; `usage-capture`: "An ignored ledger path is still committed"; `usage-capture`: "A sparse checkout still commits the ledger file"; `usage-capture`: "A commit message from a here-document still carries a ledger file"; `usage-capture`: "A squash with a plain reset keeps its ledger files"; `usage-capture`: "A soft reset back to a commit that its own command reset away leaves its ledger file out"; DR-007; DR-009; DR-010; DR-012; DR-013; DR-014; DR-030; DR-032; DR-034; DR-037; DR-055; DR-107; DR-128; DR-129; DR-130; `add-pr-cost-calculator` task 4.4
 - **Assumptions:** A1, A3, A4, A6, A10, A11, A13, A37, A38, A39, A40, A41, A42, A43, A46, A47, A61
 
@@ -579,7 +579,7 @@ The trust boundaries:
 - **Answer:** every git command the step runs has `GIT_NO_LAZY_FETCH=1` and `GIT_TERMINAL_PROMPT=0`, and a blob that the clone lacks is skipped, as an oversized one is.
 - **Residual:** git's own source names `GIT_NO_LAZY_FETCH` in no file at v2.43.0 to v2.43.3 or at v2.44.0, and reads it at v2.43.4, v2.44.1 and v2.45.0, so on a plain git 2.43.0 to 2.43.3 or 2.44.0, which the floor admits, the variable does nothing and this answer does not hold until the floor or the step's check changes (T86).
 - **Held by:** `usage-capture`: "Capture fetches no ledger file that its clone lacks"; `usage-capture`: "Capture skips a ledger file whose blob its clone lacks"; `project-standards`: "The hook opens no connection"; DR-060; `add-pr-cost-calculator` task 2.1
-- **Assumptions:** A63
+- **Assumptions:** A11, A63
 
 ### T46. On Windows, a program planted in the current directory runs as git
 
@@ -935,8 +935,8 @@ The trust boundaries:
 - **Impact:** 2 (medium)
 - **Likelihood:** 2 (possible)
 - **Risk:** 4
-- **What could happen:** a record is permanent, but what it names can move. If the threat model's numbers could have no gap, removing a threat would renumber every later one, and a record's threats would then name others while every citation still resolved. A requirement ID that comes to name another requirement does the same. A link from a record to a path or a heading breaks when the change is archived or the design is restructured. A revert of a merge that added or closed records removes or reopens them, which the rule refuses. Each case leaves a record wrong, or every pull request's CI failing, and pushes toward weakening the check (T71).
-- **Answer:** threat IDs are retired, never reused or renumbered, as requirement IDs already are, and the threat model's test accepts only the gaps that its list of retired IDs names. An ID that the default branch's register or threat model holds or retires must stay held or retired. A record names requirements, threats and records by ID, its change by name, and that change's design decisions and tasks by number, and CI fails on any of them that does not exist, finding a design decision or a task named without its change in any change, active or archived; it links only to other records. A mistaken merge's records are undone by new records that close them, and the check's message on a removal says that a record is only ever closed.
+- **What could happen:** a record is permanent, but what it names can move. If the threat model's numbers could have no gap, removing a threat would renumber every later one, and a record's threats would then name others while every citation still resolved. A requirement or an assumption ID that comes to name another does the same. A link from a record to a path or a heading breaks when the change is archived or the design is restructured. A revert of a merge that added or closed records removes or reopens them, which the rule refuses. Each case leaves a record wrong, or every pull request's CI failing, and pushes toward weakening the check (T71).
+- **Answer:** threat IDs are retired, never reused or renumbered, as requirement IDs already are, and the threat model's test accepts only the gaps that its list of retired IDs names. An ID that the default branch's register, threat model or assumptions' index holds or retires must stay held or retired. A record names requirements, threats and records by ID, its change by name, and that change's design decisions and tasks by number, and CI fails on any of them that does not exist, finding a design decision or a task named without its change in any change, active or archived; it links only to other records. A mistaken merge's records are undone by new records that close them, and the check's message on a removal says that a record is only ever closed.
 - **Residual:** an ID or a number that keeps its number but changes its meaning is not caught. Nor is a file that a record names by its path and that later moves: a record describes the tree as it stood when it was accepted. A requirement, a threat, a change or a task named in a file other than Markdown is not resolved, since a data file can hold such a pattern by chance, as a lock file's hashes can.
 - **Held by:** `project-standards`: "An ID that vanishes fails CI"; `project-standards`: "A gap or a reused ID in the threats fails CI"; `project-standards`: "A record that hides text or links elsewhere fails CI"; `project-standards`: "A record that names nothing fails CI"; DR-106; DR-120; DR-121; DR-152; DR-158; `tests/test_threat_model.py`
 - **Assumptions:** A57
@@ -1039,6 +1039,7 @@ The trust boundaries:
 - **Answer:** each golden session lists every call of its transcripts, by its message ID, with the entry that capture must write for it or the scenario that leaves it out, and a test fails on a call left unaccounted for or on a citation of a scenario that does not exist. The set holds sessions whose calls the rules of this boundary leave out or change.
 - **Residual:** whether a cited scenario says what the session takes it to say rests on the review, as it does for this model's own citations.
 - **Held by:** `project-standards`: "A golden call that no entry or cited scenario accounts for fails CI"; `add-pr-cost-calculator` task 1.21; DR-165
+- **Assumptions:** A57
 
 ### T84. A way for tests to set a run's time ships in the hook
 
@@ -1050,6 +1051,7 @@ The trust boundaries:
 - **Answer:** each run's time is read from the system's clock in UTC, which no environment variable sets, and a scenario that sets `TZ` holds it. The golden tests call the step's entry point in the test's own process and give each run its time there.
 - **Residual:** a repository's own hooks can still change a person's git configuration before any run, as the assumptions accept.
 - **Held by:** `switch-and-opt-in`: "The environment cannot move a run's time"; `add-pr-cost-calculator` decision 14; `add-pr-cost-calculator` task 1.21; DR-165
+- **Assumptions:** A62
 
 ## Boundary 2, continued: found at the design review of the assumptions, the glossary and the golden set
 
@@ -1072,7 +1074,7 @@ The trust boundaries:
 - **Risk:** 2
 - **What could happen:** `git --version` prints the same version for builds that differ. The git 2.43.0 that Ubuntu 24.04 packages carries a security patch that its changelog says disables lazy fetching by default, and T45's answer rests on git reading `GIT_NO_LAZY_FETCH`, while the capture step's floor reads only the version. An assumption recorded as observed with git 2.43.0 then reads as checked for every git that the floor admits. A plain git 2.43.0 to 2.43.3 or 2.44.0 names the variable nowhere in its source, so on it, in a partial clone whose sparse checkout leaves `.pr-cost/` out, the step fetches ledger blobs from the remote and can wait out its budget on a credential helper or a slow remote: T45's harm, on a git that the floor, CI and the assumptions all accept.
 - **Answer:** an observation names the file that reproduces what was seen, the date, and the program, the version that it prints and its build, and a test fails on one that does not. The design's context names the build that the observation was made on and the releases whose source does not name the variable, and task 1.19 records the fact as not holding on those releases, linking their source.
-- **Residual:** a plain git 2.43.0 to 2.43.3 or 2.44.0 passes the floor while T45's answer does not hold on it, until the floor or the step's check changes (T45), and a build that a distribution patches is known only where it was observed.
+- **Residual:** a plain git 2.43.0 to 2.43.3 or 2.44.0 passes the floor while T45's answer does not hold on it, until the floor or the step's check changes (T45), and a build that a distribution patches is known only where it was observed. The links show the file in which each later release reads the variable; that the earlier releases name it in no file rests on the design's context, since one file cannot show what a whole source leaves out.
 - **Held by:** `project-standards`: "An observation that cannot be followed fails CI"; `add-pr-cost-calculator` task 1.19; DR-162
 - **Assumptions:** A63
 
@@ -1126,6 +1128,7 @@ The trust boundaries:
 - **Answer:** the wording test never reads inline code or fenced code blocks, which give names, commands, paths and snippets as they must be typed; a word is listed to avoid only if it is wrong wherever it appears in prose; and the review reads the pages that adopters act on before and after a rewording.
 - **Residual:** a rewording that keeps every name but changes what an instruction asks, such as which commit to pin or what a public repository publishes, rests on the review alone. Product labels quoted in prose are still read as prose.
 - **Held by:** `project-standards`: "A word to avoid in code is left as written"; `add-pr-cost-calculator` decision 14; `add-pr-cost-calculator` task 1.20; DR-164
+- **Assumptions:** A57
 
 ### T91. A newer report gives other figures for a ledger that an older hook wrote
 
@@ -1161,6 +1164,7 @@ The trust boundaries:
 - **Answer:** the glossary describes the words that the specs and pages use and never changes what they say; where a meaning in it differs from a requirement, a scenario or `CLAUDE.md`, those hold and the glossary is corrected, and `CLAUDE.md` names the glossary among the files that describe and never instruct.
 - **Residual:** a meaning that narrows a rule without contradicting its words rests on the owner's review of the glossary's diff.
 - **Held by:** `CLAUDE.md`; `add-pr-cost-calculator` decision 14; DR-166
+- **Assumptions:** A15, A16
 
 ### T94. A rewording changes what a rule, a requirement or a threat's answer says
 
@@ -1172,6 +1176,7 @@ The trust boundaries:
 - **Answer:** a script, run once in each pull request that rewords, shows that each changed line differs only by words to avoid replaced with their terms, and lists every other change, those to `CLAUDE.md` first. The review in a separate context reads, before and after, the requirements, `CLAUDE.md`, this model's answers and residuals, the README's statements of what opting in records and publishes, and the pages that adopters act on. Each concept that a rule tells apart has a term of its own, so listing one as a word to avoid for another fails the check of the glossary.
 - **Residual:** a change of meaning that the script lists and the review misses. A word with several senses in a line that the rewording leaves alone is held only by the reviews, and no test yet reads the README's statement of what opting in publishes.
 - **Held by:** `project-standards`: "A term defined twice fails CI"; `add-pr-cost-calculator` decision 14; `add-pr-cost-calculator` task 1.20; DR-164
+- **Assumptions:** A57
 
 ### T95. A page that an assumption links to steers the agent that checks it
 
@@ -1180,20 +1185,22 @@ The trust boundaries:
 - **Likelihood:** 1 (unlikely)
 - **Risk:** 3
 - **What could happen:** a fact checked by documentation links a page, and a reader is meant to follow each check to its source. A pull request can add a documented fact whose link text names a vendor while its target is a page that its author controls, since Markdown shows the text and not the target, and a page that the owner read before merging can change afterwards. Each later agent that checks the fact fetches the page into its context, where text written as instructions can steer it, with the session's credentials, as the owner's account (T64); among them are the reviewers of an outside contributor's pull request.
-- **Answer:** a documented fact links, by its address shown as its text, only a vendor's page on a host that the test lists or a GitHub file at a full commit, and `CLAUDE.md` says that a page that a file here links to is data.
-- **Residual:** a vendor's own page, and a listed host that comes to serve other people's content. The list changes only in a pull request that the owner reviews (T71).
-- **Held by:** `project-standards`: "A documented fact that links elsewhere fails CI"; `CLAUDE.md`; `add-pr-cost-calculator` task 1.19; DR-162; DR-166
+- **Answer:** a documented fact links, by its address shown as its text, only a vendor's page on a host that the test lists or a file at a full commit of a GitHub repository that the test lists, by a path with no `.` or `..` segment; no page of the assumptions gives a web address anywhere else; and `CLAUDE.md` says that a page that a file here links to is data.
+- **Residual:** a vendor's own page, and a listed host that comes to serve other people's content. GitHub serves a commit that only a fork holds under the parent repository's address (A26), so a full commit in a listed repository can still show a fork's file, which only the owner's review of the diff catches (A15) until a check compares the commit with the repository's tags, as `add-pr-cost-calculator` task 1.15 does for a workflow's pins. Either list changes only in a pull request that the owner reviews (T71).
+- **Held by:** `project-standards`: "A documented fact that links elsewhere fails CI"; `project-standards`: "A web address outside a documented check fails CI"; `CLAUDE.md`; `add-pr-cost-calculator` task 1.19; DR-162; DR-166
+- **Assumptions:** A15, A16, A26
 
 ### T96. An assumption and a threat that rests on it do not name each other
 
 - **Kind:** reliability
 - **Impact:** 2 (medium)
-- **Likelihood:** 1 (unlikely)
-- **Risk:** 2
+- **Likelihood:** 2 (possible)
+- **Risk:** 4
 - **What could happen:** an assumption's place in the list comes from the threats that its entry names, and two of the ten assumptions in this model's section name a threat. The assumption on Claude Code's hooks names none, though T8's answer rests on its facts about when `Stop` and `SessionEnd` run; an entry that named only T14 would sort it low, and a change that later finds the hooks behaving otherwise revisits only what the entry names, so T8 keeps an answer that rests on a false fact. Neither T23 nor T24 names the assumption about GitHub that their answers rest on, so a correction of it need not meet them.
 - **Answer:** a threat that rests on an assumption names it in a field of its own, the assumption names the threat, and a test fails when either names the other alone. Task 1.19 replaces each "(see Assumptions)" with the assumption's ID, and a script shows that each sentence of the section it moves is in an assumption or a spec afterwards.
-- **Residual:** a threat that rests on an assumption and names none. Only the reviews find it, as they do for records under T80.
+- **Residual:** a threat that rests on an assumption and names none. Only the reviews find it, as they do for records under T80, and the implementation review of the assumptions found such threats among those written at the design review.
 - **Held by:** `project-standards`: "An assumption and a threat that do not name each other fail CI"; `add-pr-cost-calculator` task 1.19; DR-162
+- **Assumptions:** A57
 
 ### T97. An assumption claims an observation that nobody can follow
 
@@ -1202,9 +1209,10 @@ The trust boundaries:
 - **Likelihood:** 1 (unlikely)
 - **Risk:** 2
 - **What could happen:** this model's one observed assumption says only that it was "observed when this model was written". Restating it as observed, with what was seen and when, an agent has a sentence and a commit date, so it writes a description that nobody can follow, or makes one up; a new fact can likewise be marked observed from what an agent believes Claude Code does. A fact then reads as checked, and the threats that rest on it read as sounder than they are.
-- **Answer:** an observation names a file under `tests/` that reproduces what was seen, the date, and the program, version and build it was seen on, and a test fails on one that names no such file. Until a file exists, the fact is `not yet`.
-- **Residual:** a file can be made up too, but it is then a file that the review reads and a test runs, not a sentence. Some observations, such as GitHub's timing, may never fit a file and stay `not yet`.
-- **Held by:** `project-standards`: "An observation that cannot be followed fails CI"; `add-pr-cost-calculator` task 1.19; DR-162
+- **Answer:** an observation names a file under `tests/` that reproduces what was seen and holds a test that no mark skips or expects to fail, the date, and the program, version and build it was seen on, and a test fails on one that names no such file, as it does on a check that names a test that pytest does not collect or that a mark skips or expects to fail. Until a file exists, the fact is `not yet`.
+- **Residual:** a file can be made up too, but it is then a file that the review reads and a test runs, not a sentence. A test can still assert something other than what was seen, or skip itself when it runs, and some observations, such as GitHub's timing, may never fit a file and stay `not yet`.
+- **Held by:** `project-standards`: "An observation that cannot be followed fails CI"; `project-standards`: "A citation of nothing fails CI"; `add-pr-cost-calculator` task 1.19; DR-162
+- **Assumptions:** A57
 
 ### T98. A pull request rewrites a golden figure and its working together with the code
 
@@ -1216,6 +1224,7 @@ The trust boundaries:
 - **Answer:** a pull request that changes a golden session that its base holds either changes a spec or changes nothing outside the golden set, and a test fails otherwise, so a slip in the set is fixed on its own and a rule change comes with its spec.
 - **Residual:** a pull request that changes a spec, the code and the set together rests on the review in a separate context; the comparison with the base has T70's limits; and a fix to the code that reveals a slip in the set takes two pull requests.
 - **Held by:** `project-standards`: "A golden session changed beside other files without its spec fails CI"; `project-standards`: "A golden session changed alone or with a spec passes"; `add-pr-cost-calculator` task 1.21; DR-165
+- **Assumptions:** A57
 
 ## Boundary 8, continued: found at the design review of the assumptions, the glossary and the golden set
 
@@ -1242,6 +1251,20 @@ The trust boundaries:
 - **Held by:** `add-pr-cost-calculator` decision 14; `add-pr-cost-calculator` task 1.19; DR-162
 - **Assumptions:** A7
 
+## Boundary 7, continued: found at the implementation review of the assumptions
+
+### T101. A fact's check waits on a task that is done, or gives a day that has not come
+
+- **Kind:** reliability
+- **Impact:** 2 (medium)
+- **Likelihood:** 1 (unlikely)
+- **Risk:** 2
+- **What could happen:** a fact that is not yet checked names the task that will check it, and the name stays after the task is ticked. Either the task checked the fact, and the fact under-reports its check while the list's order is computed from a stale level, or the task closed without it, and nothing says which. It happened when the assumptions were written: two facts named a task that was already done. A documented or observed fact can likewise give a day that has not come, and a reader takes the page as read, or the build as seen, when it was not.
+- **Answer:** a test fails when a fact that is not yet checked names, as the one that will check it, a task that its change's `tasks.md` ticks, and when an observation or a reading gives a date later than the day the test runs.
+- **Residual:** a fact whose task closed without checking it can be rewritten to name another task, or a reason why none will, which only the review reads, and a date earlier than the true one is not caught.
+- **Held by:** `project-standards`: "An assumption without its check fails CI"; `project-standards`: "An observation that cannot be followed fails CI"; `project-standards`: "A documented fact that links elsewhere fails CI"; `add-pr-cost-calculator` task 1.19; DR-162
+- **Assumptions:** A57
+
 ## Risk matrix
 
 Generated from the ratings above. Each cell lists the threats whose impact and likelihood it names.
@@ -1249,7 +1272,7 @@ Generated from the ratings above. Each cell lists the threats whose impact and l
 | Impact \ Likelihood | 1 unlikely | 2 possible | 3 likely |
 |---|---|---|---|
 | 3 high | T1, T12, T14, T15, T23, T24, T28, T29, T35, T43, T46, T58, T59, T63, T64, T66, T67, T68, T73, T77, T82, T83, T92, T93, T94, T95 | T2, T32, T33, T34, T61, T62, T65 |  |
-| 2 medium | T4, T6, T11, T18, T25, T26, T41, T42, T53, T55, T56, T57, T60, T69, T70, T76, T78, T79, T80, T81, T84, T85, T86, T87, T88, T89, T90, T91, T96, T97, T98, T99, T100 | T3, T9, T10, T17, T19, T20, T21, T22, T30, T38, T39, T40, T44, T45, T47, T48, T49, T50, T51, T52, T54, T71, T72, T74, T75 | T7, T8, T16 |
+| 2 medium | T4, T6, T11, T18, T25, T26, T41, T42, T53, T55, T56, T57, T60, T69, T70, T76, T78, T79, T80, T81, T84, T85, T86, T87, T88, T89, T90, T91, T97, T98, T99, T100, T101 | T3, T9, T10, T17, T19, T20, T21, T22, T30, T38, T39, T40, T44, T45, T47, T48, T49, T50, T51, T52, T54, T71, T72, T74, T75, T96 | T7, T8, T16 |
 | 1 low | T13 | T27, T31, T36, T37 | T5 |
 
 The threats with a risk of 6 or more:
