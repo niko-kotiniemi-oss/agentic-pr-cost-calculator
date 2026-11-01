@@ -5,9 +5,13 @@
 Run in the repository, it compares HEAD with where HEAD left BASE, which is
 `refs/remotes/origin/main` unless given, in the Markdown files that the wording test
 reads, and prints Markdown for the pull request (task 1.20; design decision 14; T90,
-T94). It reads each page with `scripts/wording.py`, as the wording test does, so that a
-word inside code, among the glossary's words to avoid or in a title that an accepted
-record quotes is never taken for a replacement. It exits 2, saying why, when it cannot
+T94). It names both commits by their full hashes, compares a renamed page with what it
+was, and names each changed file that it does not compare. It reads each page with
+`scripts/wording.py`, as the wording test does, so that a word inside code, among the
+glossary's words to avoid or in a title that an accepted record quotes is never taken
+for a replacement. A replacement is judged by the glossary at HEAD, and a line that
+replaces a word that the base's glossary does not give for the same term is also listed
+apart, since that rule is the pull request's own. It exits 2, saying why, when it cannot
 compare.
 """
 
@@ -18,28 +22,32 @@ import re
 import subprocess
 import sys
 from collections import Counter
+from pathlib import Path
 
 from wording import (
+    BACKTICKS,
+    DEFAULT_BRANCH,
     FINAL_Y,
     GLOSSARY,
     KEPT,
     MARKDOWN,
-    RECORD_FILE,
-    SPEC_FILE,
     Entry,
     found_words,
     glossary,
-    quoted_titles,
+    kept_at,
     readable,
+    same,
 )
 
-DEFAULT_BASE = "refs/remotes/origin/main"
 USAGE = "usage: python3 scripts/rewording.py [BASE]"
 STEERING = "CLAUDE.md"
 TOKEN = re.compile(r"\S+|\s+")
-BACKTICKS = re.compile(r"`+")
 # How many tokens, each a word or the spaces after one, are shown on each side of a change.
 CONTEXT = 8
+# A control character, a line break among them, written as its escape inside a code span.
+CONTROL = {char: f"\\x{char:02x}" for char in [*range(32), 127]}
+ADDED = "An added file's lines are not compared, since the base holds none of them."
+KEPT_AS_WRITTEN = "which keeps its words as written"
 
 
 class Refused(Exception):
@@ -47,37 +55,66 @@ class Refused(Exception):
 
 
 def git(*args: str, refused: str = "") -> str:
-    """What a git command prints. If it fails, the comparison is refused for the reason
-    given, or, where none is given since the command should not fail, for git's own."""
+    """What a git command prints, a byte that is not UTF-8 kept as an escape. If it fails,
+    the comparison is refused for the reason given, or, where none is given since the
+    command should not fail, for git's own."""
     done = subprocess.run(["git", *args], capture_output=True, check=False)
     if done.returncode:
         raise Refused(refused or done.stderr.decode("utf-8", "replace").strip())
-    return done.stdout.decode("utf-8")
+    return done.stdout.decode("utf-8", "surrogateescape")
 
 
 def blob(commit: str, path: str) -> str:
     return git("cat-file", "blob", f"{commit}:{path}")
 
 
-def kept_at(commit: str) -> frozenset[str]:
-    """The titles in a commit's specs that one of its accepted records quotes."""
-    listing = git(
-        "ls-tree",
-        "-r",
-        "-z",
-        "--name-only",
-        "--full-tree",
-        commit,
-        "--",
-        "openspec",
-        "docs/decisions",
+def code(text: str) -> str:
+    """Text as a code span that nothing in it can close: its backticks outrun every run in
+    the text, and each control character, a line break among them, is written as its
+    escape. A space pads a text that starts or ends with a backtick or a space."""
+    text = text.translate(CONTROL)
+    ticks = "`" * (max((len(run) for run in BACKTICKS.findall(text)), default=0) + 1)
+    pad = " " if text[:1] in ("`", " ") or text[-1:] in ("`", " ") else ""
+    return f"{ticks}{pad}{text}{pad}{ticks}"
+
+
+def entries_at(commit: str) -> list[Entry]:
+    """The glossary's entries in a commit, none where it holds no glossary."""
+    if not git("ls-tree", "--name-only", "--full-tree", commit, "--", GLOSSARY):
+        return []
+    return glossary(blob(commit, GLOSSARY))[0]
+
+
+def new_words(entries: list[Entry], base: list[Entry]) -> frozenset[str]:
+    """The words to avoid that the base's glossary does not give for the same term."""
+    return frozenset(
+        word
+        for entry in entries
+        for word in entry.avoid
+        if not any(
+            other.term == entry.term and any(same(word, given) for given in other.avoid)
+            for other in base
+        )
     )
-    paths = listing.split("\0")
 
-    def texts(named: re.Pattern[str]) -> list[str]:
-        return [blob(commit, path) for path in paths if named.fullmatch(path)]
 
-    return quoted_titles(texts(SPEC_FILE), texts(RECORD_FILE))
+def changed_files(since: str) -> list[tuple[str, str, str]]:
+    """Each Markdown file that the branch changed, as its status, its path at the base and
+    its path at HEAD, a rename's two paths differing."""
+    fields = git(
+        "diff-tree", "-r", "-z", "-M", "--name-status", since, "HEAD", "--", *MARKDOWN
+    ).split("\0")[:-1]
+    changes = []
+    at = 0
+    while at < len(fields):
+        status = fields[at]
+        if status.startswith("R"):
+            changes.append((status, fields[at + 1], fields[at + 2]))
+            at += 3
+        else:
+            changes.append((status, fields[at + 1], fields[at + 1]))
+            at += 2
+    return changes
 
 
 def form(term: str, word: str, found: str) -> str:
@@ -139,13 +176,20 @@ def listed(label: str, shown: list[str]) -> list[str]:
 
 
 def compared(
-    path: str, old: str, new: str, entries: list[Entry], kept: frozenset[str]
-) -> tuple[list[str], Counter[str], int]:
-    """A changed file's hunks that are more than words to avoid replaced, as Markdown; the
-    words that its other changed lines replaced; and how many lines those are."""
+    path: str,
+    old: str,
+    new: str,
+    entries: list[Entry],
+    kept: frozenset[str],
+    fresh: frozenset[str],
+) -> tuple[list[str], list[str], Counter[str], int]:
+    """A changed file's hunks that are more than words to avoid replaced, and its lines that
+    replace only words to avoid, one of them new to the glossary, as Markdown; the words
+    that the lines that replace only words replaced; and how many lines those are."""
     before, after = old.split("\n"), new.split("\n")
     read = readable(path, old, kept)[0].split("\n")
     hunks: list[str] = []
+    renewed: list[str] = []
     words: Counter[str] = Counter()
     only = 0
     matcher = difflib.SequenceMatcher(None, before, after, autojunk=False)
@@ -156,6 +200,9 @@ def compared(
                 if expected == after[new_at]:
                     words.update(found)
                     only += 1
+                    if fresh.intersection(found):
+                        shown = changed_words(before[at], after[new_at])
+                        renewed += listed(lines(new_at, new_at + 1), shown)
                 else:
                     shown = changed_words(before[at], after[new_at])
                     hunks += listed(lines(new_at, new_at + 1), shown)
@@ -169,7 +216,7 @@ def compared(
             else:
                 label = f"{lines(new_start, new_end)}, added"
             hunks += listed(label, shown)
-    return hunks, words, only
+    return hunks, renewed, words, only
 
 
 def counted(number: int, noun: str) -> str:
@@ -182,41 +229,52 @@ def report(base: str) -> str:
     since = git(
         "merge-base", tip.strip(), "HEAD", refused=f"HEAD shares no history with {base}"
     ).strip()
+    head = git("rev-parse", "--verify", "HEAD").strip()
     text = git("cat-file", "blob", f"HEAD:{GLOSSARY}", refused=f"HEAD holds no {GLOSSARY}")
     entries = glossary(text)[0]
     if not any(entry.avoid for entry in entries):
         raise Refused(f"{GLOSSARY} at HEAD gives no word to avoid")
-    kept = kept_at(since)
-    fields = git("diff-tree", "-r", "-z", "--name-status", since, "HEAD", "--", *MARKDOWN)
-    named = fields.split("\0")[:-1]
-    changes = sorted(
-        (
-            change
-            for change in zip(named[::2], named[1::2], strict=True)
-            if not KEPT.match(change[1])
-        ),
-        key=lambda change: (change[1] != STEERING, change[1]),
-    )
+    fresh = new_words(entries, entries_at(since))
+    try:
+        kept = kept_at(Path.cwd(), since)
+    except subprocess.CalledProcessError as failed:
+        raise Refused(failed.stderr.decode("utf-8", "replace").strip()) from None
+    changes = sorted(changed_files(since), key=lambda change: (change[2] != STEERING, change[2]))
+    seen = {path for _, old, new in changes for path in (old, new)}
+    every = git("diff-tree", "-r", "-z", "--name-only", since, "HEAD").split("\0")[:-1]
+    skipped = [
+        (path, f"- {code(path)}, which is not a Markdown file")
+        for path in every
+        if path not in seen
+    ]
     hunks: list[str] = []
+    renewed: list[str] = []
     files: list[str] = []
     words: Counter[str] = Counter()
     only = touched = 0
-    for status, path in changes:
-        if status == "A":
-            files.append(f"- Added: `{path}`")
+    for status, old, new in changes:
+        if KEPT.match(new):
+            moved = f", renamed to {code(new)}" if old != new else ""
+            skipped.append((old, f"- {code(old)}{moved}, {KEPT_AS_WRITTEN}"))
+        elif status == "A":
+            files.append(f"- Added: {code(new)}")
         elif status == "D":
-            files.append(f"- Removed: `{path}`")
+            files.append(f"- Removed: {code(new)}")
         else:
-            found, replacements, replacing = compared(
-                path, blob(since, path), blob("HEAD", path), entries, kept
+            if old != new:
+                files.append(f"- Renamed: {code(old)} to {code(new)}")
+            found, fresh_found, replacements, replacing = compared(
+                new, blob(since, old), blob("HEAD", new), entries, kept, fresh
             )
             if found:
-                hunks += [f"### `{path}`", *found]
+                hunks += [f"### {code(new)}", *found]
+            if fresh_found:
+                renewed += [f"### {code(new)}", *fresh_found]
             words += replacements
             only += replacing
             touched += bool(replacing)
     table = [
-        f"| {word} | {entry.term} | {words[word]} |"
+        f"| {word} | {entry.term} | {words[word]} | {'yes' if word in fresh else 'no'} |"
         for entry in entries
         for word in entry.avoid
         if words[word]
@@ -224,15 +282,27 @@ def report(base: str) -> str:
     summary = [
         f"{counted(only, 'line')} in {counted(touched, 'file')} changed only by a word to avoid"
         " replaced with its term:",
-        "\n".join(["| Word to avoid | Term | Replaced |", "|---|---|---|", *table]),
+        "\n".join(
+            [
+                "| Word to avoid | Term | Replaced | New to the glossary |",
+                "|---|---|---|---|",
+                *table,
+            ]
+        ),
     ]
+    added = any(line.startswith("- Added: ") for line in files)
     blocks = [
-        f"Compared with `{base}` at `{since[:12]}`, where HEAD left it, in the Markdown files"
-        " that the wording test reads.",
+        f"Compared HEAD at {code(head)} with {code(since)}, where it left {code(base)}, in the"
+        " Markdown files that the wording test reads.",
         "## Changed by more than a word to avoid",
         *(hunks or ["None."]),
-        "## Added or removed",
+        "## Only a word to avoid new to the glossary replaced",
+        *(renewed or ["None."]),
+        "## Added, removed or renamed",
         "\n".join(files) or "None.",
+        *([ADDED] if added else []),
+        "## Not compared",
+        "\n".join(line for _, line in sorted(skipped)) or "None.",
         "## Only a word to avoid replaced",
         *(summary if only else ["None."]),
     ]
@@ -244,11 +314,11 @@ def main(argv: list[str]) -> int:
         print(USAGE, file=sys.stderr)
         return 2
     try:
-        text = report(argv[0] if argv else DEFAULT_BASE)
+        text = report(argv[0] if argv else DEFAULT_BRANCH)
     except Refused as refusal:
         print(f"rewording: {refusal}", file=sys.stderr)
         return 2
-    sys.stdout.write(text)
+    sys.stdout.write(text.encode("utf-8", "surrogateescape").decode("utf-8", "replace"))
     return 0
 
 
