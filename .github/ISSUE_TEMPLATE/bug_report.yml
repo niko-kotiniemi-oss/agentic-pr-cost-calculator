@@ -1,5 +1,5 @@
 name: Bug report
-description: Something the calculator does differently from its documentation
+description: Something the tool does differently from its documentation
 labels: [bug]
 body:
   - type: checkboxes
