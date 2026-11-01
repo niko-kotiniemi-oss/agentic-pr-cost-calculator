@@ -188,7 +188,7 @@ Every token count and request count SHALL be a whole number from zero up to a ce
 #### Scenario: A negative count is refused
 
 - **WHEN** a call's input tokens are negative
-- **THEN** no entry is recorded for that call
+- **THEN** no entry is recorded for that call, and the ledger counts one refused call
 
 #### Scenario: A count at the ceiling is recorded
 
@@ -485,7 +485,7 @@ A commit holds a ledger file in a worktree when the commit checked out there hol
 
 A command that gets no run after it (see "A ledger file that no commit takes is taken back"), because it was refused at a permission prompt or by a permission rule, blocked by another hook, cancelled or interrupted, SHALL have its file taken back the same way by any later run of the step in the repository, in that session or another, that finds the command over: by its result in a transcript, by a later call of the agent that ran it, by that agent having stopped, or by its session having ended.
 
-#### Scenario: A commit refused at a permission prompt or by a rule leaves nothing staged
+#### Scenario: A commit refused at a permission prompt or by a permission rule leaves nothing staged
 
 - **WHEN** the step has staged a ledger file for a `git commit` that is then refused at a permission prompt or by a permission rule, blocked by another hook, or cancelled, the transcript then holds that command's result, no commit has taken the file, and no other git command holds the index at the step's next run
 - **THEN** after that run, the ledger file is neither staged nor in the working tree, and a later commit on that branch in the worktree where the file was staged carries its calls

@@ -397,7 +397,7 @@ The assumptions SHALL be listed by the highest impact among the threats that res
 
 ### Requirement: The specs and pages use the glossary's words
 
-The repository SHALL keep a glossary that gives each term's meaning and the words to avoid for it. Tests SHALL fail when a tracked Markdown file uses a word to avoid outside code, and name the file, the line and the term to use. They SHALL NOT read the decision records, archived changes, released changelog entries, vendored or generated files, or titles that an accepted record quotes, which keep the words they were written with, and SHALL fail when such a title leaves the specs.
+The repository SHALL keep a glossary that gives each term's meaning and the words to avoid for it. Tests SHALL fail when a tracked Markdown file uses a word to avoid outside code, and name the file, the line and the term to use, and SHALL fail, naming the file, when such a file is a symbolic link, is not UTF-8 or opens a fenced code block that never closes, since they would not read all of it. They SHALL NOT read the decision records, archived changes, released changelog entries, vendored or generated files, or titles that an accepted record quotes, which keep the words they were written with, and SHALL fail when such a title leaves the specs.
 
 #### Scenario: An avoided word fails CI
 
@@ -419,6 +419,16 @@ The repository SHALL keep a glossary that gives each term's meaning and the word
 - **WHEN** a requirement's or a scenario's title that an accepted record quotes is changed or removed in the specs
 - **THEN** a test fails and names the record and the title
 
+#### Scenario: A title that only a new record quotes is read
+
+- **WHEN** a pull request adds a record whose status says accepted and that quotes a title holding a word to avoid
+- **THEN** a test fails and names the file, the line and the term to use, since only the records that the default branch holds keep the titles that they quote
+
+#### Scenario: A page that the test cannot read whole fails CI
+
+- **WHEN** a tracked Markdown file that the test reads is a symbolic link, is not UTF-8, or opens a fenced code block that never closes
+- **THEN** a test fails and names the file
+
 #### Scenario: A wording check that reads nothing fails CI
 
 - **WHEN** the glossary gives no word to avoid, or the test finds no file to read
@@ -426,7 +436,7 @@ The repository SHALL keep a glossary that gives each term's meaning and the word
 
 ### Requirement: Each term is defined once
 
-Tests SHALL fail when a glossary row gives no meaning, when two rows give the same term or the same word to avoid, and when a word that the glossary says to avoid is found in one of its terms.
+Tests SHALL fail when a glossary row gives no meaning, when two rows give the same term or the same word to avoid, and when a word that the glossary says to avoid is found in one of its terms or is the plural of one.
 
 #### Scenario: A glossary row without a meaning fails CI
 
@@ -435,7 +445,7 @@ Tests SHALL fail when a glossary row gives no meaning, when two rows give the sa
 
 #### Scenario: A term defined twice fails CI
 
-- **WHEN** two glossary rows give the same term or the same word to avoid, or a word to avoid is found in a term
+- **WHEN** two glossary rows give the same term or the same word to avoid, or a word to avoid is found in a term or is a term's plural
 - **THEN** a test fails and names the word
 
 ### Requirement: Every version reproduces the golden set
