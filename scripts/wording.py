@@ -2,8 +2,11 @@
 
 `tests/test_glossary.py` describes these rules and holds them (R137, R138; design
 decision 14). `scripts/rewording.py` reads with them when it compares a rewording with
-its base, so that the test and the script never read a page in two ways. Like the
-tool, this runs on Python 3.11 and later with the standard library alone.
+its base, so that the test and the script never read a page in two ways.
+`tests/test_decisions.py` finds the specs, their titles, the accepted records and their
+quotations with the same patterns, so that the two tests never tell a quoted title in
+two ways. Like the tool, this runs on Python 3.11 and later with the standard library
+alone.
 """
 
 from __future__ import annotations
@@ -18,6 +21,7 @@ from itertools import pairwise
 from pathlib import Path
 
 GLOSSARY = "docs/glossary.md"
+DEFAULT_BRANCH = "refs/remotes/origin/main"
 CHANGELOG = "CHANGELOG.md"
 HEADER = ["Term", "Meaning", "Words to avoid"]
 
@@ -35,12 +39,19 @@ ROW = re.compile(r"^\|.*\|\s*$")
 DELIMITER = re.compile(r"^\|(?:\s*:?-{3,}:?\s*\|)+\s*$")
 CELL_BORDER = re.compile(r"(?<!\\)\|")
 PLAIN_WORDS = re.compile(r"[^\W_]+(?:[ '-][^\W_]+)*")
-# A space in a word to avoid stands for spaces with at most one line break among them, so
-# that a word that a page wraps still fails, and one that a blank line splits does not.
-SPACE = r"(?:[ \t]+\n?|\n)[ \t]*"
-LINE_BREAK = re.compile(r"[ \t]*\n[ \t]*")
+# A space in a word to avoid stands for spaces, no-break spaces among them, with at most
+# one line break, so that a word that a page wraps still fails, and one that a blank line
+# splits does not. A run of them matches in one way only, so that no line, however long its
+# runs, makes the matching slow.
+SPACE = r"(?:[ \t\u00a0]+(?:\n[ \t\u00a0]*)?|\n[ \t\u00a0]*)"
+APOSTROPHE = "['\u2019]"
+# A letter or a digit: a word to avoid or a kept title ends where neither follows, so that
+# the underscores of emphasis hide neither.
+WORD = re.compile(r"[^\W_]")
+LINE_BREAK = re.compile(r"[ \t\u00a0]*\n[ \t\u00a0]*")
 FINAL_Y = re.compile(r"[b-df-hj-np-tv-z]y$", re.I)
-OPEN_FENCE = re.compile(r"^[ \t]*(`{3,}|~{3,})(.*)$")
+# A fence may open after the markers of list items, which leave its lines indented.
+OPEN_FENCE = re.compile(r"^[ \t]*(?:(?:[-*+]|\d{1,9}[.)])[ \t]+)*(`{3,}|~{3,})(.*)$")
 BACKTICKS = re.compile(r"`+")
 SECTION_HEADING = re.compile(r"^#{1,2} ")
 VERSION_HEADING = re.compile(r"^## \[\d+\.\d+\.\d+")
@@ -52,7 +63,6 @@ UNREAD = "\0"
 
 @dataclass(frozen=True)
 class Entry:
-    topic: str
     term: str
     meaning: str
     avoid: tuple[str, ...]
@@ -69,17 +79,17 @@ def cells(line: str) -> list[tuple[int, int]]:
 @functools.cache
 def pattern(word: str) -> re.Pattern[str]:
     """What a word to avoid matches in prose: itself or its plural, as a whole word in any
-    case."""
+    case, its apostrophe straight or curly."""
     *start, last = word.split(" ")
     if FINAL_Y.search(last):
         end = re.escape(last[:-1]) + "(?:y|ies)"
     else:
         end = re.escape(last) + "(?:e?s)?"
-    body = SPACE.join([*map(re.escape, start), end])
-    return re.compile(rf"(?<!\w){body}(?!\w)", re.IGNORECASE)
+    body = SPACE.join([*map(re.escape, start), end]).replace("'", APOSTROPHE)
+    return re.compile(rf"(?<![^\W_]){body}(?![^\W_])", re.IGNORECASE)
 
 
-def entry_of(topic: str, line: str, number: int) -> tuple[Entry | None, list[str]]:
+def entry_of(line: str, number: int) -> tuple[Entry | None, list[str]]:
     """The entry that a row gives, and what is wrong with its form."""
     spans = cells(line)
     if len(spans) != len(HEADER):
@@ -92,7 +102,7 @@ def entry_of(topic: str, line: str, number: int) -> tuple[Entry | None, list[str
         return None, [f"{GLOSSARY}:{number}: a row that gives no term"]
     words = [word.strip() for word in avoid.split(",") if word.strip()]
     plain = tuple(word for word in words if PLAIN_WORDS.fullmatch(word))
-    return Entry(topic, term, meaning, plain, number), [
+    return Entry(term, meaning, plain, number), [
         f'{GLOSSARY}:{number}: the word to avoid "{word}" is not plain words, so no prose'
         " could match it"
         for word in words
@@ -104,21 +114,35 @@ def glossary(text: str) -> tuple[list[Entry], list[str]]:
     """The glossary's entries, and what is wrong with its form."""
     entries: list[Entry] = []
     problems: list[str] = []
-    topic, opened, header, state = "", 0, 0, "prose"
+    topic, opened, header, state, rows = "", 0, 0, "prose", 0
+
+    def unfinished() -> list[str]:
+        """What is wrong with the topic that ends here: a table that it lacks, a header with
+        no delimiter row, or a table that holds no row."""
+        if state == "header":
+            return [f'{GLOSSARY}:{opened}: the topic "{topic}" holds no table']
+        if state == "delimiter":
+            return [
+                f'{GLOSSARY}:{header}: the header of the topic "{topic}" is not followed by a'
+                " delimiter row, such as |---|---|---|"
+            ]
+        if state in ("rows", "after") and not rows:
+            return [f'{GLOSSARY}:{opened}: the topic "{topic}" holds no row']
+        return []
+
     for number, line in enumerate(text.split("\n"), 1):
         heading = TOPIC.match(line)
         if heading:
-            if state == "header":
-                problems.append(f'{GLOSSARY}:{opened}: the topic "{topic}" holds no table')
-            topic, opened, state = heading[1], number, "header"
-        elif not line.strip():
-            if state == "delimiter":
-                problems.append(
-                    f'{GLOSSARY}:{header}: the header of the topic "{topic}" is not followed by'
-                    " a delimiter row, such as |---|---|---|"
-                )
+            problems += unfinished()
+            topic, opened, state, rows = heading[1], number, "header", 0
+        elif state == "delimiter":
+            if DELIMITER.match(line) and len(cells(line)) == len(HEADER):
+                state = "rows"
+            else:
+                problems += unfinished()
                 state = "skipped"
-            elif state == "rows":
+        elif not line.strip():
+            if state == "rows":
                 state = "after"
         elif state in ("prose", "skipped"):
             continue
@@ -131,18 +155,10 @@ def glossary(text: str) -> tuple[list[Entry], list[str]]:
                     f" header, | {' | '.join(HEADER)} |"
                 )
                 state = "skipped"
-        elif state == "delimiter":
-            if DELIMITER.match(line) and len(cells(line)) == len(HEADER):
-                state = "rows"
-            else:
-                problems.append(
-                    f'{GLOSSARY}:{header}: the header of the topic "{topic}" is not followed by'
-                    " a delimiter row, such as |---|---|---|"
-                )
-                state = "skipped"
         elif state == "rows" and ROW.match(line):
-            entry, found = entry_of(topic, line, number)
+            entry, found = entry_of(line, number)
             problems += found
+            rows += 1
             if entry is not None:
                 entries.append(entry)
         else:
@@ -150,9 +166,7 @@ def glossary(text: str) -> tuple[list[Entry], list[str]]:
                 f'{GLOSSARY}:{number}: a line under the topic "{topic}" that is not one of its'
                 " table's rows"
             )
-    if state == "header":
-        problems.append(f'{GLOSSARY}:{opened}: the topic "{topic}" holds no table')
-    return entries, problems
+    return entries, problems + unfinished()
 
 
 def same(word: str, other: str) -> bool:
@@ -163,7 +177,7 @@ def same(word: str, other: str) -> bool:
 
 def entry_problems(entries: list[Entry]) -> list[str]:
     """An entry without a meaning, a term or a word to avoid given twice, and a word to
-    avoid found in a term."""
+    avoid found in a term or given as a term's plural."""
     found: list[tuple[int, str]] = []
     terms: dict[str, int] = {}
     given: list[tuple[str, int]] = []
@@ -186,26 +200,41 @@ def entry_problems(entries: list[Entry]) -> list[str]:
                     )
                 )
             given.append((word, entry.line))
-    found += [
-        (line, f'the word to avoid "{word}" is found in the term "{entry.term}"')
-        for word, line in given
-        for entry in entries
-        if pattern(word).search(entry.term)
-    ]
+    for word, line in given:
+        for entry in entries:
+            if pattern(word).search(entry.term):
+                found.append(
+                    (line, f'the word to avoid "{word}" is found in the term "{entry.term}"')
+                )
+            elif pattern(entry.term).fullmatch(word):
+                found.append(
+                    (line, f'the word to avoid "{word}" is the plural of the term "{entry.term}"')
+                )
     return [
         f"{GLOSSARY}:{line}: {message}" for line, message in sorted(found, key=lambda each: each[0])
     ]
 
 
+def git(root: Path, *args: str) -> subprocess.CompletedProcess[bytes]:
+    """A git command run in this repository, which may fail."""
+    return subprocess.run(["git", *args], cwd=root, capture_output=True, check=False)
+
+
+def shown(root: Path, *args: str) -> str:
+    """What a git command prints in this repository. Raises CalledProcessError when it
+    fails."""
+    done = git(root, *args)
+    done.check_returncode()
+    return done.stdout.decode("utf-8", "surrogateescape")
+
+
 def read_files(root: Path) -> list[str]:
-    """The Markdown files that git tracks and this test reads, as the working tree has them."""
-    listing = subprocess.run(
-        ["git", "ls-files", "-z", "--", *MARKDOWN], cwd=root, capture_output=True, check=True
-    )
+    """The Markdown files that git tracks and this test reads, as the working tree has them,
+    a symbolic link among them, to be named rather than followed."""
     return [
         path
-        for path in listing.stdout.decode("utf-8").split("\0")
-        if path and not KEPT.match(path) and (root / path).is_file()
+        for path in shown(root, "ls-files", "-z", "--", *MARKDOWN).split("\0")
+        if path and not KEPT.match(path) and ((root / path).is_symlink() or (root / path).is_file())
     ]
 
 
@@ -221,19 +250,32 @@ def quoted_titles(specs: Iterable[str], records: Iterable[str]) -> frozenset[str
     return frozenset(titles & quoted)
 
 
-def kept_titles(root: Path) -> frozenset[str]:
-    """The titles in the working tree's specs that an accepted record quotes."""
+def kept_at(root: Path, commit: str) -> frozenset[str]:
+    """The titles in a commit's specs that one of its accepted records quotes. Where HEAD
+    left the default branch, these are the titles that the default branch's records keep.
+    Raises CalledProcessError when git cannot read the commit."""
+    listing = shown(
+        root,
+        "ls-tree",
+        "-r",
+        "-z",
+        "--name-only",
+        "--full-tree",
+        commit,
+        "--",
+        "openspec",
+        "docs/decisions",
+    )
+    paths = listing.split("\0")
 
-    def texts(pattern: str, named: re.Pattern[str]) -> list[str]:
+    def texts(named: re.Pattern[str]) -> list[str]:
         return [
-            path.read_text(encoding="utf-8")
-            for path in sorted(root.glob(pattern))
-            if named.fullmatch(path.relative_to(root).as_posix())
+            shown(root, "cat-file", "blob", f"{commit}:{path}")
+            for path in paths
+            if named.fullmatch(path)
         ]
 
-    return quoted_titles(
-        texts("openspec/**/spec.md", SPEC_FILE), texts("docs/decisions/*.md", RECORD_FILE)
-    )
+    return quoted_titles(texts(SPEC_FILE), texts(RECORD_FILE))
 
 
 def hide(chars: list[str], start: int, end: int) -> None:
@@ -309,9 +351,15 @@ def readable(path: str, text: str, kept: frozenset[str]) -> tuple[str, list[tupl
         for entry in glossary(text)[0]:
             start, end = cells(lines[entry.line - 1])[2]
             hide(chars, starts[entry.line - 1] + start, starts[entry.line - 1] + end)
-    for title in sorted(kept):
-        for match in re.finditer(rf"(?<!\w){re.escape(title)}(?!\w)", text):
-            hide(chars, match.start(), match.end())
+    for title in kept:
+        at = text.find(title)
+        while at != -1:
+            end = at + len(title)
+            if (at and WORD.match(text, at - 1)) or WORD.match(text, end):
+                at = text.find(title, at + 1)
+            else:
+                hide(chars, at, end)
+                at = text.find(title, end)
     return "".join(chars), unclosed
 
 
@@ -344,7 +392,18 @@ def word_problems(
     that never closes."""
     found: list[tuple[str, int, int, str]] = []
     for path in files:
-        text = (root / path).read_text(encoding="utf-8")
+        named = path.encode("utf-8", "surrogateescape").decode("utf-8", "replace")
+        if named != path:
+            found.append((named, 0, 0, f"{named}: a path that is not UTF-8, so it was not read"))
+            continue
+        if (root / path).is_symlink():
+            found.append((path, 0, 0, f"{path}: is a symbolic link, so it was not read"))
+            continue
+        try:
+            text = (root / path).read_text(encoding="utf-8")
+        except UnicodeDecodeError:
+            found.append((path, 0, 0, f"{path}: is not UTF-8, so it was not read"))
+            continue
         words, unclosed = readable(path, text, kept)
         starts = line_starts(text)
         for start, end, _word, term in found_words(words, entries):
@@ -367,5 +426,15 @@ def problems_in(root: Path) -> list[str]:
         problems.append(f"{GLOSSARY} gives no word to avoid, so no word was checked")
     files = read_files(root)
     if not files:
-        problems.append("no tracked Markdown file was read, so no word was checked")
-    return problems + word_problems(root, entries, files, kept_titles(root))
+        return [*problems, "no tracked Markdown file was read, so no word was checked"]
+    base = git(root, "merge-base", "HEAD", DEFAULT_BRANCH)
+    if base.returncode:
+        problems.append(
+            f"cannot find where HEAD left {DEFAULT_BRANCH}, so no title that a record quotes"
+            " was kept: fetch the default branch, with all of its history if this clone is"
+            " shallow"
+        )
+        kept: frozenset[str] = frozenset()
+    else:
+        kept = kept_at(root, base.stdout.decode("utf-8").strip())
+    return problems + word_problems(root, entries, files, kept)

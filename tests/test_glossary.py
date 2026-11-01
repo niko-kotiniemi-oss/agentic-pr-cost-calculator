@@ -6,30 +6,45 @@ prose of every Markdown file that git tracks and fails on each word to avoid tha
 it finds, naming the file, the line and the term to use. A word to avoid is
 matched as a whole word in any case, and so is its plural, which adds "s" or "es"
 or, after a consonant, turns a final "y" into "ies". Where a word to avoid has a
-space, the page may break the line instead, so that a wrapped line hides no word.
+space, the page may break the line or use a no-break space instead, and where it
+has an apostrophe, the page may curl it, so that neither hides the word; nor does
+emphasis, since a word ends only where no letter or digit follows it. The space
+between a word's words is matched in one way only, so that no page, however long
+its runs of spaces, makes this test slow.
 
 Prose is the text that a reader reads as words. Inline code and fenced code
 blocks give names, commands, paths and snippets as they must be typed, so a word
 inside them keeps its spelling (T90). A code span is read on its own line, so one
-that wraps onto the next line is read as prose, and a fence that never closes is
-reported, since it would leave the rest of its file unread. Some files keep the
-words that they were written with and are not read: the records' folder, since
-an accepted record changes only to be closed (DR-121) and the index gives each
-record's title as the record has it; the archived changes; the changelog's
-released entries, which are the sections under a version's heading; the vendored
-files; and the skills that OpenSpec generates. A requirement's or a scenario's
-title that an accepted record quotes keeps its words wherever it appears, and
-`tests/test_decisions.py` fails when such a title leaves the specs. In the
-glossary itself, every column but the words to avoid is read. The rules are in
-`scripts/wording.py`, which `scripts/rewording.py` reads with too, so that this
+that wraps onto the next line is read as prose. A fence may open after a list
+item's marker, and closes only on a run of its own character as long as the one
+that opened it or longer. A file that this test cannot read whole fails, named: a
+fence that never closes, which would leave the rest of its file unread; a symbolic
+link, which is not followed; and a file or a path that is not UTF-8.
+
+Some files keep the words that they were written with and are not read: the
+records' folder, since an accepted record changes only to be closed (DR-121) and
+the index gives each record's title as the record has it; the archived changes;
+the changelog's released entries, which are the sections under a version's
+heading; the vendored files; and the skills that OpenSpec generates. A version's
+heading that a pull request adds hides what follows it, up to the next heading,
+as a released entry would, though no tag says that the version was released: the
+pull request's diff shows that heading to its review. A requirement's or a
+scenario's title that an accepted record quotes keeps its words wherever it
+appears, and `tests/test_decisions.py` fails when such a title leaves the specs.
+The titles kept are those of the records and the specs where HEAD left the
+default branch, so that a record that a pull request adds keeps no title's words;
+a check that cannot find where HEAD left it keeps none, and fails saying so. In
+the glossary itself, every column but the words to avoid is read. The rules are
+in `scripts/wording.py`, which `scripts/rewording.py` reads with too, so that this
 test and the script never read a page in two ways.
 
 Each entry gives a term and a meaning, no term or word to avoid is given twice,
-and no word to avoid is found in a term. Each concept that a rule tells apart
-from another has a term of its own, so that listing one as a word to avoid for
-the other fails here (T94). Each topic is one table, and a line under a topic
-that is not one of its rows is reported, so that no row goes unread. A check
-that reads no file, or no word to avoid, fails.
+and no word to avoid is found in a term or is a term's plural. Each concept that
+a rule tells apart from another has a term of its own, so that listing one as a
+word to avoid for the other fails here (T94). Each topic is one table, with its
+header, its delimiter row and at least one row, and a line under a topic that is
+not one of its rows is reported, so that no row goes unread. A check that reads
+no file, or no word to avoid, fails.
 """
 
 from __future__ import annotations
@@ -37,15 +52,18 @@ from __future__ import annotations
 import os
 import re
 import subprocess
+import time
 from pathlib import Path
 
 import pytest
 from wording import (
     CHANGELOG,
+    DEFAULT_BRANCH,
     GLOSSARY,
     entry_problems,
     glossary,
-    kept_titles,
+    kept_at,
+    pattern,
     problems_in,
     read_files,
 )
@@ -69,6 +87,10 @@ GIT_ENVIRONMENT = {
     **os.environ,
     "GIT_CONFIG_GLOBAL": os.devnull,
     "GIT_CONFIG_NOSYSTEM": "1",
+    "GIT_AUTHOR_NAME": "Test",
+    "GIT_AUTHOR_EMAIL": "test@example.com",
+    "GIT_COMMITTER_NAME": "Test",
+    "GIT_COMMITTER_EMAIL": "test@example.com",
 }
 
 GLOSSARY_TEXT = (
@@ -139,17 +161,31 @@ def git(root: Path, *args: str) -> None:
     subprocess.run(["git", *args], cwd=root, check=True, env=GIT_ENVIRONMENT)
 
 
-def repository(root: Path, changes: dict[str, str | None] | None = None) -> Path:
-    """The passing repository with some files changed or, given None, removed, all of
-    them tracked."""
-    files = {**PASSING, **(changes or {})}
+def write(root: Path, files: dict[str, str | None]) -> None:
+    """Write these files, leaving out each given None."""
     for path, text in files.items():
         if text is None:
             continue
         target = root / path
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text(text, encoding="utf-8")
+
+
+def repository(root: Path, changes: dict[str, str | None] | None = None) -> Path:
+    """The passing repository with some files changed or, given None, removed, all of
+    them committed on the default branch, where HEAD is."""
+    write(root, {**PASSING, **(changes or {})})
     git(root, "init", "-q")
+    git(root, "add", "-A")
+    git(root, "commit", "-q", "-m", "The default branch")
+    git(root, "update-ref", DEFAULT_BRANCH, "HEAD")
+    return root
+
+
+def added(root: Path, files: dict[str, str | None]) -> Path:
+    """The repository with these files written and added after the default branch, as a
+    pull request adds them."""
+    write(root, files)
     git(root, "add", "-A")
     return root
 
@@ -262,6 +298,46 @@ def test_a_backtick_without_its_pair_on_its_line_is_read_as_prose(tmp_path: Path
     ]
 
 
+def test_a_word_between_two_code_spans_is_read(tmp_path: Path) -> None:
+    page = "Run `git add`, then the calculator counts, then `git commit`.\n"
+    assert problems_in(repository(tmp_path, {"docs/page.md": page})) == [
+        f"docs/page.md:1: {CALCULATOR}"
+    ]
+
+
+def test_a_code_span_closes_only_on_a_run_of_its_own_length(tmp_path: Path) -> None:
+    page = "Code `a `` the calculator `` b` here, and the calculator in prose.\n"
+    problems = problems_in(repository(tmp_path, {"docs/page.md": page}))
+    assert problems == [f"docs/page.md:1: {CALCULATOR}"]
+
+
+def test_a_fence_closes_on_a_longer_run_of_its_character(tmp_path: Path) -> None:
+    page = "```\nthe calculator\n`````\nthe calculator\n"
+    assert problems_in(repository(tmp_path, {"docs/page.md": page})) == [
+        f"docs/page.md:4: {CALCULATOR}"
+    ]
+
+
+def test_a_fence_that_opens_after_a_list_item_s_marker_is_code(tmp_path: Path) -> None:
+    page = (
+        "- ```bash\n"
+        "  the calculator\n"
+        "  ```\n"
+        "\n"
+        "The calculator between the blocks.\n"
+        "\n"
+        "1. ~~~\n"
+        "   a capture hook\n"
+        "   ~~~\n"
+        "\n"
+        "The calculator after them.\n"
+    )
+    assert problems_in(repository(tmp_path, {"docs/page.md": page})) == [
+        'docs/page.md:5: "The calculator" is a word to avoid; use "the tool"',
+        'docs/page.md:11: "The calculator" is a word to avoid; use "the tool"',
+    ]
+
+
 @pytest.mark.parametrize(
     ("prose", "found", "term"),
     [
@@ -271,6 +347,9 @@ def test_a_backtick_without_its_pair_on_its_line_is_read_as_prose(tmp_path: Path
         ("two capture hooks", "capture hooks", "capture step"),
         ("the branch switches", "branch switches", "a change of branch"),
         ("two git directories", "git directories", "git common directory"),
+        ("_the calculator_", "the calculator", "the tool"),
+        ("__the calculator__", "the calculator", "the tool"),
+        ("the\u00a0calculator", "the\u00a0calculator", "the tool"),
     ],
 )
 def test_a_word_to_avoid_in_any_case_or_plural_fails(
@@ -300,6 +379,25 @@ def test_a_word_to_avoid_that_a_line_break_splits_fails(tmp_path: Path) -> None:
         f"docs/page.md:1: {CALCULATOR}",
         f"docs/page.md:2: {CAPTURE_HOOK}",
     ]
+
+
+def test_a_word_to_avoid_with_a_curly_apostrophe_fails(tmp_path: Path) -> None:
+    text = GLOSSARY_TEXT.replace("| branch switch |", "| branch switch, the person's switch |")
+    root = repository(tmp_path, {GLOSSARY: text, "docs/page.md": "Of the person\u2019s switch.\n"})
+    assert problems_in(root) == [
+        'docs/page.md:1: "the person\u2019s switch" is a word to avoid; use "a change of branch"'
+    ]
+
+
+@pytest.mark.parametrize(
+    "line",
+    ["common" + " " * 30 + "git" + " " * 10_000 + "x", "the" + " " * 30_000 + "x"],
+)
+def test_a_line_made_to_slow_the_matching_is_read_quickly(line: str) -> None:
+    started = time.perf_counter()
+    found = [pattern(word).search(line) for word in ("common git directory", "the calculator")]
+    assert found == [None, None]
+    assert time.perf_counter() - started < 1
 
 
 def test_a_word_to_avoid_that_a_longer_one_holds_is_named_once(tmp_path: Path) -> None:
@@ -350,6 +448,48 @@ def test_a_quotation_that_is_no_title_is_not_kept(tmp_path: Path) -> None:
     )
 
 
+def test_a_title_quoted_with_its_sentence_s_punctuation_is_kept(tmp_path: Path) -> None:
+    record = ACCEPTED_RECORD.replace('"The calculator says so"', '"The calculator says so,"')
+    assert kept_at(repository(tmp_path, {RECORD: record}), "HEAD") == {"The calculator says so"}
+
+
+def test_a_kept_title_inside_a_longer_word_is_read(tmp_path: Path) -> None:
+    page = 'It follows "The calculator says soon".\n'
+    assert problems_in(repository(tmp_path, {"docs/page.md": page})) == [
+        'docs/page.md:1: "The calculator" is a word to avoid; use "the tool"'
+    ]
+
+
+def test_a_title_that_only_a_new_record_quotes_is_read(tmp_path: Path) -> None:
+    root = repository(tmp_path)
+    spec = PASSING["openspec/changes/demo/specs/thing/spec.md"]
+    new = "#### Scenario: The calculator counts\n\n- **WHEN** it counts\n- **THEN** it works\n"
+    record = ACCEPTED_RECORD.replace("# DR-001: The calculator is built", "# DR-002: It counts")
+    added(
+        root,
+        {
+            "openspec/changes/demo/specs/thing/spec.md": spec + "\n" + new,
+            "docs/decisions/DR-002-it-counts.md": record.replace("says so", "counts"),
+        },
+    )
+    assert problems_in(root) == [
+        'openspec/changes/demo/specs/thing/spec.md:12: "The calculator" is a word to avoid;'
+        ' use "the tool"'
+    ]
+
+
+def test_a_check_that_cannot_find_the_default_branch_keeps_no_title(tmp_path: Path) -> None:
+    root = repository(tmp_path)
+    git(root, "update-ref", "-d", DEFAULT_BRANCH)
+    problems = problems_in(root)
+    assert problems[0].startswith(f"cannot find where HEAD left {DEFAULT_BRANCH}")
+    assert problems[1:] == [
+        'docs/threat-model.md:1: "The calculator" is a word to avoid; use "the tool"',
+        'openspec/changes/demo/specs/thing/spec.md:7: "The calculator" is a word to avoid;'
+        ' use "the tool"',
+    ]
+
+
 def test_the_titles_kept_are_those_in_the_specs_that_an_accepted_record_quotes(
     tmp_path: Path,
 ) -> None:
@@ -371,7 +511,7 @@ def test_the_titles_kept_are_those_in_the_specs_that_an_accepted_record_quotes(
             "docs/page.md": "#### Scenario: The calculator is not in a spec\n",
         },
     )
-    assert kept_titles(root) == {
+    assert kept_at(root, "HEAD") == {
         "The calculator says so",
         "The calculator is gone",
         "The calculator is held",
@@ -398,6 +538,11 @@ def test_the_titles_kept_are_those_in_the_specs_that_an_accepted_record_quotes(
         (
             "| another | Other. | change of branch |",
             'the word to avoid "change of branch" is found in the term "a change of branch"',
+        ),
+        (
+            "| another | Other. | Git Common Directories |",
+            'the word to avoid "Git Common Directories" is the plural of the term'
+            ' "git common directory"',
         ),
     ],
 )
@@ -493,6 +638,34 @@ def test_a_topic_without_a_table_fails() -> None:
     assert problems == [f'{GLOSSARY}:20: the topic "Empty" holds no table']
 
 
+NO_DELIMITER = (
+    'the header of the topic "Empty" is not followed by a delimiter row, such as |---|---|---|'
+)
+
+
+NEXT = "\n## Next\n" + TABLE[12:] + "| next | The next. | |\n"
+
+
+@pytest.mark.parametrize("after", ["", NEXT])
+def test_a_header_that_a_heading_or_the_end_follows_fails(after: str) -> None:
+    text = GLOSSARY_TEXT + "\n## Empty\n\n| Term | Meaning | Words to avoid |" + after
+    _, problems = glossary(text)
+    assert problems == [f"{GLOSSARY}:22: {NO_DELIMITER}"]
+
+
+@pytest.mark.parametrize("after", ["", "\n", NEXT, "\n" + NEXT])
+def test_a_table_that_holds_no_row_fails(after: str) -> None:
+    text = GLOSSARY_TEXT + "\n## Empty\n\n| Term | Meaning | Words to avoid |\n|---|---|---|"
+    _, problems = glossary(text + after)
+    assert problems == [f'{GLOSSARY}:20: the topic "Empty" holds no row']
+
+
+def test_an_escaped_pipe_is_part_of_its_cell() -> None:
+    entries, problems = glossary(GLOSSARY_TEXT.replace("Every ledger file.", "A \\| B."))
+    assert problems == []
+    assert entries[-1].meaning == "A \\| B."
+
+
 def test_a_glossary_that_gives_no_word_to_avoid_fails(tmp_path: Path) -> None:
     text = GLOSSARY_TEXT
     for words in ("the calculator, the product", "capture hook", "branch switch", "git directory"):
@@ -527,6 +700,33 @@ def test_a_tracked_page_removed_from_the_working_tree_is_not_read(tmp_path: Path
     (root / "docs" / "page.md").unlink()
     assert "docs/page.md" not in read_files(root)
     assert problems_in(root) == []
+
+
+def test_a_page_that_is_a_symbolic_link_fails_and_is_not_followed(tmp_path: Path) -> None:
+    outside = tmp_path / "outside.md"
+    outside.write_text("The calculator, outside the repository.\n", encoding="utf-8")
+    root = repository(tmp_path / "repository")
+    (root / "docs" / "linked.md").symlink_to(outside)
+    (root / "docs" / "dangling.md").symlink_to(tmp_path / "missing.md")
+    added(root, {})
+    assert problems_in(root) == [
+        "docs/dangling.md: is a symbolic link, so it was not read",
+        "docs/linked.md: is a symbolic link, so it was not read",
+    ]
+
+
+def test_a_page_that_is_not_utf_8_fails(tmp_path: Path) -> None:
+    root = repository(tmp_path)
+    (root / "docs" / "latin.md").write_bytes(b"Caf\xe9, the calculator.\n")
+    added(root, {})
+    assert problems_in(root) == ["docs/latin.md: is not UTF-8, so it was not read"]
+
+
+def test_a_path_that_is_not_utf_8_fails(tmp_path: Path) -> None:
+    root = repository(tmp_path)
+    (root / "docs" / os.fsdecode(b"caf\xe9.md")).write_text("The calculator.\n")
+    added(root, {})
+    assert problems_in(root) == ["docs/caf\ufffd.md: a path that is not UTF-8, so it was not read"]
 
 
 def test_the_repository_s_files_are_read() -> None:

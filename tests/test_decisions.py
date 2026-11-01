@@ -72,10 +72,10 @@ from datetime import UTC, date, datetime
 from pathlib import Path
 
 import pytest
+from wording import ACCEPTED, DEFAULT_BRANCH, QUOTATION, SPEC_FILE, SPEC_TITLE
 
 ROOT = Path(__file__).resolve().parents[1]
 DECISIONS = Path("docs") / "decisions"
-DEFAULT_BRANCH = "refs/remotes/origin/main"
 REMOVED = "[removed]"
 
 FIELDS = ("Type", "Status", "Decided by", "Requirements", "Threats", "Replaces", "Closed by")
@@ -156,12 +156,9 @@ TASK_NUMBERS = r"[0-9]+\.[0-9]+(?:(?:,? and |,? or |, | to )[0-9]+\.[0-9]+)*"
 TASK_MENTION = re.compile(rf"\b[Tt]asks? ({TASK_NUMBERS})(?: of `([a-z0-9-]+)`)?")
 CHANGE_TASK = re.compile(rf"`([a-z0-9-]+)` tasks? ({TASK_NUMBERS})")
 TASK_LINE = re.compile(r"^- \[[ x]\] ([0-9]+\.[0-9]+) ", re.M)
-# The specs are `openspec/specs/` and the active changes; an archived copy holds nothing.
-SPEC_FILE = re.compile(r"openspec/(?:specs/[^/]+|changes/(?!archive/)[^/]+/specs/[^/]+)/spec\.md")
-SPEC_TITLE = re.compile(r"^#{3,4} (?:Requirement|Scenario): (.+?)\s*$", re.M)
+# Which specs, titles, quotations and records count is `scripts/wording.py`'s, so that this
+# check and the wording test agree on the titles that the records keep.
 REMOVED_SECTION = re.compile(r"^## REMOVED Requirements\s*$.*?(?=^## |\Z)", re.M | re.S)
-QUOTATION = re.compile(r'"([^"\n]+?)[.,;:]?"')
-ACCEPTED = re.compile(r"^- \*\*Status:\*\* accepted$", re.M)
 # What makes git or GitHub show a file's diff otherwise: git's `diff`, the `binary` macro
 # that unsets it, and `linguist-generated`, with which GitHub hides a diff by default.
 DIFF_ATTRIBUTES = {"binary", "diff", "linguist-generated"}
@@ -2115,6 +2112,13 @@ def test_a_title_that_only_a_closed_record_quotes_may_leave_the_specs(tmp_path: 
     spec.write_text(spec.read_text().replace("It says so", "It says that"))
     commit(tmp_path)
     assert titles_compared(tmp_path) == ([], 0)
+
+
+def test_a_title_after_a_removed_section_stays_in_the_specs(tmp_path: Path) -> None:
+    spec = spec_repository(tmp_path, "It says so")
+    spec.write_text("## REMOVED Requirements\n\n### Requirement: Gone\n\n" + spec.read_text())
+    commit(tmp_path)
+    assert titles_compared(tmp_path) == ([], 1)
 
 
 def test_a_title_that_no_base_held_is_not_compared(tmp_path: Path) -> None:
