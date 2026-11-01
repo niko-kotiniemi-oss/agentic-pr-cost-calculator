@@ -36,7 +36,9 @@ Each line links the decision record that leaves it out. A later version may add 
 - [Features](docs/features/README.md): one page per feature, with its expected behaviour, its requirements and how it is validated.
 - [Requirements](docs/requirements.md): every functional, behavioural and non-functional requirement, indexed to the specs that hold them.
 - [Threat model](docs/threat-model.md): what could go wrong, each threat rated for impact and likelihood, and what answers it.
+- [Assumptions](docs/assumptions/README.md): what the design assumes about what lies outside the tool's own code, and how each of those facts is checked.
 - [Decisions](docs/decisions/README.md): one record per decision, with why it was made, what else was considered and what reversing it would change.
+- [Glossary](docs/glossary.md): the words that the pages use, each with its meaning and the words to avoid for it.
 - [Changelog](CHANGELOG.md).
 
 ## Compatibility and releases
