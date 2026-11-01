@@ -1,4 +1,4 @@
-# The usage ledger
+# The ledger
 
 The ledger is a set of small files under `.pr-cost/ledger/` that the agent's commits add. It carries the counts to the pull request, and after the merge it stays on the default branch as the pull request's record, so that every reported cost can be recomputed.
 

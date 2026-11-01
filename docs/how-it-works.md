@@ -1,18 +1,18 @@
 # How it works
 
-This page explains the calculator as one product: what goes in, what comes out, how a cost is computed and from where, each flow, and every credential, permission and outside connection it uses. A developer who reads it should know what the tool does, and should treat anything it does that this page leaves out as a defect.
+This page explains the tool as a whole: what goes in, what comes out, how a cost is computed and from where, each flow, and every credential, permission and outside connection it uses. A developer who reads it should know what the tool does, and should treat anything it does that this page leaves out as a defect.
 
-The calculator is designed and not built yet, so this page describes the design in `openspec/changes/add-pr-cost-calculator/`. It changes in the same pull request as what it describes, and `tests/test_documentation.py` checks it against the workflows.
+The tool is designed and not built yet, so this page describes the design in `openspec/changes/add-pr-cost-calculator/`. It changes in the same pull request as what it describes, and `tests/test_documentation.py` checks it against the workflows.
 
 ## In one paragraph
 
-A hook in each Claude Code session reads the session's transcript, keeps the token counts of the model calls made from this repository, and holds them in the repository's git directory. Just before the agent commits, it writes the waiting counts into a new ledger file and stages it, so the agent's own commit carries it. When the pull request merges, a GitHub Actions workflow reads the ledger files that the merge added, prices them from the dated price table at the tool's own commit, adds the CI minutes of the pull request's own commits from GitHub's jobs API, and posts one comment. The ledger stays in the repository as the record.
+A hook in each Claude Code session reads the session's transcript, keeps the token counts of the model calls made from this repository, and holds them in the repository's git common directory. Just before the agent commits, it writes the waiting counts into a new ledger file and stages it, so the agent's own commit carries it. When the pull request merges, a GitHub Actions workflow reads the ledger files that the merge added, prices them from the dated price table at the tool's own commit, adds the CI minutes of the pull request's own commits from GitHub's jobs API, and posts one comment. The ledger stays in the repository as the record.
 
 ## Parts
 
 | Part | Where it runs | Reads | Writes |
 |---|---|---|---|
-| Capture hook, one standard-library Python file | The machine running the Claude Code session | The session's and its subagents' transcripts; the hook's input from Claude Code; `.pr-cost.json` in the working tree; `pr-cost.capture` in the person's global git configuration; the repository's git state | Its store in the git common directory; one ledger file per commit under `.pr-cost/ledger/`, staged; nothing else |
+| Capture step, one standard-library Python file | The machine running the Claude Code session | The session's and its subagents' transcripts; the hook's input from Claude Code; `.pr-cost.json` in the working tree; `pr-cost.capture` in the person's global git configuration; the repository's git state | Its store in the git common directory; one ledger file per commit under `.pr-cost/ledger/`, staged; nothing else |
 | Store | Inside the repository's git common directory (`git rev-parse --git-common-dir`), outside the working tree and shared by its worktrees | Written and read by the hook only | Never committed |
 | Ledger files | `.pr-cost/ledger/<YYYY-MM>/<random>.jsonl`, committed with the agent's work | Counts per call, never content | Written once, never changed |
 | Configuration | `.pr-cost.json` at the repository root | `enabled` | Changed only by a pull request |
@@ -225,7 +225,7 @@ Each job of each workflow in this repository, with the permissions it is granted
 
 | From | To | Protocol | Why | Credential |
 |---|---|---|---|---|
-| Capture hook | Nothing | None | The hook opens no network connection. | None |
+| Capture step | Nothing | None | The hook opens no network connection. | None |
 | Report | GitHub's REST API, at the host in `GITHUB_API_URL` (`api.github.com` on github.com) | HTTPS | Find the merged pull request, list its runs and jobs, post or update its comment | `GITHUB_TOKEN` |
 | Report | GitHub, by git, through `actions/checkout` and `git fetch` | HTTPS | Fetch the tool's own code at its commit, and the adopter's repository to read as data: the default branch's history up to the push's commit and the pull request's head as `refs/pull/<number>/head` | `GITHUB_TOKEN` |
 | Release workflow | GitHub's REST API | HTTPS | Create the release and upload the bill of materials | `GITHUB_TOKEN` |
@@ -248,7 +248,7 @@ As designed, the hook reads `CLAUDE_PROJECT_DIR`, `HOME`, `XDG_CONFIG_HOME` and 
 ## What it never does
 
 - Record or publish a prompt, a response, code, a file's contents, a tool's name, a path, a branch name, a user name, a session identifier or a time of day.
-- Record the usage of anyone who has not turned capture on for themselves. For them, the store in their own git directory notes only that a run found capture off, and nothing in it leaves that directory.
+- Record the usage of anyone who has not turned capture on for themselves. For them, the store in their own git common directory notes only that a run found capture off, and nothing in it leaves that directory.
 - Send anything from the session's machine anywhere. The ledger leaves the machine only in the person's own commits, when they push.
 - Run, import or install anything from the pull request it reports on.
 - Write to the repository, beyond the ledger file staged for the agent's own commit.

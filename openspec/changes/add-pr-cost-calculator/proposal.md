@@ -6,12 +6,12 @@ Teams that build pull requests with AI coding agents can see what a pull request
 
 ## What Changes
 
-- A capture step for Claude Code, run by session hooks. It records each model call's token counts, model, price attributes, UTC day and activity type, and adds them to the agent's own commits as small usage ledger files. It records only calls made while the session's working directory is in the repository, and only for people who have turned it on for themselves. It records counts only, never prompts, code, tool names or transcript text.
+- A capture step for Claude Code, run by session hooks. It records each model call's token counts, model, price attributes, UTC day and activity type, and adds them to the agent's own commits as small ledger files. It records only calls made while the session's working directory is in the repository, and only for people who have turned it on for themselves. It records counts only, never prompts, code, tool names or transcript text.
 - A dated price table in this repository, for model tokens by type and for GitHub Actions minutes by runner. A cost uses the price that applied on the day the usage happened.
-- A cost step that turns the ledger and the CI jobs that ran on the pull request's own commits into a cost per model, per token type, per activity type and in total, applying the price modifiers the price table lists.
-- A report at merge: one short comment on the pull request, posted by a workflow that runs on the push a merge makes to the default branch. The usage ledger stays in the repository as the pull request's record, and the report writes nothing else.
+- A report that turns the ledger and the CI jobs that ran on the pull request's own commits into a cost per model, per token type, per activity type and in total, applying the price modifiers the price table lists.
+- A report at merge: one short comment on the pull request, posted by a workflow that runs on the push a merge makes to the default branch. The ledger stays in the repository as the pull request's record, and the report writes nothing else.
 - A switch in one configuration file that turns the tool on or off for a repository. The report reads it from before the merge as well as after, so a pull request cannot turn off its own report.
-- Code is Python, standard library only, supporting Python 3.11 and every later release, with synthetic test fixtures. It is delivered as a session hook script and a GitHub Actions workflow other repositories can use.
+- Code is Python, standard library only, supporting Python 3.11 and every later release, with synthetic test fixtures. It is delivered as a hook file for Claude Code sessions and a GitHub Actions workflow other repositories can use.
 - A threat model, `docs/threat-model.md`, which every later change revisits. Each threat's answer is a scenario in these specs wherever it can be one, so an acceptance test holds it.
 - Each threat rated for impact and likelihood, from 1 to 3, with a risk matrix, and the threat model revisited by an independent review at design and again at implementation (design decision 9).
 - Releases by semantic version from a tag, each with a CycloneDX bill of materials, and dependency updates that keep the oldest supported Python unless it nears its end of life or a security fix needs a newer one (design decisions 10 and 11).
@@ -23,7 +23,7 @@ Teams that build pull requests with AI coding agents can see what a pull request
 
 ## Capabilities
 
-The tool is one product made of nine capabilities, each one spec. Seven are the features that turn a pull request's work into its cost, one is what the tool runs on and how it is released, and one holds the standards for the whole product. Each has a page in `docs/features/` that names its requirements and says how it is validated, and `docs/how-it-works.md` shows how they fit together.
+The tool is made of nine capabilities, each one spec. Seven are the features that turn a pull request's work into its cost, one is what the tool runs on and how it is released, and one holds the standards for the whole tool. Each has a page in `docs/features/` that names its requirements and says how it is validated, and `docs/how-it-works.md` shows how they fit together.
 
 ### New Capabilities
 
@@ -35,7 +35,7 @@ The tool is one product made of nine capabilities, each one spec. Seven are the 
 - `ci-minutes`: the cost of the GitHub Actions minutes that the pull request's own commits used.
 - `report-comment`: the one comment a merged pull request gets, and the trusted code that computes it.
 - `releases-and-compatibility`: the Python and git versions the tool supports, how its dependencies move, and its releases with their bill of materials.
-- `project-standards`: what holds for the whole product: documentation that names everything the tool does, the tool's connections, rated threats, pull request text without private references, pinned actions, a record of each decision, the assumptions that the design rests on, the words its documents use, and a golden set of its figures.
+- `project-standards`: what holds for the whole tool: documentation that names everything the tool does, the tool's connections, rated threats, pull request text without private references, pinned actions, a record of each decision, the assumptions that the design rests on, the words its documents use, and a golden set of its figures.
 
 ### Modified Capabilities
 

@@ -20,7 +20,7 @@ The capture step SHALL record each model call once. Each record SHALL hold the c
 - **WHEN** the capture step runs a second time over the same transcript with no new calls
 - **THEN** nothing new is recorded
 
-#### Scenario: Switching branches records nothing twice
+#### Scenario: A change of branch records nothing twice
 
 - **WHEN** the agent switches to another branch, and the capture step runs again over the same transcript
 - **THEN** no call already recorded is recorded again
@@ -226,7 +226,7 @@ Capture SHALL run when Claude finishes responding, when a subagent finishes, whe
 
 ### Requirement: A call goes only to a commit in its worktree, on the branch it was recorded on
 
-A call SHALL go only into a ledger file staged in the worktree that git itself finds from its line's working directory, which for a directory in a worktree inside the repository's folder is that worktree and not the main checkout around it, for a commit on the branch that was checked out there when the call was recorded.
+A call SHALL go only into a ledger file staged in the worktree that git itself finds from its line's working directory, which for a directory in a worktree inside the repository's folder is that worktree and not the main worktree around it, for a commit on the branch that was checked out there when the call was recorded.
 
 #### Scenario: Calls go to the worktree and branch they were recorded on
 
@@ -247,14 +247,14 @@ Calls recorded while no branch was checked out SHALL go only to a commit made wh
 - **WHEN** calls were recorded while no branch was checked out, and the agent then checks out a branch and commits
 - **THEN** that commit carries none of those calls
 
-### Requirement: Capture keeps what it records inside the common git directory
+### Requirement: Capture keeps what it records inside the git common directory
 
-Apart from staging a ledger file, taking it back and putting it back, as the requirements from "A ledger file is staged only for a commit whose branch and contents the step can tell" to "A put-back is tried once, and in no other case" say, the step SHALL keep what it records inside the repository's common git directory, and SHALL NOT change the working tree or the index.
+Apart from staging a ledger file, taking it back and putting it back, as the requirements from "A ledger file is staged only for a commit whose branch and contents the step can tell" to "A put-back is tried once, and in no other case" say, the step SHALL keep what it records inside the repository's git common directory, and SHALL NOT change the working tree or the index.
 
 #### Scenario: A turn's end leaves the working tree alone
 
 - **WHEN** capture runs at the end of a turn in which the agent did not commit, and no ledger file is due to be taken back or put back
-- **THEN** the working tree and the index are unchanged, so switching branches or rebasing is not blocked
+- **THEN** the working tree and the index are unchanged, so a change of branch or a rebase is not blocked
 
 ### Requirement: A ledger file is staged only for a commit whose branch and contents the step can tell
 
@@ -436,8 +436,8 @@ The step SHALL find the worktree where the commit runs from the current director
 
 #### Scenario: A commit stages in the worktree where it runs
 
-- **WHEN** calls were recorded in one of the repository's worktrees, with the branch now checked out there, and the agent commits there, while the hook runs in the repository's main folder, or after a `cd` to that worktree's path, or with a `-C` before `commit` that names it, written out in the same command
-- **THEN** the ledger file is staged in that worktree, holding those calls, and the main folder's index is unchanged
+- **WHEN** calls were recorded in one of the repository's worktrees, with the branch now checked out there, and the agent commits there, while the hook runs in the repository's main worktree, or after a `cd` to that worktree's path, or with a `-C` before `commit` that names it, written out in the same command
+- **THEN** the ledger file is staged in that worktree, holding those calls, and the main worktree's index is unchanged
 
 ### Requirement: A ledger file is added despite ignore rules and sparse checkouts, unless git refuses it
 
@@ -610,7 +610,7 @@ Two capture steps that run at the same time, such as a session's and a subagent'
 
 #### Scenario: Two worktrees share one record of a call
 
-- **WHEN** a session in this repository's main folder and a subagent in one of its worktrees both read the subagent's transcript
+- **WHEN** a session in this repository's main worktree and a subagent in one of its worktrees both read the subagent's transcript
 - **THEN** each of its calls is recorded once
 
 #### Scenario: A run killed while it writes leaves its store whole

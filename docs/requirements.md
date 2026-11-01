@@ -1,6 +1,6 @@
 # Requirements
 
-Every requirement the tool must meet, in one list. The specs under `openspec/` hold each requirement's full text and the scenarios that test it; this register is their index, so that what the product must do can be read in one place. `tests/test_documentation.py` checks that the register and the specs hold the same requirements, each once.
+Every requirement the tool must meet, in one list. The specs under `openspec/` hold each requirement's full text and the scenarios that test it; this register is their index, so that what the tool must do can be read in one place. `tests/test_documentation.py` checks that the register and the specs hold the same requirements, each once.
 
 Each requirement has one kind:
 
@@ -48,7 +48,7 @@ The capability names the spec that holds the requirement. Each capability is one
 | R34 | non-functional | `project-standards` | Every pinned action is a commit its repository tagged |
 | R35 | behavioural | `report-comment` | Each ledger line is held to the ledger format |
 | R36 | behavioural | `switch-and-opt-in` | Capture reads the configuration file only as a regular file within its bound |
-| R37 | behavioural | `switch-and-opt-in` | The person's setting is read only from their global configuration files |
+| R37 | behavioural | `switch-and-opt-in` | The person's opt-in is read only from their global configuration files |
 | R38 | behavioural | `switch-and-opt-in` | The setting is read by git's rules |
 | R39 | behavioural | `switch-and-opt-in` | A repository's own git configuration can turn capture off |
 | R40 | behavioural | `switch-and-opt-in` | Consent holds for each recorded call |
@@ -58,7 +58,7 @@ The capability names the spec that holds the requirement. Each capability is one
 | R44 | functional | `usage-capture` | Capture reads only lines that end in a line break, and no one line holds it back |
 | R45 | functional | `usage-capture` | Capture reads the branch's ledger files only from git |
 | R46 | functional | `usage-capture` | Calls recorded with no branch checked out go only to a commit made the same way |
-| R47 | functional | `usage-capture` | Capture keeps what it records inside the common git directory |
+| R47 | functional | `usage-capture` | Capture keeps what it records inside the git common directory |
 | R48 | behavioural | `usage-capture` | A substitution counts as a command before the commit |
 | R49 | behavioural | `usage-capture` | A ledger file is staged in the worktree where its commit runs |
 | R50 | behavioural | `usage-capture` | A ledger file is added despite ignore rules and sparse checkouts, unless git refuses it |
@@ -77,7 +77,7 @@ The capability names the spec that holds the requirement. Each capability is one
 | R63 | functional | `ci-minutes` | Minutes on a runner the price table does not list are counted, not priced |
 | R64 | functional | `ci-minutes` | A CI cost missing any run or job is marked incomplete |
 | R65 | functional | `report-comment` | A hook that does not come from the report's commit is named, not quoted |
-| R66 | behavioural | `report-comment` | A ledger change larger than the size bound is refused |
+| R66 | behavioural | `report-comment` | A pull request's ledger files larger in total than the size bound are refused |
 | R67 | behavioural | `report-comment` | Ledger files that the default branch already holds are read by capture's rules |
 | R68 | non-functional | `report-comment` | The report runs only for the push that a merge makes to the default branch |
 | R69 | non-functional | `report-comment` | A push gets a comment only when all its commits belong to one pull request |

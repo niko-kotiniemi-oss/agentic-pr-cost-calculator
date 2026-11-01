@@ -26,7 +26,7 @@ The list puts first the assumptions behind the threats of highest impact, then, 
 - **A7.** The repository's settings on GitHub are applied, and stay applied, as the threat model's section on the settings the owner keeps lists them. Impact 3, risk 6. Page: [GitHub](github.md).
 - **A8.** Workflows and required checks run when the design expects them to. Impact 3, risk 6. Page: [GitHub](github.md).
 - **A9.** GitHub shows text as the checks expect, and text posted on GitHub is public at once. Impact 3, risk 6. Page: [GitHub](github.md).
-- **A10.** A repository's worktrees share one common git directory, which recording can use. Impact 3, risk 6. Page: [git](git.md).
+- **A10.** A repository's worktrees share one git common directory, which recording can use. Impact 3, risk 6. Page: [git](git.md).
 - **A11.** git 2.43 stands for every later git. Impact 3, risk 6. Page: [git](git.md).
 - **A12.** History, refs and tags behave as the checks expect. Impact 3, risk 6. Page: [git](git.md).
 - **A13.** Adopters' git setup leaves the ledger alone. Impact 3, risk 6. Page: [Adopters and people](adopters-and-people.md).
@@ -70,7 +70,7 @@ The list puts first the assumptions behind the threats of highest impact, then, 
 - **A50.** GitHub's runs and jobs API gives complete, timed listings, within known limits. Impact 2, risk 4. Page: [GitHub](github.md).
 - **A51.** git reads a person's configuration from the files that the step reads, by the rules that the step re-implements. Impact 2, risk 4. Page: [git](git.md).
 - **A52.** Python's JSON reader and digit matching behave at their edges as the step and the checks expect. Impact 2, risk 4. Page: [Python, the development tools and prices](python-tools-and-prices.md).
-- **A53.** Files, locks and random names behave alike on every system where a repository's git directory lives. Impact 2, risk 4. Page: [Python, the development tools and prices](python-tools-and-prices.md).
+- **A53.** Files, locks and random names behave alike on every system where a repository's git common directory lives. Impact 2, risk 4. Page: [Python, the development tools and prices](python-tools-and-prices.md).
 - **A54.** The clock of the machine that runs a session agrees with its transcripts and with the runner's day. Impact 2, risk 4. Page: [Python, the development tools and prices](python-tools-and-prices.md).
 - **A55.** Anthropic prices each token type at its own rate for each model. Impact 2, risk 4. Page: [Python, the development tools and prices](python-tools-and-prices.md).
 - **A56.** Only the facts that the ledger records set a call's price, and prices change rarely and from a given day. Impact 2, risk 4. Page: [Python, the development tools and prices](python-tools-and-prices.md).

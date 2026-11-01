@@ -115,9 +115,9 @@ The report SHALL read ledger files only as blobs from git, never through the wor
 - **WHEN** the report starts in a clone that holds neither the pull request's head nor the default branch's history before the push's commit
 - **THEN** it fetches the default branch's history up to the push's commit and `refs/pull/<number>/head`, and reads the ledger files from what it fetched
 
-### Requirement: A ledger change larger than the size bound is refused
+### Requirement: A pull request's ledger files larger in total than the size bound are refused
 
-The report SHALL refuse the ledger change when the added ledger files (see "Only the ledger files that the merge adds are counted" in `ledger`) are larger in total than the size bound that the ledger format documents, which capture applies to each ledger file it reads, and SHALL then still report the CI cost.
+The report SHALL refuse a pull request's ledger files (see "Only the ledger files that the merge adds are counted" in `ledger`) when they are larger in total than the size bound that the ledger format documents, which capture applies to each ledger file it reads, and SHALL then still report the CI cost.
 
 #### Scenario: An oversized ledger is refused
 
@@ -126,7 +126,7 @@ The report SHALL refuse the ledger change when the added ledger files (see "Only
 
 ### Requirement: Ledger files that the default branch already holds are read by capture's rules
 
-The report SHALL read the ledger files that the default branch's first-parent history held before the merge by the rules that capture applies to the ledger files it reads: it SHALL skip a path in the ledger folder that is not a regular file and a file larger than the size bound (see "A ledger change larger than the size bound is refused"), and SHALL skip a line that does not match the ledger format, counting it neither as an entry nor as a refused line of the pull request.
+The report SHALL read the ledger files that the default branch's first-parent history held before the merge by the rules that capture applies to the ledger files it reads: it SHALL skip a path in the ledger folder that is not a regular file and a file larger than the size bound (see "A pull request's ledger files larger in total than the size bound are refused"), and SHALL skip a line that does not match the ledger format, counting it neither as an entry nor as a refused line of the pull request.
 
 #### Scenario: An oversized ledger file that the default branch holds does not stop the report
 

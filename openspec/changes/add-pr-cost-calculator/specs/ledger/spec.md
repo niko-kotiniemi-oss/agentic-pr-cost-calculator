@@ -73,7 +73,7 @@ The capture step SHALL note a ledger file in its store before it writes it, so t
 
 ### Requirement: The ledger is the record
 
-The pull request's usage ledger SHALL remain on the default branch after merge, as its record, and the report SHALL write nothing to the repository.
+The pull request's ledger SHALL remain on the default branch after merge, as its record, and the report SHALL write nothing to the repository.
 
 #### Scenario: The ledger stays after merge
 

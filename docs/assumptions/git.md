@@ -2,17 +2,17 @@
 
 The assumptions about git: what its commands, options, attributes, locks and configuration do, and how its releases differ. A test may run git, against repositories on the local disk. [The index](README.md) lists every assumption, the most at stake first.
 
-## A10. A repository's worktrees share one common git directory, which recording can use.
+## A10. A repository's worktrees share one git common directory, which recording can use.
 
 - **Rests on it:** R3, R47, R78, T2, T8, T10, T11, T19, DR-011, DR-012, DR-057
-- **If it is wrong:** A nested repository's calls could be published here (T2), a worktree's calls could be staged in the main checkout's index and carried to its branch (T19, T8), or a git command could trip over the store, so that calls are lost or recorded twice (T10, T11).
-- **Fact:** A repository's worktrees share one common git directory, which `git rev-parse --git-common-dir` names, while a repository nested inside its folder has its own.
+- **If it is wrong:** A nested repository's calls could be published here (T2), a worktree's calls could be staged in the main worktree's index and carried to its branch (T19, T8), or a git command could trip over the store, so that calls are lost or recorded twice (T10, T11).
+- **Fact:** A repository's worktrees share one git common directory, which `git rev-parse --git-common-dir` names, while a repository nested inside its folder has its own.
   - **Relied on:** R3, R47, T2, T11, DR-011, DR-057
   - **Checked:** not yet: `add-pr-cost-calculator` task 2.1 and `add-pr-cost-calculator` task 1.1 check it
-- **Fact:** git resolves a directory inside a worktree under the repository's folder to that worktree, not to the main checkout around it.
+- **Fact:** git resolves a directory inside a worktree under the repository's folder to that worktree, not to the main worktree around it.
   - **Relied on:** R78, T8, T10, T19, DR-012
   - **Checked:** not yet: `add-pr-cost-calculator` task 1.1 checks it
-- **Fact:** A store kept in its own folder in the common git directory changes nothing that git does, so recording never blocks switching branches or rebasing.
+- **Fact:** A store kept in its own folder in the git common directory changes nothing that git does, so recording never blocks a change of branch or a rebase.
   - **Relied on:** R47, T10, DR-011
   - **Checked:** not yet: `add-pr-cost-calculator` task 2.1 checks it
 

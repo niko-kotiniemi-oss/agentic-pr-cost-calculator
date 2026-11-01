@@ -1,6 +1,6 @@
-# Product-wide standards
+# Standards for the whole tool
 
-What holds for the whole product rather than for one feature: documentation that names everything the tool does, connections only where that documentation says, rated threats, pull request text without private references, action pins that their repositories tagged, a record of each decision, the assumptions that the design rests on, a glossary of the words its documents use, and a golden set of figures that every version reproduces.
+What holds for the whole tool rather than for one feature: documentation that names everything the tool does, connections only where that documentation says, rated threats, pull request text without private references, action pins that their repositories tagged, a record of each decision, the assumptions that the design rests on, a glossary of the words its documents use, and a golden set of figures that every version reproduces.
 
 **Status:** the documentation, the threat ratings, the workflow checks, the decision records and the assumptions are in place; the network guard, the check of pull request text, the check of pins, the glossary and the golden set are designed, not built yet.
 

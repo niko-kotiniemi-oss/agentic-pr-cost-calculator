@@ -34,9 +34,9 @@ The capture step SHALL read the repository's configuration file in the working t
 - **WHEN** the repository's configuration file in the working tree is a symbolic link, a named pipe or a folder, or is larger than its size bound
 - **THEN** nothing is recorded, and the run ends without waiting on the file
 
-### Requirement: The person's setting is read only from their global configuration files
+### Requirement: The person's opt-in is read only from their global configuration files
 
-The capture step SHALL read the person's setting (see "Capture runs only where the tool is on and the person has opted in") only from their global configuration files themselves, `~/.gitconfig` and git's configuration file in their XDG configuration folder (see "Only an absolute home folder is read" and "Only an absolute XDG folder is read"), not from files they include, ignoring any environment variable that points git at other configuration files or adds settings.
+The capture step SHALL read the person's opt-in (see "Capture runs only where the tool is on and the person has opted in") only from their global configuration files themselves, `~/.gitconfig` and git's configuration file in their XDG configuration folder (see "Only an absolute home folder is read" and "Only an absolute XDG folder is read"), not from files they include, ignoring any environment variable that points git at other configuration files or adds settings.
 
 #### Scenario: The environment cannot opt a person in
 
@@ -78,7 +78,7 @@ The capture step SHALL take the home folder `~` to be the folder that `HOME` nam
 
 ### Requirement: The home configuration file decides over the XDG one
 
-Where both of the person's global configuration files (see "The person's setting is read only from their global configuration files") set the person's setting, `~/.gitconfig`, which git reads after the other, SHALL decide.
+Where both of the person's global configuration files (see "The person's opt-in is read only from their global configuration files") set the person's opt-in, `~/.gitconfig`, which git reads after the other, SHALL decide.
 
 #### Scenario: The home configuration file decides when both set it
 
@@ -87,7 +87,7 @@ Where both of the person's global configuration files (see "The person's setting
 
 ### Requirement: The setting is read by git's rules
 
-The capture step SHALL read the person's setting (see "Capture runs only where the tool is on and the person has opted in") by git's rules for its configuration files: section and key names match in any case, a value is read without its quotes or a comment that follows it, the last value in a file decides, and a key in a subsection, such as `[pr-cost "x"]`, or in a comment is not the setting.
+The capture step SHALL read the person's opt-in (see "Capture runs only where the tool is on and the person has opted in") by git's rules for its configuration files: section and key names match in any case, a value is read without its quotes or a comment that follows it, the last value in a file decides, and a key in a subsection, such as `[pr-cost "x"]`, or in a comment is not the setting.
 
 #### Scenario: The last value in a file decides
 
@@ -106,7 +106,7 @@ The capture step SHALL read the person's setting (see "Capture runs only where t
 
 ### Requirement: Only some of git's true values turn capture on
 
-Of the values of the person's setting (see "The setting is read by git's rules"), only `true`, `yes`, `on` and `1`, in any case, and the key alone with no value SHALL turn capture on, and any other value SHALL leave it off, even one that git reads as true, such as `2`.
+Of the values of the person's opt-in (see "The setting is read by git's rules"), only `true`, `yes`, `on` and `1`, in any case, and the key alone with no value SHALL turn capture on, and any other value SHALL leave it off, even one that git reads as true, such as `2`.
 
 #### Scenario: Git's spellings of the setting opt a person in
 
@@ -184,7 +184,7 @@ Whatever the switches (see "Capture runs only where the tool is on and the perso
 
 ### Requirement: One file turns the tool on or off, and a pull request cannot turn off its own report
 
-A repository SHALL turn the calculator on by adding its configuration file with the tool enabled, and off by removing the file or disabling the tool in it. The report SHALL read the configuration from the default branch as it was before the merge and as it is after, only as a blob at each of those two commits and within the size bound that the configuration's format documents, and SHALL run when either turns the tool on.
+A repository SHALL turn the tool on by adding its configuration file with the tool enabled, and off by removing the file or disabling the tool in it. The report SHALL read the configuration from the default branch as it was before the merge and as it is after, only as a blob at each of those two commits and within the size bound that the configuration's format documents, and SHALL run when either turns the tool on.
 
 #### Scenario: Disabled means silent
 

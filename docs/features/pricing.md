@@ -14,7 +14,7 @@ The tokens are priced from a dated price table kept in this repository, at the p
 - **Each token type at its own rate.** Input, output, cache-write and cache-read tokens are priced separately. Cache writes use the rate for their cache lifetime, and where the lifetime is unknown the report gives the range between the two.
 - **Modifiers.** Higher rates for long prompts, the inference region's multiplier, rates for speed and service tier, and a per-request rate for server-side tool requests such as web searches, all as the price table states them.
 - **Nothing is guessed.** A model, attribute or combination that the price table does not price is counted in tokens, left out of the cost and named in the report.
-- **Never fetched.** Prices are read from the table at the tool's own commit. The tool fetches no prices from anywhere, a rule that `project-standards` holds for the whole product.
+- **Never fetched.** Prices are read from the table at the tool's own commit. The tool fetches no prices from anywhere, a rule that `project-standards` holds for the whole tool.
 
 ## How it is validated
 

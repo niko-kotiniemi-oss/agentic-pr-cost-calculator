@@ -39,11 +39,11 @@ The assumptions about Python, about the tools that develop and check this reposi
   - **Checked:** not yet: none will, since were it wrong the check of records would only be more careful than it needs to be
   - **Handled by:** `tests/test_decisions.py::test_a_file_not_named_as_a_record_is_reported`
 
-### A53. Files, locks and random names behave alike on every system where a repository's git directory lives.
+### A53. Files, locks and random names behave alike on every system where a repository's git common directory lives.
 
 - **Rests on it:** R8, R10, R11, R58, R119, T11, T13, T42, T47, DR-017, DR-036, DR-127
 - **If it is wrong:** Two runs could interleave their records or both record one call, and a killed run could leave a torn store or a lock that stops later runs (T13, T42). A ledger write could leave the repository through a directory junction (T11), and two branches could add one ledger path, so that their merge conflicts or one pull request's usage is read as another's (T13, T47).
-- **Fact:** The operating system releases a file lock when the process holding it ends, even when that process is killed, on every system and filesystem where a repository's git directory lives.
+- **Fact:** The operating system releases a file lock when the process holding it ends, even when that process is killed, on every system and filesystem where a repository's git common directory lives.
   - **Relied on:** R11, T13, T42, DR-036
   - **Checked:** not yet: `add-pr-cost-calculator` task 2.1 and `add-pr-cost-calculator` task 2.2 check it
 - **Fact:** Replacing a file whole with a new one is a single step, so a run killed during the write leaves either the old file or the new one.

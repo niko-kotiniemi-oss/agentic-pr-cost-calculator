@@ -247,7 +247,7 @@ The assumptions about the teams that adopt the tool, the people who opt in, and 
 - **Fact:** The agent makes the pull request's commits through its Bash tool, the last of them after the work whose usage should count.
   - **Relied on:** R7, R8, T8, DR-010, DR-013
   - **Checked:** not yet: none will, since no test may reach what adopters and people do
-- **Fact:** While a session works, only the agent's own matched git commands change the branch or stage files in its worktree: the person does not switch branches or commit in their own terminal, also not while a permission prompt waits, and no other session commits in the repository.
+- **Fact:** While a session works, only the agent's own matched git commands change the branch or stage files in its worktree: the person makes no change of branch and no commit in their own terminal, also not while a permission prompt waits, and no other session commits in the repository.
   - **Relied on:** R8, R51, R78, R81, T8, T10, T19, DR-012, DR-013, DR-014, DR-034
   - **Checked:** not yet: none will, since no test may reach what adopters and people do
 

@@ -1,6 +1,6 @@
 ## Purpose
 
-Hold the whole product to the standards that make it safe to adopt: documentation that names everything it does and says how each feature is validated, connections only where that documentation says, rated threats, pull request text without private references, action pins that their repositories tagged, a record of each decision, kept so that each can be reversed on its own, the assumptions that the design rests on, a glossary of the words its documents use, and a golden set of figures that every version reproduces.
+Hold the whole tool to the standards that make it safe to adopt: documentation that names everything it does and says how each feature is validated, connections only where that documentation says, rated threats, pull request text without private references, action pins that their repositories tagged, a record of each decision, kept so that each can be reversed on its own, the assumptions that the design rests on, a glossary of the words its documents use, and a golden set of figures that every version reproduces.
 
 ## ADDED Requirements
 
