@@ -247,7 +247,7 @@ As designed, the hook reads `CLAUDE_PROJECT_DIR`, `HOME`, `XDG_CONFIG_HOME` and 
 
 ## What it never does
 
-- Record or publish a prompt, a response, code, a file's contents, a tool's name, a path, a branch name, a user name, a session identifier or a time of day.
+- Put a prompt, a response, code, a file's contents, a tool's name, a path, a branch name, a user name, a session identifier or a time of day in a ledger entry or in anything it publishes. For its own use, the store in the person's git common directory notes the worktree and branch that each call goes to and, for each ledger file it stages, the session's id and its transcript's path, and those notes never leave that directory.
 - Record the usage of anyone who has not turned capture on for themselves. For them, the store in their own git common directory notes only that a run found capture off, and nothing in it leaves that directory.
 - Send anything from the session's machine anywhere. The ledger leaves the machine only in the person's own commits, when they push.
 - Run, import or install anything from the pull request it reports on.

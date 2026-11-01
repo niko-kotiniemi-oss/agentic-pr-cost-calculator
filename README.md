@@ -17,7 +17,7 @@ For each pull request, the tool will:
 
 A repository turns it on or off with one file, its configuration file, and each person decides for themselves whether their own sessions are recorded.
 
-Usage is recorded by the directory the session is in, not by which files it touches. A session in the repository is recorded there even for work it does on another repository from there, so work on other repositories, private ones above all, belongs in sessions of its own.
+Usage is recorded by the directory that Claude is in when it makes each call, not by which files it touches. A call made from the repository is recorded there even when it works on another repository, so work on other repositories, private ones above all, belongs in sessions of its own.
 
 The figure is an **API-equivalent estimate**, meaning what the same tokens would cost at list prices. It is not a bill: subscription plans and included CI minutes change what you actually pay.
 
