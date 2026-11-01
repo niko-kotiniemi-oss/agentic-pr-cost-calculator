@@ -2,7 +2,7 @@
 
 What could go wrong with the tool, for the people who use it and for this repository, and what answers each threat. Every change revisits this file (see `CLAUDE.md`).
 
-It was written for the first change, `add-pr-cost-calculator`, before any code, so the answers are requirements and tasks rather than code. It holds 101 threats across 8 trust boundaries. T38 to T69 were found by the design-stage review, T70 to T78 by the design-stage review of the decision records in `docs/decisions/`, T79 to T81 by the implementation-stage review of those records and their checks, T82 to T100 by the design-stage review of the assumptions, the glossary and the golden set, and T101 by the implementation-stage review of the assumptions; they follow T37, each under a heading for its boundary, so that the numbers stay in order, and a threat that a change removes keeps its ID out of use (see Retired IDs). Where an answer can be a scenario in a spec, it is one, so that an acceptance test holds it. `tests/test_threat_model.py` checks that every citation below names a scenario, task, decision, decision record or file that exists.
+It was written for the first change, `add-pr-cost-calculator`, before any code, so the answers are requirements and tasks rather than code. It holds 103 threats across 8 trust boundaries. T38 to T69 were found by the design-stage review, T70 to T78 by the design-stage review of the decision records in `docs/decisions/`, T79 to T81 by the implementation-stage review of those records and their checks, T82 to T100 by the design-stage review of the assumptions, the glossary and the golden set, T101 by the implementation-stage review of the assumptions, and T102 and T103 by the implementation-stage review of the glossary; they follow T37, each under a heading for its boundary, so that the numbers stay in order, and a threat that a change removes keeps its ID out of use (see Retired IDs). Where an answer can be a scenario in a spec, it is one, so that an acceptance test holds it. `tests/test_threat_model.py` checks that every citation below names a scenario, task, decision, decision record or file that exists.
 
 ## How it was built
 
@@ -93,7 +93,7 @@ The trust boundaries:
 - **Risk:** 2
 - **What could happen:** the transcript carries session ids, request ids, the working directory, user names inside paths, and the branch. Any of them in the ledger would link a public record to a person or a private session.
 - **Answer:** a call is identified by a SHA-256 hash of its message id, kept only so that no call is recorded twice. No session value, path, working directory, user name or branch name is written into an entry, and a ledger file's name is random, so that neither an entry nor a file's path carries one.
-- **Residual:** whoever holds the original message ids, such as the session's owner, can match them to entries. That is the person the data came from.
+- **Residual:** whoever holds the original message ids, such as the session's owner, can match them to entries. That is the person the data came from. The store, which is never committed, keeps the session's id and its transcript's path for each ledger file that capture stages, as the design says, and no scenario yet states everything that the store notes.
 - **Held by:** `ledger`: "Content in the transcript does not reach the ledger"; `ledger`: "A planted string never reaches the ledger"; DR-045; DR-053; DR-088; DR-127; DR-136
 - **Assumptions:** A14, A22, A36
 
@@ -612,7 +612,7 @@ The trust boundaries:
 - **Impact:** 2 (medium)
 - **Likelihood:** 2 (possible)
 - **Risk:** 4
-- **What could happen:** so as not to count a copied entry again, the report reads every ledger file there. A file that an earlier report did not count whole, as part of ledger files too large to read, as a refused file or for a refused line, can still have been merged, and every later report would then read it.
+- **What could happen:** so as not to count a copied entry again, the report reads every ledger file there. A file that an earlier report did not count whole, as part of ledger files too large to read, as a refused file, or for a refused line or a refused entry, can still have been merged, and every later report would then read it.
 - **Answer:** the report holds files that the default branch already holds to capture's rules: it skips a path that is not a regular file and a file above the per-file bound, and skips an unreadable line without stopping. Such a line is counted neither as an entry nor as refused, so that later pull requests' comments do not repeat a refusal that is not theirs.
 - **Held by:** `report-comment`: "An oversized ledger file that the default branch holds does not stop the report"; `report-comment`: "A submodule in the default branch's ledger folder does not stop the report"; `report-comment`: "An unreadable line in an earlier ledger file does not stop the report"; DR-044; DR-131; `add-pr-cost-calculator` task 4.2
 - **Assumptions:** A47
@@ -1126,7 +1126,7 @@ The trust boundaries:
 - **Risk:** 2
 - **What could happen:** the specs use both "turn on" and "enabled" for the repository's switch, the kind of doubled wording that the glossary removes, and `enabled` is also the configuration key, part of the public surface. A wording test that matched inside code would fail on every page that gives the key, and the rule that every use of a newly listed word is reworded in the same pull request would push the key to change. Changed in the documents alone, the key no longer matches the code, so an adopter who writes it gets a file that is not valid, which leaves the tool off and records nothing, and looks the same as a repository that turned it off. Changed in the code, the public surface changes.
 - **Answer:** the wording test never reads inline code or fenced code blocks, which give names, commands, paths and snippets as they must be typed; a word is listed to avoid only if it is wrong wherever it appears in prose; and the review reads the pages that adopters act on before and after a rewording.
-- **Residual:** a rewording that keeps every name but changes what an instruction asks, such as which commit to pin or what a public repository publishes, rests on the review alone. Labels of other products' interfaces, such as GitHub's, quoted in prose are still read as prose.
+- **Residual:** a rewording that keeps every name but changes what an instruction asks, such as which commit to pin or what a public repository publishes, rests on the review alone. Labels of an interface, GitHub's or the tool's own comment's, quoted in prose are still read as prose, and so are a code span that wraps onto the next line, an indented code block and HTML's `<code>`, where a name that holds a word to avoid fails the test as if it were prose.
 - **Held by:** `project-standards`: "A word to avoid in code is left as written"; `add-pr-cost-calculator` decision 14; `add-pr-cost-calculator` task 1.20; DR-164
 - **Assumptions:** A57
 
@@ -1173,10 +1173,10 @@ The trust boundaries:
 - **Likelihood:** 1 (unlikely)
 - **Risk:** 3
 - **What could happen:** task 1.20 rewords every tracked Markdown page that the wording test reads, `CLAUDE.md`, the specs, the README and this model among them, and each later pull request that lists a word to avoid rewords every use of it. A replacement, or a fix to a word with several senses, can change what a sentence says while its title stays. "Usage record" replaced with "ledger entry" in `CLAUDE.md`'s privacy rule would no longer bar real usage data in any other form; a scoping rule or the README's warning, reworded, can let another repository's calls cross; and "refused", "skipped" and "left out of the cost" keep apart the reasons that the comment counts and what it passes over, so merging two of them counts a line under the wrong one. A contributor who wants a rule changed can hide the change among many mechanical lines.
-- **Answer:** a script, run once in each pull request that rewords, shows that each changed line differs only by words to avoid replaced with their terms, and lists every other change, those to `CLAUDE.md` first. The review in a separate context reads, before and after, the requirements, `CLAUDE.md`, this model's answers and residuals, the README's statements of what opting in records and publishes, and the pages that adopters act on. Each concept that a rule tells apart has a term of its own, so listing one as a word to avoid for another fails the check of the glossary.
-- **Residual:** a change of meaning that the script lists and the review misses. A word with several senses in a line that the rewording leaves alone is held only by the reviews, and no test yet reads the README's statement of what opting in publishes.
-- **Held by:** `project-standards`: "A term defined twice fails CI"; `add-pr-cost-calculator` decision 14; `add-pr-cost-calculator` task 1.20; DR-164
-- **Assumptions:** A57
+- **Answer:** a script, run in each pull request that rewords or adds a word to avoid, as the pull request template asks, shows that each changed line differs only by words to avoid replaced with their terms, and lists every other change, those to `CLAUDE.md` first. It compares a renamed page with what it was, names each changed file that it does not compare, and lists apart each line that replaces a word that the base's glossary did not give for its term, since that rule is the pull request's own (T103). The review in a separate context reads, before and after, the requirements, `CLAUDE.md`, this model's answers and residuals, the README's statements of what opting in records and publishes, and the pages that adopters act on. Each concept that a rule tells apart has a term of its own, so listing one, or its plural, as a word to avoid for another fails the check of the glossary.
+- **Residual:** a change of meaning that the script lists and the owner and the review miss, and a pull request that skips the script, which only the template's checklist asks for. A word with several senses in a line that the rewording leaves alone is held only by the reviews, and no test yet reads the README's statement of what opting in publishes.
+- **Held by:** `project-standards`: "A term defined twice fails CI"; `scripts/rewording.py`; `.github/pull_request_template.md`; `add-pr-cost-calculator` decision 14; `add-pr-cost-calculator` task 1.20; DR-164
+- **Assumptions:** A15, A57
 
 ### T95. A page that an assumption links to steers the agent that checks it
 
@@ -1265,14 +1265,40 @@ The trust boundaries:
 - **Held by:** `project-standards`: "An assumption without its check fails CI"; `project-standards`: "An observation that cannot be followed fails CI"; `project-standards`: "A documented fact that links elsewhere fails CI"; `add-pr-cost-calculator` task 1.19; DR-162
 - **Assumptions:** A57
 
+## Boundary 7, continued: found at the implementation review of the glossary
+
+### T102. A page hides a word from the wording test, or stalls it
+
+- **Kind:** tampering, denial of service, information disclosure
+- **Impact:** 2 (medium)
+- **Likelihood:** 1 (unlikely)
+- **Risk:** 2
+- **What could happen:** the wording test reads what a pull request puts in the repository. A word to avoid under emphasis, with a curly apostrophe or across a no-break space would pass a test that matched only its plain spelling; a record that the pull request adds, with its status accepted, would keep the words of any title that it quotes; a page that is a symbolic link would have the test read a file outside the repository and tell whether, and on which line, it holds a word to avoid; a page that is not UTF-8 would stop the test with an error that names no file; and a line of many spaces, which a pattern can match in many ways, would slow the test until CI's job limit stops it. A word that the test passes over stays on a page, where a later reader takes it at its old meaning.
+- **Answer:** the test finds a word to avoid under emphasis, with its apostrophe straight or curly, and with any run of spaces between its words, no-break spaces among them, that holds at most one line break, which it matches in one way only, so that no page makes the matching slow. It leaves as written only the titles that the specs hold and an accepted record quotes where HEAD left the default branch, and it fails, naming the file, on a page that is a symbolic link, which it does not follow, on a file or a path that is not UTF-8, and on a fenced code block that never closes.
+- **Residual:** a page can still hide a word in a way that the test does not read as prose, such as a letter from another alphabet that looks the same or markup inside the word, which the owner's reading of the diff is left to see. A page is read whole, so its size is bounded by the runner's memory alone.
+- **Held by:** `project-standards`: "A page that the test cannot read whole fails CI"; `project-standards`: "A title that only a new record quotes is read"; `scripts/wording.py`; `tests/test_glossary.py`; `add-pr-cost-calculator` decision 14; `add-pr-cost-calculator` task 1.20
+- **Assumptions:** A15
+
+### T103. The rewording script's output does not say what it compared
+
+- **Kind:** repudiation, tampering, spoofing
+- **Impact:** 3 (high)
+- **Likelihood:** 1 (unlikely)
+- **Risk:** 3
+- **What could happen:** the output is posted on the pull request for the owner and the review, who take it as the account of the rewording. Output that names no head can be made at one commit and posted for another; a word to avoid that the pull request itself adds makes every replacement of it look mechanical, so a rule changed by that word passes as a replaced word; a page renamed and edited in one commit shows only as removed and added; a changed file that the script does not read appears nowhere; and a file whose name holds a backtick or a line break breaks out of the code span around it, so that the rest of its name is prose in a comment that the owner posts, where it can mention someone.
+- **Answer:** the script names HEAD and where it left the base by their full hashes, compares a renamed page with what it was, names each changed file that it does not compare and why, lists apart each line that replaces a word that the base's glossary did not give for its term and says in its table which words are new, and writes each path and the base as a code span that nothing in it can close, a control character written as its escape.
+- **Residual:** a review that does not compare the head that the output names with the head that merges, and a word that the base's glossary gave for the same term, which the script counts as mechanical however the line reads.
+- **Held by:** `scripts/rewording.py`; `tests/test_rewording.py`; `.github/pull_request_template.md`; `add-pr-cost-calculator` decision 14; `add-pr-cost-calculator` task 1.20
+- **Assumptions:** A15, A57
+
 ## Risk matrix
 
 Generated from the ratings above. Each cell lists the threats whose impact and likelihood it names.
 
 | Impact \ Likelihood | 1 unlikely | 2 possible | 3 likely |
 |---|---|---|---|
-| 3 high | T1, T12, T14, T15, T23, T24, T28, T29, T35, T43, T46, T58, T59, T63, T64, T66, T67, T68, T73, T77, T82, T83, T92, T93, T94, T95 | T2, T32, T33, T34, T61, T62, T65 |  |
-| 2 medium | T4, T6, T11, T18, T25, T26, T41, T42, T53, T55, T56, T57, T60, T69, T70, T76, T78, T79, T80, T81, T84, T85, T86, T87, T88, T89, T90, T91, T97, T98, T99, T100, T101 | T3, T9, T10, T17, T19, T20, T21, T22, T30, T38, T39, T40, T44, T45, T47, T48, T49, T50, T51, T52, T54, T71, T72, T74, T75, T96 | T7, T8, T16 |
+| 3 high | T1, T12, T14, T15, T23, T24, T28, T29, T35, T43, T46, T58, T59, T63, T64, T66, T67, T68, T73, T77, T82, T83, T92, T93, T94, T95, T103 | T2, T32, T33, T34, T61, T62, T65 |  |
+| 2 medium | T4, T6, T11, T18, T25, T26, T41, T42, T53, T55, T56, T57, T60, T69, T70, T76, T78, T79, T80, T81, T84, T85, T86, T87, T88, T89, T90, T91, T97, T98, T99, T100, T101, T102 | T3, T9, T10, T17, T19, T20, T21, T22, T30, T38, T39, T40, T44, T45, T47, T48, T49, T50, T51, T52, T54, T71, T72, T74, T75, T96 | T7, T8, T16 |
 | 1 low | T13 | T27, T31, T36, T37 | T5 |
 
 The threats with a risk of 6 or more:
