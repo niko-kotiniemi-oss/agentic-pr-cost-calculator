@@ -112,7 +112,7 @@ A fact may also give `- **Handled by:**`, indented as its other fields, naming t
 ### Task 5: Review
 
 - [x] **Step 1:** In a context separate from the builder's, rate each threat again against what was built, and add the threats that it brings.
-- [ ] **Step 2:** Run `/simplify`, `/security-review`, `/code-review` and `/verify`, each in its own context; post the findings, their resolutions and the index on the pull request.
+- [x] **Step 2:** Run `/simplify`, `/security-review`, `/code-review` and `/verify`, each in its own context; post the findings, their resolutions and the index on the pull request.
 
 ### Task 6: The review's fixes
 
