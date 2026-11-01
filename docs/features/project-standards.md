@@ -2,7 +2,7 @@
 
 What holds for the whole tool rather than for one feature: documentation that names everything the tool does, connections only where that documentation says, rated threats, pull request text without private references, action pins that their repositories tagged, a record of each decision, the assumptions that the design rests on, a glossary of the words its documents use, and a golden set of figures that every version reproduces.
 
-**Status:** the documentation, the threat ratings, the workflow checks, the decision records and the assumptions are in place; the network guard, the check of pull request text, the check of pins, the glossary and the golden set are designed, not built yet.
+**Status:** the documentation, the threat ratings, the workflow checks, the decision records, the assumptions and the glossary are in place; the network guard, the check of pull request text, the check of pins and the golden set are designed, not built yet.
 
 **Spec:** `project-standards`
 
@@ -35,8 +35,8 @@ What holds for the whole tool rather than for one feature: documentation that na
 
 This feature is validated first by its spec's scenarios: each whose code is still to be written gets an acceptance test before that code, seen to fail for the expected reason, and each that a check already in place holds is named in that check's test (task 1.4). Then come the checks that DR-084 to DR-093 and DR-109 apply to all the tool's code. Beyond those, this feature has its own:
 
-- Already in place: the documentation tests (tasks 1.12 and 1.17), the threat model's tests (task 1.10), the workflow checks (task 1.16), the decision records' tests (task 1.18) and the assumptions' tests (task 1.19).
-- To be built: the network guard's two rules and the check of the report's git commands (task 1.13), the check of pull request text (task 1.14), the check that every pin is a tagged commit (task 1.15), the check of the glossary's words (task 1.20), the golden set (task 1.21), the release's test job that runs every expected failure as an ordinary test (task 6.3), and a check that every network call and environment variable the tool's code reads is named in the documentation (task 5.3).
+- Already in place: the documentation tests (tasks 1.12 and 1.17), the threat model's tests (task 1.10), the workflow checks (task 1.16), the decision records' tests (task 1.18), the assumptions' tests (task 1.19) and the glossary's tests (task 1.20).
+- To be built: the network guard's two rules and the check of the report's git commands (task 1.13), the check of pull request text (task 1.14), the check that every pin is a tagged commit (task 1.15), the golden set (task 1.21), the release's test job that runs every expected failure as an ordinary test (task 6.3), and a check that every network call and environment variable the tool's code reads is named in the documentation (task 5.3).
 - By review rather than by a test: that the threat model is revisited before a design is approved and again against what was built (tasks 1.10 and 5.2).
 
 ## See also
