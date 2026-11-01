@@ -9,3 +9,4 @@ A release's entry lists any breaking change under `### Breaking`, and the releas
 ### Added
 
 - The repository's foundations: the OpenSpec proposal for the calculator, its threat model with a risk matrix, the requirements register, the feature pages, the page explaining how the tool works, and a record of each decision.
+- The assumptions that the tool's design rests on, in `docs/assumptions/`: what each one holds up, what would change if it were wrong, and how each of its facts is checked, with those about adopters' own setups among them.
