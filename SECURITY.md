@@ -12,7 +12,7 @@ There is no release yet. Once there is, fixes go to the latest release only. The
 
 ## What this tool handles
 
-The tool will read token-usage records and GitHub Actions job data, and it will write one comment on the pull request it measures. The ledger it reads is committed with the pull request. It is designed so that:
+The tool will read token-usage records and GitHub Actions job data, and it will write one comment on the pull request it measures. The ledger files it reads are committed with the pull requests that add them. It is designed so that:
 
 - it needs no secret beyond the `GITHUB_TOKEN` a workflow already has, with the narrowest permissions that work;
 - it records counts, the model, the price attributes, the UTC day, the activity type, whether the main agent or a subagent made the call, and a hash of the call's message id, and never prompts, code, tool names, transcript text or any session identifier;

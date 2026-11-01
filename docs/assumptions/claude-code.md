@@ -28,7 +28,7 @@ The assumptions about Claude Code: what its transcripts hold, when its hooks run
 ## A2. A transcript line gives its call's model, usage, time and current directory, in fields whose meaning stays put.
 
 - **Rests on it:** R2, R3, R6, R14, R15, R16, R40, R41, R43, R61, R76, R77, R78, R94, R95, R108, R109, T1, T2, T5, T6, T7, T9, T10, T17, T27, T38, T39, T82, DR-002, DR-003, DR-009, DR-012, DR-029, DR-032, DR-033, DR-047, DR-052, DR-057, DR-092, DR-110, DR-135, DR-155
-- **If it is wrong:** Calls would be refused, priced wrongly or under-counted, and the comment would show it only as a count, if at all (T39, T9, T27). A line's time out of step with the step's clock would place calls in or out of a consent interval (T38), and a line that named another directory, or none, would sort calls to the wrong repository, so work in another one could be published here (T2, T82).
+- **If it is wrong:** Calls would be refused, priced wrongly or under-counted, and the comment would show it only as a count, if at all (T39, T9, T27). A line's time out of step with the step's clock would place calls in or out of an interval when both switches were on (T38), and a line that named another directory, or none, would sort calls to the wrong repository, so work in another one could be published here (T2, T82).
 - **Fact:** Each assistant line in a transcript carries the model's name and a usage block with input, output, cache-write and cache-read token counts.
   - **Relied on:** R2, R15, T6, T39, DR-003, DR-009, DR-033, DR-110
   - **Checked:** not yet: none will, since no test may reach Claude Code
@@ -41,7 +41,7 @@ The assumptions about Claude Code: what its transcripts hold, when its hooks run
 - **Fact:** A call whose line gives no price attribute is billed at the standard rate, so an attribute that is not recorded adds nothing to the call's cost.
   - **Relied on:** R16, R61, T9
   - **Checked:** not yet: none will, since no test may reach Claude Code
-- **Fact:** The usage a transcript records for a call is the usage the provider bills for it.
+- **Fact:** The usage a transcript holds for a call is the usage the provider bills for it.
   - **Relied on:** R2, R94, R95, T9, T27, DR-002, DR-032
   - **Checked:** not yet: none will, since no test may reach Claude Code
 - **Fact:** Claude Code adds fields to a call's usage over time, at its top level or nested in it, before the capture step knows them.
@@ -143,7 +143,7 @@ The assumptions about Claude Code: what its transcripts hold, when its hooks run
 - **Fact:** `.claude/settings.json` makes Claude Code load the vendored Superpowers skills into every session here, and a session started outside the repository does not have them.
   - **Relied on:** T33, T35, DR-082, DR-142, DR-143
   - **Checked:** not yet: none will, since no test may reach Claude Code
-- **Fact:** A Claude Code plugin does not install itself in a fresh session, and a repository's own session hook can install one for everyone.
+- **Fact:** A Claude Code plugin does not install itself in a fresh session, and a repository's own session-start hook can install one for everyone.
   - **Relied on:** DR-022, DR-041
   - **Checked:** not yet: none will, since no test may reach Claude Code
 - **Fact:** `/simplify`, `/security-review`, `/code-review` and `/verify` are commands that a session here can run, in a context separate from the one that built the change.
@@ -248,14 +248,14 @@ The assumptions about Claude Code: what its transcripts hold, when its hooks run
 ## A38. A subagent's calls are in a transcript of their own, and the transcripts leave out only the calls that Claude Code makes for its own tools.
 
 - **Rests on it:** R2, R3, R11, R75, R78, R94, T8, T13, T40, DR-004, DR-009, DR-012, DR-057, DR-138
-- **If it is wrong:** Calls that capture cannot find, or cannot tell from the main agent's, would be missing from the figure or counted under the wrong agent (T8). If the calls left out were more, or cost more, than those of Claude Code's own tools, the figure would be lower than the comment says by more than it suggests (T40).
+- **If it is wrong:** Calls that capture cannot find, or cannot tell from the main agent's, would be missing from the figure or counted under the wrong agent (T8). If the calls missing from the figure were more, or cost more, than those of Claude Code's own tools, the figure would be lower than the comment says by more than it suggests (T40).
 - **Fact:** Claude Code writes a subagent's calls to a transcript of its own, in a `subagents/` folder under the session's, marked so that they can be told from the main agent's calls.
   - **Relied on:** R2, R75, T8, DR-138
   - **Checked:** not yet: none will, since no test may reach Claude Code
 - **Fact:** Claude Code creates its worktrees under `.claude/worktrees/` inside the repository's folder, and a subagent may work in one of them.
   - **Relied on:** R3, R11, R78, T13, DR-012, DR-057
   - **Checked:** not yet: none will, since no test may reach Claude Code
-- **Fact:** A call's working directory still exists when capture runs, except a worktree that Claude Code removes when a subagent finishes without changes.
+- **Fact:** A line's working directory still exists when capture runs, except a worktree that Claude Code removes when a subagent finishes without changes.
   - **Relied on:** R78, T8, DR-012
   - **Checked:** not yet: none will, since no test may reach Claude Code
 - **Fact:** A review that runs inside a session, such as `/code-review` or `/security-review`, writes its calls, and those of the subagents it starts, to that session's transcripts.
@@ -274,7 +274,7 @@ The assumptions about Claude Code: what its transcripts hold, when its hooks run
 ## A39. Claude Code's hooks behave as its documentation describes.
 
 - **Rests on it:** R7, R9, R42, R49, R51, R75, R82, R87, R113, R116, T8, T10, T19, DR-009, DR-013, DR-014, DR-030, DR-034, DR-138
-- **If it is wrong:** Runs that came at other moments, or not at all, would leave calls waiting for a later run, so they could reach no commit (T8), and a ledger file staged for a commit that was refused, blocked, cancelled or failed could stay staged while the person's git commands meet it (T10). A condition that matched fewer git commands would miss commits and changes of branch, so calls would wait or go to the wrong branch (T19).
+- **If it is wrong:** Runs that came at other moments, or not at all, would leave calls waiting for a later run, so they could reach no commit (T8), and a ledger file staged for a commit that was refused at a permission prompt or by a permission rule, blocked, cancelled or failed could stay staged while the person's git commands meet it (T10). A condition that matched fewer git commands would miss commits and changes of branch, so calls would wait or go to the wrong branch (T19).
 - **Fact:** `Stop` runs when the main agent finishes responding, `SessionEnd` runs when a session ends, as when the person exits or runs `/clear`, and `PostToolUse` or `PostToolUseFailure` runs after each Bash call that ran.
   - **Relied on:** R7, R87, T8, T10, DR-009, DR-014
   - **Checked:** documented: <https://code.claude.com/docs/en/hooks>, read 2026-11-01
@@ -293,7 +293,7 @@ The assumptions about Claude Code: what its transcripts hold, when its hooks run
 - **Fact:** A Bash call refused at a permission prompt or by a rule, blocked by another hook, or cancelled while it runs gets no `PostToolUse` or `PostToolUseFailure` run, and an interrupt runs no `Stop`.
   - **Relied on:** R9, R87, T10, DR-014
   - **Checked:** documented: <https://code.claude.com/docs/en/hooks>, read 2026-11-01
-- **Fact:** Claude Code writes a result into the transcript for a Bash command that was refused, blocked or cancelled.
+- **Fact:** Claude Code writes a result into the transcript for a Bash command that was refused at a permission prompt or by a permission rule, blocked or cancelled.
   - **Relied on:** R87, T10, DR-014
   - **Checked:** not yet: `add-pr-cost-calculator` task 1.1 checks it
 - **Fact:** A blocked call's reason comes back to Claude as the call's error, and a cancelled call's result carries the interruption message.

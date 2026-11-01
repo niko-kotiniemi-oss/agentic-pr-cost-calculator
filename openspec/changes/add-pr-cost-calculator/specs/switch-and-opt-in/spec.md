@@ -40,10 +40,10 @@ The capture step SHALL read the person's opt-in (see "Capture runs only where th
 
 #### Scenario: The environment cannot opt a person in
 
-- **WHEN** the session's environment points git's global configuration at a file that turns capture on, or adds that setting through `GIT_CONFIG_COUNT` or `GIT_CONFIG_PARAMETERS`, and the person's own global configuration does not turn it on
+- **WHEN** the session's environment points git's global configuration at a file that turns capture on, or adds the opt-in key through `GIT_CONFIG_COUNT` or `GIT_CONFIG_PARAMETERS`, and the person's own global configuration does not turn it on
 - **THEN** nothing is recorded
 
-#### Scenario: A setting in an included file does not opt a person in
+#### Scenario: The opt-in key in an included file does not opt a person in
 
 - **WHEN** the person's global configuration includes a file that is not one of their global configuration files, and only that included file turns capture on
 - **THEN** nothing is recorded
@@ -85,16 +85,16 @@ Where both of the person's global configuration files (see "The person's opt-in 
 - **WHEN** git's configuration file in the person's XDG configuration folder turns capture on, and their `~/.gitconfig` turns it off
 - **THEN** nothing is recorded
 
-### Requirement: The setting is read by git's rules
+### Requirement: The person's opt-in is read by git's rules
 
-The capture step SHALL read the person's opt-in (see "Capture runs only where the tool is on and the person has opted in") by git's rules for its configuration files: section and key names match in any case, a value is read without its quotes or a comment that follows it, the last value in a file decides, and a key in a subsection, such as `[pr-cost "x"]`, or in a comment is not the setting.
+The capture step SHALL read the person's opt-in (see "Capture runs only where the tool is on and the person has opted in") by git's rules for its configuration files: section and key names match in any case, a value is read without its quotes or a comment that follows it, the last value in a file decides, and a key in a subsection, such as `[pr-cost "x"]`, or in a comment is not the opt-in key.
 
 #### Scenario: The last value in a file decides
 
 - **WHEN** the person's `~/.gitconfig` sets `pr-cost.capture` to `false` and then, further down the same file, to `true`
 - **THEN** the session's calls are recorded, and with the two values the other way round, nothing is recorded
 
-#### Scenario: The setting's names in any case, and its value in quotes, opt a person in
+#### Scenario: The opt-in key's names in any case, and its value in quotes, opt a person in
 
 - **WHEN** the person's `~/.gitconfig` turns capture on only with `Capture = true` in a section written `[PR-Cost]`, or only with the value `"true"`
 - **THEN** the session's calls are recorded
@@ -106,7 +106,7 @@ The capture step SHALL read the person's opt-in (see "Capture runs only where th
 
 ### Requirement: Only some of git's true values turn capture on
 
-Of the values of the person's opt-in (see "The setting is read by git's rules"), only `true`, `yes`, `on` and `1`, in any case, and the key alone with no value SHALL turn capture on, and any other value SHALL leave it off, even one that git reads as true, such as `2`.
+Of the values of the person's opt-in (see "The person's opt-in is read by git's rules"), only `true`, `yes`, `on` and `1`, in any case, and the key alone with no value SHALL turn capture on, and any other value SHALL leave it off, even one that git reads as true, such as `2`.
 
 #### Scenario: Git's spellings of the setting opt a person in
 
@@ -219,14 +219,14 @@ A configuration file that is missing at a commit, is not a regular file there, i
 - **WHEN** the configuration turns the tool on before the merge, and a pull request replaces the configuration file with one that is not valid, is larger than its size bound, is a symbolic link or is not a regular file
 - **THEN** its report comment is posted
 
-### Requirement: A change to the configuration, the hook or a workflow is flagged
+### Requirement: A change to the configuration, the hook file or a workflow is flagged
 
 When a pull request changes the configuration file, the hook file at the path that the README gives, or any workflow file, its comment SHALL say so.
 
 #### Scenario: A changed report is flagged
 
 - **WHEN** a pull request changes the configuration file, the hook file, the workflow file that runs the report, or another workflow file
-- **THEN** its comment says that the pull request changed the tool's configuration, its hook or a workflow
+- **THEN** its comment says that the pull request changed the tool's configuration, its hook file or a workflow
 
 #### Scenario: A pull request that makes the configuration unreadable is flagged
 

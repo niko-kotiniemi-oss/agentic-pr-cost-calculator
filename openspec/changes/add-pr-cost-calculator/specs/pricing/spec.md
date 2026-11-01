@@ -58,32 +58,32 @@ A call SHALL be priced with every modifier the price table lists for its model a
 
 #### Scenario: A region multiplier applies to every token type
 
-- **WHEN** a call records an inference region for which the price table gives a multiplier
+- **WHEN** a call's entry gives an inference region for which the price table gives a multiplier
 - **THEN** each of that call's token costs is multiplied by it
 
 #### Scenario: Web searches are priced per search
 
-- **WHEN** a call records server-side web searches
+- **WHEN** a call's entry gives server-side web searches
 - **THEN** they are priced at the table's per-search rate, in addition to the call's tokens
 
 #### Scenario: Web fetches add nothing beyond their tokens
 
-- **WHEN** a call records server-side web fetches, which the price table lists at no charge
+- **WHEN** a call's entry gives server-side web fetches, which the price table lists at no charge
 - **THEN** the call is priced, and its cost is that of its tokens alone
 
 #### Scenario: A fast speed is priced at its premium rates
 
-- **WHEN** a call records a speed for which the price table gives premium rates, as it does for fast mode
+- **WHEN** a call's entry gives a speed for which the price table gives premium rates, as it does for fast mode
 - **THEN** each of that call's token types is priced at that speed's rate
 
 #### Scenario: A service tier is priced at its own rates
 
-- **WHEN** a call records a service tier for which the price table gives rates
+- **WHEN** a call's entry gives a service tier for which the price table gives rates
 - **THEN** each of that call's token types is priced at that tier's rate
 
 #### Scenario: Modifiers combine as the price table states
 
-- **WHEN** a call's prompt is above its model's long-prompt length, the call records an inference region that has a multiplier and a fast speed, and the price table states how those modifiers combine for its model and day
+- **WHEN** a call's prompt is above its model's long-prompt length, the call's entry gives an inference region that has a multiplier and a fast speed, and the price table states how those modifiers combine for its model and day
 - **THEN** the call's cost is what that statement gives
 
 ### Requirement: An unpriced attribute or combination is named, not guessed
@@ -92,12 +92,12 @@ A call with a recorded attribute whose value the price table does not price, or 
 
 #### Scenario: An unpriced attribute is named, not guessed
 
-- **WHEN** a call records a speed for which the price table has no rate
+- **WHEN** a call's entry gives a speed for which the price table has no rate
 - **THEN** the report shows that call's tokens, leaves it out of the cost, and names the model and that speed
 
 #### Scenario: A combination the price table does not state is named, not guessed
 
-- **WHEN** a call records attributes that call for two modifiers whose combination the price table does not state for its model and day
+- **WHEN** a call's entry gives attributes that call for two modifiers whose combination the price table does not state for its model and day
 - **THEN** the report shows that call's tokens, leaves it out of the cost, and names the model and those attributes
 
 ### Requirement: An unknown model is reported, not guessed
@@ -106,5 +106,5 @@ A ledger entry whose model is `unknown`, because the capture step's price table 
 
 #### Scenario: A new model has no price yet
 
-- **WHEN** the ledger holds calls recorded with the model `unknown`, because the capture step's price table did not list their model
+- **WHEN** a pull request's ledger files hold calls recorded with the model `unknown`, because the capture step's price table did not list their model
 - **THEN** the report shows those calls' tokens, and says that their model is unknown and their cost is missing

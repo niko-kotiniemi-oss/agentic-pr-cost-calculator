@@ -1,6 +1,6 @@
 # Python, the development tools and prices
 
-The assumptions about Python, about the tools that develop and check this repository, and about the prices that the tool applies. A test may run Python and the development tools, but no test may reach a vendor's prices (DR-090). [The index](README.md) lists every assumption, the most at stake first.
+The assumptions about Python, about the development tools of this repository, and about the prices that the tool applies. A test may run Python and the development tools, but no test may reach a vendor's prices (DR-090). [The index](README.md) lists every assumption, the most at stake first.
 
 ## Python
 
@@ -21,7 +21,7 @@ The assumptions about Python, about the tools that develop and check this reposi
 ### A52. Python's JSON reader and digit matching behave at their edges as the step and the checks expect.
 
 - **Rests on it:** R5, R35, R102, R124, T6, T17, T79, DR-108, DR-109
-- **If it is wrong:** A value that is not finite, a boolean read as a count or a line nested too deep could get past the step, or stop the report, where R35 and R102 require a refusal (T17, T6). A record numbered in digits from other scripts could pass where only ASCII digits are meant (T79).
+- **If it is wrong:** A value that is not finite, a boolean read as a count or a line nested too deep could get past the step, or stop the report, where R35 and R102 require a refusal (T17, T6). A decision record numbered in digits from other scripts could pass where only ASCII digits are meant (T79).
 - **Fact:** Python's JSON reader turns `NaN`, `Infinity`, `-Infinity` and `1e999` into numbers that are not finite, and turns `true` and `false` into values that pass a check for a whole number.
   - **Relied on:** R5, R35, T6, T17, DR-109
   - **Checked:** not yet: `add-pr-cost-calculator` task 2.1 and `add-pr-cost-calculator` task 4.2 check it
@@ -36,13 +36,13 @@ The assumptions about Python, about the tools that develop and check this reposi
   - **Checked:** not yet: `add-pr-cost-calculator` task 4.2 checks it
 - **Fact:** Python's digit matching accepts digits from other scripts as well as ASCII ones: `\d`, `int()` and `str.isdigit()` all do.
   - **Relied on:** R124, T79, DR-108
-  - **Checked:** not yet: none will, since were it wrong the check of records would only be more careful than it needs to be
+  - **Checked:** not yet: none will, since were it wrong the check of decision records would only be more careful than it needs to be
   - **Handled by:** `tests/test_decisions.py::test_a_file_not_named_as_a_record_is_reported`
 
 ### A53. Files, locks and random names behave alike on every system where a repository's git common directory lives.
 
 - **Rests on it:** R8, R10, R11, R58, R119, T11, T13, T42, T47, DR-017, DR-036, DR-127
-- **If it is wrong:** Two runs could interleave their records or both record one call, and a killed run could leave a torn store or a lock that stops later runs (T13, T42). A ledger write could leave the repository through a directory junction (T11), and two branches could add one ledger path, so that their merge conflicts or one pull request's usage is read as another's (T13, T47).
+- **If it is wrong:** Two runs could interleave their notes or both record one call, and a killed run could leave a torn store or a lock that stops later runs (T13, T42). A ledger write could leave the repository through a directory junction (T11), and two branches could add one ledger path, so that their merge conflicts or one pull request's usage is read as another's (T13, T47).
 - **Fact:** The operating system releases a file lock when the process holding it ends, even when that process is killed, on every system and filesystem where a repository's git common directory lives.
   - **Relied on:** R11, T13, T42, DR-036
   - **Checked:** not yet: `add-pr-cost-calculator` task 2.1 and `add-pr-cost-calculator` task 2.2 check it
@@ -83,10 +83,10 @@ The assumptions about Python, about the tools that develop and check this reposi
 
 ## The development tools
 
-### A22. The test tools can do what the testing records ask of them.
+### A22. The test tools can do what the testing decision records ask of them.
 
 - **Rests on it:** T4, T10, T43, T52, DR-024, DR-084, DR-086, DR-087, DR-088, DR-092, DR-098, DR-136
-- **If it is wrong:** A secret scanner that refuses a ledger file would fail the agent's commit and push it toward `--no-verify` (T10, T43). Expected failures, coverage, mutation or property tests that cannot do what the records ask would leave CI green without meaning it, and weaken the answers to T4 and T52.
+- **If it is wrong:** A secret scanner that refuses a ledger file would fail the agent's commit and push it toward `--no-verify` (T10, T43). Expected failures, coverage, mutation or property tests that cannot do what the decision records ask would leave CI green without meaning it, and weaken the answers to T4 and T52.
 - **Fact:** detect-secrets, with its default plugins and filters, raises no finding on a hexadecimal hash whose key ends in `_id`, though it flags such a hash elsewhere.
   - **Relied on:** T10, T43, DR-136
   - **Checked:** not yet: `add-pr-cost-calculator` task 1.2 checks it
@@ -170,7 +170,7 @@ The assumptions about Python, about the tools that develop and check this reposi
 ### A59. The development tools support Python 3.11, and report code that needs a newer Python.
 
 - **Rests on it:** R25, T55, T56, DR-025, DR-026
-- **If it is wrong:** A tool's update that drops Python 3.11 would force a choice between the tool's floor and its test tools (T56), and code that needs a newer Python, or a newer Python that breaks the tool, could ship unseen (T55).
+- **If it is wrong:** A development tool's update that drops Python 3.11 would force a choice between the tool's floor and its test tools (T56), and code that needs a newer Python, or a newer Python that breaks the tool, could ship unseen (T55).
 - **Fact:** The development tools keep supporting Python 3.11.
   - **Relied on:** R25, T56, DR-025
   - **Checked:** not yet: none will, since installing the tools needs the network, which no test uses; the CI job that `add-pr-cost-calculator` task 1.11 set up installs them on Python 3.11 in every pull request

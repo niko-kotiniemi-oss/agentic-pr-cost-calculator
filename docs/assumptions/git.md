@@ -19,8 +19,8 @@ The assumptions about git: what its commands, options, attributes, locks and con
 ## A11. git 2.43 stands for every later git.
 
 - **Rests on it:** R32, R52, R110, R113, R117, T2, T8, T10, T45, T56, DR-027, DR-037, DR-055, DR-107, DR-130, DR-154
-- **If it is wrong:** A later git that changes index locking, intent-to-add entries, sparse checkouts or option parsing would still pass the floor, and could make the step disturb work or lose calls (T10, T56, T8), while the README's ways to detect, prevent and recover could lose ledger files or a person's changes (T2).
-- **Fact:** The design's account, in its risk of a removed ledger file, of the commands that an untracked or intent-to-add ledger file stops, lets run or drops the entry of, and of what a crash leaves behind, holds in git 2.43 and every later release.
+- **If it is wrong:** A later git that changes index locking, intent-to-add index entries, sparse checkouts or option parsing would still pass the floor, and could make the step disturb work or lose calls (T10, T56, T8), while the README's ways to detect, prevent and recover could lose ledger files or a person's changes (T2).
+- **Fact:** The design's account, in its risk of a removed ledger file, of the commands that an untracked or intent-to-add ledger file stops, lets run or drops the index entry of, and of what a crash leaves behind, holds in git 2.43 and every later release.
   - **Relied on:** R52, R110, R113, R117, T2, T8, T10, DR-055, DR-130, `openspec/changes/add-pr-cost-calculator/design.md`
   - **Checked:** not yet: `add-pr-cost-calculator` task 4.4 checks it
 - **Fact:** The git behaviour that the design relies on holds in git 2.43 and in every later release, so the CI runner's git and git 2.43 stand for what adopters run, and a version check is enough to refuse a git that behaves otherwise. Reading `GIT_NO_LAZY_FETCH` is the exception that A63 records: a plain git 2.43.0 to 2.43.3 or 2.44.0 does not read it.
@@ -30,11 +30,11 @@ The assumptions about git: what its commands, options, attributes, locks and con
 ## A12. History, refs and tags behave as the checks expect.
 
 - **Rests on it:** R10, R22, R27, R34, R59, R68, R119, R129, R130, T2, T13, T20, T23, T28, T47, T58, T67, T68, T70, T77, DR-015, DR-022, DR-061, DR-068, DR-121, DR-122, DR-127, DR-131, DR-148, DR-153, DR-156
-- **If it is wrong:** A removed ledger file could vanish from the record that the report reads (T20, T77), a tag named like the default branch could take its place (T23, T70), and the README's check of a pin could pass a commit that only a fork holds (T58, T28).
+- **If it is wrong:** A removed ledger file could vanish from the history that the report reads (T20, T77), a tag named like the default branch could take its place (T23, T70), and the README's check of a pin could pass a commit that only a fork holds (T58, T28).
 - **Fact:** A file or text that a later commit removes stays in git history, and in clones and forks, so a removal hides nothing that was pushed; only rewriting history removes it.
   - **Relied on:** R22, R129, T2, T20, T77, DR-015, DR-121, DR-153
   - **Checked:** not yet: none will, since it is how git keeps history, which the design takes as given
-- **Fact:** Every clone that the records check runs in holds `refs/remotes/origin/main`.
+- **Fact:** Every clone that the decision records' check runs in holds `refs/remotes/origin/main`.
   - **Relied on:** R129, R130, T70, DR-121
   - **Checked:** not yet: none will, since the clones that the check runs in are made outside any test, by people and by CI
   - **Handled by:** `tests/test_decisions.py::test_a_clone_of_one_branch_is_told_how_to_fetch_the_default_branch`
@@ -145,7 +145,7 @@ The assumptions about git: what its commands, options, attributes, locks and con
 
 - **Rests on it:** R52, R113, T8, T10, DR-037, DR-055, DR-107
 - **If it is wrong:** If git 2.43 crashed, or damaged an index, in other cases than the README names, a later commit could delete ledger files from the branch with their calls (T8, T10), and the README's way to turn the sparse index off could miss a worktree.
-- **Fact:** git 2.43 can crash in a cone-mode `git sparse-checkout` command while any intent-to-add entry exists, and such a crash can leave `info/sparse-checkout.lock`, or with the sparse index, `index.lock`, behind.
+- **Fact:** git 2.43 can crash in a cone-mode `git sparse-checkout` command while any intent-to-add index entry exists, and such a crash can leave `info/sparse-checkout.lock`, or with the sparse index, `index.lock`, behind.
   - **Relied on:** R52, R113, T8, T10, DR-037, DR-107
   - **Checked:** not yet: `add-pr-cost-calculator` task 4.4 checks it
 - **Fact:** With the sparse index on, or given `--sparse-index`, such a command in git 2.43 can instead exit with success having written a damaged index, so that the next commit deletes files, ledger files among them, from the branch.
@@ -168,7 +168,7 @@ The assumptions about git: what its commands, options, attributes, locks and con
 - **Fact:** git reads a person's global configuration from `~/.gitconfig` and its file in the XDG configuration folder, reading the XDG file first and `~/.gitconfig` after it, so `~/.gitconfig` decides where both set a key.
   - **Relied on:** R37, R105, T3, T41, DR-048
   - **Checked:** not yet: `add-pr-cost-calculator` task 2.4 checks it
-- **Fact:** git's configuration syntax is as the step re-implements it: section and key names match in any case, a value loses its quotes and any comment after it, the last value in a file decides, and a key in a subsection or in a comment is not the setting.
+- **Fact:** git's configuration syntax is as the step re-implements it: section and key names match in any case, a value loses its quotes and any comment after it, the last value in a file decides, and a key in a subsection or in a comment is not the opt-in key.
   - **Relied on:** R38, T3, DR-048, DR-049
   - **Checked:** not yet: `add-pr-cost-calculator` task 2.4 checks it in part
 - **Fact:** git reads `true`, `yes`, `on`, `1` and a key given with no value as true, reads other numbers such as `2` as true too, reads an empty value as false, and refuses a value such as `maybe`.

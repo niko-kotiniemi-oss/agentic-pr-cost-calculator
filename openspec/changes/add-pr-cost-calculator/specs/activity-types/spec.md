@@ -23,7 +23,7 @@ Each entry SHALL carry one activity type derived from the tools its call invoked
 #### Scenario: An MCP call does not record the server's name
 
 - **WHEN** a model call invokes a tool of an MCP server
-- **THEN** its entry's activity type is MCP, and no part of the tool's or the server's name is in the ledger
+- **THEN** its entry's activity type is MCP, and no part of the MCP tool's or its server's name is in the ledger
 
 #### Scenario: A file write is code generation
 

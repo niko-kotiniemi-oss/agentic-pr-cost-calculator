@@ -10,12 +10,12 @@ An open-source tool to estimate what a GitHub pull request cost when it was buil
 For each pull request, the tool will:
 
 - capture the tokens the agent spent while its session was working in the repository, per model and by type: input, output, cache writes and cache reads, and carry them to the pull request with the agent's own commits;
-- price them from a dated price table kept in this repository, so the estimate uses the price that applied on the day the tokens were spent;
+- price them from a dated price table kept in the tool's own repository, so the estimate uses the price that applied on the day the tokens were spent;
 - add the GitHub Actions minutes the pull request's CI used, priced at GitHub's published rate;
 - where the data allows, split the cost by activity: code generation, file reading, tooling, MCP calls, subagents and conversation, with any tool it does not know counted as other;
 - post a short report comment when the pull request merges, and keep the ledger in the repository as the record.
 
-A repository turns it on or off with one setting, and each person decides for themselves whether their own sessions are recorded.
+A repository turns it on or off with one file, its configuration file, and each person decides for themselves whether their own sessions are recorded.
 
 Usage is recorded by the directory the session is in, not by which files it touches. A session in the repository is recorded there even for work it does on another repository from there, so work on other repositories, private ones above all, belongs in sessions of its own.
 

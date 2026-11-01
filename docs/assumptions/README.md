@@ -1,6 +1,6 @@
 # Assumptions
 
-What the specs, the design, the [threat model](../threat-model.md) and the decision records assume about what lies outside the tool's own code: Claude Code, GitHub, git, Python, the tools that develop and check this repository, the prices that the tool applies, and the adopters and people who use and keep the tool. A page per subject holds each assumption in full: what rests on it, by requirement, threat and record ID, what would change if it were wrong, and its facts, each with where it is relied on and how it is checked. A threat that rests on an assumption names it in its field `Assumptions`, and the assumption names the threat. `tests/test_assumptions.py` checks that each citation resolves, that each check takes one of the forms below, and the order of the list.
+What the specs, the design, the [threat model](../threat-model.md) and the decision records assume about what lies outside the tool's own code: Claude Code, GitHub, git, Python, the development tools of this repository, the prices that the tool applies, and the adopters and people who use and keep the tool. A page per subject holds each assumption in full: what rests on it, by requirement, threat and record ID, what would change if it were wrong, and its facts, each with where it is relied on and how it is checked. A threat that rests on an assumption names it in its field `Assumptions`, and the assumption names the threat. `tests/test_assumptions.py` checks that each citation resolves, that each check takes one of the forms below, and the order of the list.
 
 These pages describe and never steer: where one differs from `CLAUDE.md` or a spec, `CLAUDE.md` or the spec holds.
 
@@ -38,7 +38,7 @@ The list puts first the assumptions behind the threats of highest impact, then, 
 - **A19.** A reusable workflow runs with its caller's context, and with only the token and the secrets that its caller gives it. Impact 3, risk 4. Page: [GitHub](github.md).
 - **A20.** Checkouts and GitHub's hosted runners are what the workflows expect. Impact 3, risk 4. Page: [GitHub](github.md).
 - **A21.** The git commands that the step runs start no program that the step did not choose, apart from those that the person's own configuration names. Impact 3, risk 4. Page: [git](git.md).
-- **A22.** The test tools can do what the testing records ask of them. Impact 3, risk 4. Page: [Python, the development tools and prices](python-tools-and-prices.md).
+- **A22.** The test tools can do what the testing decision records ask of them. Impact 3, risk 4. Page: [Python, the development tools and prices](python-tools-and-prices.md).
 - **A23.** Adopters pin released commits, and update the hook and the pin together. Impact 3, risk 4. Page: [Adopters and people](adopters-and-people.md).
 - **A24.** The machine running a session, and the programs that a hook starts on it, are the person's own. Impact 3, risk 4. Page: [Adopters and people](adopters-and-people.md).
 - **A57.** The reviews and the planned tests get done. Impact 3, risk 4. Page: [Adopters and people](adopters-and-people.md).
@@ -64,7 +64,7 @@ The list puts first the assumptions behind the threats of highest impact, then, 
 - **A44.** Teams want each pull request's cost, and read it as an estimate. Impact 2, risk 6. Page: [Adopters and people](adopters-and-people.md).
 - **A45.** Adopters merge into the default branch by hand, after CI, having read the diff, and never rewrite that branch's history. Impact 2, risk 6. Page: [Adopters and people](adopters-and-people.md).
 - **A46.** Sessions commit through Bash, and little else changes the branch while a session works. Impact 2, risk 6. Page: [Adopters and people](adopters-and-people.md).
-- **A47.** Ledgers stay small, and their commits are rarely undone. Impact 2, risk 6. Page: [Adopters and people](adopters-and-people.md).
+- **A47.** Ledger files stay small, and their commits are rarely undone. Impact 2, risk 6. Page: [Adopters and people](adopters-and-people.md).
 - **A48.** A pull request's commits stay findable after every merge method. Impact 2, risk 4. Page: [GitHub](github.md).
 - **A49.** GitHub's lookup of the pull requests associated with a commit behaves as documented: for a commit on the default branch, it gives the merged pull request that introduced the commit. Impact 2, risk 4. Page: [GitHub](github.md).
 - **A50.** GitHub's runs and jobs API gives complete, timed listings, within known limits. Impact 2, risk 4. Page: [GitHub](github.md).
@@ -74,7 +74,7 @@ The list puts first the assumptions behind the threats of highest impact, then, 
 - **A54.** The clock of the machine that runs a session agrees with its transcripts and with the runner's day. Impact 2, risk 4. Page: [Python, the development tools and prices](python-tools-and-prices.md).
 - **A55.** Anthropic prices each token type at its own rate for each model. Impact 2, risk 4. Page: [Python, the development tools and prices](python-tools-and-prices.md).
 - **A56.** Only the facts that the ledger records set a call's price, and prices change rarely and from a given day. Impact 2, risk 4. Page: [Python, the development tools and prices](python-tools-and-prices.md).
-- **A58.** Someone reads the comments and keeps the prices current. Impact 2, risk 4. Page: [Adopters and people](adopters-and-people.md).
+- **A58.** Someone reads the report comments and keeps the prices current. Impact 2, risk 4. Page: [Adopters and people](adopters-and-people.md).
 - **A59.** The development tools support Python 3.11, and report code that needs a newer Python. Impact 2, risk 2. Page: [Python, the development tools and prices](python-tools-and-prices.md).
 - **A60.** Adopters' machines and runners meet the floors, and their policies allow the workflow. Impact 2, risk 2. Page: [Adopters and people](adopters-and-people.md).
 - **A61.** A session that starts in a repository's folder runs the hooks that the repository's settings register, once the folder is trusted, unless it is a cloud thread of a project or a cloud session with several repositories. Impact 2, risk 6. Page: [Claude Code](claude-code.md).

@@ -6,16 +6,16 @@ Give each merged pull request one short, readable comment saying what it cost, c
 
 ### Requirement: A merged pull request gets one report comment
 
-When a pull request merges with the tool on, the report SHALL post one comment giving the total cost; the cost by model, by token type and by activity type; the CI minutes and their cost, and how many of those minutes ran on runners that the price table does not list; and the number of ledger entries it counted, and the number of entries and files it did not count, for each reason that this capability and `ledger` give.
+When a pull request merges with the tool on before its merge or after it, the report SHALL post one comment giving the total cost; the cost by model, by token type and by activity type; the CI minutes and their cost, and how many of those minutes ran on runners that the price table does not list; and the number of ledger entries it counted, and the number of entries and files it did not count, for each reason that this capability and `ledger` give.
 
 #### Scenario: The comment states the totals
 
-- **WHEN** a pull request with a ledger and CI runs merges
+- **WHEN** a pull request with ledger files and CI runs merges
 - **THEN** one comment is posted with the token cost, the CI cost and their total
 
-#### Scenario: A pull request without a ledger says so
+#### Scenario: A pull request without ledger files says so
 
-- **WHEN** a pull request merges with no ledger on its branch
+- **WHEN** a pull request that adds no ledger file merges
 - **THEN** the comment gives the CI cost and says that no agent usage was recorded
 
 ### Requirement: The comment says what its figure is and where it comes from
@@ -60,7 +60,7 @@ When the report runs again, it SHALL update its earlier comment (see "A merged p
 - **WHEN** a comment written by someone else carries the report's marker
 - **THEN** that comment is left unchanged, and the report posts or updates its own
 
-### Requirement: A hook that does not come from the report's commit is named, not quoted
+### Requirement: A hook file that does not come from the report's commit is named, not quoted
 
 When the hook file at the path that the README gives is missing from the merged commit, or differs from the hook file at the tool's commit that the report runs, the comment SHALL say that the repository's hook does not come from the report's commit, and SHALL quote nothing from that file.
 
@@ -100,7 +100,7 @@ A ledger line that names a model or an attribute value that the price table does
 
 The report SHALL read ledger files only as blobs from git, never through the working tree. It SHALL refuse an added path (see "Only the ledger files that the merge adds are counted" in `ledger`) in the ledger folder that is not a regular file, such as a symbolic link or a submodule, and SHALL learn each blob's size before reading it. It SHALL fetch what it reads: the default branch's history up to the push's commit, and the pull request's head, as `refs/pull/<number>/head`.
 
-#### Scenario: A ledger that is a link is refused
+#### Scenario: A ledger file that is a link is refused
 
 - **WHEN** a pull request adds a symbolic link in the ledger folder
 - **THEN** the report reads nothing through it, and the comment counts it as a refused file
@@ -119,10 +119,10 @@ The report SHALL read ledger files only as blobs from git, never through the wor
 
 The report SHALL refuse a pull request's ledger files (see "Only the ledger files that the merge adds are counted" in `ledger`) when they are larger in total than the size bound that the ledger format documents, which capture applies to each ledger file it reads, and SHALL then still report the CI cost.
 
-#### Scenario: An oversized ledger is refused
+#### Scenario: Ledger files too large in total are refused
 
 - **WHEN** the ledger files that a pull request adds exceed the size bound
-- **THEN** the comment says the ledger was too large to read, and gives the CI cost
+- **THEN** the comment says the ledger files were too large to read, and gives the CI cost
 
 ### Requirement: Ledger files that the default branch already holds are read by capture's rules
 
@@ -221,46 +221,46 @@ The report SHALL read each line of the ledger files that the merge adds (see "On
 #### Scenario: A ledger count that is not a whole number within the ceiling is refused
 
 - **WHEN** a ledger line that the pull request adds gives a count that is negative, a fraction, text, or one more than the ceiling
-- **THEN** that line is refused, counted as refused, and its entry is not counted
+- **THEN** that line is refused, counted as refused, and not counted as an entry
 
 #### Scenario: A ledger count given as `true` or `false` is refused
 
 - **WHEN** a ledger line that the pull request adds gives a count as `true` or as `false`
-- **THEN** that line is refused, counted as refused, and its entry is not counted
+- **THEN** that line is refused, counted as refused, and not counted as an entry
 
 #### Scenario: A ledger count given as not-a-number is refused
 
 - **WHEN** a ledger line that the pull request adds gives a count as `NaN`, which Python's JSON reader reads as not-a-number
-- **THEN** that line is refused, counted as refused, and its entry is not counted
+- **THEN** that line is refused, counted as refused, and not counted as an entry
 
 #### Scenario: A ledger count too large to hold is refused
 
 - **WHEN** a ledger line that the pull request adds gives a count as `1e999`, which Python's JSON reader reads as infinity, or as a whole number thousands of digits long, which it refuses to read
-- **THEN** that line is refused, counted as refused, and its entry is not counted, and the report goes on
+- **THEN** that line is refused, counted as refused, and not counted as an entry, and the report goes on
 
 #### Scenario: A ledger line that gives a field twice is refused
 
 - **WHEN** a ledger line that the pull request adds gives one field twice, which Python's JSON reader would read as the last of the two values
-- **THEN** that line is refused, counted as refused, and its entry is not counted
+- **THEN** that line is refused, counted as refused, and not counted as an entry
 
 #### Scenario: A ledger line with a field that the format does not name is refused
 
 - **WHEN** a ledger line that the pull request adds holds a field that the ledger format does not name
-- **THEN** that line is refused, counted as refused, and its entry is not counted
+- **THEN** that line is refused, counted as refused, and not counted as an entry
 
 #### Scenario: A ledger line nested too deeply is refused
 
 - **WHEN** a ledger line that the pull request adds nests arrays or objects deeper than the format allows, including so deep that Python's JSON reader raises an error on it
-- **THEN** that line is refused, counted as refused, and its entry is not counted, and the report goes on
+- **THEN** that line is refused, counted as refused, and not counted as an entry, and the report goes on
 
 #### Scenario: A ledger day that is not a date is refused
 
 - **WHEN** a ledger line that the pull request adds gives a day that is not a date in the calendar, such as `2026-02-30`
-- **THEN** that line is refused, counted as refused, and its entry is not counted
+- **THEN** that line is refused, counted as refused, and not counted as an entry
 
 ### Requirement: A refused ledger line is counted as refused, and no line stops the report
 
-A refused ledger line's entry SHALL NOT be counted, the line SHALL be counted as refused, and no line, however it is malformed, SHALL stop the report.
+A refused ledger line SHALL NOT be counted as an entry, it SHALL be counted as refused, and no line, however it is malformed, SHALL stop the report.
 
 #### Scenario: An unreadable ledger line is counted and the report completes
 
