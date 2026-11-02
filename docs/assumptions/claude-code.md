@@ -281,10 +281,10 @@ The assumptions about Claude Code: what its transcripts hold, when its hooks run
 - **Fact:** `Stop` runs when the main agent finishes responding, `SessionEnd` runs when a session ends, as when the person exits or runs `/clear`, and `PostToolUse` or `PostToolUseFailure` runs after each Bash call that ran.
   - **Relied on:** R7, R87, T8, T10, DR-014, DR-172
   - **Checked:** documented: <https://code.claude.com/docs/en/hooks>, read 2026-11-01
-- **Fact:** `SessionStart` runs when a session starts or is resumed, and when it is cleared or compacted. Claude's first response waits for its hooks, and a prompt sent meanwhile reaches Claude only once they have finished, what such a hook prints on standard output becomes context for Claude, and it cannot block the session.
+- **Fact:** `SessionStart` runs when a session starts, is resumed or forked, and when it is cleared or compacted. At a session's start its hooks run in the background while the person can already type, Claude's first response waits for them, and a prompt sent meanwhile reaches Claude only once they have finished, what such a hook prints on standard output becomes context for Claude, and it cannot block the session.
   - **Relied on:** R148, T38, DR-172
   - **Checked:** documented: <https://code.claude.com/docs/en/hooks>, read 2026-11-02
-- **Fact:** A session's first prompt is written to its transcript after the session's `SessionStart` hooks have begun.
+- **Fact:** A session's first prompt is written to its transcript after its start run has noted its time, unless the person sends it the moment the session starts.
   - **Relied on:** R148, DR-172
   - **Checked:** not yet: none will, since no test may reach Claude Code
 - **Fact:** `StopFailure` runs instead of `Stop` when a turn ends in an API error.

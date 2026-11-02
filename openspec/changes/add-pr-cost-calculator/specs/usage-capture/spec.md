@@ -245,11 +245,11 @@ Capture SHALL run when a session starts, when Claude finishes responding, when a
 
 ### Requirement: A start run reads no transcript
 
-The run when a session starts, is resumed, cleared or compacted SHALL read no transcript: it SHALL take back and put back what is due (see "Ledger files are taken back and put back whatever the switches say" in `switch-and-opt-in`) and, when it finds both switches on, begin its session's interval. Nothing SHALL depend on a start run coming: where none comes, the session's interval begins at its first run that finds both on.
+The run when a session starts, is resumed or forked, or is cleared or compacted SHALL read no transcript: it SHALL take back and put back what is due (see "Ledger files are taken back and put back whatever the switches say" in `switch-and-opt-in`) and, when it finds both switches on, begin its session's interval. Nothing SHALL depend on a start run coming: where none comes, the session's interval begins at its first run that finds both on.
 
 #### Scenario: A session started opted in records its first turn
 
-- **WHEN** the person turned capture on before a session started, its start run came, and in its first turn the agent makes calls in one worktree and commits there, with no change of branch in between
+- **WHEN** the person turned capture on before a session started, its start run noted its time before the session's first prompt was written, and in its first turn the agent makes calls in one worktree and commits there, with no change of branch in between
 - **THEN** that commit carries each of those calls that the transcript held as over when that commit's run read it
 
 #### Scenario: A session with no start run records from its first run

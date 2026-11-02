@@ -12,7 +12,7 @@
 
 Claude Code writes each session's transcript, with every call's model and usage, as JSON lines on the session's machine, and it runs hooks at set points of the session, each given the transcript's path (see the design's context). A cloud session's machine is thrown away when the session ends, taking the transcript with it, and reading transcripts afterwards proved slow for a long pull request (see the design's context; T8). DR-009 registered capture for the events that end a turn, a subagent or a session, and for those around Bash commands, so that a session's first run came only at its first git command or turn end.
 
-An interval when both switches were on now begins only at a run (DR-168), and the owner asked on 2026-11-02 that `SessionStart` be considered for consent without being depended on. Claude Code documents that `SessionStart` runs when a session starts or is resumed, cleared or compacted, that Claude's first response waits for its hooks, that what such a hook prints on standard output becomes context for Claude, and that it cannot block the session.
+An interval when both switches were on now begins only at a run (DR-168), and the owner asked on 2026-11-02 that `SessionStart` be considered for consent without being depended on. Claude Code documents that `SessionStart` runs when a session starts, is resumed or forked, or is cleared or compacted, that at a session's start its hooks run in the background while the person can already type, that Claude's first response waits for them, that what such a hook prints on standard output becomes context for Claude, and that it cannot block the session.
 
 ## Decision
 
