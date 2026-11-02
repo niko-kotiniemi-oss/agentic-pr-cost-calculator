@@ -517,12 +517,12 @@ The README, the opt-in's feature page and the ledger's SHALL say that an opt-out
 
 ### Requirement: The documentation says where an opt-in applies
 
-The README and the opt-in's feature page SHALL say that one opt-in covers every repository that turns the tool on, those that adopt it later among them, with no notice in any of them; that a repository's own setting that turns capture off holds only in that clone; and how a person turns capture off for a folder with git's own conditional includes.
+The README and the opt-in's feature page SHALL say that one opt-in covers every repository that turns the tool on, those that adopt it later among them, with no notice in any of them; that a repository's own setting that turns capture off holds only in that clone; and how a person turns capture off for a folder with git's own conditional includes, and where that stops.
 
 #### Scenario: The opt-in's pages say where an opt-in applies
 
 - **WHEN** the README's section on the opt-in and the opt-in's feature page are read
-- **THEN** each says that one opt-in covers every repository that turns the tool on, later ones too, with no notice, that a repository's own setting that turns capture off holds only in that clone, and how to turn capture off for a folder
+- **THEN** each says that one opt-in covers every repository that turns the tool on, later ones too, with no notice, that a repository's own setting that turns capture off holds only in that clone, and how to turn capture off for a folder and where that stops: in a linked worktree there whose repository lies elsewhere, and for a folder named through a symbolic link
 
 ### Requirement: Each ledger format that a release wrote keeps its golden figures
 
