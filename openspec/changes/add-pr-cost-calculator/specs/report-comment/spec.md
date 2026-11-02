@@ -126,7 +126,7 @@ The report SHALL refuse a pull request's ledger files (see "Only the ledger file
 
 ### Requirement: Ledger files that the default branch already holds are read by capture's rules
 
-The report SHALL read the ledger files that the default branch's first-parent history held before the merge by the rules that capture applies to the ledger files it reads: it SHALL skip a path in the ledger folder that is not a regular file and a file larger than the size bound (see "A pull request's ledger files larger in total than the size bound are refused"), and SHALL skip a line that does not match the ledger format, counting it neither as an entry nor as a refused line of the pull request.
+The report SHALL read the ledger files that the default branch's first-parent history held before the merge by the rules that capture applies to those it reads: it SHALL skip a path in the ledger folder that is not a regular file and a file larger than the size bound (see "A pull request's ledger files larger in total than the size bound are refused"), and SHALL skip a line that does not match the ledger format, counting it neither as an entry nor as a refused line of the pull request.
 
 #### Scenario: An oversized ledger file that the default branch holds does not stop the report
 

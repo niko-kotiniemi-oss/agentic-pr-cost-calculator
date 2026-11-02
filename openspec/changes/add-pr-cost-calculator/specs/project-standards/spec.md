@@ -397,7 +397,7 @@ The assumptions SHALL be listed by the highest impact among the threats that res
 
 ### Requirement: The specs and pages use the glossary's words
 
-The repository SHALL keep a glossary that gives each term's meaning and the words to avoid for it. Tests SHALL fail when a tracked Markdown file uses a word to avoid outside code, and name the file, the line and the term to use, and SHALL fail, naming the file, when such a file is a symbolic link, is not UTF-8 or opens a fenced code block that never closes, since they would not read all of it. They SHALL NOT read the decision records, archived changes, released changelog entries, vendored or generated files, or titles that an accepted record quotes, which keep the words they were written with, and SHALL fail when such a title leaves the specs.
+The repository SHALL keep a glossary of each term's meaning and its words to avoid. Tests SHALL fail when a tracked Markdown file uses a word to avoid outside code, naming the file, the line and the term to use, and when they cannot read such a file whole, naming it. They SHALL NOT read decision records, archived changes, released changelog entries, vendored or generated files, or titles that an accepted record quotes, which keep their words, and SHALL fail when such a title leaves the specs.
 
 #### Scenario: An avoided word fails CI
 
