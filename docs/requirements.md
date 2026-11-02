@@ -66,7 +66,7 @@ The capability names the spec that holds the requirement. Each capability is one
 | R52 | behavioural | `usage-capture` | A ledger file that a commit takes stays taken |
 | R53 | non-functional | `usage-capture` | The capture step's first line names its release |
 | R54 | non-functional | `usage-capture` | The capture step starts only git, from an absolute path |
-| R55 | behavioural | `usage-capture` | The store is versioned, and an unknown version is left alone |
+| R55 | behavioural | `usage-capture` | The store is versioned: an earlier version is upgraded, an unknown one left alone |
 | R56 | behavioural | `ledger` | The capture step stages only the ledger file it wrote |
 | R57 | behavioural | `ledger` | A ledger file is noted before it is written |
 | R58 | functional | `ledger` | Only the ledger files that the merge adds are counted |
@@ -180,6 +180,8 @@ The capability names the spec that holds the requirement. Each capability is one
 | R166 | behavioural | `switch-and-opt-in` | A clock that moves back ends the session's intervals |
 | R167 | behavioural | `usage-capture` | Capture reads each ledger file by the version that it states |
 | R168 | behavioural | `report-comment` | Ledger files that the default branch already holds are read by the version they state |
+| R169 | non-functional | `usage-capture` | Git runs without the session's git variables |
+| R170 | non-functional | `usage-capture` | A ledger file's note keeps only what a take-back needs |
 
 IDs are stable: a requirement keeps its ID while it exists, and a new one takes the next free number, so the rows follow the order in which requirements were added rather than the order of the specs. A requirement that a later change removes leaves the table, and its ID is listed below with the change that removed it, never to be used again.
 

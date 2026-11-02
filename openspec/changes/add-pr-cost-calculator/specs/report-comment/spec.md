@@ -48,7 +48,7 @@ The report's comment (see "A merged pull request gets one report comment") SHALL
 
 #### Scenario: A restored or copied ledger file adds no counts or flags
 
-- **WHEN** a pull request adds a ledger file that is counted as restored, or each of whose entries the default branch already held before the merge
+- **WHEN** a pull request adds a ledger file that is counted as restored, or one that holds at least one entry, each of which the default branch already held before the merge
 - **THEN** the comment counts none of that file's counts and none of its flags
 
 #### Scenario: A mark on an entry that is not counted is not counted

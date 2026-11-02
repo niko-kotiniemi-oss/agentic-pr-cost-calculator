@@ -129,7 +129,7 @@ The capture step SHALL record nothing in a repository whose own git configuratio
 
 ### Requirement: Git's own reading of the opt-in can turn capture off, never on
 
-Once a run finds both switches on, the capture step SHALL ask git for each value of the opt-in key that git reads in this repository, included files and variables among them, and SHALL take the person's capture to be off when git gives no value or refuses one, when the last value it gives is not true, or when the last value of any one file other than the person's two global configuration files, or of the variables, is not true. What git reads SHALL never turn capture on.
+Once a run finds both switches on, the capture step SHALL ask git, in the session's environment and again without its `GIT_` variables, for each value of the opt-in key that git reads in this repository, and SHALL take the person's capture to be off when either answer gives no value or a refusal, ends in a value that is not true, or holds a file other than the person's two global configuration files, or the variables, whose last value is not true. What git reads SHALL never turn capture on.
 
 #### Scenario: An opt-out in an included file turns capture off
 
@@ -144,6 +144,16 @@ Once a run finds both switches on, the capture step SHALL ask git for each value
 #### Scenario: A global configuration file that the environment names can turn capture off
 
 - **WHEN** the person's `~/.gitconfig` turns capture on, and the session's environment points git's global configuration at another file, which does not turn it on
+- **THEN** nothing is recorded
+
+#### Scenario: A global configuration file that the environment names does not hide an opt-out
+
+- **WHEN** the person's `~/.gitconfig` turns capture on and includes, under a condition that git finds true in this repository, a file that turns it off, and the session's environment points git's global configuration at another file, which turns capture on
+- **THEN** nothing is recorded
+
+#### Scenario: Variables that change what git reads do not hide an opt-out
+
+- **WHEN** the person's `~/.gitconfig` turns capture on, and the system's git configuration, the repository's own, or a file that `~/.gitconfig` includes under a condition that git finds true in this repository turns it off, and the session's environment sets `GIT_CONFIG_NOSYSTEM`, or sets `GIT_DIR` to name another repository
 - **THEN** nothing is recorded
 
 #### Scenario: A later value that turns capture on does not undo an opt-out in an included file
@@ -164,7 +174,6 @@ Consent, the two switches that "Capture runs only where the tool is on and the p
 
 - **WHEN** the repository turns the tool on, a session makes calls while the person has not turned capture on, and the person turns capture on before the step's next run in that session
 - **THEN** none of those calls is recorded, and the calls that answer lines written after that run are recorded
-
 
 ### Requirement: A call is inside an interval only when the line it answers and its first line are
 
@@ -197,12 +206,17 @@ A call SHALL count as made inside an interval of its session when both switches 
 
 ### Requirement: A run that finds both switches on notes its time and a fingerprint
 
-The capture step SHALL note in its store, for each run that finds both switches on, the run's time, from the system's clock in UTC, which no environment variable sets, and a fingerprint, made of identities, sizes and modification times and never of contents, of the person's two global configuration files, each other file that git reads the opt-in key from (see "Git's own reading of the opt-in can turn capture off, never on"), and each link on the way to one.
+The capture step SHALL note in its store, for each run that finds both switches on, the run's time, from the system's clock in UTC, which no environment variable sets, and a hash of a fingerprint, made of device and inode numbers, sizes and modification times and never of contents or paths, of the person's two global configuration files, each other file that git reads the opt-in key from (see "Git's own reading of the opt-in can turn capture off, never on"), and each link on the way to one.
 
 #### Scenario: A fingerprint holds nothing of a configuration file's contents
 
 - **WHEN** the person's global configuration files and the repository's own git configuration hold, beside the opt-in, distinct marker strings
 - **THEN** no marker, and no hash of a marker, appears in the store
+
+#### Scenario: The store holds no configuration file's path
+
+- **WHEN** the person's `~/.gitconfig` includes, under a condition that git finds true in this repository, a file that turns capture on, the path to that file passes a folder whose name is a distinct marker string, and a run of the step finds both switches on
+- **THEN** neither that file's path, nor the marker, nor a hash of either appears in the store
 
 #### Scenario: The environment cannot move a run's time
 
@@ -221,7 +235,7 @@ The capture step SHALL note in its store, for each run that finds both switches 
 
 ### Requirement: A run that finds a switch off creates no store and notes no session
 
-A run of the capture step that finds either switch off SHALL create no store and SHALL add no note of its session to one. In a store that exists, it SHALL only end its own session's interval, and do what "An opt-out ends every session's interval and empties the store" and "Ledger files are taken back and put back whatever the switches say" say.
+A run of the capture step that finds either switch off SHALL create no store and SHALL add no note of its session to one. In a store that exists, it SHALL only end its own session's interval, do what "An opt-out ends every session's interval and empties the store" and "Ledger files are taken back and put back whatever the switches say" say, drop what the store's retention window ends, and remove the store when it then holds nothing or does not parse.
 
 #### Scenario: A person who has not opted in leaves no store
 
@@ -230,8 +244,18 @@ A run of the capture step that finds either switch off SHALL create no store and
 
 #### Scenario: A run with the repository's switch off adds nothing of its session to a store
 
-- **WHEN** a store notes another session's interval, no ledger file is due to be taken back or put back, and a run of a session that the store does not note finds the tool off in the repository, with the person's capture on
+- **WHEN** a store notes another session's interval, whose last run came within the retention window, no ledger file is due to be taken back or put back, and a run of a session that the store does not note finds the tool off in the repository, with the person's capture on
 - **THEN** the run leaves the store as it was
+
+#### Scenario: A run with a switch off still drops what the retention window ends
+
+- **WHEN** a store notes only a session none of whose runs has come within the retention window, and a run of another session finds the tool off in the repository
+- **THEN** after that run no store is left in the git common directory
+
+#### Scenario: A run with a switch off removes a store that does not parse
+
+- **WHEN** the store's file does not parse, as after a power loss or a sync that cut it short, and a run finds either switch off
+- **THEN** after that run no store is left in the git common directory, and no ledger file is staged
 
 ### Requirement: An interval when both switches were on begins and ends at a run
 
@@ -244,8 +268,13 @@ A session's interval when both switches were on (see "Consent holds for each rec
 
 #### Scenario: Capture turned off and on again between two runs ends the interval
 
-- **WHEN** a run of the step has found both switches on, the person then turns capture off, the session makes calls, and the person turns capture on again before the step's next run
+- **WHEN** a run of the step has found both switches on, the person then turns capture off in their `~/.gitconfig`, the session makes calls, and the person turns capture on again there before the step's next run
 - **THEN** none of the calls whose first line was written after the earlier run and that answer a line written before the later run is recorded
+
+#### Scenario: An opt-out and back in the repository's own git configuration between two runs is not seen
+
+- **WHEN** the repository's own git configuration does not set the opt-in key, a run of the step finds both switches on, the person then turns capture off there, the session makes calls, and the person removes that setting again before the step's next run
+- **THEN** the next run notes the same fingerprint, and the interval goes on
 
 #### Scenario: Any change to the person's configuration files ends the interval
 
@@ -268,7 +297,7 @@ A run that finds its clock earlier than its session's last run, or than the time
 
 ### Requirement: An opt-out ends every session's interval and empties the store
 
-A run of the capture step that finds the person's own capture off, in their global configuration or in the repository's own, SHALL end every session's interval and remove from the store every call waiting to be staged, every note of a taken call and every session's notes, keeping only the notes that a take-back or a put-back still needs (see "Ledger files are taken back and put back whatever the switches say"), and the step SHALL never stage, after that run, a call made before it.
+A run of the capture step that finds the person's own capture off, in their global configuration or in the repository's own, SHALL end every session's interval and remove from the store every waiting call, every flag due, every note of a taken call and every session's notes, but those that a take-back or a put-back still needs (see "Ledger files are taken back and put back whatever the switches say"), and the step SHALL never stage, after that run, a call made or a flag noted before it.
 
 #### Scenario: Calls recorded before an opt-out are not staged
 
@@ -282,13 +311,13 @@ A run of the capture step that finds the person's own capture off, in their glob
 
 #### Scenario: An opt-out empties the store
 
-- **WHEN** the store notes sessions and calls waiting to be staged, no ledger file is due to be taken back or put back, and a run then finds the person's capture off
+- **WHEN** the store notes sessions, calls waiting to be staged and flags due, no ledger file is due to be taken back or put back, and a run then finds the person's capture off
 - **THEN** after that run no store is left in the git common directory
 
 #### Scenario: An opt-out keeps only what a take-back needs
 
 - **WHEN** the step has staged a ledger file for a `git commit` that is then refused at a permission prompt, and a run of the step then finds the person's capture off before any run finds that command over
-- **THEN** after that run the store holds no waiting call, no note of a taken call and no session's notes, only the note of that file, and once a run has taken the file back, no store is left
+- **THEN** after that run the store holds no waiting call, no flag due, no note of a taken call and no session's notes, only the note of that file, and once a run has taken the file back, no store is left
 
 #### Scenario: Turning capture on again after an opt-out records no earlier call
 

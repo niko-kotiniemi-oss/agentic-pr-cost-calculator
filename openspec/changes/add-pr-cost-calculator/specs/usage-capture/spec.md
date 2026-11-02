@@ -202,7 +202,7 @@ The capture step SHALL record only the calls whose transcript line gives a worki
 
 ### Requirement: A call's repository is told by its working directory alone
 
-The capture step SHALL tell a call's repository and worktree by its line's working directory alone, as git finds them from that directory, ignoring each environment variable that tells git which repository or working tree to use, when a run reads the call, never by what the call reads or writes, nor by the branch, and SHALL leave out a call whose directory no longer exists or names no repository that git can tell.
+The capture step SHALL tell a call's repository and worktree by its line's working directory alone, as git finds them from that directory when a run reads the call (see "Git runs without the session's git variables"), never by what the call reads or writes, nor by the branch, and SHALL leave out a call whose line gives no working directory, or whose directory no longer exists or names no repository that git can tell.
 
 #### Scenario: A call whose working directory is gone is not recorded
 
@@ -223,6 +223,11 @@ The capture step SHALL tell a call's repository and worktree by its line's worki
 
 - **WHEN** the session's environment sets `GIT_DIR`, `GIT_COMMON_DIR` or `GIT_WORK_TREE` to name this repository, and a call's line gives a working directory in another repository
 - **THEN** that call is not recorded in this repository
+
+#### Scenario: A clone whose ownership git does not trust records nothing
+
+- **WHEN** the repository's folder is owned by another user than the one that a run runs as, and no `safe.directory` setting that git reads names it
+- **THEN** no call is recorded, no store is created, no ledger file is staged, and the run exits with success
 
 ### Requirement: Capture works on the repository that holds the project directory
 
@@ -741,14 +746,38 @@ The step SHALL start no program but git, which it SHALL find at an absolute path
 - **WHEN** an absolute entry of `PATH`, such as one that a tool which sets up a folder's environment adds, names a folder inside the repository's working tree that holds a program named `git`
 - **THEN** the step does not start it, and records and stages with the git that another absolute entry of `PATH` names
 
+#### Scenario: A git in a worktree outside the repository's folder is not run
+
+- **WHEN** an absolute entry of `PATH` names a folder inside a linked worktree of this repository that lies outside the repository's folder, and that folder holds a program named `git`
+- **THEN** the step does not start it, and records and stages with the git that another absolute entry of `PATH` names
+
+### Requirement: Git runs without the session's git variables
+
+The capture step SHALL start every git command without the session's environment variables whose names begin with `GIT_`, setting only its own, so that the session's environment chooses neither the repository, its index, its objects nor the files that git reads its settings from, save for the one reading of the opt-in in the session's environment that "Git's own reading of the opt-in can turn capture off, never on" in `switch-and-opt-in` asks for.
+
+#### Scenario: The environment cannot move the store or a staged ledger file into another repository
+
+- **WHEN** the session's environment sets `GIT_DIR`, `GIT_WORK_TREE` or `GIT_INDEX_FILE` to name another repository or its index, and runs of the step record calls made here and stage a ledger file for a `git commit` here
+- **THEN** the store is in this repository's git common directory, the ledger file is staged in this repository's index alone, and the other repository is left as it was
+
+#### Scenario: A variable that stops git's search does not stop capture
+
+- **WHEN** the session's environment sets `GIT_CEILING_DIRECTORIES` to this repository's folder, and a session makes calls from a folder inside it
+- **THEN** those calls are recorded in this repository
+
 ### Requirement: Capture reads both switches before it starts any program
 
-The capture step SHALL read both switches (see "Capture runs only where the tool is on and the person has opted in" in `switch-and-opt-in`) before it starts any program, and a run that finds either off SHALL start git only to find its store and, where one exists, to note there what `switch-and-opt-in` says and to take back and put back what it notes.
+The capture step SHALL read both switches (see "Capture runs only where the tool is on and the person has opted in" in `switch-and-opt-in`) before it starts any program. A run whose own reading finds either off SHALL start git only to find its store and, where one exists, to do there what `switch-and-opt-in` says, and one whose reading finds both on but git's reading of the opt-in finds capture off SHALL start git only for that reading and then as such a run.
 
 #### Scenario: A run that finds a switch off starts git only for its store
 
-- **WHEN** a run finds the tool or the person's capture off, and no store exists, or its store notes no file to take back or put back
-- **THEN** the run reads both switches before it starts any program, and every program that it starts is git, run only to find the store and to note in it what `switch-and-opt-in` says
+- **WHEN** a run's own reading finds the tool or the person's capture off, and no store exists, or its store notes no file to take back or put back
+- **THEN** the run reads both switches before it starts any program, and every program that it starts is git, run only to find the store and to do in it what `switch-and-opt-in` says
+
+#### Scenario: A run that learns from git that capture is off starts git only for that and its store
+
+- **WHEN** a run's own reading finds both switches on, git's reading of the opt-in then finds capture off in a file that the person's `~/.gitconfig` includes, and no store exists
+- **THEN** every program that the run starts is git, run only to read the opt-in and to find the store, and no store is created
 
 ### Requirement: Capture never breaks or steers the session
 
@@ -816,7 +845,7 @@ The capture step SHALL finish within a time budget, leaving what it has not read
 - **WHEN** reading the transcript would take longer than the time budget
 - **THEN** the step stops at the budget and exits with success, and a later run records the rest
 
-### Requirement: The store is versioned, and an unknown version is left alone
+### Requirement: The store is versioned: an earlier version is upgraded, an unknown one left alone
 
 The store SHALL carry the version of its format from the first release on. A run that finds a store that an earlier release wrote SHALL rewrite it in its own version, keeping its waiting calls and its notes of taken calls and of staged and taken-back ledger files, and beginning every session's interval anew, and a run that finds a store whose version it does not know SHALL record, stage, take back and put back nothing, SHALL leave the store as it was, and SHALL exit with success.
 
@@ -832,12 +861,21 @@ The store SHALL carry the version of its format from the first release on. A run
 
 ### Requirement: The store keeps only what attribution, deduplication and take-backs need
 
-The store SHALL hold only its format's version; for each session, hashes of its id and of each transcript's path, how far each transcript was read, its intervals, and its flag for calls whose repository could not be told; each waiting call's entry and each flag due, with hashes of its session, worktree and branch; each taken call's hash and day; and, until resolved, each staged or taken-back ledger file's path, flags, worktree, branch hash, commit found, transcript path and `tool_use_id` hash.
+The store SHALL hold only its format's version; for each session, hashes of its id and its transcripts' paths, where runs read each transcript, its intervals, its flag for calls whose repository could not be told, and its last run's time; each waiting call's entry and each flag due with its day, with hashes of its session, worktree and branch; each taken call's hash and day; and the notes of ledger files (see "A ledger file's note keeps only what a take-back needs").
 
 #### Scenario: The store holds ids and paths only as hashes while no file is staged
 
 - **WHEN** a session's runs have recorded calls that wait to be staged, no ledger file is staged or due to be put back, and the session's id, its transcript's path, Claude's current directory, the branch's name and every `tool_use_id` are distinct marker strings
 - **THEN** none of those markers appears in the store
+
+#### Scenario: The store holds only the fields that its format documents
+
+- **WHEN** runs of the step record calls, flag calls left out, stage a ledger file, take it back and stage it again
+- **THEN** after each run every field of the store is one that the store's format documents
+
+### Requirement: A ledger file's note keeps only what a take-back needs
+
+The store's note of a ledger file that a run staged SHALL hold only the file's path, its worktree's name, hashes of its branch, its session and its command's `tool_use_id`, its transcript's path, its flags and its calls, until a run finds a commit holding the file or takes it back, and the note of a take-back only the file's path, its worktree's name, the commit found and what it removed, until a run puts the file back or forgets it.
 
 #### Scenario: A staged file's note keeps its paths only until it is resolved
 
@@ -846,7 +884,7 @@ The store SHALL hold only its format's version; for each session, hashes of its 
 
 ### Requirement: The store keeps nothing past its retention window
 
-The capture step SHALL record no call whose day is more than the store's retention window, which its format documents, before the run's day; SHALL drop each waiting call, and each note of a taken call, once that is so of its day, and each session's notes once no run of that session has come within the window; SHALL take back, as for a command that is over, a ledger file whose note is older than the window; and SHALL drop a take-back's note that old.
+The capture step SHALL record no call whose day is more than the store's retention window, which its format documents, before the run's day. Each run that finds a store, whatever the switches say, SHALL drop each waiting call, flag due and note of a taken call once that is so of its day, and each session's notes once none of its runs has come within the window; SHALL take back, as for a command that is over, a ledger file whose note is older than the window; and drop a take-back's note that old.
 
 #### Scenario: A call older than the retention window is not recorded
 
@@ -863,6 +901,11 @@ The capture step SHALL record no call whose day is more than the store's retenti
 - **WHEN** no run of a session has come within the retention window, and a run of another session comes
 - **THEN** after that run the store holds no note of the first session
 
+#### Scenario: A flag is dropped at the end of the retention window
+
+- **WHEN** a flag for calls left out has been due, with no ledger file staged for its worktree and branch, until its day is more than the retention window before a run's day
+- **THEN** after that run the store no longer holds that flag
+
 #### Scenario: A staged ledger file older than the retention window is taken back
 
 - **WHEN** a ledger file was staged for a command that no run has found over, its note is older than the retention window, no commit holds the file, and no other git command holds the index
@@ -875,16 +918,21 @@ The capture step SHALL record no call whose day is more than the store's retenti
 
 ### Requirement: A store that holds nothing is removed
 
-A run that leaves the store holding no session's notes, no call and no note of a ledger file SHALL remove the store's file and its folder, so that the git common directory keeps nothing of the tool's once nothing waits.
+A run that leaves the store holding no session's notes, no call, no flag and no note of a ledger file SHALL remove the store's file and its folder, so that the git common directory keeps nothing of the tool's once nothing waits.
 
 #### Scenario: An empty store is removed
 
-- **WHEN** a run leaves the store holding no session's notes, no call and no note of a ledger file
+- **WHEN** a run leaves the store holding no session's notes, no call, no flag and no note of a ledger file
 - **THEN** after that run the git common directory holds no file or folder of the store
+
+#### Scenario: A store that holds only a flag is kept
+
+- **WHEN** a run leaves the store holding only a flag due, whose day is within the retention window
+- **THEN** the store is still there after that run, and holds that flag
 
 ### Requirement: The store is readable and writable by its owner alone
 
-On each write, the capture step SHALL leave the store's folder and file readable and writable by their owner alone, where Python's standard library can set that, never through a link; SHALL keep a store for each user where the system numbers users; SHALL leave alone a store whose file or folder is a link or another reparse point, is not a regular file or a folder, or is not its user's; and SHALL act on a note only for a ledger file of the form that it writes, in a worktree of this repository.
+On each write, the capture step SHALL leave the store's folder and file open to their owner alone, where Python's standard library can, never through a link; SHALL keep each user's store in its own folder of the git common directory where the system numbers users; SHALL leave alone a store whose file or folder is a link or a reparse point, is not a regular file or folder, or is not its user's; and SHALL act on a note only for a ledger file of its own form, in a worktree of this repository.
 
 #### Scenario: The store is created for its owner alone
 
@@ -913,8 +961,13 @@ On each write, the capture step SHALL leave the store's folder and file readable
 
 #### Scenario: Each user has a store of their own
 
-- **WHEN** two users of a system that numbers users, such as root in a container and the person on the host, run sessions in one clone
-- **THEN** each run reads and writes only the store of the user it runs as, and records, stages and takes back for that user's sessions as if the other's store did not exist
+- **WHEN** two users of a system that numbers users, such as root in a container and the person on the host, run sessions in one clone that git trusts for both, whichever of them runs first
+- **THEN** each run reads and writes only the store of the user it runs as, which only that user can enter, and records, stages and takes back for that user's sessions as if the other's store did not exist
+
+#### Scenario: A run that cannot make its store's folder records nothing
+
+- **WHEN** no store of the user that a run runs as exists, and the git common directory does not let that user create a folder
+- **THEN** the run records, stages, takes back and puts back nothing, and exits with success
 
 #### Scenario: On Windows, a store reached through a junction is left alone
 
@@ -951,7 +1004,7 @@ The capture step SHALL write no line of a transcript, and no value from one beyo
 
 ### Requirement: A ledger file says when calls of its sessions were left out
 
-When a run leaves out a call made in this repository because it was not made inside an interval when both switches were on, or drops a waiting call at the retention window, the next ledger file staged for that call's worktree and branch SHALL say so; when a run leaves out a call whose working directory, inside this repository's folder, names no repository that git can tell, the session's next ledger file here SHALL say so; each with no count, time or other fact about those calls.
+When a run leaves out a call made here because it was not made inside an interval when both switches were on, or drops a waiting call at the retention window, the next ledger file staged for that call's worktree and branch SHALL say so; when it leaves out a call whose line gives no working directory, or a directory inside this repository's folder that names no repository that git can tell, the session's next ledger file here SHALL say so; each with no count, time or other fact about those calls.
 
 #### Scenario: A ledger file says that calls were left out for consent
 
