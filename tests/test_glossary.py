@@ -1014,22 +1014,10 @@ def test_the_repository_s_files_are_read() -> None:
     assert not [path for path in files if not shown_as_markdown.search(path)]
 
 
-@pytest.mark.parametrize(
-    ("path", "planted"),
-    [
-        ("docs/page.md", "The ledger is anonymous."),
-        ("docs/page.md", "Each ledger file is Anonymous."),
-        ("openspec/changes/demo/specs/thing/spec.md", "An entry is anonymous."),
-    ],
-)
-def test_a_page_that_calls_an_entry_anonymous_fails(
-    tmp_path: Path, path: str, planted: str
-) -> None:
+def test_a_page_that_calls_an_entry_anonymous_fails(tmp_path: Path) -> None:
     # A page that calls an entry `anonymous` fails the wording test, read with this
-    # repository's own glossary (R159).
-    before = PASSING.get(path, "A page.\n")
+    # repository's own glossary (R159). That the check reads a spec as it reads a page, and
+    # matches a word in any case, the tests above hold with the test glossary.
     own = (ROOT / GLOSSARY).read_text(encoding="utf-8")
-    root = repository(tmp_path, {GLOSSARY: own, path: f"{before}\n{planted}\n"})
-    line = len(before.split("\n")) + 1
-    word = planted.split()[-1].rstrip(".")
-    assert problems_in(root) == [f'{path}:{line}: "{word}" is a word to avoid; use "hashed id"']
+    root = repository(tmp_path, {GLOSSARY: own, "docs/page.md": "The ledger is anonymous.\n"})
+    assert problems_in(root) == ['docs/page.md:1: "anonymous" is a word to avoid; use "hashed id"']
