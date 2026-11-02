@@ -1,12 +1,12 @@
 # DR-056: Capture does not read the branch's history
 
 - **Type:** security and privacy
-- **Status:** accepted
+- **Status:** closed
 - **Decided by:** the owner, 2026-10-19
 - **Requirements:** R2, R45, R52, R81
 - **Threats:** T2, T19
 - **Replaces:** none
-- **Closed by:** none
+- **Closed by:** DR-184
 
 ## Context
 

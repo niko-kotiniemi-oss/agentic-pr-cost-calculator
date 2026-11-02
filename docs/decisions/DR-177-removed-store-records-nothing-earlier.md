@@ -14,7 +14,7 @@ A person can remove the store, as the README says how to, and so can a tool that
 
 ## Decision
 
-When the store is gone, the next run that finds both switches on begins a new interval, so that no call that answers a line written before that run is recorded, however far the transcripts were read before. A ledger file staged before the removal is left to git, since no note says that a run staged it.
+When the store is gone, or its file does not parse, which a run takes as gone and replaces, the next run that finds both switches on begins a new interval, so that no call that answers a line written before that run is recorded, however far the transcripts were read before. A ledger file staged before the removal is left to git, since no note says that a run staged it.
 
 ## Alternatives
 
@@ -24,7 +24,9 @@ When the store is gone, the next run that finds both switches on begins a new in
 ## Consequences
 
 - Removing the store never lets a call that it kept out be recorded, but a session's calls made before the next run that finds both switches on are left out, so the count is too low.
-- A ledger file staged when the store was removed stays staged, and the next commit in that worktree takes it with its calls, which were recorded with consent, so the README says to look for one with `git status` before removing the store (T10, T111).
+- A ledger file staged when the store was removed stays staged, and the next commit in that worktree, on whatever branch is checked out then, takes it with its calls, which were recorded with consent, so the README says to look for one with `git status` before removing the store (T10, T111).
+- A removed store also takes the note of a take-back that a later run would have put back, so the next commit deletes the file that the take-back removed (T10).
+- A fresh clone holds no store, so a session resumed there records no call that answers a line written before its first run there (DR-184).
 
 ## Scope
 

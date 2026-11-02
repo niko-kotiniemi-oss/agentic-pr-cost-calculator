@@ -1,12 +1,12 @@
 # DR-048: The opt-in is read only from the person's global git configuration
 
 - **Type:** security and privacy
-- **Status:** accepted
+- **Status:** closed
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** R1, R37, R38, R103, R104, R105
 - **Threats:** T3, T41
 - **Replaces:** none
-- **Closed by:** none
+- **Closed by:** DR-183
 
 ## Context
 

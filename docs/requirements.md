@@ -104,7 +104,7 @@ The capability names the spec that holds the requirement. Each capability is one
 | R90 | behavioural | `usage-capture` | The capture step finishes within a time budget |
 | R91 | functional | `switch-and-opt-in` | Capture reads the configuration in the working tree |
 | R92 | functional | `switch-and-opt-in` | A missing or unreadable configuration file neither turns the tool on nor stops the report |
-| R93 | functional | `switch-and-opt-in` | A change to the configuration, the hook file or a workflow is flagged |
+| R93 | functional | `switch-and-opt-in` | A change to the configuration, the hook file, its registration or a workflow is flagged |
 | R94 | functional | `report-comment` | The comment says what its figure is and where it comes from |
 | R95 | functional | `report-comment` | The comment counts refused calls and calls that may leave the token cost low |
 | R96 | functional | `report-comment` | A report run again updates only its own comment |
@@ -168,9 +168,18 @@ The capability names the spec that holds the requirement. Each capability is one
 | R154 | non-functional | `usage-capture` | Capture keeps no copy of a transcript |
 | R155 | functional | `usage-capture` | A ledger file says when calls of its sessions were left out |
 | R156 | non-functional | `ledger` | Each ledger file states its format's version, and each version is published with a schema |
-| R157 | functional | `report-comment` | The comment says when calls were left out for consent or for their repository |
+| R157 | functional | `report-comment` | The comment says when the ledger files flag calls left out |
 | R158 | behavioural | `report-comment` | The report reads each ledger file by the version it states |
 | R159 | non-functional | `project-standards` | The documentation says what stays published after an opt-out and what a hash does not hide |
+| R160 | behavioural | `switch-and-opt-in` | Git's own reading of the opt-in can turn capture off, never on |
+| R161 | behavioural | `switch-and-opt-in` | A run that began before an opt-out leaves nothing after it |
+| R162 | behavioural | `switch-and-opt-in` | A change to the files that hold the opt-in is taken as an opt-out |
+| R163 | non-functional | `ledger` | Every version of the ledger format names a call by the same id |
+| R164 | non-functional | `project-standards` | The documentation says where an opt-in applies |
+| R165 | behavioural | `usage-capture` | A call is placed by the line it answers, whichever run read that line |
+| R166 | behavioural | `switch-and-opt-in` | A clock that moves back ends the session's intervals |
+| R167 | behavioural | `usage-capture` | Capture reads each ledger file by the version that it states |
+| R168 | behavioural | `report-comment` | Ledger files that the default branch already holds are read by the version they state |
 
 IDs are stable: a requirement keeps its ID while it exists, and a new one takes the next free number, so the rows follow the order in which requirements were added rather than the order of the specs. A requirement that a later change removes leaves the table, and its ID is listed below with the change that removed it, never to be used again.
 

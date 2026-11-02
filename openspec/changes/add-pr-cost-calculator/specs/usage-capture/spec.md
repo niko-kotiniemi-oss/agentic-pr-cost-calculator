@@ -2,7 +2,7 @@
 
 Record what an agent session spends on model calls in this repository, as it works, and carry it to the pull request with the agent's own commits, in a form the pull request's CI can read at merge without any external service.
 
-In the scenarios below, a commit that is expected to carry a ledger file is made where git's attributes give the ledger path no filter and no working-tree encoding, git does not refuse to add the file, and no git hook of the repository refuses it, and a commit that a scenario does not spell out, such as the agent's next commit, is one that the step stages for, unless the scenario says otherwise. In them, each run of the step reads the transcripts to their end within its time budget, and no other session commits in the repository, unless the scenario says otherwise. In them, too, every run of the step finds the tool on in the repository and the person opted in, and the hook file in the working tree is the one whose checksum the registered command carries, unless the scenario says otherwise.
+In the scenarios below, a commit that is expected to carry a ledger file is made where git's attributes give the ledger path no filter and no working-tree encoding, git does not refuse to add the file, and no git hook of the repository refuses it, and a commit that a scenario does not spell out, such as the agent's next commit, is one that the step stages for, unless the scenario says otherwise. In them, each run of the step reads the transcripts to their end within its time budget, and no other session commits in the repository, unless the scenario says otherwise. In them, too, every run of the step finds the tool on in the repository and the person opted in, a run of the step that found both on came before every line that a scenario's calls answer, as a start run does, and the hook file in the working tree is the one whose checksum the registered command carries, unless the scenario says otherwise.
 
 ## ADDED Requirements
 
@@ -103,7 +103,7 @@ A call whose usage, or a block nested in it, holds a field that the step does no
 
 ### Requirement: Capture reads only lines that end in a line break, and no one line holds it back
 
-The step SHALL read only the transcript lines that end in a line break, leaving a line that is still being written for a later run, and a line that a run began as the first line it read, and could not finish reading within its time budget, SHALL be skipped by the next run and counted in the ledger as one refused call, so that no one line can hold capture back for good.
+The step SHALL read only the transcript lines that end in a line break, leaving a line that is still being written for a later run, and a line that a run began as the first line it read, or as the first that no earlier run read whole, and could not finish reading within its time budget, SHALL be skipped by the next run and counted in the ledger as one refused call, so that no one line can hold capture back for good.
 
 #### Scenario: A half-written last line waits for a later run
 
@@ -114,6 +114,30 @@ The step SHALL read only the transcript lines that end in a line break, leaving 
 
 - **WHEN** a run of the step begins with a transcript line, and cannot finish reading it within its time budget
 - **THEN** the next run skips that line, the ledger counts it as one refused call, and the lines after it are read
+
+#### Scenario: A line too long for what a run has left after reading lines again is skipped
+
+- **WHEN** a run of the step reads again lines that an earlier run read, then begins the first line that no earlier run read whole, and cannot finish reading it within its time budget
+- **THEN** the next run skips that line, the ledger counts it as one refused call, and the lines after it are read
+
+### Requirement: A call is placed by the line it answers, whichever run read that line
+
+A run SHALL read again, from the earliest line that a call not yet recorded may answer, the lines that earlier runs read, so that a call is placed by the line it answers even when an earlier run read that line. A call whose answered line comes before that point, or was skipped as too long, SHALL NOT be recorded, and the next ledger file staged for its worktree and branch SHALL say that calls were left out for consent.
+
+#### Scenario: A call is placed when an earlier run read the line it answers
+
+- **WHEN** a run of the step reads a tool's result and stops before the call that answers it is written, and a later run reads that call
+- **THEN** that call is recorded
+
+#### Scenario: A call whose answered line comes before where runs read again is not recorded
+
+- **WHEN** the chain of parents from a call's first line leads to the line that it answers only before the earliest line that runs read again in its transcript
+- **THEN** that call is not recorded, and the next ledger file staged for its worktree and branch says that calls were left out for consent
+
+#### Scenario: A call whose answered line was skipped is not recorded
+
+- **WHEN** the line that a call answers was skipped as too long for a run's time budget
+- **THEN** that call is not recorded, and the next ledger file staged for its worktree and branch says that calls were left out for consent
 
 ### Requirement: Capture reads the branch's ledger files only from git
 
@@ -132,6 +156,15 @@ To learn which calls the branch's ledger files already hold, the step SHALL read
 #### Scenario: Capture skips a ledger file whose blob its clone lacks
 
 - **WHEN** the branch holds a ledger file whose blob the clone does not hold
+- **THEN** capture reads nothing of that file, and still records the session's calls
+
+### Requirement: Capture reads each ledger file by the version that it states
+
+The capture step SHALL read each of the branch's ledger files by the version that its first line states, and SHALL skip one whose first line states no version or a version that it does not read.
+
+#### Scenario: Capture skips a ledger file of a version it does not read
+
+- **WHEN** the branch holds a ledger file whose first line states a version that the step does not read
 - **THEN** capture reads nothing of that file, and still records the session's calls
 
 ### Requirement: The capture step's git commands stay offline
@@ -169,12 +202,12 @@ The capture step SHALL record only the calls whose transcript line gives a worki
 
 ### Requirement: A call's repository is told by its working directory alone
 
-The capture step SHALL tell a call's repository and worktree by its line's working directory alone, as git finds them from that directory when a run reads the call, never by what the call reads or writes, nor by the branch, and SHALL leave out a call whose directory no longer exists or names no repository that git can tell.
+The capture step SHALL tell a call's repository and worktree by its line's working directory alone, as git finds them from that directory, ignoring each environment variable that tells git which repository or working tree to use, when a run reads the call, never by what the call reads or writes, nor by the branch, and SHALL leave out a call whose directory no longer exists or names no repository that git can tell.
 
 #### Scenario: A call whose working directory is gone is not recorded
 
-- **WHEN** a call's line gives a working directory in a worktree of this repository that is removed before a run reads the call
-- **THEN** the call is not recorded, and the next ledger file that holds a call of its session says that calls whose repository could not be told were left out
+- **WHEN** a call's line gives a working directory in a worktree of this repository, inside the repository's folder as Claude Code keeps its worktrees, that is removed before a run reads the call
+- **THEN** the call is not recorded, and the session's next ledger file here says that calls whose repository could not be told were left out
 
 #### Scenario: A call made here that works on another repository is recorded here
 
@@ -185,6 +218,11 @@ The capture step SHALL tell a call's repository and worktree by its line's worki
 
 - **WHEN** a call's line gives a working directory in another repository, and the call's tool reads or writes this repository through an absolute path or `git -C`
 - **THEN** the call is not recorded in this repository
+
+#### Scenario: The environment cannot move a call into this repository
+
+- **WHEN** the session's environment sets `GIT_DIR`, `GIT_COMMON_DIR` or `GIT_WORK_TREE` to name this repository, and a call's line gives a working directory in another repository
+- **THEN** that call is not recorded in this repository
 
 ### Requirement: Capture works on the repository that holds the project directory
 
@@ -230,7 +268,7 @@ Capture SHALL run when a session starts, when Claude finishes responding, when a
 
 #### Scenario: A one-turn session's commit carries its calls
 
-- **WHEN** in a session's first turn, the agent makes model calls in one worktree and then makes its first commit there, by running `git commit -m x` alone with changes staged, with no change of branch there in between, and the transcript holds at least one of those calls as over when that commit's run reads it
+- **WHEN** in a session's first turn, after a start run that found both switches on, the agent makes model calls in one worktree and then makes its first commit there, by running `git commit -m x` alone with changes staged, with no change of branch there in between, and the transcript holds at least one of those calls as over when that commit's run reads it
 - **THEN** that commit adds a ledger file holding each of those calls that the transcript held as over by then
 
 #### Scenario: A turn that ends in an API error is still recorded
@@ -255,12 +293,17 @@ The run when a session starts, is resumed or forked, or is cleared or compacted 
 #### Scenario: A session with no start run records from its first run
 
 - **WHEN** the person turned capture on before a session started, no start run comes, as where Claude Code does not run that event, and the agent makes calls before the step's first run in that session
-- **THEN** none of the calls that answer a line written before that run is recorded, and the next ledger file that holds a call of that session says that calls were left out for consent
+- **THEN** none of the calls that answer a line written before that run is recorded, and the next ledger file staged for the worktree and branch of those calls says that calls were left out for consent
 
 #### Scenario: A start run records nothing from a resumed transcript
 
 - **WHEN** a session is resumed, and its transcript holds calls that no run has read
 - **THEN** its start run records nothing, and a later run reads those calls
+
+#### Scenario: A start run prints nothing
+
+- **WHEN** a start run finds both switches on, a ledger file due to be taken back and a store that an earlier release wrote
+- **THEN** it writes nothing to standard output, which Claude Code would give Claude as context
 
 ### Requirement: A call goes only to a commit in its worktree, on the branch it was recorded on
 
@@ -545,7 +588,7 @@ A command that gets no run after it (see "A ledger file that no commit takes is 
 
 ### Requirement: A ledger file that a commit takes stays taken
 
-Once a run finds a commit holding a ledger file that the step staged, the step SHALL note the file's calls as taken in that run's clone, and SHALL never stage them again there, whatever later removes the file from the branch, the index or the working tree. A fresh clone at the same path holds no note, so a session resumed there can stage again the calls of a file that its branch no longer holds.
+Once a run finds a commit holding a ledger file that the step staged, the step SHALL note the file's calls as taken in that run's clone, and SHALL never stage them again there, whatever later removes the file from the branch, the index or the working tree. A fresh clone at the same path holds no note, and a session resumed there stages none of the calls that answer a line written before its first run there that finds both switches on (see "A removed store lets no earlier call be recorded").
 
 #### Scenario: A ledger file that a person removes stays removed
 
@@ -557,10 +600,10 @@ Once a run finds a commit holding a ledger file that the step staged, the step S
 - **WHEN** a run of the step has found the commit checked out in a worktree holding a ledger file that the step staged, while no other git command held that worktree's index, the person then removes that file there with `git rm` and commits, and another session then commits there, in that run's clone, with no change of branch there in between
 - **THEN** no ledger file that the step stages for that session's commit holds any of the calls that the removed file held
 
-#### Scenario: A fresh clone stages a removed ledger file's calls again
+#### Scenario: A fresh clone does not stage a removed ledger file's calls again
 
 - **WHEN** a run of the step has found a commit holding a ledger file that the step staged, whose calls' lines give the repository root as their working directory, the person then removes that file with `git rm`, commits and pushes, and the session is then resumed in a fresh clone of that branch, at the same path, with no change of branch there before the agent's next commit
-- **THEN** the agent's next commit there carries the calls that the removed file held
+- **THEN** the agent's next commit there carries none of the calls that the removed file held
 
 ### Requirement: Only a ledger file that no run has found in a commit is taken back
 
@@ -681,12 +724,17 @@ The capture step's first line SHALL name the release that it comes from.
 
 ### Requirement: The capture step starts only git, from an absolute path
 
-The step SHALL start no program but git, which it SHALL find at an absolute path, looking only in the folders that the absolute entries of `PATH` name. Before it starts git, it SHALL change its own current directory to a folder that only the system's administrator can write, such as Windows' system folder, and it SHALL name the folder that each git command works in.
+The step SHALL start no program but git, which it SHALL find at an absolute path, looking only in the folders that the absolute entries of `PATH` name, and in none of them that lies inside this repository's working trees or its git common directory. Before it starts git, it SHALL change its own current directory to a folder that only the system's administrator can write, such as Windows' system folder, and it SHALL name the folder that each git command works in.
 
 #### Scenario: A program planted in the current directory is not run
 
 - **WHEN** the step runs on Windows, with a program named `git` planted in Claude's current directory, in the repository's folder and in a folder that a relative entry of `PATH` names
 - **THEN** the step starts none of them, and records and stages with the git that an absolute entry of `PATH` names
+
+#### Scenario: A git in a folder of the repository is not run
+
+- **WHEN** an absolute entry of `PATH`, such as one that a tool which sets up a folder's environment adds, names a folder inside the repository's working tree that holds a program named `git`
+- **THEN** the step does not start it, and records and stages with the git that another absolute entry of `PATH` names
 
 ### Requirement: Capture reads both switches before it starts any program
 
@@ -720,6 +768,11 @@ A failure inside the capture step SHALL NOT stop or fail the agent's session, an
 
 - **WHEN** a run of the step stages a ledger file, a later run takes a ledger file back, and both read ledger files whose names and contents hold hostile text, on a branch that holds them
 - **THEN** neither run prints anything on standard output, not even what the git commands it runs print, such as the `rm '<path>'` line of `git rm --cached`
+
+#### Scenario: A transcript that is not a regular file is not opened
+
+- **WHEN** the transcript path that the hook receives, or that a note of the store names, is a named pipe or a folder
+- **THEN** the run opens nothing there, and exits with success
 
 ### Requirement: The registered command runs the hook file only when its checksum matches
 
@@ -760,16 +813,21 @@ The capture step SHALL finish within a time budget, leaving what it has not read
 
 ### Requirement: The store is versioned, and an unknown version is left alone
 
-The store SHALL carry the version of its format from the first release on, and a run that finds a store whose version it does not know SHALL record, stage, take back and put back nothing, SHALL leave the store as it was, and SHALL exit with success.
+The store SHALL carry the version of its format from the first release on. A run that finds a store that an earlier release wrote SHALL rewrite it in its own version, keeping its waiting calls and its notes of taken calls and of staged and taken-back ledger files, and beginning every session's interval anew, and a run that finds a store whose version it does not know SHALL record, stage, take back and put back nothing, SHALL leave the store as it was, and SHALL exit with success.
 
 #### Scenario: A store of a format the step does not know is left alone
 
 - **WHEN** a run of the step finds its store at a format version that it does not know, as one that a later release of the step wrote
 - **THEN** it records, stages, takes back and puts back nothing, leaves the store as it was, and exits with success
 
+#### Scenario: A store that an earlier release wrote is upgraded
+
+- **WHEN** a run of the step finds a store that an earlier release wrote, which notes a staged ledger file and an open interval
+- **THEN** it rewrites the store in its own version, keeps the staged file's note, and records no call that answers a line written before that run
+
 ### Requirement: The store keeps only what attribution, deduplication and take-backs need
 
-The store SHALL hold only its format's version; for each session, a hash of its id, its intervals, a hash of each transcript's path with how far it was read, and whether calls were left out; each waiting call's entry, with hashes of its session, worktree and branch; each taken call's hash and day; and, only until each is resolved, each staged or taken-back ledger file's path and worktree's path, its branch's hash, the commit found, its transcript's path and its command's `tool_use_id` as a hash.
+The store SHALL hold only its format's version; for each session, hashes of its id and of each transcript's path, how far each transcript was read, its intervals, and its flag for calls whose repository could not be told; each waiting call's entry and each flag due, with hashes of its session, worktree and branch; each taken call's hash and day; and, until resolved, each staged or taken-back ledger file's path, flags, worktree, branch hash, commit found, transcript path and `tool_use_id` hash.
 
 #### Scenario: The store holds ids and paths only as hashes while no file is staged
 
@@ -778,8 +836,8 @@ The store SHALL hold only its format's version; for each session, a hash of its 
 
 #### Scenario: A staged file's note keeps its paths only until it is resolved
 
-- **WHEN** the step has staged a ledger file whose worktree's and transcript's paths are distinct marker strings, and a later run finds a commit holding the file, or takes it back and has nothing to put back
-- **THEN** after that run neither marker appears in the store
+- **WHEN** the step has staged a ledger file whose worktree's name and path and transcript's path are distinct marker strings, and a later run finds a commit holding the file, or takes it back and has nothing to put back
+- **THEN** the worktree's path never appears in the store, and after that run neither of the others does
 
 ### Requirement: The store keeps nothing past its retention window
 
@@ -805,6 +863,11 @@ The capture step SHALL record no call whose day is more than the store's retenti
 - **WHEN** a ledger file was staged for a command that no run has found over, its note is older than the retention window, no commit holds the file, and no other git command holds the index
 - **THEN** the next run takes the file back, from the index and the working tree
 
+#### Scenario: Calls dropped for their age are flagged
+
+- **WHEN** a recorded call has waited to be staged until its day is more than the retention window before a run's day, and the agent then commits in that call's worktree and on its branch
+- **THEN** that commit carries no entry for that call, and its ledger file says that calls were left out for their age, with no count
+
 ### Requirement: A store that holds nothing is removed
 
 A run that leaves the store holding no session's notes, no call and no note of a ledger file SHALL remove the store's file and its folder, so that the git common directory keeps nothing of the tool's once nothing waits.
@@ -816,7 +879,7 @@ A run that leaves the store holding no session's notes, no call and no note of a
 
 ### Requirement: The store is readable and writable by its owner alone
 
-The capture step SHALL create the store's folder and file so that only their owner can read or write them, where Python's standard library can set that, never through a symbolic link; SHALL leave alone a store whose file or folder is a symbolic link, is not a regular file or a folder, or is not owned by the user the run runs as, recording, staging, taking back and putting back nothing; and SHALL act on a note only for a file in the ledger folder of a worktree of this repository.
+On each write, the capture step SHALL leave the store's folder and file readable and writable by their owner alone, where Python's standard library can set that, never through a link; SHALL keep a store for each user where the system numbers users; SHALL leave alone a store whose file or folder is a link or another reparse point, is not a regular file or a folder, or is not its user's; and SHALL act on a note only for a ledger file of the form that it writes, in a worktree of this repository.
 
 #### Scenario: The store is created for its owner alone
 
@@ -835,12 +898,27 @@ The capture step SHALL create the store's folder and file so that only their own
 
 #### Scenario: A note that names a file outside a ledger folder is not acted on
 
-- **WHEN** the store's note of a staged or taken-back ledger file names a path outside the ledger folder, or a worktree whose git common directory is not this repository's
+- **WHEN** the store's note of a staged or taken-back ledger file names a path outside the ledger folder, or one of another form than the step writes, or a worktree whose git common directory is not this repository's
 - **THEN** the run removes, stages and puts back no file for that note, drops the note, and exits with success
+
+#### Scenario: Each write keeps the store its owner's alone
+
+- **WHEN** on Linux or macOS the store's folder has mode 0755 and its file mode 0644, the umask lets every user read new files, and a symbolic link stands at the name that a run writes its new store under
+- **THEN** after the run's write the folder has mode 0700 and the file 0600, nothing was written through the link, and the folder holds no other file that a run wrote
+
+#### Scenario: Each user has a store of their own
+
+- **WHEN** two users of a system that numbers users, such as root in a container and the person on the host, run sessions in one clone
+- **THEN** each run reads and writes only the store of the user it runs as, and records, stages and takes back for that user's sessions as if the other's store did not exist
+
+#### Scenario: On Windows, a store reached through a junction is left alone
+
+- **WHEN** on Windows the store's folder is a junction or another reparse point
+- **THEN** the run writes nothing through it, records, stages, takes back and puts back nothing, and exits with success
 
 ### Requirement: A removed store lets no earlier call be recorded
 
-When the store is removed, by the person or otherwise, the capture step SHALL record no call that answers a line written before the next run that finds both switches on, which SHALL begin a new interval, and SHALL leave to git any ledger file that a run staged before the removal.
+When the store is removed, by the person or otherwise, or cannot be read, the capture step SHALL record no call that answers a line written before the next run that finds both switches on, which SHALL begin a new interval, and SHALL leave to git any ledger file that a run staged before the removal.
 
 #### Scenario: Calls made before the store was removed are not recorded
 
@@ -852,6 +930,11 @@ When the store is removed, by the person or otherwise, the capture step SHALL re
 - **WHEN** the step has staged a ledger file, the store is then removed, and a later run comes
 - **THEN** that run does not take the file back, and the file stays as git holds it
 
+#### Scenario: A store that cannot be read is treated as removed
+
+- **WHEN** the store's file does not parse, as after a power loss or a sync that cut it short, and a run finds both switches on
+- **THEN** the run records no call that answers a line written before it, leaves to git any ledger file staged before, and writes a new store in its place
+
 ### Requirement: Capture keeps no copy of a transcript
 
 The capture step SHALL write no line of a transcript, and no value from one beyond the fields that an entry or the store's notes name, to any file, the store, a ledger file and a temporary file included, or to standard error, so that no transcript is kept for reprocessing.
@@ -859,15 +942,15 @@ The capture step SHALL write no line of a transcript, and no value from one beyo
 #### Scenario: A planted string reaches no file but the store's note of a staged file
 
 - **WHEN** every text value in a transcript and in the hook's input is a distinct marker string, except the model names and price attribute values that the price table lists, and runs of the step record calls, stage a ledger file, take it back and stage it again
-- **THEN** no marker appears in any file that a run writes or in its standard error, but the worktree's and the transcript's paths in the store's note of a staged ledger file, and none appears there once no such note is left
+- **THEN** no marker appears in any file that a run writes or in its standard error, but the worktree's name and the transcript's path in the store's note of a staged ledger file, and none appears there once no such note is left
 
 ### Requirement: A ledger file says when calls of its sessions were left out
 
-When a run leaves out a call made in this repository because it was not made inside an interval when both switches were on, or leaves out a call because its working directory names no repository that git can tell, each ledger file that the step stages after that run with a call of that session SHALL say which of the two happened, with no count, time or other fact about the calls left out.
+When a run leaves out a call made in this repository because it was not made inside an interval when both switches were on, or drops a waiting call at the retention window, the next ledger file staged for that call's worktree and branch SHALL say so; when a run leaves out a call whose working directory, inside this repository's folder, names no repository that git can tell, the session's next ledger file here SHALL say so; each with no count, time or other fact about those calls.
 
 #### Scenario: A ledger file says that calls were left out for consent
 
-- **WHEN** a run leaves out calls of a session made in this repository before the person opted in, and the agent then commits calls of that session
+- **WHEN** a run leaves out calls of a session made in this repository before the person opted in, and the agent then commits calls of that session in the worktree and on the branch where those calls were made
 - **THEN** the commit's ledger file says that calls were left out for consent, and holds no count, time or other fact about them
 
 #### Scenario: A session whose calls were all inside an interval raises no flag
@@ -879,3 +962,18 @@ When a run leaves out a call made in this repository because it was not made ins
 
 - **WHEN** a session makes calls in another repository before the person opts in, and then calls here inside an interval when both switches were on
 - **THEN** no ledger file here says that calls were left out for consent
+
+#### Scenario: A flag for calls left out goes only to their own branch
+
+- **WHEN** a run leaves out for consent calls of a session made in one worktree on one branch, and the session's next commit here is made on another branch
+- **THEN** that commit's ledger file says nothing of calls left out, and the next ledger file staged for the first branch in that worktree says that calls were left out for consent
+
+#### Scenario: A flag goes back with the calls of a file taken back
+
+- **WHEN** a ledger file that says calls were left out for consent is staged for a `git commit` that is then refused at a permission prompt, and a later run takes it back
+- **THEN** the next ledger file staged for that worktree and branch says that calls were left out for consent
+
+#### Scenario: A call made outside this repository's folder in a directory that is gone raises no flag
+
+- **WHEN** a session's call gives a working directory outside this repository's folder that no longer exists, or that holds no repository, and the session then commits here
+- **THEN** no ledger file here says that calls were left out

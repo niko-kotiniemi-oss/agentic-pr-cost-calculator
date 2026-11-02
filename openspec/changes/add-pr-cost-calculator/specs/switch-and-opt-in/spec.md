@@ -127,6 +127,25 @@ The capture step SHALL record nothing in a repository whose own git configuratio
 - **WHEN** the person has turned capture on in their global configuration, and the repository's own git configuration turns it off
 - **THEN** nothing is recorded in that repository
 
+### Requirement: Git's own reading of the opt-in can turn capture off, never on
+
+Once a run finds both switches on, the capture step SHALL ask git for the opt-in key as git reads it in this repository, from every file and variable that git reads its settings from, the files that they include, under their conditions, among them, and SHALL take the person's capture to be off when git does not read it as true. What git reads SHALL never turn capture on.
+
+#### Scenario: An opt-out in an included file turns capture off
+
+- **WHEN** the person's `~/.gitconfig` turns capture on and then includes, under a condition that git finds true in this repository, a file that turns it off
+- **THEN** nothing is recorded
+
+#### Scenario: An opt-out under a condition that does not hold here leaves capture on
+
+- **WHEN** the person's `~/.gitconfig` turns capture on and then includes, under a condition that git finds false in this repository, a file that turns it off
+- **THEN** the session's calls are recorded
+
+#### Scenario: A global configuration file that the environment names can turn capture off
+
+- **WHEN** the person's `~/.gitconfig` turns capture on, and the session's environment points git's global configuration at another file, which does not turn it on
+- **THEN** nothing is recorded
+
 ### Requirement: Consent holds for each recorded call
 
 Consent, the two switches that "Capture runs only where the tool is on and the person has opted in" requires, SHALL hold for each call that the capture step records, not only for the run that records it. The step SHALL record a call only when it was made inside one of its session's intervals when both were on (see "An interval when both switches were on begins and ends at a run" and "A call is inside an interval only when the line it answers and its first line are").
@@ -144,7 +163,7 @@ Consent, the two switches that "Capture runs only where the tool is on and the p
 
 ### Requirement: A call is inside an interval only when the line it answers and its first line are
 
-A call SHALL count as made inside one of its session's intervals when both switches were on (see "Consent holds for each recorded call") only when the line it answers, which is the first line that gives a prompt or a tool result up the chain of parents that its first line names in the same transcript, was written at or after the run that began that interval, and its first line no later than that interval's last run.
+A call SHALL count as made inside an interval of its session when both switches were on (see "Consent holds for each recorded call") only when, by each line's own time, the line it answers, the nearest up its first line's chain of parents in its transcript that gives the person's prompt, a tool's result or a compaction's summary, was written at or after the run that began the interval and no later than the call's first line, and that first line no later than the interval's last run.
 
 #### Scenario: A call already being made when its interval begins is not recorded
 
@@ -156,9 +175,24 @@ A call SHALL count as made inside one of its session's intervals when both switc
 - **WHEN** the chain of parents that a call's first line names reaches no line of its transcript that gives a prompt or a tool result
 - **THEN** that call is not recorded, whatever interval its lines fall in
 
+#### Scenario: A call whose answered line was written after its first line is not recorded
+
+- **WHEN** the line that a call answers gives a later time than the call's first line
+- **THEN** that call is not recorded, whatever interval its lines fall in
+
+#### Scenario: A line that Claude Code writes for itself is not the line a call answers
+
+- **WHEN** a run that finds both switches on begins its session's interval while a call is being made, and the chain of parents from that call's first line passes, before the tool's result that the call answers, a line written after that run that Claude Code marks as its own or that gives a hook's output
+- **THEN** that call is not recorded
+
+#### Scenario: Lines are placed by their own times, not by their place in the file
+
+- **WHEN** a transcript's lines stand in the file out of the order of their times, and their times carry an offset from UTC
+- **THEN** each call is placed inside or outside an interval by the instants that its lines' times give, and not by where its lines stand in the file
+
 ### Requirement: A run that finds both switches on notes its time and a fingerprint
 
-The capture step SHALL note in its store, for each run that finds both switches on (see "Capture runs only where the tool is on and the person has opted in"), the run's time, read from the system's clock in UTC, which no environment variable sets, and a fingerprint of each file that can turn the person's capture on or off: their two global configuration files and the repository's own git configuration, made of each file's identity, size and modification times, and never of its contents.
+The capture step SHALL note in its store, for each run that finds both switches on, the run's time, from the system's clock in UTC, which no environment variable sets, and a fingerprint, made of identities, sizes and modification times and never of contents, of the person's two global configuration files, each other file that git reads the opt-in key from (see "Git's own reading of the opt-in can turn capture off, never on"), and each link on the way to one.
 
 #### Scenario: A fingerprint holds nothing of a configuration file's contents
 
@@ -169,6 +203,16 @@ The capture step SHALL note in its store, for each run that finds both switches 
 
 - **WHEN** the session's environment sets `TZ` to a zone far from UTC, a run of the step has found both switches on, the person then turns capture off, the session makes calls, a run of the step comes, and the person then turns capture on again
 - **THEN** none of the calls that the session made while capture was off is recorded
+
+#### Scenario: A link pointed elsewhere and back changes the fingerprint
+
+- **WHEN** the person's `~/.gitconfig` is a symbolic link, a run of the step finds both switches on, and the link is then pointed at another file and back before the step's next run
+- **THEN** the next run notes another fingerprint
+
+#### Scenario: A write to the repository's own git configuration, which does not set the opt-in key, leaves the fingerprint as it was
+
+- **WHEN** the repository's own git configuration does not set the opt-in key, a run of the step finds both switches on, and the agent then runs `git push -u origin HEAD`, which writes that configuration
+- **THEN** the next run notes the same fingerprint, and the interval goes on
 
 ### Requirement: A run that finds a switch off creates no store and notes no session
 
@@ -201,7 +245,21 @@ A session's interval when both switches were on (see "Consent holds for each rec
 #### Scenario: Any change to the person's configuration files ends the interval
 
 - **WHEN** a run of the step has found both switches on, the person then changes another setting in their `~/.gitconfig`, the session makes calls, and the next run finds both switches on
-- **THEN** none of the calls whose first line was written after the earlier run and that answer a line written before the later run is recorded, and the calls that answer lines written after the later run are recorded
+- **THEN** none of the calls that answer a line written before the later run reaches a ledger file staged after it, and the calls that answer lines written after the later run are recorded
+
+### Requirement: A clock that moves back ends the session's intervals
+
+A run that finds its clock earlier than its session's last run, or than the time that a line it has read gives, SHALL end each of that session's intervals, and SHALL place no call that it or a later run reads inside any of them, so that a clock that moved back places no call inside an interval.
+
+#### Scenario: A clock set back between two runs ends the interval
+
+- **WHEN** a run of the step has found both switches on, the clock is then set back, the session makes calls, and the next run's clock reads earlier than the earlier run's
+- **THEN** none of the calls that answer a line written before the later run is recorded, and the next ledger file staged for their worktree and branch says that calls were left out for consent
+
+#### Scenario: A line from ahead of the clock ends the interval
+
+- **WHEN** a run of the step reads a line whose time is later than its own clock reads once it has read that line
+- **THEN** none of the calls that answer a line written before that run is recorded
 
 ### Requirement: An opt-out ends every session's interval and empties the store
 
@@ -232,6 +290,34 @@ A run of the capture step that finds the person's own capture off, in their glob
 - **WHEN** a run of the step has found the person's capture off, the person then turns it on again, and a later run finds both switches on
 - **THEN** none of the calls that answer a line written before that later run is recorded, though the store no longer notes how far any transcript was read
 
+### Requirement: A run that began before an opt-out leaves nothing after it
+
+A run of the capture step SHALL hold its lock from when it reads the store until it has written it, SHALL read both switches again under that lock before it writes a call to the store or stages a ledger file, and SHALL act only on a store whose file is still the one that its lock holds.
+
+#### Scenario: An opt-out is not undone by a run that began before it
+
+- **WHEN** a run of the step has found both switches on and read the store, and the person turns capture off before that run writes the store
+- **THEN** that run writes no call to the store, stages no ledger file, and empties the store as a run that finds capture off does
+
+#### Scenario: A run that waited for the lock writes nothing into a store that an opt-out removed
+
+- **WHEN** a run of the step that found both switches on waits for the lock while a run that found capture off empties and removes the store, and capture stays off
+- **THEN** no store is left once both runs are over
+
+### Requirement: A change to the files that hold the opt-in is taken as an opt-out
+
+A run that finds both switches on, and a fingerprint other than the last one that its store notes, SHALL first do what an opt-out does (see "An opt-out ends every session's interval and empties the store"), so that no call recorded before an opt-out that no run saw, or before any other change to those files, is staged.
+
+#### Scenario: Calls recorded before an opt-out that no run saw are not staged
+
+- **WHEN** calls were recorded and wait to be staged, the person turns capture off and on again with no run of the step in between, and a run then finds both switches on
+- **THEN** the agent's next commit in the worktree and on the branch where those calls were made carries none of them, and its ledger file says that calls were left out for consent
+
+#### Scenario: A copy of the store put back after an opt-out brings back no call
+
+- **WHEN** a copy is made of a store that holds waiting calls, the person turns capture off, a run that finds it off empties the store, the person turns capture on again, and the copy is put back before the next run
+- **THEN** none of those calls is staged
+
 ### Requirement: An opt-out leaves committed ledger files to git
 
 An opt-out, a removal of the store, or the end of its retention window (see "The store keeps nothing past its retention window" in `usage-capture`) SHALL NOT make the capture step remove or change a ledger file that a commit holds, so that a ledger file that was pushed stays on its branch, in its history and in every clone of it.
@@ -240,6 +326,11 @@ An opt-out, a removal of the store, or the end of its retention window (see "The
 
 - **WHEN** a person's ledger files are committed and pushed, the person then turns capture off, and runs of the step come
 - **THEN** each of those files is still on the branch, and in the index and the working tree as the commit checked out there holds it
+
+#### Scenario: Ledger files in commits not yet pushed stay after an opt-out
+
+- **WHEN** a person's ledger files are committed and not yet pushed, the person then turns capture off, and runs of the step come
+- **THEN** each of those files is still in its commit, where the next push of its branch publishes it
 
 ### Requirement: Ledger files are taken back and put back whatever the switches say
 
@@ -287,9 +378,9 @@ A configuration file that is missing at a commit, is not a regular file there, i
 - **WHEN** the configuration turns the tool on before the merge, and a pull request replaces the configuration file with one that is not valid, is larger than its size bound, is a symbolic link or is not a regular file
 - **THEN** its report comment is posted
 
-### Requirement: A change to the configuration, the hook file or a workflow is flagged
+### Requirement: A change to the configuration, the hook file, its registration or a workflow is flagged
 
-When a pull request changes the configuration file, the hook file at the path that the README gives, or any workflow file, its comment SHALL say so.
+When a pull request changes the configuration file, the hook file at the path that the README gives, the project settings file `.claude/settings.json` that registers it, or any workflow file, its comment SHALL say so.
 
 #### Scenario: A changed report is flagged
 
@@ -300,3 +391,8 @@ When a pull request changes the configuration file, the hook file at the path th
 
 - **WHEN** the configuration turns the tool on before the merge, and a pull request replaces the configuration file with one that is not valid, is larger than its size bound, is a symbolic link or is not a regular file
 - **THEN** its comment says that the pull request changed the tool's configuration
+
+#### Scenario: A changed registration is flagged
+
+- **WHEN** a pull request changes `.claude/settings.json`
+- **THEN** its comment says that the pull request changed the project settings file that registers the hook

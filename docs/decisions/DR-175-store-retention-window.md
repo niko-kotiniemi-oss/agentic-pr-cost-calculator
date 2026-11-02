@@ -14,7 +14,7 @@ Before this change, the store kept a call's note for as long as the store lasted
 
 ## Decision
 
-The store's retention window is 30 days. A run records no call whose day is more than 30 days before the run's day, drops each waiting call and each note of a taken call once that is so of its day, drops a session's notes once none of its runs has come within the window, takes back a ledger file whose note is older than the window, as for a command that is over, and drops a take-back's note that old. A run that leaves the store holding nothing removes its file and its folder.
+The store's retention window is 30 days. A run records no call whose day is more than 30 days before the run's day, drops each waiting call and each note of a taken call once that is so of its day, flagging a dropped waiting call for its age in the next ledger file staged for its worktree and branch (DR-180), drops a session's notes once none of its runs has come within the window, takes back a ledger file whose note is older than the window, as for a command that is over, and drops a take-back's note that old. A run that leaves the store holding nothing removes its file and its folder.
 
 ## Alternatives
 
@@ -24,7 +24,7 @@ The store's retention window is 30 days. A run records no call whose day is more
 ## Consequences
 
 - No call older than the window can be recorded, so dropping a taken call's note at the end of the window cannot let its calls be staged again, and DR-055 still holds.
-- A branch that waits longer than the window for its next commit loses its waiting calls, so the count is too low.
+- A branch that waits longer than the window for its next commit loses its waiting calls, so the count is too low, and its next ledger file says that calls were left out for their age.
 - Retention runs only when a run comes, so a repository where no session runs again keeps its store until the person removes it, which the README says how to do (T114).
 
 ## Scope

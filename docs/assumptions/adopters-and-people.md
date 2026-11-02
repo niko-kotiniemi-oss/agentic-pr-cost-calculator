@@ -24,8 +24,8 @@ The assumptions about the teams that adopt the tool, the people who opt in, and 
 
 ## A14. People who opt in know what it publishes, and keep other work apart.
 
-- **Rests on it:** R1, R2, R3, R4, R37, R52, R108, R146, R155, R159, T2, T3, T4, T5, T31, T38, T106, T111, T114, T116, DR-045, DR-046, DR-048, DR-050, DR-052, DR-053, DR-055, DR-057, DR-136, DR-138, DR-168, DR-171, DR-180, DR-182
-- **If it is wrong:** Work on another repository, private ones included, would be published here (T2), the ledger would reveal more about a person than they expected (T31, T3, T4, T5), and calls made before an opt-in would be recorded too (T38). A person whose opt-in is not where the step reads it, or does not outlive a cloud session, would have nothing recorded.
+- **Rests on it:** R1, R2, R3, R4, R37, R52, R108, R146, R155, R159, R164, T2, T3, T4, T5, T31, T38, T106, T111, T114, T116, T117, DR-045, DR-046, DR-050, DR-052, DR-053, DR-055, DR-057, DR-136, DR-138, DR-168, DR-171, DR-180, DR-182, DR-183
+- **If it is wrong:** Work on another repository, private ones included, would be published here (T2), the ledger would reveal more about a person than they expected (T31, T3, T4, T5), a person who opts in during a session would have its calls up to the next run left out, so that its count is too low (T38), and a person who keeps the store in their backups, or puts back a copy of it after an opt-out, would keep its notes there, or bring back calls to be staged (T117). A person whose opt-in is not where the step reads it, or does not outlive a cloud session, would have nothing recorded.
 - **Fact:** People who opt in start each session in the repository, and keep work on other repositories, private ones above all, in sessions of their own.
   - **Relied on:** R3, T2, DR-057
   - **Checked:** not yet: none will, since no test may reach what adopters and people do
@@ -38,14 +38,14 @@ The assumptions about the teams that adopt the tool, the people who opt in, and 
 - **Fact:** People opt in before they start a session.
   - **Relied on:** R108, T38, DR-168
   - **Checked:** not yet: none will, since no test may reach what adopters and people do
-- **Fact:** People who opt in read what the README says stays published after an opt-out, what a flag for calls left out says, and where the store is and how to remove it.
-  - **Relied on:** R146, R155, R159, T106, T111, T114, T116, DR-171, DR-180, DR-182
+- **Fact:** People who opt in read what the README says stays published after an opt-out, what a flag for calls left out says, that one opt-in covers every repository that turns the tool on, and where the store is, how to keep it out of backups and syncs, and how to remove it.
+  - **Relied on:** R146, R155, R159, R164, T3, T106, T111, T114, T116, T117, DR-171, DR-180, DR-182
   - **Checked:** not yet: none will, since no test may reach what adopters and people do
 - **Fact:** People write their opt-in directly in `~/.gitconfig` or in git's file in their XDG configuration folder, not in a file that those include and not through an environment variable.
-  - **Relied on:** R37, DR-048
+  - **Relied on:** R37, DR-183
   - **Checked:** not yet: none will, since no test may reach what adopters and people do
 - **Fact:** Each person keeps a global git configuration that outlives the session, also when they work in cloud sessions, whose machines are thrown away.
-  - **Relied on:** R1, DR-046, DR-048, DR-050
+  - **Relied on:** R1, DR-046, DR-050, DR-183
   - **Checked:** not yet: none will, since no test may reach what adopters and people do
 - **Fact:** Commit times in git already show when someone worked, so a ledger entry's UTC day discloses nothing new.
   - **Relied on:** R2, T5, DR-052
@@ -142,10 +142,10 @@ The assumptions about the teams that adopt the tool, the people who opt in, and 
 
 ## A24. The machine running a session, and the programs that a hook starts on it, are the person's own.
 
-- **Rests on it:** R1, R12, R13, R32, R54, R152, T3, T15, T46, T56, T107, T109, T112, DR-027, DR-031, DR-046, DR-048, DR-059, DR-125, DR-176
+- **Rests on it:** R1, R12, R13, R32, R54, R152, T3, T15, T46, T56, T107, T109, T112, DR-027, DR-031, DR-046, DR-059, DR-125, DR-176, DR-183
 - **If it is wrong:** On a shared machine one person's opt-in would record everyone who uses it (T3), and a program planted where the step or git looks for one would run as part of it with the person's rights (T46, T15). A machine without a working `python3` or `git` would record nothing and say nothing (T56). The capture step does not defend against a compromised machine.
 - **Fact:** The machine running a session belongs to the person running it.
-  - **Relied on:** R1, R54, R152, T3, T46, T107, T109, T112, DR-046, DR-048, DR-059, DR-176
+  - **Relied on:** R1, R54, R152, T3, T46, T107, T109, T112, DR-046, DR-059, DR-176, DR-183
   - **Checked:** not yet: none will, since no test may reach what adopters and people do
 - **Fact:** On Windows, a program started by a bare name, such as `git`, is looked for first in the starting program's folder and in the current directory, and only then in the system's folders and the folders that `PATH` names.
   - **Relied on:** R54, T46, DR-059
@@ -256,7 +256,7 @@ The assumptions about the teams that adopt the tool, the people who opt in, and 
 
 ## A47. Ledger files stay small, and their commits are rarely undone.
 
-- **Rests on it:** R22, R52, R67, R70, R113, T8, T42, T48, DR-011, DR-015, DR-039, DR-055, DR-056, DR-092, DR-127, DR-131
+- **Rests on it:** R22, R52, R67, R70, R113, T8, T42, T48, DR-011, DR-015, DR-039, DR-055, DR-092, DR-127, DR-131, DR-184
 - **If it is wrong:** In a busy, long-lived repository the report would reach its time limit and post nothing, and capture would spend its budget on old ledger files (T48, T42). Teams that rework their history often would lose much of their usage from reports (T8).
 - **Fact:** Adopters' histories, ledger folders and stores stay small enough that capture reads them within its time budget and the report within its time limit.
   - **Relied on:** R22, R67, R70, T42, T48, DR-011, DR-015, DR-039, DR-092, DR-131
@@ -265,7 +265,7 @@ The assumptions about the teams that adopt the tool, the people who opt in, and 
   - **Relied on:** R22, DR-015, DR-127
   - **Checked:** not yet: none will, since no test may reach what adopters and people do
 - **Fact:** Reverting, resetting or splitting a commit that holds a ledger file is rare in adopters' work.
-  - **Relied on:** R52, R113, T8, DR-055, DR-056
+  - **Relied on:** R52, R113, T8, DR-055, DR-184
   - **Checked:** not yet: none will, since no test may reach what adopters and people do
 
 ## A58. Someone reads the report comments and keeps the prices current.

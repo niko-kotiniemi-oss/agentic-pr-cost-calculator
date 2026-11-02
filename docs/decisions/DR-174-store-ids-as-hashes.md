@@ -14,17 +14,19 @@ Capture keeps operational metadata only where it needs it (DR-173). For most of 
 
 ## Decision
 
-The store keeps a session's id, a transcript's path, a worktree, a branch and a `tool_use_id` as the SHA-256 hash of the value alone, never the value. The only plain values that it keeps are the path of a staged or taken-back ledger file, its worktree's path and its transcript's path, in that file's note, and they go when the note does.
+The store keeps a session's id, a transcript's path, a worktree, a branch and a `tool_use_id` as the SHA-256 hash of the value alone, never the value. It knows a worktree by the worktree's folder in the git common directory, which `git worktree move` keeps, and the main worktree, which has no such folder and which `git worktree move` does not move, as the main one. The only plain values that it keeps are, in the note of a staged or taken-back ledger file, the file's path in its worktree, the worktree's name, which is the name of that folder and leads git to the worktree, and, for a staged file, its transcript's path, and they go when the note does.
 
 ## Alternatives
 
 - Keeping every value in plain text, which keeps more than a run needs.
 - A keyed hash, with its key kept beside the store, which would hide nothing from whoever can read the store, since the key would be readable there too.
+- Knowing a worktree by its path, which a move of the worktree leaves naming nothing, so that its waiting calls would never match and a staged file's note would leave the file stranded.
 
 ## Consequences
 
 - A hash is not anonymity: whoever holds a value can compute its hash and find it in the store, so none of these values, plain or hashed, reaches a ledger file (R4).
 - A store that someone else reads while no ledger file is staged shows no session's id, path, worktree or branch in plain text, though it shows how many sessions and calls it notes, and when its runs came (T109).
+- The calls and notes of a worktree that is moved still find it, and a worktree's name, which git takes from the name of the worktree's folder, can say what the worktree is for.
 
 ## Scope
 

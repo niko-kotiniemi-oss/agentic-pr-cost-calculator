@@ -503,7 +503,7 @@ A pull request that changes an entry, a figure or a working that the golden set 
 
 ### Requirement: The documentation says what stays published after an opt-out and what a hash does not hide
 
-The README and the opt-in's feature page SHALL say that an opt-out, a removed ledger file or a removed store leaves each ledger file that was pushed in its branch's history, in every clone and fork that holds it, and in the report comments already posted, and that a hashed id does not hide whose record it is, since the commit that adds a ledger file names its author and whoever holds the transcript can match each hash. The glossary SHALL list `anonymous` as a word to avoid.
+The README, the opt-in's feature page and the ledger's SHALL say that an opt-out, a removed ledger file or a removed store leaves each pushed ledger file in its branch's history, clones, forks and posted comments, and each one in a commit not yet pushed for its push to publish, and that a hashed id does not hide whose record it is, since a ledger file's commit names its author and whoever holds the transcript can match each hash. The glossary SHALL list `anonymous` as a word to avoid.
 
 #### Scenario: A page that calls an entry `anonymous` fails the wording test
 
@@ -512,8 +512,17 @@ The README and the opt-in's feature page SHALL say that an opt-out, a removed le
 
 #### Scenario: The opt-in's pages say what stays published
 
+- **WHEN** the README's section on the opt-in, the opt-in's feature page and the ledger's feature page are read
+- **THEN** each says that an opt-out leaves pushed ledger files in their branch's history, in clones, forks and posted comments, that a later push publishes those in commits not yet pushed, that a force-push does not remove what GitHub keeps for the pull requests that referenced them, and that a hashed id does not hide whose record it is
+
+### Requirement: The documentation says where an opt-in applies
+
+The README and the opt-in's feature page SHALL say that one opt-in covers every repository that turns the tool on, those that adopt it later among them, with no notice in any of them; that a repository's own setting that turns capture off holds only in that clone; and how a person turns capture off for a folder with git's own conditional includes.
+
+#### Scenario: The opt-in's pages say where an opt-in applies
+
 - **WHEN** the README's section on the opt-in and the opt-in's feature page are read
-- **THEN** each says that an opt-out leaves pushed ledger files in their branch's history, in clones, forks and posted comments, and that a hashed id does not hide whose record it is
+- **THEN** each says that one opt-in covers every repository that turns the tool on, later ones too, with no notice, that a repository's own setting that turns capture off holds only in that clone, and how to turn capture off for a folder
 
 ### Requirement: Each ledger format that a release wrote keeps its golden figures
 

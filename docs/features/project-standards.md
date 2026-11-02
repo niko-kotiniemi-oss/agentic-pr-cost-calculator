@@ -6,7 +6,7 @@ What holds for the whole tool rather than for one feature: documentation that na
 
 **Spec:** `project-standards`
 
-**Requirements:** R29, R100, R101, R30, R31, R33, R34, R73, R74, R124, R125, R126, R127, R128, R129, R130, R131, R132, R133, R134, R135, R140, R143, R136, R137, R138, R139, R141, R159, R142
+**Requirements:** R29, R100, R101, R30, R31, R33, R34, R73, R74, R124, R125, R126, R127, R128, R129, R130, R131, R132, R133, R134, R135, R140, R143, R136, R137, R138, R139, R141, R159, R164, R142
 
 ## Expected behaviour
 

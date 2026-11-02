@@ -4,8 +4,8 @@ The assumptions about git: what its commands, options, attributes, locks and con
 
 ## A10. A repository's worktrees share one git common directory, which recording can use.
 
-- **Rests on it:** R3, R47, R78, R147, T2, T8, T10, T11, T19, T108, DR-011, DR-012, DR-057, DR-179
-- **If it is wrong:** A nested repository's calls could be published here (T2), a worktree's calls could be staged in the main worktree's index and carried to its branch (T19, T8), or a git command could trip over the store, so that calls are lost or recorded twice (T10, T11).
+- **Rests on it:** R3, R47, R78, R147, R149, T2, T8, T10, T11, T19, T108, DR-011, DR-012, DR-057, DR-174, DR-179
+- **If it is wrong:** A nested repository's calls, or those of another repository that the session's environment points git at this one for, could be published here (T2), a worktree's calls could be staged in the main worktree's index and carried to its branch (T19, T8), a git command could trip over the store, so that calls are lost or recorded twice (T10, T11), or a take-back could not find a worktree that was moved, so that its staged ledger file waits (T10).
 - **Fact:** A repository's worktrees share one git common directory, which `git rev-parse --git-common-dir` names, while a repository nested inside its folder has its own.
   - **Relied on:** R3, R47, R147, T2, T11, T108, DR-011, DR-057, DR-179
   - **Checked:** not yet: `add-pr-cost-calculator` task 2.1 and `add-pr-cost-calculator` task 1.1 check it
@@ -14,6 +14,12 @@ The assumptions about git: what its commands, options, attributes, locks and con
   - **Checked:** not yet: `add-pr-cost-calculator` task 1.1 checks it
 - **Fact:** A store kept in its own folder in the git common directory changes nothing that git does, so recording never blocks a change of branch or a rebase.
   - **Relied on:** R47, T10, DR-011
+  - **Checked:** not yet: `add-pr-cost-calculator` task 2.1 checks it
+- **Fact:** `git worktree move` keeps a linked worktree's folder in the git common directory, so the worktree keeps its name, and refuses to move the main worktree, which has no such folder.
+  - **Relied on:** R149, T10, DR-174
+  - **Checked:** not yet: `add-pr-cost-calculator` task 2.1 checks it
+- **Fact:** With the variables that tell git which repository or working tree to use, such as `GIT_DIR`, `GIT_COMMON_DIR` and `GIT_WORK_TREE`, removed from its environment, git finds a directory's repository and worktree from that directory alone.
+  - **Relied on:** R147, T2, DR-179
   - **Checked:** not yet: `add-pr-cost-calculator` task 2.1 checks it
 
 ## A11. git 2.43 stands for every later git.
@@ -163,26 +169,32 @@ The assumptions about git: what its commands, options, attributes, locks and con
 
 ## A51. git reads a person's configuration from the files that the step reads, by the rules that the step re-implements.
 
-- **Rests on it:** R37, R38, R39, R103, R104, R105, R106, R109, R118, T3, T38, T41, DR-048, DR-049, DR-050, DR-059, DR-168
-- **If it is wrong:** The step and git would disagree about whether a person opted in, so usage would be published without consent, or not at all (T3), and on Windows the step could read another `.gitconfig` than git does (T41). An opt-out written where the step does not look would be ignored, and calls recorded against the person's wish (T3, T38).
+- **Rests on it:** R37, R38, R39, R103, R104, R105, R106, R107, R109, R118, R160, R162, T3, T38, T41, T105, DR-049, DR-050, DR-059, DR-168, DR-169, DR-183
+- **If it is wrong:** The step and git would disagree about whether a person opted in, so usage would be published without consent, or not at all (T3), and on Windows the step could read another `.gitconfig` than git does (T41). An opt-out written where neither the step nor git's own reading of the key finds it would be ignored, and calls recorded against the person's wish (T3, T38), and a change to a file that git reads the key from, but that the fingerprint does not name, would go unseen between two runs (T105).
 - **Fact:** git reads a person's global configuration from `~/.gitconfig` and its file in the XDG configuration folder, reading the XDG file first and `~/.gitconfig` after it, so `~/.gitconfig` decides where both set a key.
-  - **Relied on:** R37, R105, T3, T41, DR-048
+  - **Relied on:** R37, R105, T3, T41, DR-183
   - **Checked:** not yet: `add-pr-cost-calculator` task 2.4 checks it
 - **Fact:** git's configuration syntax is as the step re-implements it: section and key names match in any case, a value loses its quotes and any comment after it, the last value in a file decides, and a key in a subsection or in a comment is not the opt-in key.
-  - **Relied on:** R38, T3, DR-048, DR-049
+  - **Relied on:** R38, T3, DR-049, DR-183
   - **Checked:** not yet: `add-pr-cost-calculator` task 2.4 checks it in part
 - **Fact:** git reads `true`, `yes`, `on`, `1` and a key given with no value as true, reads other numbers such as `2` as true too, reads an empty value as false, and refuses a value such as `maybe`.
   - **Relied on:** R106, T3, DR-049
   - **Checked:** not yet: `add-pr-cost-calculator` task 2.4 checks it
 - **Fact:** git reads a relative `XDG_CONFIG_HOME`, and a relative `HOME`, from its current directory, which can be in a repository's folder.
-  - **Relied on:** R103, R104, T3, DR-048
+  - **Relied on:** R103, R104, T3, DR-183
   - **Checked:** not yet: `add-pr-cost-calculator` task 2.4 checks it
 - **Fact:** On Windows, git takes the home folder from `HOME`, and only when `HOME` is not set from `HOMEDRIVE` and `HOMEPATH`, where they name a folder that exists and is not Windows' system folder, and otherwise from `USERPROFILE`.
-  - **Relied on:** R104, T3, T41, DR-048
+  - **Relied on:** R104, T3, T41, DR-183
   - **Checked:** not yet: `add-pr-cost-calculator` task 2.4 checks it in part
 - **Fact:** The repository's own git configuration, where a person turns capture off for one repository, is in files that the step can find and read itself without running git.
   - **Relied on:** R39, R109, R118, T3, T38, DR-050, DR-059, DR-168
   - **Checked:** not yet: `add-pr-cost-calculator` task 2.4 checks it in part
+- **Fact:** In a repository, git reads the opt-in key from every file and variable that it reads its settings from, among them the files that those include under the conditions that hold there, where the last value decides, and `git config --type=bool --get` prints `true` only when git reads that value as true, and exits with an error when the key is not set or its value is not a boolean.
+  - **Relied on:** R160, T3, T38, DR-183
+  - **Checked:** not yet: `add-pr-cost-calculator` task 2.4 checks it
+- **Fact:** `git config --show-origin --get-all` names each file that git reads the opt-in key from in a repository, the files that others include among them, and names a value that a variable gives as given on the command line.
+  - **Relied on:** R107, R162, T105, DR-169
+  - **Checked:** not yet: `add-pr-cost-calculator` task 2.4 checks it
 
 ## A63. git can be kept offline and from asking for credentials.
 
