@@ -189,11 +189,11 @@ The assumptions about git: what its commands, options, attributes, locks and con
 - **Fact:** The repository's own git configuration, where a person turns capture off for one repository, is in files that the step can find and read itself without running git.
   - **Relied on:** R39, R109, R118, T3, T38, DR-050, DR-059, DR-168
   - **Checked:** not yet: `add-pr-cost-calculator` task 2.4 checks it in part
-- **Fact:** In a repository, git reads the opt-in key from every file and variable that it reads its settings from, among them the files that those include under the conditions that hold there, where the last value decides, and `git config --type=bool --get` prints `true` only when git reads that value as true, and exits with an error when the key is not set or its value is not a boolean.
+- **Fact:** In a repository, git reads the opt-in key from every file and variable that it reads its settings from, among them the files that those include under the conditions that hold there, in this order: the system's file, the person's XDG file, `~/.gitconfig`, the repository's own files and then the variables, each included file where its include stands, and the last value decides. `git config --type=bool --get-all` lists every value in that order, each as `true` only when git reads it as true, exits with an error when one is not a boolean, and exits with an error, listing nothing, when the key is not set.
   - **Relied on:** R160, T3, T38, DR-183
   - **Checked:** not yet: `add-pr-cost-calculator` task 2.4 checks it
 - **Fact:** `git config --show-origin --get-all` names each file that git reads the opt-in key from in a repository, the files that others include among them, and names a value that a variable gives as given on the command line.
-  - **Relied on:** R107, R162, T105, DR-169
+  - **Relied on:** R107, R160, R162, T3, T105, DR-169, DR-183
   - **Checked:** not yet: `add-pr-cost-calculator` task 2.4 checks it
 
 ## A63. git can be kept offline and from asking for credentials.

@@ -129,11 +129,11 @@ The capture step SHALL record nothing in a repository whose own git configuratio
 
 ### Requirement: Git's own reading of the opt-in can turn capture off, never on
 
-Once a run finds both switches on, the capture step SHALL ask git for the opt-in key as git reads it in this repository, from every file and variable that git reads its settings from, the files that they include, under their conditions, among them, and SHALL take the person's capture to be off when git does not read it as true. What git reads SHALL never turn capture on.
+Once a run finds both switches on, the capture step SHALL ask git for each value of the opt-in key that git reads in this repository, included files and variables among them, and SHALL take the person's capture to be off when git gives no value or refuses one, when the last value it gives is not true, or when the last value of any one file other than the person's two global configuration files, or of the variables, is not true. What git reads SHALL never turn capture on.
 
 #### Scenario: An opt-out in an included file turns capture off
 
-- **WHEN** the person's `~/.gitconfig` turns capture on and then includes, under a condition that git finds true in this repository, a file that turns it off
+- **WHEN** the person's `~/.gitconfig` turns capture on and includes, before or after the line that turns it on, under a condition that git finds true in this repository, a file that turns it off
 - **THEN** nothing is recorded
 
 #### Scenario: An opt-out under a condition that does not hold here leaves capture on
@@ -144,6 +144,11 @@ Once a run finds both switches on, the capture step SHALL ask git for the opt-in
 #### Scenario: A global configuration file that the environment names can turn capture off
 
 - **WHEN** the person's `~/.gitconfig` turns capture on, and the session's environment points git's global configuration at another file, which does not turn it on
+- **THEN** nothing is recorded
+
+#### Scenario: A later value that turns capture on does not undo an opt-out in an included file
+
+- **WHEN** the person's `~/.gitconfig` turns capture on and then includes, under a condition that git finds true in this repository, a file that turns it off, and the repository's own git configuration, or a variable in the session's environment, then turns it on
 - **THEN** nothing is recorded
 
 ### Requirement: Consent holds for each recorded call
