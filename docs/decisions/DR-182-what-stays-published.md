@@ -14,7 +14,7 @@ A ledger file that a commit holds is published once it is pushed, and an opt-out
 
 ## Decision
 
-The README and the opt-in's feature page say that what is pushed stays published, whatever the person does later, that a ledger file in a commit not yet pushed is published by that commit's push, opt-out or not, that a force-push that drops a commit does not remove what GitHub keeps for the pull requests that referenced it, and that a hashed id does not hide whose record it is, with the reasons. They also say that one opt-in covers every repository that turns the tool on, those that adopt it later among them, and that none says so when it does, that a repository's own git configuration that turns capture off holds only in that clone, and how a person turns capture off for a folder with git's own conditional includes (DR-183). The glossary lists `anonymous` as a word to avoid, so that the wording test fails on a page whose prose uses it (DR-164).
+The README and the opt-in's feature page say that what is pushed stays published, whatever the person does later, that a ledger file in a commit not yet pushed is published by that commit's push, opt-out or not, that a force-push that drops a commit does not remove what GitHub keeps for the pull requests that referenced it, and that a hashed id does not hide whose record it is, with the reasons. They also say that one opt-in covers every repository that turns the tool on, those that adopt it later among them, and that none says so when it does, that a repository's own git configuration that turns capture off holds only in that clone, and how a person turns capture off for a folder with git's own conditional includes (DR-183), and where that stops (DR-185). The glossary lists `anonymous` as a word to avoid, so that the wording test fails on a page whose prose uses it (DR-164).
 
 ## Alternatives
 
@@ -32,4 +32,4 @@ This covers what the documentation says about what stays published and what a ha
 
 ## What reversing it would change
 
-R159 and R164 in `project-standards` and R146 in `switch-and-opt-in` would change, with their scenarios, and so would the design's decision 16, the README and the opt-in's feature page that task 4.4 writes, the glossary, T3's and T4's residuals and T116. No format would change, so the change would not be a breaking one for adopters.
+R159 and R164 in `project-standards` and R146 in `switch-and-opt-in` would change, with their scenarios, and so would the design's decisions 6 and 16, the README and the opt-in's feature page that task 4.4 writes, the glossary, T3's and T4's residuals and T116. No format would change, so the change would not be a breaking one for adopters.

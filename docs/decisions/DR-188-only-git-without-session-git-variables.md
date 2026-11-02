@@ -23,7 +23,7 @@ The hook starts no program other than git. It looks for git only in the folders 
 
 ## Consequences
 
-- A program named `git` that is planted in Claude's current directory, in the repository's folder, in a folder that a relative entry of `PATH` names, or in a folder of the repository's that an absolute entry names, is never the one started (R54), and task 2.3 plants one in each on a Windows runner.
+- A program named `git` that is planted in Claude's current directory, in the repository's folder, in a folder that a relative entry of `PATH` names, or in a folder of the repository's, or of a linked worktree outside its folder, that an absolute entry names, is never the one started (R54), and task 2.3 plants one in each on a Windows runner.
 - The session's environment can neither move a call into this repository, nor move the store or a staged ledger file into another one, nor stop git from finding this repository (R169).
 - A person's own `GIT_` variables reach only git's first reading of the opt-in, where they can turn capture off and never on (DR-183).
 - A run that finds capture off still starts git, by the same absolute path, to find its store and to take back and put back ledger files, which T46's residual accepts (R118).

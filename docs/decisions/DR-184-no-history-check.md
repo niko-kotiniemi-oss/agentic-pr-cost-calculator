@@ -10,7 +10,7 @@
 
 ## Context
 
-Capture keeps the calls it has recorded, and the notes that keep a removed ledger file's calls out (DR-055), in its store, inside one clone's git directory (DR-011), so a fresh clone, such as one where a session is resumed, has none of them (T19). A file that a later commit removes stays in git history, though, where a fresh clone could still find it (T2). The owner decided on 2026-10-19 that capture does not read the branch's history, which DR-056 records.
+Capture keeps the calls it has recorded, and the notes that keep a removed ledger file's calls out (DR-055), in its store, inside one clone's git common directory (DR-011), so a fresh clone, such as one where a session is resumed, has none of them (T19). A file that a later commit removes stays in git history, though, where a fresh clone could still find it (T2). The owner decided on 2026-10-19 that capture does not read the branch's history, which DR-056 records.
 
 DR-056 said that a session resumed in a fresh clone at the same path could stage again the calls of a ledger file that its branch no longer holds. That no longer follows: an interval when both switches were on now begins only at a run (DR-168), and a run that finds no store records no call that answers a line written before it (DR-177), so a fresh clone, which holds no store, records none of those calls. This record restates the owner's decision with that consequence corrected.
 
