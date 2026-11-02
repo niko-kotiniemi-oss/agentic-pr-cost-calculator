@@ -46,6 +46,20 @@ The report's comment (see "A merged pull request gets one report comment") SHALL
 - **WHEN** the ledger files that a pull request adds count calls whose usage held a field that capture does not know
 - **THEN** the comment gives their number, and says that the token cost may be low
 
+### Requirement: The comment says when calls were left out for consent or for their repository
+
+When a pull request's ledger files say that calls were left out for consent, or because their repository could not be told (see "A ledger file says when calls of its sessions were left out" in `usage-capture`), the report's comment SHALL say so for each of the two, with no count, and that the token cost is then a lower bound.
+
+#### Scenario: Calls left out for consent are flagged in the comment
+
+- **WHEN** a ledger file that a pull request adds says that calls were left out for consent
+- **THEN** the comment says that some calls were left out because capture was not on for the whole of a session, gives no count of them, and says that the token cost is a lower bound
+
+#### Scenario: Calls whose repository could not be told are flagged in the comment
+
+- **WHEN** a ledger file that a pull request adds says that calls whose repository could not be told were left out
+- **THEN** the comment says so, gives no count of them, and says that the token cost is a lower bound
+
 ### Requirement: A report run again updates only its own comment
 
 When the report runs again, it SHALL update its earlier comment (see "A merged pull request gets one report comment"), and SHALL update only a comment that its own identity wrote.
@@ -257,6 +271,20 @@ The report SHALL read each line of the ledger files that the merge adds (see "On
 
 - **WHEN** a ledger line that the pull request adds gives a day that is not a date in the calendar, such as `2026-02-30`
 - **THEN** that line is refused, counted as refused, and not counted as an entry
+
+### Requirement: The report reads each ledger file by the version it states
+
+The report SHALL read each ledger file that the merge adds by the rules of the version of the ledger format that its first line states (see "Each ledger file states its format's version, and each version is published with a schema" in `ledger`), and SHALL count as a refused file, counting none of its entries, a ledger file whose first line states no version, or one that the report does not read.
+
+#### Scenario: A ledger file of an earlier version is read by that version's rules
+
+- **WHEN** a pull request adds a ledger file that an earlier release's capture step wrote in an earlier version of the ledger format
+- **THEN** the report reads its lines by that version's rules
+
+#### Scenario: A ledger file of a version the report does not read is refused
+
+- **WHEN** a ledger file that the pull request adds states a version of the ledger format that the report does not read, or states none
+- **THEN** none of its entries is counted, and the comment counts it as a refused file
 
 ### Requirement: A refused ledger line is counted as refused, and no line stops the report
 

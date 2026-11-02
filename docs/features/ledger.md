@@ -6,7 +6,7 @@ The ledger is a set of small files under `.pr-cost/ledger/` that the agent's com
 
 **Spec:** `ledger`
 
-**Requirements:** R4, R77, R10, R56, R57, R22, R58, R59, R119, R60
+**Requirements:** R4, R156, R77, R10, R56, R57, R22, R58, R59, R119, R60
 
 ## Expected behaviour
 

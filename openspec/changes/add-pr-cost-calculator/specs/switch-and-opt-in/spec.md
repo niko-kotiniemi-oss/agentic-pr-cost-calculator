@@ -129,39 +129,83 @@ The capture step SHALL record nothing in a repository whose own git configuratio
 
 ### Requirement: Consent holds for each recorded call
 
-Consent, the two switches that "Capture runs only where the tool is on and the person has opted in" requires, SHALL hold for each call that the capture step records, not only for the run that records it. The step SHALL record a session's calls only when they were made inside one of that session's intervals when both were on (see "An interval when both switches were on begins at the session's start or at a run, and ends at a run").
+Consent, the two switches that "Capture runs only where the tool is on and the person has opted in" requires, SHALL hold for each call that the capture step records, not only for the run that records it. The step SHALL record a call only when it was made inside one of its session's intervals when both were on (see "An interval when both switches were on begins and ends at a run" and "A call is inside an interval only when the line it answers and its first line are").
 
 #### Scenario: Calls made before a person opts in are not recorded
 
 - **WHEN** the repository turns the tool on, a session makes calls while the person has not turned capture on, a run of the step then comes, and the person then turns capture on
-- **THEN** none of the calls made before that run is recorded, and the calls that the session makes after a later run finds capture on are recorded
+- **THEN** none of the calls made before that run is recorded, and the calls that answer lines written after a later run that finds capture on are recorded
 
-### Requirement: Each run notes in the store whether it found both switches on
+#### Scenario: Calls made before an opt-in are not recorded when no run came between
 
-The capture step SHALL note in its store, for each session, when a run finds both switches on and when a run finds either off (see "Capture runs only where the tool is on and the person has opted in"), creating the store where there is none. It SHALL read each run's time from the system's clock in UTC, which no environment variable sets.
+- **WHEN** the repository turns the tool on, a session makes calls while the person has not turned capture on, and the person turns capture on before the step's next run in that session
+- **THEN** none of those calls is recorded, and the calls that answer lines written after that run are recorded
 
-#### Scenario: A run that finds a switch off creates the store to note it
 
-- **WHEN** a run of the step finds that the person has not turned capture on, and no store exists yet
-- **THEN** the run creates the store, and notes in it, for the run's session, when the run found a switch off
+### Requirement: A call is inside an interval only when the line it answers and its first line are
+
+A call SHALL count as made inside one of its session's intervals when both switches were on (see "Consent holds for each recorded call") only when the line that its first line names as its parent, in the same transcript, which is the prompt or the tool result that the call answers, was written at or after the run that began that interval, and its first line no later than that interval's last run.
+
+#### Scenario: A call already being made when its interval begins is not recorded
+
+- **WHEN** a run that finds both switches on begins its session's interval while a call of that session is being made, whose parent line was written before that run
+- **THEN** that call is not recorded
+
+#### Scenario: A call whose parent line is not in its transcript is not recorded
+
+- **WHEN** a call's first line names a parent line that its transcript does not hold, or names none
+- **THEN** that call is not recorded, whatever interval its lines fall in
+
+### Requirement: A run that finds both switches on notes its time and a fingerprint
+
+The capture step SHALL note in its store, for each run that finds both switches on (see "Capture runs only where the tool is on and the person has opted in"), the run's time, read from the system's clock in UTC, which no environment variable sets, and a fingerprint of each file that can turn the person's capture on or off: their two global configuration files and the repository's own git configuration, made of each file's identity, size and modification times, and never of its contents.
+
+#### Scenario: A fingerprint holds nothing of a configuration file's contents
+
+- **WHEN** the person's global configuration files and the repository's own git configuration hold, beside the opt-in, distinct marker strings
+- **THEN** no marker, and no hash of a marker, appears in the store
 
 #### Scenario: The environment cannot move a run's time
 
 - **WHEN** the session's environment sets `TZ` to a zone far from UTC, a run of the step has found both switches on, the person then turns capture off, the session makes calls, a run of the step comes, and the person then turns capture on again
 - **THEN** none of the calls that the session made while capture was off is recorded
 
-### Requirement: An interval when both switches were on begins at the session's start or at a run, and ends at a run
+### Requirement: A run that finds a switch off creates no store and notes no session
 
-A session's interval when both switches were on (see "Consent holds for each recorded call") SHALL begin at the session's start when the session's first run finds both on, and otherwise at a run that finds both on after one that found either off, and SHALL end at the last run that finds both on before the next run that finds either off.
+A run of the capture step that finds either switch off SHALL create no store and SHALL add no note of its session to one. In a store that exists, it SHALL only end its own session's interval, and do what "An opt-out ends every session's interval and empties the store" and "Ledger files are taken back and put back whatever the switches say" say.
+
+#### Scenario: A person who has not opted in leaves no store
+
+- **WHEN** the repository turns the tool on, no store exists, and a person who has not turned capture on runs a session there whose agent makes calls and commits
+- **THEN** no run of the step creates a store, or creates or changes any file in the git common directory, and no ledger file is created
+
+#### Scenario: A run with the repository's switch off adds nothing of its session to a store
+
+- **WHEN** a store notes another session's interval, no ledger file is due to be taken back or put back, and a run of a session that the store does not note finds the tool off in the repository, with the person's capture on
+- **THEN** the run leaves the store as it was
+
+### Requirement: An interval when both switches were on begins and ends at a run
+
+A session's interval when both switches were on (see "Consent holds for each recorded call") SHALL begin only at a run that finds both on while the session has no open interval, never at the session's start, and SHALL end at its last run before one that finds either off or notes a fingerprint other than the interval's last run noted (see "A run that finds both switches on notes its time and a fingerprint"), which then begins the next interval if it finds both on.
 
 #### Scenario: Calls made while capture was off are not recorded when it is on again
 
 - **WHEN** a run of the step has found both switches on, the person then turns capture off, the session makes calls, a run of the step comes, and the person then turns capture on again
 - **THEN** none of the calls that the session made after the last run that found capture on, and before the next run that found it on again, is recorded
 
-### Requirement: An opt-out ends every session's interval and withholds earlier calls
+#### Scenario: Capture turned off and on again between two runs ends the interval
 
-A run of the capture step that finds the person's own capture off, in their global configuration or in the repository's own, SHALL end, for every session that the store notes, the interval when both switches were on (see "An interval when both switches were on begins at the session's start or at a run, and ends at a run"), and the step SHALL never stage, after that run, a call made before it.
+- **WHEN** a run of the step has found both switches on, the person then turns capture off, the session makes calls, and the person turns capture on again before the step's next run
+- **THEN** none of the calls whose first line was written after the earlier run and whose parent line was written before the later run is recorded
+
+#### Scenario: Any change to the person's configuration files ends the interval
+
+- **WHEN** a run of the step has found both switches on, the person then changes another setting in their `~/.gitconfig`, the session makes calls, and the next run finds both switches on
+- **THEN** none of the calls whose first line was written after the earlier run and whose parent line was written before the later run is recorded, and the calls that answer lines written after the later run are recorded
+
+### Requirement: An opt-out ends every session's interval and empties the store
+
+A run of the capture step that finds the person's own capture off, in their global configuration or in the repository's own, SHALL end every session's interval and remove from the store every call waiting to be staged, every note of a taken call and every session's notes, keeping only the notes that a take-back or a put-back still needs (see "Ledger files are taken back and put back whatever the switches say"), and the step SHALL never stage, after that run, a call made before it.
 
 #### Scenario: Calls recorded before an opt-out are not staged
 
@@ -172,6 +216,30 @@ A run of the capture step that finds the person's own capture off, in their glob
 
 - **WHEN** the step has staged a ledger file for a `git commit` that is then refused at a permission prompt, the person then turns capture off, and the step's next run finds that command over while no other git command holds the index
 - **THEN** no later commit carries its calls
+
+#### Scenario: An opt-out empties the store
+
+- **WHEN** the store notes sessions and calls waiting to be staged, no ledger file is due to be taken back or put back, and a run then finds the person's capture off
+- **THEN** after that run no store is left in the git common directory
+
+#### Scenario: An opt-out keeps only what a take-back needs
+
+- **WHEN** the step has staged a ledger file for a `git commit` that is then refused at a permission prompt, and a run of the step then finds the person's capture off before any run finds that command over
+- **THEN** after that run the store holds no waiting call, no note of a taken call and no session's notes, only the note of that file, and once a run has taken the file back, no store is left
+
+#### Scenario: Turning capture on again after an opt-out records no earlier call
+
+- **WHEN** a run of the step has found the person's capture off, the person then turns it on again, and a later run finds both switches on
+- **THEN** none of the calls whose parent line was written before that later run is recorded, though the store no longer notes how far any transcript was read
+
+### Requirement: An opt-out leaves committed ledger files to git
+
+An opt-out, a removal of the store, or the end of its retention window (see "The store keeps nothing past its retention window" in `usage-capture`) SHALL NOT make the capture step remove or change a ledger file that a commit holds, so that a ledger file that was pushed stays on its branch, in its history and in every clone of it.
+
+#### Scenario: Committed ledger files stay after an opt-out
+
+- **WHEN** a person's ledger files are committed and pushed, the person then turns capture off, and runs of the step come
+- **THEN** each of those files is still on the branch, and in the index and the working tree as the commit checked out there holds it
 
 ### Requirement: Ledger files are taken back and put back whatever the switches say
 

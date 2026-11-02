@@ -165,7 +165,26 @@ The capture step SHALL record only the calls whose transcript line gives a worki
 #### Scenario: A call whose line gives no working directory is not recorded
 
 - **WHEN** a call's lines give no working directory
-- **THEN** the call is not recorded, whatever directory the hook's input or the project directory names
+- **THEN** the call is not recorded, whatever directory the hook's input or the project directory names, and the next ledger file that holds a call of its session says that calls whose repository could not be told were left out
+
+### Requirement: A call's repository is told by its working directory alone
+
+The capture step SHALL tell a call's repository and worktree by its line's working directory alone, as git finds them from that directory when a run reads the call, never by what the call reads or writes, nor by the branch, and SHALL leave out a call whose directory no longer exists or names no repository that git can tell.
+
+#### Scenario: A call whose working directory is gone is not recorded
+
+- **WHEN** a call's line gives a working directory in a worktree of this repository that is removed before a run reads the call
+- **THEN** the call is not recorded, and the next ledger file that holds a call of its session says that calls whose repository could not be told were left out
+
+#### Scenario: A call made here that works on another repository is recorded here
+
+- **WHEN** a call's line gives a working directory in this repository, and the call's tool reads or writes another repository through an absolute path or `git -C`
+- **THEN** the call is recorded in this repository, and in no other
+
+#### Scenario: A call made in another repository that works on this one is not recorded here
+
+- **WHEN** a call's line gives a working directory in another repository, and the call's tool reads or writes this repository through an absolute path or `git -C`
+- **THEN** the call is not recorded in this repository
 
 ### Requirement: Capture works on the repository that holds the project directory
 
@@ -207,7 +226,7 @@ Every token count and request count SHALL be a whole number from zero up to a ce
 
 ### Requirement: Usage reaches the pull request with the agent's commits
 
-Capture SHALL run when Claude finishes responding, when a subagent finishes, when a turn ends in an API error, when the session ends, and before and after each of the agent's Bash commands that the hook's condition `Bash(git *)` matches. Every run SHALL record the calls that the transcript holds as over, up to its time budget, and the run before such a command SHALL do so before that command can change the branch.
+Capture SHALL run when a session starts, when Claude finishes responding, when a subagent finishes, when a turn ends in an API error, when the session ends, and before and after each of the agent's Bash commands that the hook's condition `Bash(git *)` matches. Every run but a start run (see "A start run reads no transcript") SHALL record the calls that the transcript holds as over, up to its time budget, and the run before such a command SHALL do so before that command can change the branch.
 
 #### Scenario: A one-turn session's commit carries its calls
 
@@ -224,9 +243,28 @@ Capture SHALL run when Claude finishes responding, when a subagent finishes, whe
 - **WHEN** the agent runs `git checkout other`, and the run of the step before that command reads a call that the transcript holds as over, within that run's time budget
 - **THEN** that run records the call before the checkout can change the branch
 
+### Requirement: A start run reads no transcript
+
+The run when a session starts, is resumed, cleared or compacted SHALL read no transcript: it SHALL take back and put back what is due (see "Ledger files are taken back and put back whatever the switches say" in `switch-and-opt-in`) and, when it finds both switches on, begin its session's interval. Nothing SHALL depend on a start run coming: where none comes, the session's interval begins at its first run that finds both on.
+
+#### Scenario: A session started opted in records its first turn
+
+- **WHEN** the person turned capture on before a session started, its start run came, and in its first turn the agent makes calls in one worktree and commits there, with no change of branch in between
+- **THEN** that commit carries each of those calls that the transcript held as over when that commit's run read it
+
+#### Scenario: A session with no start run records from its first run
+
+- **WHEN** the person turned capture on before a session started, no start run comes, as where Claude Code does not run that event, and the agent makes calls before the step's first run in that session
+- **THEN** none of the calls whose parent line was written before that run is recorded, and the next ledger file that holds a call of that session says that calls were left out for consent
+
+#### Scenario: A start run records nothing from a resumed transcript
+
+- **WHEN** a session is resumed, and its transcript holds calls that no run has read
+- **THEN** its start run records nothing, and a later run reads those calls
+
 ### Requirement: A call goes only to a commit in its worktree, on the branch it was recorded on
 
-A call SHALL go only into a ledger file staged in the worktree that git itself finds from its line's working directory, which for a directory in a worktree inside the repository's folder is that worktree and not the main worktree around it, for a commit on the branch that was checked out there when the call was recorded.
+A call SHALL go only into a ledger file staged in the worktree that git itself finds from its line's working directory, which for a directory in a worktree inside the repository's folder is that worktree and not the main worktree around it, for a commit on the branch that was checked out there when the call was recorded, which is not the branch it was made on when a run reads the call only after a change of branch.
 
 #### Scenario: Calls go to the worktree and branch they were recorded on
 
@@ -237,6 +275,11 @@ A call SHALL go only into a ledger file staged in the worktree that git itself f
 
 - **WHEN** the agent makes calls with one branch checked out, then, with no change of branch in between, runs `git checkout` to another branch and commits on that branch, in the same turn, and until that commit no stash holds any of those calls, and no file holds any of them in the index or the working tree but the ledger files of the commit checked out there
 - **THEN** the commit on the other branch carries none of those calls that the transcript held as over when the last run of the step before the checkout read it
+
+#### Scenario: A call read only after a change of branch goes to the branch checked out then
+
+- **WHEN** the agent makes a call with one branch checked out and then runs `git checkout` to another branch, and the run before that command cannot yet read the call as over, as when the transcript lags
+- **THEN** a later run records the call with the branch checked out when that run reads it, and a commit on the first branch carries none of it
 
 ### Requirement: Calls recorded with no branch checked out go only to a commit made the same way
 
@@ -647,12 +690,12 @@ The step SHALL start no program but git, which it SHALL find at an absolute path
 
 ### Requirement: Capture reads both switches before it starts any program
 
-The capture step SHALL read both switches (see "Capture runs only where the tool is on and the person has opted in" in `switch-and-opt-in`) before it starts any program, and a run that finds either off SHALL start git only to note that in its store and to take back and put back what the store notes.
+The capture step SHALL read both switches (see "Capture runs only where the tool is on and the person has opted in" in `switch-and-opt-in`) before it starts any program, and a run that finds either off SHALL start git only to find its store and, where one exists, to note there what `switch-and-opt-in` says and to take back and put back what it notes.
 
 #### Scenario: A run that finds a switch off starts git only for its store
 
-- **WHEN** a run finds the tool or the person's capture off, and its store notes no file to take back or put back
-- **THEN** the run reads both switches before it starts any program, and every program that it starts is git, run only to note in the store that a switch is off
+- **WHEN** a run finds the tool or the person's capture off, and no store exists, or its store notes no file to take back or put back
+- **THEN** the run reads both switches before it starts any program, and every program that it starts is git, run only to find the store and to note in it what `switch-and-opt-in` says
 
 ### Requirement: Capture never breaks or steers the session
 
@@ -689,7 +732,7 @@ The registered command SHALL carry the SHA-256 of the hook file that the adopter
 
 ### Requirement: The capture step writes only its own words and numbers to standard error
 
-The capture step SHALL write to standard error only its own words and numbers, never text taken from the transcript, from a ledger file or its name, or from what a git command printed.
+The capture step SHALL write to standard error only its own words and numbers, never text taken from the transcript, the hook's input or the store, from a ledger file or its name, or from what a git command printed, nor a hash of any of them.
 
 #### Scenario: A failure message quotes nothing from the transcript
 
@@ -700,6 +743,11 @@ The capture step SHALL write to standard error only its own words and numbers, n
 
 - **WHEN** a run of the step reads transcript lines and ledger files whose contents or names hold hostile text, some of which it cannot read, and the git commands it runs print messages about them
 - **THEN** nothing that the run writes on standard error contains any of that text, or anything that a git command printed
+
+#### Scenario: Standard error carries nothing from the store
+
+- **WHEN** a run of the step fails while the store notes a staged ledger file whose worktree's and transcript's paths, session id and `tool_use_id` are distinct marker strings
+- **THEN** nothing that the run writes on standard error contains any of those markers, or a hash of one
 
 ### Requirement: The capture step finishes within a time budget
 
@@ -718,3 +766,111 @@ The store SHALL carry the version of its format from the first release on, and a
 
 - **WHEN** a run of the step finds its store at a format version that it does not know, as one that a later release of the step wrote
 - **THEN** it records, stages, takes back and puts back nothing, leaves the store as it was, and exits with success
+
+### Requirement: The store keeps only what attribution, deduplication and take-backs need
+
+The store SHALL hold only its format's version; for each session, a hash of its id, its intervals, a hash of each transcript's path with how far it was read, and whether calls were left out; each waiting call's entry, with hashes of its session, worktree and branch; each taken call's hash and day; and, only until each is resolved, each staged or taken-back ledger file's path and worktree's path, its branch's hash, the commit found, its transcript's path and its command's `tool_use_id` as a hash.
+
+#### Scenario: The store holds ids and paths only as hashes while no file is staged
+
+- **WHEN** a session's runs have recorded calls that wait to be staged, no ledger file is staged or due to be put back, and the session's id, its transcript's path, Claude's current directory, the branch's name and every `tool_use_id` are distinct marker strings
+- **THEN** none of those markers appears in the store
+
+#### Scenario: A staged file's note keeps its paths only until it is resolved
+
+- **WHEN** the step has staged a ledger file whose worktree's and transcript's paths are distinct marker strings, and a later run finds a commit holding the file, or takes it back and has nothing to put back
+- **THEN** after that run neither marker appears in the store
+
+### Requirement: The store keeps nothing past its retention window
+
+The capture step SHALL record no call whose day is more than the store's retention window, which its format documents, before the run's day; SHALL drop each waiting call, and each note of a taken call, once that is so of its day, and each session's notes once no run of that session has come within the window; SHALL take back, as for a command that is over, a ledger file whose note is older than the window; and SHALL drop a take-back's note that old.
+
+#### Scenario: A call older than the retention window is not recorded
+
+- **WHEN** a run reads a call made inside an interval when both switches were on, whose day is more than the retention window before the run's day
+- **THEN** the call is not recorded
+
+#### Scenario: A waiting call is dropped at the end of the retention window
+
+- **WHEN** a recorded call has waited to be staged until its day is more than the retention window before a run's day
+- **THEN** after that run the store no longer holds it, and no ledger file that the step stages later holds it
+
+#### Scenario: A session's notes are dropped when it has not run within the retention window
+
+- **WHEN** no run of a session has come within the retention window, and a run of another session comes
+- **THEN** after that run the store holds no note of the first session
+
+#### Scenario: A staged ledger file older than the retention window is taken back
+
+- **WHEN** a ledger file was staged for a command that no run has found over, its note is older than the retention window, no commit holds the file, and no other git command holds the index
+- **THEN** the next run takes the file back, from the index and the working tree
+
+### Requirement: A store that holds nothing is removed
+
+A run that leaves the store holding no session's notes, no call and no note of a ledger file SHALL remove the store's file and its folder, so that the git common directory keeps nothing of the tool's once nothing waits.
+
+#### Scenario: An empty store is removed
+
+- **WHEN** a run leaves the store holding no session's notes, no call and no note of a ledger file
+- **THEN** after that run the git common directory holds no file or folder of the store
+
+### Requirement: The store is readable and writable by its owner alone
+
+The capture step SHALL create the store's folder and file so that only their owner can read or write them, where Python's standard library can set that, never through a symbolic link, and SHALL leave alone a store whose file or folder is a symbolic link, is not a regular file or a folder, or is not owned by the user the run runs as: such a run SHALL record, stage, take back and put back nothing, and exit with success.
+
+#### Scenario: The store is created for its owner alone
+
+- **WHEN** a run creates the store on Linux or macOS, under a umask that lets every user read new files
+- **THEN** only the store's owner can read, write or enter its folder, and read or write its file
+
+#### Scenario: A store reached through a link is left alone
+
+- **WHEN** the store's folder or file is a symbolic link
+- **THEN** the run writes nothing through it, records, stages, takes back and puts back nothing, and exits with success
+
+#### Scenario: A store that another user owns is left alone
+
+- **WHEN** the store's file is owned by another user than the one the run runs as
+- **THEN** the run records, stages, takes back and puts back nothing, leaves the store as it was, and exits with success
+
+### Requirement: A removed store lets no earlier call be recorded
+
+When the store is removed, by the person or otherwise, the capture step SHALL record no call whose parent line was written before the next run that finds both switches on, which SHALL begin a new interval, and SHALL leave to git any ledger file that a run staged before the removal.
+
+#### Scenario: Calls made before the store was removed are not recorded
+
+- **WHEN** a session's runs have recorded calls, the store is then removed, and a later run finds both switches on
+- **THEN** none of the calls whose parent line was written before that later run is recorded, and the calls that answer lines written after it are recorded
+
+#### Scenario: A ledger file staged before the store was removed is left to git
+
+- **WHEN** the step has staged a ledger file, the store is then removed, and a later run comes
+- **THEN** that run does not take the file back, and the file stays as git holds it
+
+### Requirement: Capture keeps no copy of a transcript
+
+The capture step SHALL write no line of a transcript, and no value from one beyond the fields that an entry or the store's notes name, to any file, the store, a ledger file and a temporary file included, or to standard error, so that no transcript is kept for reprocessing.
+
+#### Scenario: A planted string reaches no file but the store's note of a staged file
+
+- **WHEN** every text value in a transcript and in the hook's input is a distinct marker string, except the model names and price attribute values that the price table lists, and runs of the step record calls, stage a ledger file, take it back and stage it again
+- **THEN** no marker appears in any file that a run writes or in its standard error, but the worktree's and the transcript's paths in the store's note of a staged ledger file, and none appears there once no such note is left
+
+### Requirement: A ledger file says when calls of its sessions were left out
+
+When a run leaves out a call made in this repository because it was not made inside an interval when both switches were on, or leaves out a call because its working directory names no repository that git can tell, each ledger file that the step stages after that run with a call of that session SHALL say which of the two happened, with no count, time or other fact about the calls left out.
+
+#### Scenario: A ledger file says that calls were left out for consent
+
+- **WHEN** a run leaves out calls of a session made in this repository before the person opted in, and the agent then commits calls of that session
+- **THEN** the commit's ledger file says that calls were left out for consent, and holds no count, time or other fact about them
+
+#### Scenario: A session whose calls were all inside an interval raises no flag
+
+- **WHEN** every call of a session made in this repository was made inside one of its intervals when both switches were on, and each gives a working directory whose repository git can tell
+- **THEN** no ledger file says that calls of that session were left out
+
+#### Scenario: Calls left out in another repository raise no flag here
+
+- **WHEN** a session makes calls in another repository before the person opts in, and then calls here inside an interval when both switches were on
+- **THEN** no ledger file here says that calls were left out for consent

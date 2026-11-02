@@ -6,7 +6,7 @@ While a Claude Code session works in the repository, a hook records what each mo
 
 **Spec:** `usage-capture`
 
-**Requirements:** R2, R75, R41, R42, R43, R44, R45, R111, R3, R76, R5, R7, R78, R46, R47, R8, R79, R80, R81, R82, R83, R84, R85, R86, R48, R112, R49, R50, R51, R9, R87, R52, R113, R114, R115, R116, R117, R11, R12, R53, R54, R118, R13, R88, R89, R90, R55
+**Requirements:** R2, R75, R41, R42, R43, R44, R45, R111, R3, R147, R76, R5, R7, R148, R78, R46, R47, R8, R79, R80, R81, R82, R83, R84, R85, R86, R48, R112, R49, R50, R51, R9, R87, R52, R113, R114, R115, R116, R117, R11, R12, R53, R54, R118, R13, R88, R89, R90, R55, R149, R150, R151, R152, R153, R154, R155
 
 ## Expected behaviour
 
