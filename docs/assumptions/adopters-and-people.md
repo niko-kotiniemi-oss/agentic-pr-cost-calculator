@@ -24,7 +24,7 @@ The assumptions about the teams that adopt the tool, the people who opt in, and 
 
 ## A14. People who opt in know what it publishes, and keep other work apart.
 
-- **Rests on it:** R1, R2, R3, R4, R37, R52, R108, T2, T3, T4, T5, T31, T38, DR-045, DR-046, DR-047, DR-048, DR-050, DR-052, DR-053, DR-055, DR-057, DR-136, DR-138
+- **Rests on it:** R1, R2, R3, R4, R37, R52, R108, R146, R155, R159, T2, T3, T4, T5, T31, T38, T106, T111, T114, T116, DR-045, DR-046, DR-048, DR-050, DR-052, DR-053, DR-055, DR-057, DR-136, DR-138, DR-168, DR-171, DR-180, DR-182
 - **If it is wrong:** Work on another repository, private ones included, would be published here (T2), the ledger would reveal more about a person than they expected (T31, T3, T4, T5), and calls made before an opt-in would be recorded too (T38). A person whose opt-in is not where the step reads it, or does not outlive a cloud session, would have nothing recorded.
 - **Fact:** People who opt in start each session in the repository, and keep work on other repositories, private ones above all, in sessions of their own.
   - **Relied on:** R3, T2, DR-057
@@ -36,7 +36,10 @@ The assumptions about the teams that adopt the tool, the people who opt in, and 
   - **Relied on:** R1, R4, T3, T4, T5, T31, DR-045, DR-046, DR-052, DR-053, DR-136, DR-138
   - **Checked:** not yet: none will, since no test may reach what adopters and people do
 - **Fact:** People opt in before they start a session.
-  - **Relied on:** R108, T38, DR-047
+  - **Relied on:** R108, T38, DR-168
+  - **Checked:** not yet: none will, since no test may reach what adopters and people do
+- **Fact:** People who opt in read what the README says stays published after an opt-out, what a flag for calls left out says, and where the store is and how to remove it.
+  - **Relied on:** R146, R155, R159, T106, T111, T114, T116, DR-171, DR-180, DR-182
   - **Checked:** not yet: none will, since no test may reach what adopters and people do
 - **Fact:** People write their opt-in directly in `~/.gitconfig` or in git's file in their XDG configuration folder, not in a file that those include and not through an environment variable.
   - **Relied on:** R37, DR-048
@@ -139,10 +142,10 @@ The assumptions about the teams that adopt the tool, the people who opt in, and 
 
 ## A24. The machine running a session, and the programs that a hook starts on it, are the person's own.
 
-- **Rests on it:** R1, R12, R13, R32, R54, T3, T15, T46, T56, DR-027, DR-031, DR-046, DR-048, DR-059, DR-125
+- **Rests on it:** R1, R12, R13, R32, R54, R152, T3, T15, T46, T56, T107, T109, T112, DR-027, DR-031, DR-046, DR-048, DR-059, DR-125, DR-176
 - **If it is wrong:** On a shared machine one person's opt-in would record everyone who uses it (T3), and a program planted where the step or git looks for one would run as part of it with the person's rights (T46, T15). A machine without a working `python3` or `git` would record nothing and say nothing (T56). The capture step does not defend against a compromised machine.
 - **Fact:** The machine running a session belongs to the person running it.
-  - **Relied on:** R1, R54, T3, T46, DR-046, DR-048, DR-059
+  - **Relied on:** R1, R54, R152, T3, T46, T107, T109, T112, DR-046, DR-048, DR-059, DR-176
   - **Checked:** not yet: none will, since no test may reach what adopters and people do
 - **Fact:** On Windows, a program started by a bare name, such as `git`, is looked for first in the starting program's folder and in the current directory, and only then in the system's folders and the folders that `PATH` names.
   - **Relied on:** R54, T46, DR-059

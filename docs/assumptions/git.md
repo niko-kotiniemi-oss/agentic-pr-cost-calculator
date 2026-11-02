@@ -4,10 +4,10 @@ The assumptions about git: what its commands, options, attributes, locks and con
 
 ## A10. A repository's worktrees share one git common directory, which recording can use.
 
-- **Rests on it:** R3, R47, R78, T2, T8, T10, T11, T19, DR-011, DR-012, DR-057
+- **Rests on it:** R3, R47, R78, R147, T2, T8, T10, T11, T19, T108, DR-011, DR-012, DR-057, DR-179
 - **If it is wrong:** A nested repository's calls could be published here (T2), a worktree's calls could be staged in the main worktree's index and carried to its branch (T19, T8), or a git command could trip over the store, so that calls are lost or recorded twice (T10, T11).
 - **Fact:** A repository's worktrees share one git common directory, which `git rev-parse --git-common-dir` names, while a repository nested inside its folder has its own.
-  - **Relied on:** R3, R47, T2, T11, DR-011, DR-057
+  - **Relied on:** R3, R47, R147, T2, T11, T108, DR-011, DR-057, DR-179
   - **Checked:** not yet: `add-pr-cost-calculator` task 2.1 and `add-pr-cost-calculator` task 1.1 check it
 - **Fact:** git resolves a directory inside a worktree under the repository's folder to that worktree, not to the main worktree around it.
   - **Relied on:** R78, T8, T10, T19, DR-012
@@ -163,7 +163,7 @@ The assumptions about git: what its commands, options, attributes, locks and con
 
 ## A51. git reads a person's configuration from the files that the step reads, by the rules that the step re-implements.
 
-- **Rests on it:** R37, R38, R39, R103, R104, R105, R106, R109, R118, T3, T38, T41, DR-047, DR-048, DR-049, DR-050, DR-059
+- **Rests on it:** R37, R38, R39, R103, R104, R105, R106, R109, R118, T3, T38, T41, DR-048, DR-049, DR-050, DR-059, DR-168
 - **If it is wrong:** The step and git would disagree about whether a person opted in, so usage would be published without consent, or not at all (T3), and on Windows the step could read another `.gitconfig` than git does (T41). An opt-out written where the step does not look would be ignored, and calls recorded against the person's wish (T3, T38).
 - **Fact:** git reads a person's global configuration from `~/.gitconfig` and its file in the XDG configuration folder, reading the XDG file first and `~/.gitconfig` after it, so `~/.gitconfig` decides where both set a key.
   - **Relied on:** R37, R105, T3, T41, DR-048
@@ -181,7 +181,7 @@ The assumptions about git: what its commands, options, attributes, locks and con
   - **Relied on:** R104, T3, T41, DR-048
   - **Checked:** not yet: `add-pr-cost-calculator` task 2.4 checks it in part
 - **Fact:** The repository's own git configuration, where a person turns capture off for one repository, is in files that the step can find and read itself without running git.
-  - **Relied on:** R39, R109, R118, T3, T38, DR-047, DR-050, DR-059
+  - **Relied on:** R39, R109, R118, T3, T38, DR-050, DR-059, DR-168
   - **Checked:** not yet: `add-pr-cost-calculator` task 2.4 checks it in part
 
 ## A63. git can be kept offline and from asking for credentials.

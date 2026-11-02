@@ -170,7 +170,7 @@ The capability names the spec that holds the requirement. Each capability is one
 | R156 | non-functional | `ledger` | Each ledger file states its format's version, and each version is published with a schema |
 | R157 | functional | `report-comment` | The comment says when calls were left out for consent or for their repository |
 | R158 | behavioural | `report-comment` | The report reads each ledger file by the version it states |
-| R159 | non-functional | `project-standards` | The documentation says what stays published after an opt-out, and calls no record anonymous |
+| R159 | non-functional | `project-standards` | The documentation says what stays published after an opt-out and what a hash does not hide |
 
 IDs are stable: a requirement keeps its ID while it exists, and a new one takes the next free number, so the rows follow the order in which requirements were added rather than the order of the specs. A requirement that a later change removes leaves the table, and its ID is listed below with the change that removed it, never to be used again.
 

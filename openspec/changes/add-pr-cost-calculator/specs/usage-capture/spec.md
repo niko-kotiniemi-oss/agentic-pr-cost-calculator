@@ -255,7 +255,7 @@ The run when a session starts, is resumed, cleared or compacted SHALL read no tr
 #### Scenario: A session with no start run records from its first run
 
 - **WHEN** the person turned capture on before a session started, no start run comes, as where Claude Code does not run that event, and the agent makes calls before the step's first run in that session
-- **THEN** none of the calls whose parent line was written before that run is recorded, and the next ledger file that holds a call of that session says that calls were left out for consent
+- **THEN** none of the calls that answer a line written before that run is recorded, and the next ledger file that holds a call of that session says that calls were left out for consent
 
 #### Scenario: A start run records nothing from a resumed transcript
 
@@ -816,7 +816,7 @@ A run that leaves the store holding no session's notes, no call and no note of a
 
 ### Requirement: The store is readable and writable by its owner alone
 
-The capture step SHALL create the store's folder and file so that only their owner can read or write them, where Python's standard library can set that, never through a symbolic link, and SHALL leave alone a store whose file or folder is a symbolic link, is not a regular file or a folder, or is not owned by the user the run runs as: such a run SHALL record, stage, take back and put back nothing, and exit with success.
+The capture step SHALL create the store's folder and file so that only their owner can read or write them, where Python's standard library can set that, never through a symbolic link; SHALL leave alone a store whose file or folder is a symbolic link, is not a regular file or a folder, or is not owned by the user the run runs as, recording, staging, taking back and putting back nothing; and SHALL act on a note only for a file in the ledger folder of a worktree of this repository.
 
 #### Scenario: The store is created for its owner alone
 
@@ -833,14 +833,19 @@ The capture step SHALL create the store's folder and file so that only their own
 - **WHEN** the store's file is owned by another user than the one the run runs as
 - **THEN** the run records, stages, takes back and puts back nothing, leaves the store as it was, and exits with success
 
+#### Scenario: A note that names a file outside a ledger folder is not acted on
+
+- **WHEN** the store's note of a staged or taken-back ledger file names a path outside the ledger folder, or a worktree whose git common directory is not this repository's
+- **THEN** the run removes, stages and puts back no file for that note, drops the note, and exits with success
+
 ### Requirement: A removed store lets no earlier call be recorded
 
-When the store is removed, by the person or otherwise, the capture step SHALL record no call whose parent line was written before the next run that finds both switches on, which SHALL begin a new interval, and SHALL leave to git any ledger file that a run staged before the removal.
+When the store is removed, by the person or otherwise, the capture step SHALL record no call that answers a line written before the next run that finds both switches on, which SHALL begin a new interval, and SHALL leave to git any ledger file that a run staged before the removal.
 
 #### Scenario: Calls made before the store was removed are not recorded
 
 - **WHEN** a session's runs have recorded calls, the store is then removed, and a later run finds both switches on
-- **THEN** none of the calls whose parent line was written before that later run is recorded, and the calls that answer lines written after it are recorded
+- **THEN** none of the calls that answer a line written before that later run is recorded, and the calls that answer lines written after it are recorded
 
 #### Scenario: A ledger file staged before the store was removed is left to git
 

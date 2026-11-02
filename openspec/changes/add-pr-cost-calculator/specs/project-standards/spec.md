@@ -501,19 +501,19 @@ A pull request that changes an entry, a figure or a working that the golden set 
 - **WHEN** a pull request changes or removes an entry or a figure of a golden session that the latest release's tag holds, and the changelog's unreleased section does not name the session
 - **THEN** a test fails and names the session
 
-### Requirement: The documentation says what stays published after an opt-out, and calls no record anonymous
+### Requirement: The documentation says what stays published after an opt-out and what a hash does not hide
 
-The README and the opt-in's feature page SHALL say that an opt-out, a removed ledger file or a removed store leaves each ledger file that was pushed in its branch's history, in every clone and fork that holds it, and in the report comments already posted, and that a hashed id is not anonymous, since the commit that adds a ledger file names its author and whoever holds the transcript can match each hash. The glossary SHALL list anonymous as a word to avoid.
+The README and the opt-in's feature page SHALL say that an opt-out, a removed ledger file or a removed store leaves each ledger file that was pushed in its branch's history, in every clone and fork that holds it, and in the report comments already posted, and that a hashed id does not hide whose record it is, since the commit that adds a ledger file names its author and whoever holds the transcript can match each hash. The glossary SHALL list `anonymous` as a word to avoid.
 
-#### Scenario: A page that calls an entry anonymous fails the wording test
+#### Scenario: A page that calls an entry `anonymous` fails the wording test
 
-- **WHEN** a spec or a page calls the ledger, a ledger file or an entry anonymous
+- **WHEN** a spec or a page, in its prose, calls the ledger, a ledger file or an entry `anonymous`
 - **THEN** the wording test fails, naming the file and the line
 
 #### Scenario: The opt-in's pages say what stays published
 
 - **WHEN** the README's section on the opt-in and the opt-in's feature page are read
-- **THEN** each says that an opt-out leaves pushed ledger files in their branch's history, in clones, forks and posted comments, and that their hashed ids are not anonymous
+- **THEN** each says that an opt-out leaves pushed ledger files in their branch's history, in clones, forks and posted comments, and that a hashed id does not hide whose record it is
 
 ### Requirement: Each ledger format that a release wrote keeps its golden figures
 

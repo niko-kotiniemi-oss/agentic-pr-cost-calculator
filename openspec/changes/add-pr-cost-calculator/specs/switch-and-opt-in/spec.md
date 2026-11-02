@@ -144,16 +144,16 @@ Consent, the two switches that "Capture runs only where the tool is on and the p
 
 ### Requirement: A call is inside an interval only when the line it answers and its first line are
 
-A call SHALL count as made inside one of its session's intervals when both switches were on (see "Consent holds for each recorded call") only when the line that its first line names as its parent, in the same transcript, which is the prompt or the tool result that the call answers, was written at or after the run that began that interval, and its first line no later than that interval's last run.
+A call SHALL count as made inside one of its session's intervals when both switches were on (see "Consent holds for each recorded call") only when the line it answers, which is the first line that gives a prompt or a tool result up the chain of parents that its first line names in the same transcript, was written at or after the run that began that interval, and its first line no later than that interval's last run.
 
 #### Scenario: A call already being made when its interval begins is not recorded
 
-- **WHEN** a run that finds both switches on begins its session's interval while a call of that session is being made, whose parent line was written before that run
+- **WHEN** a run that finds both switches on begins its session's interval while a call of that session is being made, which answers a line written before that run
 - **THEN** that call is not recorded
 
-#### Scenario: A call whose parent line is not in its transcript is not recorded
+#### Scenario: A call that answers no line of its transcript is not recorded
 
-- **WHEN** a call's first line names a parent line that its transcript does not hold, or names none
+- **WHEN** the chain of parents that a call's first line names reaches no line of its transcript that gives a prompt or a tool result
 - **THEN** that call is not recorded, whatever interval its lines fall in
 
 ### Requirement: A run that finds both switches on notes its time and a fingerprint
@@ -196,12 +196,12 @@ A session's interval when both switches were on (see "Consent holds for each rec
 #### Scenario: Capture turned off and on again between two runs ends the interval
 
 - **WHEN** a run of the step has found both switches on, the person then turns capture off, the session makes calls, and the person turns capture on again before the step's next run
-- **THEN** none of the calls whose first line was written after the earlier run and whose parent line was written before the later run is recorded
+- **THEN** none of the calls whose first line was written after the earlier run and that answer a line written before the later run is recorded
 
 #### Scenario: Any change to the person's configuration files ends the interval
 
 - **WHEN** a run of the step has found both switches on, the person then changes another setting in their `~/.gitconfig`, the session makes calls, and the next run finds both switches on
-- **THEN** none of the calls whose first line was written after the earlier run and whose parent line was written before the later run is recorded, and the calls that answer lines written after the later run are recorded
+- **THEN** none of the calls whose first line was written after the earlier run and that answer a line written before the later run is recorded, and the calls that answer lines written after the later run are recorded
 
 ### Requirement: An opt-out ends every session's interval and empties the store
 
@@ -230,7 +230,7 @@ A run of the capture step that finds the person's own capture off, in their glob
 #### Scenario: Turning capture on again after an opt-out records no earlier call
 
 - **WHEN** a run of the step has found the person's capture off, the person then turns it on again, and a later run finds both switches on
-- **THEN** none of the calls whose parent line was written before that later run is recorded, though the store no longer notes how far any transcript was read
+- **THEN** none of the calls that answer a line written before that later run is recorded, though the store no longer notes how far any transcript was read
 
 ### Requirement: An opt-out leaves committed ledger files to git
 

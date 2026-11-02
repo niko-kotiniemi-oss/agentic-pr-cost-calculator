@@ -41,7 +41,7 @@ The assumptions about Python, about the development tools of this repository, an
 
 ### A53. Files, locks and random names behave alike on every system where a repository's git common directory lives.
 
-- **Rests on it:** R8, R10, R11, R58, R119, T11, T13, T42, T47, DR-017, DR-036, DR-127
+- **Rests on it:** R8, R10, R11, R58, R107, R108, R119, R152, T11, T13, T42, T47, T105, T109, T112, DR-017, DR-036, DR-127, DR-169, DR-176
 - **If it is wrong:** Two runs could interleave their notes or both record one call, and a killed run could leave a torn store or a lock that stops later runs (T13, T42). A ledger write could leave the repository through a directory junction (T11), and two branches could add one ledger path, so that their merge conflicts or one pull request's usage is read as another's (T13, T47).
 - **Fact:** The operating system releases a file lock when the process holding it ends, even when that process is killed, on every system and filesystem where a repository's git common directory lives.
   - **Relied on:** R11, T13, T42, DR-036
@@ -58,13 +58,19 @@ The assumptions about Python, about the development tools of this repository, an
 - **Fact:** Random ledger file names never collide across every branch and clone that will ever merge, so creating a file only where none of that name exists is enough.
   - **Relied on:** R8, R10, T13, DR-017, DR-127
   - **Checked:** not yet: `add-pr-cost-calculator` task 2.2 checks it
+- **Fact:** Writing a file changes its size or its modification time, or puts a file of another identity in its place, on every file system where a person's git configuration lives, at a resolution fine enough to tell apart two writes that a run comes between.
+  - **Relied on:** R107, R108, T105, DR-169
+  - **Checked:** not yet: `add-pr-cost-calculator` task 2.4 checks it in part, on the file systems that CI runs on
+- **Fact:** On Linux and macOS, a folder created with mode 0700 and a file with mode 0600 can be read only by their owner and an administrator, and Python's standard library can create them so, whatever the umask, without following a symbolic link.
+  - **Relied on:** R152, T109, T112, DR-176
+  - **Checked:** not yet: `add-pr-cost-calculator` task 2.1 checks it
 
 ### A54. The clock of the machine that runs a session agrees with its transcripts and with the runner's day.
 
-- **Rests on it:** R14, R40, T17, T38, DR-044, DR-047, DR-052
+- **Rests on it:** R14, R40, R144, T17, T38, T104, DR-044, DR-052, DR-168
 - **If it is wrong:** Calls near an opt-in or an opt-out would be kept or withheld wrongly (T38), and entries from a machine whose clock runs ahead would be refused as dated after the report's day (T17).
 - **Fact:** The clock of the machine that runs a session agrees with the times in its transcripts, and with the day on the runner where the report runs.
-  - **Relied on:** R14, R40, T17, T38, DR-044, DR-047, DR-052
+  - **Relied on:** R14, R40, R144, T17, T38, T104, DR-044, DR-052, DR-168
   - **Checked:** not yet: none will, since the clocks are those of people's machines and GitHub's runners, which no test reads
 
 ### A66. Later Pythons keep what the tool uses, on every system that adopters use, and each version gets security fixes until its end of life.
