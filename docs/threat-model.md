@@ -1440,13 +1440,13 @@ The trust boundaries:
 
 ## Boundary 6, continued: found at the design of the consent and store revision
 
-### T116. The documentation implies that a published record is anonymous, or that an opt-out removes it
+### T116. The documentation implies that a hashed id hides whose record it is, or that an opt-out removes a published record
 
 - **Kind:** information disclosure
 - **Impact:** 2 (medium)
 - **Likelihood:** 1 (unlikely)
 - **Risk:** 2
-- **What could happen:** an adopter who reads that entries hold only hashes may take the ledger for anonymous, and one who reads that an opt-out empties the store may take it to remove what was published, and opt in on that basis. A pushed ledger file stays in its branch's history, in every clone and fork that holds it and in the comments already posted, and the commit that adds it names its author.
+- **What could happen:** an adopter who reads that entries hold only hashes may take them to hide whose record each is, and one who reads that an opt-out empties the store may take it to remove what was published, and opt in on that basis. A pushed ledger file stays in its branch's history, in every clone and fork that holds it and in the comments already posted, and the commit that adds it names its author.
 - **Answer:** the README and the opt-in's feature page say what stays published after an opt-out, a removed ledger file or a removed store, and that a hashed id does not hide whose record it is, and the glossary lists `anonymous` as a word to avoid, which the wording test finds in the prose of any page.
 - **Residual:** a page can still imply anonymity without the word, which the reviews are left to see.
 - **Held by:** `project-standards`: "A page that calls an entry `anonymous` fails the wording test"; `project-standards`: "The opt-in's pages say what stays published"; `switch-and-opt-in`: "Committed ledger files stay after an opt-out"; DR-182; `add-pr-cost-calculator` task 4.4

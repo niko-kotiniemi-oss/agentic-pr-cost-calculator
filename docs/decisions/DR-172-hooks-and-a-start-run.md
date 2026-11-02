@@ -30,7 +30,7 @@ Capture is one script that Claude Code runs as a hook while the session runs, re
 - Claude Code writes the transcript asynchronously, so a run reads only the lines that end in a line break (R44, T42). The call that runs the agent's last commit on a branch may not yet read as over when that commit's run reads the transcript, and it then reaches no pull request (the design's risk "[Some calls reach no commit]"; T8).
 - Capture sees only what the transcripts hold, so model calls that Claude Code makes for its own tools without recording them there are left out, and the comment, and the README's section on adopting the tool that task 4.4 writes, say so rather than estimating them (the design's risk "[Claude Code makes model calls for its own tools, such as WebFetch, that the session's transcript does not record]"; T40).
 - Capture rests on Claude Code's hooks and transcripts behaving as documented and as observed, which the threat model lists among its assumptions. Task 1.1's fixtures carry every shape seen, so that a change of format fails a test (the design's risk "[Claude Code changes its transcript format]").
-- Where no start run comes, a session's interval begins at its first run that finds both switches on, and the calls before it are left out and flagged (DR-168 and DR-180; T38).
+- Where no start run comes, a session's interval begins at its first run that finds both switches on, and the calls before it are left out and flagged (DR-168 and DR-180; T38). So are the calls of a first turn whose prompt the person sends the moment the session starts, before its start run notes its time.
 
 ## Scope
 
