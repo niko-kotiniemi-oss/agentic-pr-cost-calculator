@@ -513,7 +513,7 @@ The README, the opt-in's feature page and the ledger's SHALL say that an opt-out
 #### Scenario: The opt-in's pages say what stays published
 
 - **WHEN** the README's section on the opt-in, the opt-in's feature page and the ledger's feature page are read
-- **THEN** each says that an opt-out leaves pushed ledger files in their branch's history, in clones, forks and posted comments, that a later push publishes those in commits not yet pushed, that a force-push does not remove what GitHub keeps for the pull requests that referenced them, and that a hashed id does not hide whose record it is
+- **THEN** each says that an opt-out, a removed ledger file or a removed store leaves pushed ledger files in their branch's history, in clones, forks and posted comments, that a later push publishes those in commits not yet pushed, that a force-push does not remove what GitHub keeps for the pull requests that referenced them, and that a hashed id does not hide whose record it is
 
 ### Requirement: The documentation says where an opt-in applies
 

@@ -324,6 +324,11 @@ A call SHALL go only into a ledger file staged in the worktree that git itself f
 - **WHEN** the agent makes a call with one branch checked out and then runs `git checkout` to another branch, and the run before that command cannot yet read the call as over, as when the transcript lags
 - **THEN** a later run records the call with the branch checked out when that run reads it, and a commit on the first branch carries none of it
 
+#### Scenario: Calls and notes follow a moved worktree
+
+- **WHEN** calls were recorded in a linked worktree of this repository, a ledger file was staged there for a commit that did not happen, and the worktree is then moved with `git worktree move` before any run takes the file back
+- **THEN** a later run takes the file back in the worktree at its new path, and the agent's next commit there, on the same branch, carries those calls
+
 ### Requirement: Calls recorded with no branch checked out go only to a commit made the same way
 
 Calls recorded while no branch was checked out SHALL go only to a commit made while no branch is checked out, in the same worktree.
