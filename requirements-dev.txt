@@ -1,7 +1,7 @@
 # Exact pins, so CI and every session run the same versions of these tools. Their
 # own dependencies are not pinned yet: task 1.8 of add-pr-cost-calculator locks
 # them, with hashes. Renovate proposes bumps.
-mypy==2.3.1
+mypy==2.4.0
 pytest==9.1.1
 pyyaml==6.0.3
 ruff==0.16.9
