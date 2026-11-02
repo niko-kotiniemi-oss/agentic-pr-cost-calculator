@@ -4,7 +4,7 @@
 - **Status:** accepted
 - **Decided by:** the owner, 2026-11-02
 - **Requirements:** R1, R160, R164
-- **Threats:** T3
+- **Threats:** T3, T121
 - **Replaces:** none
 - **Closed by:** none
 
@@ -26,7 +26,8 @@ One opt-in, in the person's global git configuration, covers every repository th
 ## Consequences
 
 - A person who opts in for their own work and then works in another repository that turns the tool on has their counts recorded there, from the next run there that finds both switches on, unless they have turned capture off for its folder, and the ledger file is then part of their commits there (T3's residual).
-- The README and the opt-in's feature page say that one opt-in covers every repository that turns the tool on, with no notice, and how to turn capture off for a folder (R164, DR-182).
+- The opt-in's feature page, and the README's section that task 4.4 writes, say that one opt-in covers every repository that turns the tool on, with no notice, and how to turn capture off for a folder (R164, DR-182).
+- Git matches a folder's conditional include against where a repository's git folder is, so a folder's opt-out does not reach a linked worktree in the folder whose repository lies elsewhere, and one whose condition names the folder through a symbolic link can miss a repository there, which the opt-in's feature page says, with the remedy for each (T121).
 - Opting in stays one setting, and no file that a person publishes lists the repositories they work in.
 
 ## Scope

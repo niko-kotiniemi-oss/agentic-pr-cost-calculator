@@ -4,7 +4,7 @@
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`, as the owner asked on 2026-11-02
 - **Requirements:** R1, R37, R38, R103, R104, R105, R160
-- **Threats:** T3, T41
+- **Threats:** T3, T41, T119
 - **Replaces:** DR-048
 - **Closed by:** none
 
@@ -18,22 +18,23 @@ The owner asked on 2026-11-02 that the global scope of the opt-in be revisited, 
 
 Capture reads the person's `pr-cost.capture` only from `~/.gitconfig` and git's configuration file in their XDG configuration folder, as DR-048 decided. It follows no include in them, ignores every variable that points git at other configuration files or adds settings, and reads no file from a relative path: it takes `XDG_CONFIG_HOME`, and `HOME`, only when absolute, and on Windows, without an absolute `HOME`, the folder that git uses when `HOME` is not set. It reads each file by git's rules for its configuration files, and where both files set the key, `~/.gitconfig` decides, since git reads it last.
 
-Once that reading finds both switches on, capture also asks git for each value of the key that git reads in the repository, from every file and variable that git reads its settings from, the files that they include under the conditions that hold there among them, and takes the person's capture to be off when git gives no value or refuses one, when the last value is not true, or when the last value of any one file other than the person's two global configuration files, or of the variables, is not true. What git reads never turns capture on.
+Once that reading finds both switches on, capture also asks git, twice, for each value of the key that git reads in the repository, from every file and variable that git reads its settings from, the files that they include under the conditions that hold there among them: once in the session's environment, and once without the session's `GIT_` variables (DR-188). It takes the person's capture to be off when either answer gives no value or a refusal, when its last value is not true, or when the last value of any one file other than the person's two global configuration files, or of the variables, is not true. What git reads never turns capture on, and no variable that changes which files git reads, or for which repository, hides an opt-out.
 
 ## Alternatives
 
 - Keeping DR-048 alone, under which an opt-out that only an included file, a conditional include or the file that `GIT_CONFIG_GLOBAL` names holds goes unseen, so that a person cannot turn capture off for one folder.
 - Taking git's own reading alone, the last value that git reads, under which a value that the repository's own configuration or a variable gives after an included file's opt-out would undo it, since git reads those last, and so would the person's own line that turns capture on, below the include.
 - Letting git's reading turn capture on as well, which would let a repository's settings opt a person in, through the variables that point git at other files or add settings (T3).
+- Asking git only in the session's environment, under which a variable that a repository's settings set, such as `GIT_CONFIG_GLOBAL`, `GIT_CONFIG_NOSYSTEM` or `GIT_DIR`, could keep git from reading the file that holds an opt-out (T119).
 
 ## Consequences
 
 - No variable that a repository's settings set, no included file and no relative `HOME` or `XDG_CONFIG_HOME` opts anyone in, which task 2.4 tests. A person's own setting kept only in an included file, or in the file that `GIT_CONFIG_GLOBAL` names, still does not opt them in (R37).
-- An opt-out that git finds turns capture off, so a person who has opted in can turn capture off for a folder with git's own conditional includes, wherever the include stands in their file, as the README shows (R160, R164), and no value that git reads later undoes it. The variables that a repository's settings set can turn capture off in its sessions, never on.
+- An opt-out that git finds turns capture off, so a person who has opted in can turn capture off for a folder with git's own conditional includes, wherever the include stands in their file, as the opt-in's feature page shows and the README will (R160, R164), and no value that git reads later undoes it. The variables that a repository's settings set can turn capture off in its sessions, never on, and since git's second reading runs without them, they cannot hide an opt-out in the person's own files, the system's or the repository's (T119).
 - A value that turns capture off in the system's configuration file turns capture off too, though git reads the person's global files after it: only those two files are left out of the rule for each file's last value, since the step's own reading decides between them (R105).
 - One opt-in still covers every repository that turns the tool on, those that adopt it later among them, as the README and the opt-in's feature page say (DR-182, DR-185).
 - On Windows, with an absolute `HOME`, the step reads the `.gitconfig` that git reads, not the profile folder's (T41).
-- Asking git starts a program in every run that finds both switches on, which runs git at its absolute path from a folder that only the system's administrator can write (DR-059).
+- Asking git starts a program twice in every run that finds both switches on, which runs git at its absolute path from a folder that only the system's administrator can write (DR-188).
 - Each file that git reads the key from is part of the fingerprint, so a change to one between two runs is taken as an opt-out (DR-169).
 - A repository's own hooks can still change the person's global configuration, as the threat model's assumptions say (T3's residual).
 

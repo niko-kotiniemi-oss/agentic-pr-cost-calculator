@@ -1,0 +1,38 @@
+# DR-188: The hook starts only git, by absolute path, from a safe folder, without the session's git variables
+
+- **Type:** security and privacy
+- **Status:** accepted
+- **Decided by:** the change `add-pr-cost-calculator`, as the owner asked on 2026-11-02
+- **Requirements:** R54, R118, R169
+- **Threats:** T2, T46, T119
+- **Replaces:** DR-059
+- **Closed by:** none
+
+## Context
+
+Hooks run in Claude's current directory, which is usually in the repository, and on Windows a program started by a name alone is looked for in the current directory before the system's folders and those that `PATH` names (see the design's context). So a `git.exe` in a folder that Claude has moved into, such as an extracted archive or a third-party clone, would run at the next git command or turn end, even for people who never opted in (T46). Python's isolated mode covers only what Python imports (T15). DR-059 decided where the hook finds git and from where it starts it, and two gaps remained. A tool that sets up a folder's environment can add an absolute entry of `PATH` that names a folder inside the repository, where a program is the repository's. And a repository's `.claude/settings.json` can set environment variables for everyone who works in it, which reach the hook and every git command that it starts: `GIT_DIR`, `GIT_WORK_TREE` and `GIT_INDEX_FILE` choose the repository and the index that git works on, and `GIT_CONFIG_GLOBAL` and `GIT_CONFIG_NOSYSTEM` the configuration files that it reads, so they could move the store or a staged ledger file into another repository, or keep git's reading of the opt-in from a file that turns capture off (T119). The owner asked on 2026-11-02 for a conservative boundary of consent, and that no call be attributed where that could publish another repository's usage.
+
+## Decision
+
+The hook starts no program other than git. It looks for git only in the folders that the absolute entries of `PATH` name, skipping any that lies inside this repository's working trees or its git common directory, which it learns, before it starts any program, from the project directory's `.git`, the `commondir` file and the `gitdir` file of each linked worktree, and it starts no program when it cannot read them. It starts git by that absolute path from a current directory that only the system's administrator can write, such as `/` or Windows' system folder, naming the folder that each git command works in with `-C`, and with every variable whose name begins with `GIT_` removed from the command's environment, but those that it sets itself, save for the one reading of the opt-in that DR-183 runs in the session's own environment.
+
+## Alternatives
+
+- Removing only the variables that choose the repository, the working tree and the index, which would leave the configuration variables free to hide an opt-out, and would need the list kept up as git adds variables.
+- Keeping the session's environment, as DR-059 did, which lets a repository's settings move the store or a staged ledger file into another repository.
+
+## Consequences
+
+- A program named `git` that is planted in Claude's current directory, in the repository's folder, in a folder that a relative entry of `PATH` names, or in a folder of the repository's that an absolute entry names, is never the one started (R54), and task 2.3 plants one in each on a Windows runner.
+- The session's environment can neither move a call into this repository, nor move the store or a staged ledger file into another one, nor stop git from finding this repository (R169).
+- A person's own `GIT_` variables reach only git's first reading of the opt-in, where they can turn capture off and never on (DR-183).
+- A run that finds capture off still starts git, by the same absolute path, to find its store and to take back and put back ledger files, which T46's residual accepts (R118).
+- A run that cannot read the files that list the repository's worktrees records nothing until it can.
+
+## Scope
+
+This covers which programs the hook starts, from where, and with what environment. A Python module planted beside the hook is kept out by DR-125 (The hook runs in Python's isolated mode), what the git commands that the hook starts may reach over the network is DR-060 (The hook opens no network connection), and how git's reading of the opt-in is taken is DR-183 (The opt-in is read only from the person's global git configuration, and git's own reading of it can only turn capture off).
+
+## What reversing it would change
+
+R54 and R169 in `usage-capture` would change, with their scenarios "A program planted in the current directory is not run", "A git in a folder of the repository is not run", "A git in a worktree outside the repository's folder is not run" and "The environment cannot move the store or a staged ledger file into another repository", and so would R118, whose scenario "A run that finds a switch off starts git only for its store" holds that every program such a run starts is git, the design's decisions 1 and 6, T2's and T46's answers, T119, and tasks 2.1, 2.3 and 2.4, which build and test the lookup and the environment.

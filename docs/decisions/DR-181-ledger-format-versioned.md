@@ -2,7 +2,7 @@
 
 - **Type:** technical
 - **Status:** accepted
-- **Decided by:** the change `add-pr-cost-calculator`, as the owner asked on 2026-11-02
+- **Decided by:** the owner, 2026-11-02
 - **Requirements:** R156, R158, R163, R167, R168
 - **Threats:** T16, T115, T118
 - **Replaces:** none
@@ -28,7 +28,7 @@ Each ledger file states, on its first line, the version of the ledger format tha
 - Anyone can check a ledger file without the tool, against the schema of the version that it states.
 - Checking the schema in CI needs a JSON Schema validator and the packages that it brings, compiled code among them, as development dependencies, added only once task 1.8 locks them by their hashes, which the tool itself never imports, as the design's decision 2 says. The owner chose on 2026-11-02 to check the schema in CI, over a validator of the project's own or no machine check.
 - A schema and the report can still disagree on a line that no test holds, and then the report's rules decide (T118).
-- A restored ledger file, or one each of whose entries the default branch already held, adds no counts and no flags.
+- A restored ledger file, or one that holds at least one entry, each of which the default branch already held, adds no counts and no flags.
 - A report older than a ledger file's version says that it could not read the file, rather than misreading it.
 
 ## Scope

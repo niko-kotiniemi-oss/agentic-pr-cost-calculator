@@ -14,7 +14,7 @@ A run that finds the person's capture off ends every session's interval and with
 
 ## Decision
 
-A run that finds the person's own capture off, in their global configuration, in the repository's or as git reads it there (DR-183), removes from the store every call waiting to be staged, every note of a taken call and every session's notes, keeping only the notes that a take-back or a put-back still needs, and the store removes itself once those are done (DR-175). An opt-out removes or changes no ledger file that a commit holds. A run holds the store's lock from when it reads the store until it has written it, reads both switches again under that lock before it writes a call to the store or stages a ledger file, and acts only on a store whose file is still the one that its lock holds, so that a run that began before an opt-out writes nothing after it.
+A run that finds the person's own capture off, in their global configuration, in the repository's or as git reads it there (DR-183), removes from the store every call waiting to be staged, every flag due, every note of a taken call and every session's notes, keeping only the notes that a take-back or a put-back still needs, whose calls and flags a take-back after it returns to nothing that waits, and the store removes itself once those are done (DR-175). An opt-out removes or changes no ledger file that a commit holds. A run holds the store's lock from when it reads the store until it has written it, reads both switches again under that lock before it writes a call to the store or stages a ledger file, and acts only on a store whose file is still the one that its lock holds, so that a run that began before an opt-out writes nothing after it.
 
 ## Alternatives
 

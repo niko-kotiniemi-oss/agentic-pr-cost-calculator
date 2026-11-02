@@ -2,9 +2,9 @@
 
 - **Type:** security and privacy
 - **Status:** accepted
-- **Decided by:** the change `add-pr-cost-calculator`, as the owner asked on 2026-11-02
+- **Decided by:** the owner, 2026-11-02
 - **Requirements:** R107, R108, R162
-- **Threats:** T38, T105, T117
+- **Threats:** T38, T105, T117, T120
 - **Replaces:** none
 - **Closed by:** none
 
@@ -14,7 +14,7 @@ Runs bound the intervals when both switches were on (DR-168), and the step canno
 
 ## Decision
 
-A run that finds both switches on notes, beside its time, a fingerprint of the files that can turn the person's capture on or off: their two global configuration files, each other file that git reads the opt-in key from, which `git config --show-origin` names, the repository's own git configuration among them only when it sets the key, and each link on the way to one. A file's fingerprint is made of its identity, size and modification times, never of its contents, and a missing file has a fingerprint of its own. A run that notes another fingerprint than the last that the store notes first does what an opt-out does (DR-171), since a change that it cannot read may have been an opt-out and back, and so ends every session's interval and empties the store, and then begins the next interval if it finds both switches on.
+A run that finds both switches on notes, beside its time, a fingerprint of the files that can turn the person's capture on or off: their two global configuration files, each other file that git reads the opt-in key from, which either of git's two readings of it names (DR-183), the repository's own git configuration among them only when it sets the key, and each link on the way to one. A file's fingerprint is made of its device and inode numbers, size and modification times, never of its contents or its path, a missing file has a fingerprint of its own, and the store keeps only a hash of the whole. A run that notes another fingerprint than the last that the store notes first does what an opt-out does (DR-171), since a change that it cannot read may have been an opt-out and back, and so ends every session's interval and empties the store, and then begins the next interval if it finds both switches on.
 
 ## Alternatives
 
@@ -26,10 +26,10 @@ A run that finds both switches on notes, beside its time, a fingerprint of the f
 
 ## Consequences
 
-- Any change to those files between two runs ends every interval and drops the calls waiting to be staged, at the cost of those calls and of the calls between those runs, as the design's risks say. A routine command that writes the repository's own git configuration, such as `git push -u`, ends no interval unless that configuration sets the opt-in key.
-- A change that keeps a file's identity, size and modification times, as a rewrite in place within the time resolution of a coarse file system, is not seen, and nor is an opt-out and back in an included file that set no opt-in key at the last run, so the calls between the runs around it are recorded (T105).
+- Any change to those files between two runs ends every interval and drops the calls waiting to be staged, at the cost of those calls and of the calls between those runs, as the design's risks say. A routine command that writes the repository's own git configuration, such as `git push -u`, ends no interval unless that configuration sets the opt-in key, while a routine write to a global file, such as `git config --global user.email` or the `safe.directory` line that git's own advice adds, ends every interval and raises the flag for consent (T120).
+- A change that keeps a file's device and inode numbers, size and modification times, as a rewrite in place within the time resolution of a coarse file system, is not seen, and nor is an opt-out and back in an included file, or in the repository's own git configuration, that set no opt-in key at the last run, so the calls between the runs around it are recorded (T105), as the README will say.
 - A copy of the store that a backup or a sync puts back after an opt-out brings back no call when the opt-out changed a file that the fingerprint holds, since the next run notes another fingerprint (T117).
-- The store holds no value computed from a configuration file's contents.
+- The store holds no value computed from a configuration file's contents, and no configuration file's path.
 
 ## Scope
 

@@ -142,22 +142,22 @@ The assumptions about the teams that adopt the tool, the people who opt in, and 
 
 ## A24. The machine running a session, and the programs that a hook starts on it, are the person's own.
 
-- **Rests on it:** R1, R12, R13, R32, R54, R152, T3, T15, T46, T56, T107, T109, T112, DR-027, DR-031, DR-046, DR-059, DR-125, DR-176, DR-183
+- **Rests on it:** R1, R12, R13, R32, R54, R152, T3, T15, T46, T56, T107, T109, T112, DR-027, DR-031, DR-046, DR-125, DR-176, DR-183, DR-188
 - **If it is wrong:** On a shared machine one person's opt-in would record everyone who uses it (T3), and a program planted where the step or git looks for one would run as part of it with the person's rights (T46, T15). A machine without a working `python3` or `git` would record nothing and say nothing (T56). The capture step does not defend against a compromised machine.
 - **Fact:** The machine running a session belongs to the person running it.
-  - **Relied on:** R1, R54, R152, T3, T46, T107, T109, T112, DR-046, DR-059, DR-176, DR-183
+  - **Relied on:** R1, R54, R152, T3, T46, T107, T109, T112, DR-046, DR-176, DR-183, DR-188
   - **Checked:** not yet: none will, since no test may reach what adopters and people do
 - **Fact:** On Windows, a program started by a bare name, such as `git`, is looked for first in the starting program's folder and in the current directory, and only then in the system's folders and the folders that `PATH` names.
-  - **Relied on:** R54, T46, DR-059
+  - **Relied on:** R54, T46, DR-188
   - **Checked:** not yet: `add-pr-cost-calculator` task 2.3 checks it
 - **Fact:** `/`, and Windows' system folder, can be written only by the system's administrator.
-  - **Relied on:** R54, T46, DR-059
+  - **Relied on:** R54, T46, DR-188
   - **Checked:** not yet: none will, since no test may reach what adopters and people do
 - **Fact:** Every machine that runs a session has a working `python3`, and a `git` in a folder that an absolute entry of `PATH` names.
-  - **Relied on:** R13, R32, R54, T56, DR-027, DR-031, DR-059
+  - **Relied on:** R13, R32, R54, T56, DR-027, DR-031, DR-188
   - **Checked:** not yet: none will, since no test may reach what adopters and people do
 - **Fact:** The `python3` that the registered command starts, and the `git` found through the absolute entries of `PATH`, are the person's own programs, not ones that a repository's content put there.
-  - **Relied on:** R12, R54, T15, T46, DR-059, DR-125
+  - **Relied on:** R12, R54, T15, T46, DR-125, DR-188
   - **Checked:** not yet: none will, since no test may reach what adopters and people do
 
 ## A57. The reviews and the planned tests get done.
@@ -219,7 +219,7 @@ The assumptions about the teams that adopt the tool, the people who opt in, and 
 
 ## A45. Adopters merge into the default branch by hand, after CI, having read the diff, and never rewrite that branch's history.
 
-- **Rests on it:** R20, R58, R59, R62, R64, R67, R68, R93, R96, T16, T20, T21, T22, T47, T50, DR-005, DR-015, DR-017, DR-018, DR-019, DR-039, DR-051, DR-061, DR-064, DR-066, DR-110, DR-131
+- **Rests on it:** R20, R58, R59, R62, R64, R67, R68, R93, R96, T16, T20, T21, T22, T47, T50, DR-005, DR-015, DR-017, DR-018, DR-019, DR-039, DR-051, DR-061, DR-066, DR-110, DR-131, DR-186
 - **If it is wrong:** Merges made by a workflow would get no report (T50), a stacked pull request's CI cost would count its base's runs again (T22), and a hand-edited ledger or a repointed workflow would change the reported cost unnoticed (T16, T21). A rewrite of the default branch's history could erase earlier ledger files, so that a returning call is counted again (T47, T20).
 - **Fact:** Adopters' pull requests merge into the default branch. A pull request closed without merging, or merged into another branch as in a stack, needs no report of its own.
   - **Relied on:** R20, R58, R68, DR-005, DR-017, DR-018, DR-061
@@ -234,7 +234,7 @@ The assumptions about the teams that adopt the tool, the people who opt in, and 
   - **Relied on:** R64, R96, T22, DR-039, DR-110
   - **Checked:** not yet: none will, since no test may reach what adopters and people do
 - **Fact:** In an adopting repository, whoever merges reads the pull request's diff before merging, its ledger files and workflow changes included.
-  - **Relied on:** R93, T16, T21, DR-051, DR-064, DR-066
+  - **Relied on:** R93, T16, T21, DR-051, DR-066, DR-186
   - **Checked:** not yet: none will, since no test may reach what adopters and people do
 - **Fact:** Nobody rewrites the default branch's history, so its first-parent history before a merge holds every earlier ledger file.
   - **Relied on:** R59, R67, T20, T47, DR-015, DR-017, DR-131
@@ -270,10 +270,10 @@ The assumptions about the teams that adopt the tool, the people who opt in, and 
 
 ## A58. Someone reads the report comments and keeps the prices current.
 
-- **Rests on it:** R14, R16, R17, R93, T21, T30, T49, T60, DR-020, DR-051, DR-064, DR-065, DR-124, DR-156
+- **Rests on it:** R14, R16, R17, R93, T21, T30, T49, T60, DR-020, DR-051, DR-065, DR-124, DR-156, DR-186
 - **If it is wrong:** A changed switch, hook file or workflow would go unnoticed after the merge (T21, T49, T60), and a wrong or missing price row would leave the figure low or stale for as long as the table lags (T30).
 - **Fact:** Someone reads the report's comment on each merged pull request and acts on its flags, such as a changed switch, hook file or workflow.
-  - **Relied on:** R93, T21, T49, T60, DR-051, DR-064, DR-065
+  - **Relied on:** R93, T21, T49, T60, DR-051, DR-065, DR-186
   - **Checked:** not yet: none will, since no test may reach what adopters and people do
 - **Fact:** Each price row is right when it merges: whoever adds it copies the price from its source page, and the review of its diff catches a mistake.
   - **Relied on:** R14, R16, T30, DR-020

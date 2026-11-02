@@ -14,7 +14,7 @@ DR-047 had every run note in the store whether it found both switches on, so a r
 
 ## Decision
 
-A run that finds either switch off creates no store and adds no note of its session to one. In a store that exists, it only ends its own session's interval, and does what an opt-out (DR-171) and the take-backs and put-backs that the store notes call for. It reads both switches before it starts any program, and starts git only to find the store.
+A run that finds either switch off creates no store and adds no note of its session to one. In a store that exists, it only ends its own session's interval, does what an opt-out (DR-171) and the take-backs and put-backs that the store notes call for, drops what the retention window ends (DR-175), and removes the store when it then holds nothing or does not parse, since those only remove. It reads both switches before it starts any program: when its own reading finds either off, it starts git only to find the store, and when its own reading finds both on and git's reading of the opt-in then finds capture off (DR-183), it starts git only for that reading and to find the store.
 
 ## Alternatives
 
@@ -24,12 +24,13 @@ A run that finds either switch off creates no store and adds no note of its sess
 ## Consequences
 
 - Someone who has never opted in leaves nothing in the git common directory, and no note of their sessions.
-- A run that finds a switch off still starts git, at its absolute path, to find the store, so T46's answer still holds for it (DR-059).
+- A run that finds a switch off still starts git, at its absolute path, to find the store, so T46's answer still holds for it (DR-188).
+- A repository that turns the tool off while a person's store holds notes still drops them at the end of the retention window, and a store that does not parse goes at the next run that finds a switch off.
 - An open interval ends at its session's next run that finds a switch off, or at any run that finds the person's capture off (DR-171).
 
 ## Scope
 
-This covers what a run that finds a switch off writes. Which calls the switches let through is DR-168, what an opt-out removes is DR-171, take-backs and put-backs are DR-014 (A ledger file that no commit took is taken back) and DR-130 (A taken-back ledger file is put back once, when its commit holds it), and how the step starts git is DR-059 (The hook starts only git, by absolute path, from a safe folder).
+This covers what a run that finds a switch off writes. Which calls the switches let through is DR-168, what an opt-out removes is DR-171, take-backs and put-backs are DR-014 (A ledger file that no commit took is taken back) and DR-130 (A taken-back ledger file is put back once, when its commit holds it), and how the step starts git is DR-188 (The hook starts only git, by absolute path, from a safe folder, without the session's git variables).
 
 ## What reversing it would change
 

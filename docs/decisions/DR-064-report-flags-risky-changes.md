@@ -1,12 +1,12 @@
 # DR-064: The report flags changes to the switch, the hook and the workflows
 
 - **Type:** security and privacy
-- **Status:** accepted
+- **Status:** closed
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** R93
 - **Threats:** T21, T25, T30, T49, T60
 - **Replaces:** none
-- **Closed by:** none
+- **Closed by:** DR-186
 
 ## Context
 

@@ -103,7 +103,7 @@ The assumptions about Claude Code: what its transcripts hold, when its hooks run
 
 ## A4. A hook's input gives the directories, the paths and the command text that capture needs, and a hook that exits with success and prints nothing steers nothing.
 
-- **Rests on it:** R3, R13, R43, R49, R51, R54, R55, R76, R82, R89, T2, T6, T8, T10, T14, T39, T44, T46, DR-007, DR-013, DR-031, DR-057, DR-059, DR-128, DR-135, DR-137
+- **Rests on it:** R3, R13, R43, R49, R51, R54, R55, R76, R82, R89, T2, T6, T8, T10, T14, T39, T44, T46, DR-007, DR-013, DR-031, DR-057, DR-128, DR-135, DR-187, DR-188
 - **If it is wrong:** Capture could stage a ledger file in the wrong worktree, where no commit takes it, or fail to match a later run to its command, so ledger files wait or are staged twice (T10, T8). If a quiet success could still steer the agent, or a failure could stop the session, the hook could stall or redirect the agent's work (T14), and if the project directory named another folder, calls could be judged against the wrong repository (T2).
 - **Fact:** A hook's input gives as `cwd` the directory Claude is working in: a worktree's root after Claude enters the worktree, and the new directory after Claude runs `cd`.
   - **Relied on:** R49, T10, DR-013
@@ -121,24 +121,24 @@ The assumptions about Claude Code: what its transcripts hold, when its hooks run
   - **Relied on:** R13, T14, DR-031
   - **Checked:** documented: <https://code.claude.com/docs/en/hooks>, read 2026-11-01
 - **Fact:** A command hook runs in the current directory, or, where that no longer exists, in the first that still exists of the directory the session started in, the project root, the home directory and the system's temporary directory.
-  - **Relied on:** R54, R76, T46, DR-059
+  - **Relied on:** R54, R76, T46, DR-188
   - **Checked:** documented: <https://code.claude.com/docs/en/hooks>, read 2026-11-01
 - **Fact:** Claude Code gives each hook `${CLAUDE_PROJECT_DIR}`, the project root where the session started, which stays put when Claude enters a worktree.
-  - **Relied on:** R3, R55, R76, T2, T44, DR-057, DR-137
+  - **Relied on:** R3, R55, R76, T2, T44, DR-057, DR-187
   - **Checked:** documented: <https://code.claude.com/docs/en/hooks>, read 2026-11-01
 - **Fact:** Claude Code runs a hook's command with `sh -c` on macOS and Linux, in Git Bash on Windows, or in PowerShell where Git Bash is not installed, and in a PowerShell command rewrites `${CLAUDE_PROJECT_DIR}` into PowerShell's `${env:NAME}` form.
   - **Relied on:** R13, T14, DR-007, DR-031
   - **Checked:** documented: <https://code.claude.com/docs/en/hooks>, read 2026-11-01
 
-## A5. What a session loads comes from its settings and the branch it starts on, and a project's settings cannot set the variables that say where git's global configuration is.
+## A5. What a session loads comes from its settings and the branch it starts on, and a project's settings cannot set `HOME` or the `XDG_*` variables.
 
-- **Rests on it:** R1, R37, R103, R104, R160, T3, T33, T34, T35, T36, T41, T66, DR-022, DR-041, DR-046, DR-050, DR-071, DR-081, DR-082, DR-093, DR-115, DR-126, DR-142, DR-143, DR-145, DR-183
-- **If it is wrong:** A repository could point git's global configuration at a file of its own and opt every contributor in, so their usage would be published without their consent (T3). If a session loaded more from its branch than the rules expect, the rules that keep sessions off untrusted branches would not be enough (T34, T35, T66), and if the vendored skills did not load, agents would build without them unless they read their files (T35).
+- **Rests on it:** R1, R37, R103, R104, R160, R169, T3, T33, T34, T35, T36, T41, T66, T119, DR-022, DR-041, DR-046, DR-050, DR-071, DR-081, DR-082, DR-093, DR-115, DR-126, DR-142, DR-143, DR-145, DR-183, DR-188
+- **If it is wrong:** If a project's settings could set `HOME` or the `XDG_*` variables, a repository could point both the step's reading of the opt-in and git's at configuration files of its own, to opt every contributor in or to hide an opt-out, so their usage would be published without their consent (T3, T119). If a session loaded more from its branch than the rules expect, the rules that keep sessions off untrusted branches would not be enough (T34, T35, T66), and if the vendored skills did not load, agents would build without them unless they read their files (T35).
 - **Fact:** Environment variables that a repository's `.claude/settings.json` sets reach every process Claude Code starts, hooks included.
-  - **Relied on:** R37, R160, T3, T36, DR-071, DR-183
+  - **Relied on:** R37, R160, R169, T3, T36, T119, DR-071, DR-183, DR-188
   - **Checked:** not yet: none will, since no test may reach Claude Code
 - **Fact:** Claude Code does not let a project's settings set `HOME` or the `XDG_*` variables, as its documentation says.
-  - **Relied on:** R1, R37, R103, R104, T3, T41, DR-046, DR-050, DR-183
+  - **Relied on:** R1, R37, R103, R104, T3, T41, T119, DR-046, DR-050, DR-183
   - **Checked:** documented: <https://code.claude.com/docs/en/settings-reference>, read 2026-11-01
 - **Fact:** `/clear` and compaction rerun the session-start hooks from the working tree, so a branch checked out during a session acts like one the session started on.
   - **Relied on:** T34, T35, DR-081, DR-142
@@ -287,8 +287,8 @@ The assumptions about Claude Code: what its transcripts hold, when its hooks run
 - **Fact:** `SessionStart` runs when a session starts, is resumed or forked, and when it is cleared or compacted. At a session's start its hooks run in the background while the person can already type, Claude's first response waits for them, and a prompt sent meanwhile reaches Claude only once they have finished, what such a hook prints on standard output becomes context for Claude, and it cannot block the session.
   - **Relied on:** R148, T38, DR-172
   - **Checked:** documented: <https://code.claude.com/docs/en/hooks>, read 2026-11-02
-- **Fact:** A session's first prompt is written to its transcript after its start run has noted its time, unless the person sends it the moment the session starts.
-  - **Relied on:** R148, DR-172
+- **Fact:** In an interactive session, the first prompt is written to the transcript after the start run has noted its time, unless the person sends it the moment the session starts, while a session whose first prompt is given before it starts, as with `claude -p`, the Agent SDK or a cloud session, may write it before.
+  - **Relied on:** R148, T38, DR-172
   - **Checked:** not yet: none will, since no test may reach Claude Code
 - **Fact:** `StopFailure` runs instead of `Stop` when a turn ends in an API error.
   - **Relied on:** R7, T8, DR-172

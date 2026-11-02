@@ -6,18 +6,18 @@ The assumptions about Python, about the development tools of this repository, an
 
 ### A54. The clock of the machine that runs a session agrees with its transcripts and with the runner's day.
 
-- **Rests on it:** R14, R40, R144, R150, T2, T10, T17, T38, T104, DR-044, DR-052, DR-168, DR-175
-- **If it is wrong:** Calls near an opt-in or an opt-out would be kept or withheld wrongly (T38, T104), and entries from a machine whose clock runs ahead would be refused as dated after the report's day (T17). A clock that disagreed with the transcripts' times would also move the retention window, so that a note could be dropped while its call can still be recorded, letting a removed ledger file's calls reach the branch again (T2), or a staged ledger file be taken back while its command still runs (T10).
+- **Rests on it:** R14, R40, R144, R150, T2, T10, T17, T38, T104, T110, DR-044, DR-052, DR-168, DR-175
+- **If it is wrong:** Calls near an opt-in or an opt-out would be kept or withheld wrongly (T38, T104), and entries from a machine whose clock runs ahead would be refused as dated after the report's day (T17). A clock that disagreed with the transcripts' times would also move the retention window (T110), so that a note could be dropped while its call can still be recorded, letting a removed ledger file's calls reach the branch again (T2), or a staged ledger file be taken back while its command still runs (T10).
 - **Fact:** The clock of the machine that runs a session agrees with the times in its transcripts, and with the day on the runner where the report runs.
-  - **Relied on:** R14, R40, R144, R150, T2, T10, T17, T38, T104, DR-044, DR-052, DR-168, DR-175
+  - **Relied on:** R14, R40, R144, R150, T2, T10, T17, T38, T104, T110, DR-044, DR-052, DR-168, DR-175
   - **Checked:** not yet: none will, since the clocks are those of people's machines and GitHub's runners, which no test reads
 
 ### A29. Python's isolated mode and its start-up behave as the hook expects.
 
-- **Rests on it:** R12, R13, R32, T14, T15, T28, T56, T68, DR-022, DR-023, DR-027, DR-031, DR-059, DR-062, DR-125
+- **Rests on it:** R12, R13, R32, T14, T15, T28, T56, T68, DR-022, DR-023, DR-027, DR-031, DR-062, DR-125, DR-188
 - **If it is wrong:** A module planted beside the hook would run inside it with the person's rights (T15), as it would in the report and the release job (T28, T68). An older Python could print an error where R32 says that it prints nothing (T56), though the command's `; exit 0` would still end it with success (T14).
 - **Fact:** `python3 -I` keeps the script's own folder, the current directory and Python's environment variables out of what decides the hook's imports. Without it, Python puts a script's own folder first on its import path.
-  - **Relied on:** R12, T15, T28, T68, DR-022, DR-023, DR-059, DR-062, DR-125
+  - **Relied on:** R12, T15, T28, T68, DR-022, DR-023, DR-062, DR-125, DR-188
   - **Checked:** not yet: `add-pr-cost-calculator` task 2.3 checks it
 - **Fact:** Python exits with status 2 when it cannot start as asked, such as for an option it does not know or a script it cannot open.
   - **Relied on:** R13, T14, DR-031

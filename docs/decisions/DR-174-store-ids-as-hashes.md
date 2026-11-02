@@ -25,6 +25,7 @@ The store keeps a session's id, a transcript's path, a worktree, a branch and a 
 ## Consequences
 
 - A hash is not anonymity: whoever holds a value can compute its hash and find it in the store, so none of these values, plain or hashed, reaches a ledger file (R4).
+- The transcript's path in a staged file's note carries the session's id and the person's home folder, so while a ledger file is staged the store holds the session's id in plain there (T109).
 - A store that someone else reads while no ledger file is staged shows no session's id, path, worktree or branch in plain text, though it shows how many sessions and calls it notes, and when its runs came (T109).
 - The calls and notes of a worktree that is moved still find it, and a worktree's name, which git takes from the name of the worktree's folder, can say what the worktree is for.
 

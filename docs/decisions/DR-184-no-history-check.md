@@ -1,4 +1,4 @@
-# DR-184: Capture does not read the branch's history, and a fresh clone records no call from before its first run
+# DR-184: Capture does not read the branch's history
 
 - **Type:** security and privacy
 - **Status:** accepted

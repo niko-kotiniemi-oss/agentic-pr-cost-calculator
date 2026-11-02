@@ -1,12 +1,12 @@
 # DR-137: The store states its format's version
 
 - **Type:** technical
-- **Status:** accepted
+- **Status:** closed
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** R55
 - **Threats:** T44
 - **Replaces:** none
-- **Closed by:** none
+- **Closed by:** DR-187
 
 ## Context
 

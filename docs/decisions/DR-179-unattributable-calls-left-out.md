@@ -4,7 +4,7 @@
 - **Status:** accepted
 - **Decided by:** the owner, 2026-11-02
 - **Requirements:** R3, R147
-- **Threats:** T2, T108
+- **Threats:** T2, T108, T122
 - **Replaces:** none
 - **Closed by:** none
 
@@ -14,7 +14,7 @@ Capture keeps a call for this repository when the working directory that its tra
 
 ## Decision
 
-The owner decided on 2026-11-02 that, where a call's repository is ambiguous, capture leaves the call out, and the ledger says that calls were left out, rather than risk publishing another repository's usage. So a call's repository and worktree are told by its line's working directory alone, as git finds them from that directory when the run reads the call, with the environment's variables that tell git which repository or working tree to use, such as `GIT_DIR`, removed, never by what the call reads or writes. A call whose directory no longer exists, or names no repository that git can tell, is left out. When that directory is inside this repository's folder, where Claude Code keeps its worktrees, the session's next ledger file here says that calls whose repository could not be told were left out (DR-180); when it is outside, nothing here says so, so that no ledger file tells of work in another folder.
+The owner decided on 2026-11-02 that, where a call's repository is ambiguous, capture leaves the call out, and the ledger says that calls were left out, rather than risk publishing another repository's usage. So a call's repository and worktree are told by its line's working directory alone, as git finds them from that directory when the run reads the call, without the session's `GIT_` variables (DR-188), never by what the call reads or writes. A call whose line gives no working directory, or whose directory no longer exists or names no repository that git can tell, is left out. When the line gives no directory, or that directory is inside this repository's folder, where Claude Code keeps its worktrees, the session's next ledger file here says that calls whose repository could not be told were left out (DR-180); when it is outside, nothing here says so, so that no ledger file tells of work in another folder.
 
 ## Alternatives
 
@@ -27,6 +27,7 @@ The owner decided on 2026-11-02 that, where a call's repository is ambiguous, ca
 - A call made here that works on another repository through absolute paths or `git -C` is still recorded here, as DR-057 accepts, and a call made in another repository that works on this one is not (T2).
 - A call made in a worktree that is removed before a run reads it is left out, so the count is too low, and when that worktree was inside this repository's folder the comment says that calls were left out (R157). A worktree of this repository kept in another folder raises no flag.
 - A directory that holds another repository by the time a run reads the call sends the call to that repository, a gap that runs before and after every git command keep short (T108).
+- A clone that git does not trust, as one that another user owns and that no `safe.directory` setting names, holds no repository that git can tell, so nothing is recorded there and no ledger file says so, which the README will say (T122).
 
 ## Scope
 

@@ -14,7 +14,7 @@ A person can remove the store, as the README says how to, and so can a tool that
 
 ## Decision
 
-When the store is gone, or its file does not parse, which a run takes as gone and replaces, the next run that finds both switches on begins a new interval, so that no call that answers a line written before that run is recorded, however far the transcripts were read before. A ledger file staged before the removal is left to git, since no note says that a run staged it.
+When the store is gone, or its file does not parse, which the next run that finds both switches on takes as gone and replaces, and a run that finds a switch off removes (DR-170), the next run that finds both switches on begins a new interval, so that no call that answers a line written before that run is recorded, however far the transcripts were read before. A ledger file staged before the removal is left to git, since no note says that a run staged it.
 
 ## Alternatives
 
