@@ -3,6 +3,6 @@
   "private": true,
   "description": "Pinned Node tooling for this repository, not a package: it installs the OpenSpec CLI at an exact version from a lockfile.",
   "devDependencies": {
-    "@fission-ai/openspec": "1.14.0"
+    "@fission-ai/openspec": "1.14.1"
   }
 }
