@@ -10,7 +10,7 @@
 
 ## Context
 
-Runs bound the intervals when both switches were on (DR-168), and the step cannot see a switch change between two runs. A person who turns capture off and on again between two runs would, if each run looked only at the switches, have the calls made while capture was off recorded (T38). The person's opt-in is read from their two global git configuration files, and git's own reading of it, from every file that git reads the key from, can turn it off (DR-183), as can the repository's own git configuration (DR-050), which routine commands such as `git push -u` write. A run cannot tell what a change between two runs was, so calls recorded before an opt-out and back that no run saw would still wait in the store to be staged.
+Runs bound the intervals when both switches were on (DR-168), and the step cannot see a switch change between two runs. A person who turns capture off and on again between two runs would, if each run looked only at the switches, have the calls made while capture was off recorded (T38). The person's opt-in is read from their two global git configuration files, and git's own reading of it, from every file that git reads the key from, can turn it off (DR-183), as can the repository's own git configuration (DR-050), which routine commands such as `git push -u` write. A run cannot tell what a change between two runs was, so calls recorded before an opt-out and back that no run saw would still wait in the store to be staged. On 2026-11-02 the owner kept the files that this record names, rather than every file that git reads its settings from or the two global files alone.
 
 ## Decision
 
@@ -37,4 +37,4 @@ This covers how a run tells that the files that hold the opt-in have changed, an
 
 ## What reversing it would change
 
-R107, R108 and R162 in `switch-and-opt-in` would change, with their scenarios, and so would the design's decisions 6 and 15, their risks and the open question on which files the fingerprint holds, T38's answer, T105, T117, and tasks 1.1 and 2.4. The fingerprints are in the store, whose format is part of the public surface, so the change would be a breaking one for adopters (DR-096).
+R107, R108 and R162 in `switch-and-opt-in` would change, with their scenarios, and so would the design's decisions 6 and 15 and their risks, T38's answer, T105, T117, and tasks 1.1 and 2.4. The fingerprints are in the store, whose format is part of the public surface, so the change would be a breaking one for adopters (DR-096).

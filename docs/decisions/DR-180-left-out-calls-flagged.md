@@ -2,7 +2,7 @@
 
 - **Type:** technical
 - **Status:** accepted
-- **Decided by:** the change `add-pr-cost-calculator`, as the owner asked on 2026-11-02
+- **Decided by:** the owner, 2026-11-02
 - **Requirements:** R155, R157
 - **Threats:** T16, T27, T106
 - **Replaces:** none
@@ -10,7 +10,7 @@
 
 ## Context
 
-Capture now leaves out a call that it cannot show was made inside an interval when both switches were on (DR-168), or from this repository (DR-179), and the owner asked on 2026-11-02 that the incompleteness that follows be reported where appropriate. A count of the calls left out, or their times, would say how much the person worked while capture was off, or on another repository, which is what leaving them out protects (T106).
+Capture now leaves out a call that it cannot show was made inside an interval when both switches were on (DR-168), or from this repository (DR-179), and the owner asked on 2026-11-02 that the incompleteness that follows be reported where appropriate. The same day the owner picked flags with no count over a count of the calls left out. A count of the calls left out, or their times, would say how much the person worked while capture was off, or on another repository, which is what leaving them out protects (T106).
 
 ## Decision
 

@@ -1,8 +1,8 @@
-# DR-175: The store keeps nothing past a retention window of 30 days, and removes itself when empty
+# DR-175: The store keeps nothing past a retention window of 14 days, and removes itself when empty
 
 - **Type:** security and privacy
 - **Status:** accepted
-- **Decided by:** the change `add-pr-cost-calculator`, as the owner asked on 2026-11-02
+- **Decided by:** the owner, 2026-11-02
 - **Requirements:** R150, R151
 - **Threats:** T110, T114
 - **Replaces:** none
@@ -10,15 +10,16 @@
 
 ## Context
 
-Before this change, the store kept a call's note for as long as the store lasted, and the store was never removed. The owner asked on 2026-11-02 for short retention and specified cleanup. A call waits in the store until a commit in its worktree, on its branch, takes it (DR-012), which can take days on a branch that waits, and a note of a taken call keeps it from being staged again (DR-055).
+Before this change, the store kept a call's note for as long as the store lasted, and the store was never removed. The owner asked on 2026-11-02 for short retention and specified cleanup, and the same day picked a window of 14 days, from 7, 14 and 30. A call waits in the store until a commit in its worktree, on its branch, takes it (DR-012), which can take days on a branch that waits, and a note of a taken call keeps it from being staged again (DR-055).
 
 ## Decision
 
-The store's retention window is 30 days. A run records no call whose day is more than 30 days before the run's day, drops each waiting call and each note of a taken call once that is so of its day, flagging a dropped waiting call for its age in the next ledger file staged for its worktree and branch (DR-180), drops a session's notes once none of its runs has come within the window, takes back a ledger file whose note is older than the window, as for a command that is over, and drops a take-back's note that old. A run that leaves the store holding nothing removes its file and its folder.
+The store's retention window is 14 days. A run records no call whose day is more than 14 days before the run's day, drops each waiting call and each note of a taken call once that is so of its day, flagging a dropped waiting call for its age in the next ledger file staged for its worktree and branch (DR-180), drops a session's notes once none of its runs has come within the window, takes back a ledger file whose note is older than the window, as for a command that is over, and drops a take-back's note that old. A run that leaves the store holding nothing removes its file and its folder.
 
 ## Alternatives
 
-- A window of 7 or 14 days, which keeps less for less long, but drops the calls of a branch that waits longer than that for its next commit.
+- A window of 7 days, which keeps less for less long, but drops the calls of a branch whose next commit waits more than a week.
+- A window of 30 days, which the change first proposed, and which keeps the calls of a slower branch, but keeps a longer record of when the person worked.
 - No window, which keeps what capture no longer needs for as long as the repository is used.
 
 ## Consequences
