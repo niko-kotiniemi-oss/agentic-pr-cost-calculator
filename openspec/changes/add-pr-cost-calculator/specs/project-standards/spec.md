@@ -426,7 +426,7 @@ The repository SHALL keep a glossary of each term's meaning and its words to avo
 
 #### Scenario: A page that the test cannot read whole fails CI
 
-- **WHEN** a tracked Markdown file that the test reads is a symbolic link, is not UTF-8, or opens a fenced code block that never closes
+- **WHEN** a tracked Markdown file that the test reads is a symbolic link, is not UTF-8, opens a fenced code block that never closes, or holds a line that GitHub reads in a fence or after it depending on whether a list item holds that fence
 - **THEN** a test fails and names the file
 
 #### Scenario: A wording check that reads nothing fails CI
