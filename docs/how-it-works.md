@@ -97,7 +97,7 @@ sequenceDiagram
   CC->>H: SessionStart, Stop, SubagentStop, StopFailure or SessionEnd, with the session's id, the transcript path and cwd
   H->>H: Read .pr-cost.json and the person's two global configuration files, before starting any program
   opt both are on
-    H->>H: Ask git twice, in the session's environment and without its GIT_ variables, for each value of pr-cost.capture that it reads here, and take capture to be off when either answer's last value, or the last value of any file but the two global ones, is not true
+    H->>H: Ask git twice, in the session's environment and without its GIT_ variables, for each value of pr-cost.capture that it reads here, and take capture to be off when either answer does not come within the time budget, or when its last value, or the last value of any file but the two global ones, is not true
   end
   alt either switch is off
     H->>G: Create no store. In one that exists, end this session's interval, empty it if the person's capture is off, take back or put back what is due, drop what is older than the retention window, remove it if it then holds nothing or does not parse, and record nothing
@@ -252,7 +252,7 @@ Prices are never fetched: the price table is a file at the tool's commit, change
 
 ## Environment variables
 
-As designed, the hook reads `CLAUDE_PROJECT_DIR`, `HOME`, `XDG_CONFIG_HOME` and `PATH`, and on Windows `HOMEDRIVE`, `HOMEPATH` and `USERPROFILE`. It sets `GIT_NO_LAZY_FETCH=1` and `GIT_TERMINAL_PROMPT=0` for every git command it runs, so that git fetches nothing and asks for no credentials. Its own reading of the opt-in ignores the variables that point git at other configuration files or add settings. Every git command that it starts runs without the session's variables whose names begin with `GIT_`, but those that it sets itself, so that they choose neither the repository, its index nor the files that git reads its settings from, save for one of the two git commands that ask for each value of the opt-in key, which runs in the session's own environment, where those variables can only turn capture off. The hook reads each run's time from the system's clock in UTC, which no variable sets. The report reads `GITHUB_API_URL`, `GITHUB_TOKEN` and the event that GitHub passes the workflow. Task 5.3 checks this list against the code once it exists.
+As designed, the hook reads `CLAUDE_PROJECT_DIR`, `HOME`, `XDG_CONFIG_HOME` and `PATH`, and on Windows `HOMEDRIVE`, `HOMEPATH` and `USERPROFILE`. It sets `GIT_NO_LAZY_FETCH=1` and `GIT_TERMINAL_PROMPT=0` for every git command it runs, so that git fetches nothing and asks for no credentials. Its own reading of the opt-in ignores the variables that point git at other configuration files or add settings. Every git command that it starts runs without the session's variables whose names begin with `GIT_`, but those that it sets itself, so that they choose neither the repository, its index nor the files that git reads its settings from, save for one of the two git commands that ask for each value of the opt-in key, which runs in the session's own environment, where those variables can only turn capture off, and which the hook stops at its time budget, taking capture to be off, when a file that they name holds it up. The hook reads each run's time from the system's clock in UTC, which no variable sets. The report reads `GITHUB_API_URL`, `GITHUB_TOKEN` and the event that GitHub passes the workflow. Task 5.3 checks this list against the code once it exists.
 
 ## What it never does
 
