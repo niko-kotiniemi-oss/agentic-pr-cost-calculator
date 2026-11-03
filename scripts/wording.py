@@ -307,23 +307,39 @@ def hide_code_spans(chars: list[str], start: int, line: str) -> None:
             at = close + 1
 
 
+def width(text: str) -> int:
+    """How many columns the spaces and tabs that start a text fill, each tab reaching the
+    next multiple of four, as GitHub counts them."""
+    return len(text[: len(text) - len(text.lstrip(" \t"))].expandtabs(4))
+
+
 def prose(path: str, text: str) -> tuple[list[str], list[tuple[int, str]]]:
     """A file's characters with each that is not prose left unread, and each fence that
     never closes, by its line."""
     chars = list(text)
-    fence: tuple[str, int, int] | None = None
+    # An open fence: its character, its length, its line, and the column where it starts.
+    fence: tuple[str, int, int, int] | None = None
     released = False
     start = 0
     for number, line in enumerate(text.split("\n"), 1):
         end = start + len(line)
         opened = OPEN_FENCE.match(line)
+        if fence is not None and line.strip() and width(line) < fence[3]:
+            # A line less indented than the fence ends the list item that would hold it, and
+            # the fence with it, so it is read as any other line.
+            fence = None
         if fence is not None:
             hide(chars, start, end)
             closing = line.strip()
             if closing and set(closing) == {fence[0]} and len(closing) >= fence[1]:
                 fence = None
         elif opened and not (opened[1][0] == "`" and "`" in opened[2]):
-            fence = (opened[1][0], len(opened[1]), number)
+            fence = (
+                opened[1][0],
+                len(opened[1]),
+                number,
+                len(line[: opened.start(1)].expandtabs(4)),
+            )
             hide(chars, start, end)
         else:
             if path == CHANGELOG and SECTION_HEADING.match(line):

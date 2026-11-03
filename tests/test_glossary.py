@@ -19,10 +19,14 @@ Prose is the text that a reader reads as words. Inline code and fenced code
 blocks give names, commands, paths and snippets as they must be typed, so a word
 inside them keeps its spelling (T90). A code span is read on its own line, so one
 that wraps onto the next line is read as prose. A fence may open after a list
-item's marker, and closes only on a run of its own character as long as the one
-that opened it or longer. A file that this test cannot read whole fails, named: a
-fence that never closes, which would leave the rest of its file unread; a symbolic
-link, which is not followed; and a file or a path that is not UTF-8.
+item's marker. It closes on a run of its own character as long as the one that
+opened it or longer and, where it opens indented or after a marker, at the first
+line that is not blank and is indented less than it, which ends the list item
+that holds it, so that line is read; outside a list, GitHub keeps such a line in
+the fence, so there the test reads more than GitHub shows as prose. A file that
+this test cannot read whole fails, named: a fence that never closes, which would
+leave the rest of its file unread; a symbolic link, which is not followed; and a
+file or a path that is not UTF-8.
 
 Some files keep the words that they were written with and are not read: the
 records' folder, since an accepted record changes only to be closed (DR-121) and
@@ -343,6 +347,42 @@ def test_a_fence_that_opens_after_a_list_item_s_marker_is_code(tmp_path: Path) -
     assert problems_in(repository(tmp_path, {"docs/page.md": page})) == [
         'docs/page.md:5: "The calculator" is a word to avoid; use "the tool"',
         'docs/page.md:11: "The calculator" is a word to avoid; use "the tool"',
+    ]
+
+
+@pytest.mark.parametrize(
+    ("page", "line"),
+    [
+        ("- ```\n  the calculator in code\nThe calculator after the item.\n", 3),
+        ("1. ```\n   the calculator in code\n  The calculator at two spaces.\n", 3),
+        ("- An item:\n\n  ```\n  the calculator in code\nThe calculator after it.\n", 5),
+        ("\t- ```\n\t  the calculator in code\n    The calculator at four spaces.\n", 3),
+    ],
+    ids=["after a marker", "after a number", "indented in an item", "after a tab"],
+)
+def test_a_fence_in_a_list_item_ends_where_a_line_less_indented_ends_the_item(
+    tmp_path: Path, page: str, line: int
+) -> None:
+    assert problems_in(repository(tmp_path, {"docs/page.md": page})) == [
+        f'docs/page.md:{line}: "The calculator" is a word to avoid; use "the tool"'
+    ]
+
+
+def test_a_fence_in_a_list_item_runs_on_over_a_blank_line_and_closes_on_its_fence(
+    tmp_path: Path,
+) -> None:
+    page = "- ```\n  code\n\n  the calculator in code\n  ```\nThe calculator after it.\n"
+    assert problems_in(repository(tmp_path, {"docs/page.md": page})) == [
+        'docs/page.md:6: "The calculator" is a word to avoid; use "the tool"'
+    ]
+
+
+def test_a_fence_line_that_ends_a_list_item_opens_a_fence_of_its_own(tmp_path: Path) -> None:
+    page = "- ```\n  code\nthe calculator is prose\n```\nthe calculator in code\n"
+    assert problems_in(repository(tmp_path, {"docs/page.md": page})) == [
+        f"docs/page.md:3: {CALCULATOR}",
+        "docs/page.md:4: a fenced code block opens here and never closes, so the lines after"
+        " it were not read",
     ]
 
 
