@@ -24,6 +24,9 @@ The assumptions about git: what its commands, options, attributes, locks and con
 - **Fact:** A linked worktree's `.git` file names its folder in the git common directory, where a `commondir` file names the git common directory, relative to that folder, and a `gitdir` file names the worktree's `.git` file, so that the repository's own files list where each of its worktrees is.
   - **Relied on:** R54, T46, DR-188
   - **Checked:** not yet: `add-pr-cost-calculator` task 2.1 checks it
+- **Fact:** A submodule's checkout, and a working tree whose git folder was moved out of it, as `git init --separate-git-dir` does, have a `.git` file that names their git folder, by a relative path in a submodule, and that folder holds no `commondir` file, since it is the git common directory itself.
+  - **Relied on:** R54, T46, DR-188
+  - **Checked:** not yet: `add-pr-cost-calculator` task 2.1 checks it
 - **Fact:** git refuses to name the repository of a folder that another user owns, unless a `safe.directory` setting names it, and `git config` there reads no setting of the repository's own, without an error.
   - **Relied on:** R147, T122, DR-179
   - **Checked:** not yet: `add-pr-cost-calculator` task 2.1 checks it
@@ -79,12 +82,12 @@ The assumptions about git: what its commands, options, attributes, locks and con
   - **Relied on:** T58, DR-156
   - **Checked:** not yet: none will, since no task plans a test of it; `add-pr-cost-calculator` task 4.4 writes the check into the README
 
-## A21. The git commands that the step runs start no program that the step did not choose, apart from those that the person's own configuration names.
+## A21. The git commands that the step runs start no program that the step did not choose, apart from those that git's configuration names.
 
-- **Rests on it:** R54, T15, T19, T46, DR-188
+- **Rests on it:** R54, T15, T19, T46, T112, DR-188
 - **If it is wrong:** A program that git starts would run at every capture run, outside the step's own guard (T15, T46), and one that a command's own options start could change the branch before a commit (T19).
-- **Fact:** The git commands that the step itself runs start no other program, except programs that the person's own git configuration names.
-  - **Relied on:** R54, T15, T46, DR-188
+- **Fact:** The git commands that the step itself runs start no other program, except programs that git's configuration names, the person's own or the repository's, such as `core.fsmonitor`, which `git status` and `git add` start, or a clean filter that the repository's `info/attributes` assigns, which `git add` starts, so that whoever can write the git common directory can name one.
+  - **Relied on:** R54, T15, T46, T112, DR-188
   - **Checked:** not yet: none will, since no task plans a test of it; `add-pr-cost-calculator` task 2.3 checks only how the step finds git
 - **Fact:** git's own options and environment variables in a command can make git start another program, such as `git -c diff.external=<program> diff`, `git -c core.hooksPath=<folder> commit` or `GIT_EDITOR=<program> git commit`, and such a program can change the branch before a commit.
   - **Relied on:** T19
@@ -178,7 +181,7 @@ The assumptions about git: what its commands, options, attributes, locks and con
 
 ## A51. git reads a person's configuration from the files that the step reads, by the rules that the step re-implements.
 
-- **Rests on it:** R37, R38, R39, R103, R104, R105, R106, R107, R109, R118, R160, R162, R164, T3, T38, T41, T105, T120, T121, DR-049, DR-050, DR-168, DR-169, DR-183, DR-185, DR-188
+- **Rests on it:** R37, R38, R39, R103, R104, R105, R106, R107, R109, R118, R160, R162, R164, R169, T3, T38, T41, T105, T120, T121, DR-049, DR-050, DR-168, DR-169, DR-183, DR-185, DR-188
 - **If it is wrong:** The step and git would disagree about whether a person opted in, so usage would be published without consent, or not at all (T3), and on Windows the step could read another `.gitconfig` than git does (T41). An opt-out written where neither the step nor git's own reading of the key finds it would be ignored, and calls recorded against the person's wish (T3, T38), and a change to a file that git reads the key from, but that the fingerprint does not name, would go unseen between two runs (T105). A folder's opt-out would reach further or less far than the opt-in's pages say (T121), and the README's account of which writes end an interval would be wrong (T120).
 - **Fact:** git reads a person's global configuration from `~/.gitconfig` and its file in the XDG configuration folder, reading the XDG file first and `~/.gitconfig` after it, so `~/.gitconfig` decides where both set a key.
   - **Relied on:** R37, R105, T3, T41, DR-183
@@ -204,8 +207,8 @@ The assumptions about git: what its commands, options, attributes, locks and con
 - **Fact:** `git config --show-origin --get-all` names each file that git reads the opt-in key from in a repository, the files that others include among them, and names a value that a variable gives as given on the command line. With `--null`, it ends each origin and each value with a null byte, and names the main worktree's own file by a path relative to that worktree's top level, as `.git/config`.
   - **Relied on:** R107, R160, R162, T3, T105, DR-169, DR-183
   - **Checked:** not yet: `add-pr-cost-calculator` task 2.4 checks it
-- **Fact:** git matches an `includeIf "gitdir:"` condition against the repository's git folder, which for a linked worktree is a folder in its repository's git common directory, so a condition for a folder does not hold in a linked worktree there whose repository lies elsewhere, and a condition that names the folder through a symbolic link can fail to hold for a repository there, while one that names the folder's real path holds.
-  - **Relied on:** R164, T121, DR-185
+- **Fact:** git matches an `includeIf "gitdir:"` condition against the repository's git folder, which for a linked worktree is a folder in its repository's git common directory, so a condition for a folder does not hold in a linked worktree there whose repository lies elsewhere, and a condition that names the folder through a symbolic link holds for a repository there only when `PWD` names the folder through that link, as in a shell that entered it through the link, while one that names the folder's real path holds wherever git runs.
+  - **Relied on:** R164, R169, T121, DR-185, DR-188
   - **Checked:** not yet: `add-pr-cost-calculator` task 2.4 checks it
 - **Fact:** `git config --global` writes one of the person's two global configuration files, and git's advice for a repository that another user owns is to add a `safe.directory` line with it.
   - **Relied on:** T120, DR-169

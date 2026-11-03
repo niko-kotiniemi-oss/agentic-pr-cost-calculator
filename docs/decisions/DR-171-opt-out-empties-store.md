@@ -14,7 +14,7 @@ A run that finds the person's capture off ends every session's interval and with
 
 ## Decision
 
-A run that finds the person's own capture off, in their global configuration, in the repository's or as git reads it there (DR-183), removes from the store every call waiting to be staged, every flag due, every note of a taken call and every session's notes, keeping only the notes that a take-back or a put-back still needs, whose calls and flags a take-back after it returns to nothing that waits, and the store removes itself once those are done (DR-175). An opt-out removes or changes no ledger file that a commit holds. A run holds the store's lock from when it reads the store until it has written it, reads both switches again under that lock before it writes a call to the store or stages a ledger file, and acts only on a store whose file is still the one that its lock holds, so that a run that began before an opt-out writes nothing after it.
+A run that finds the person's own capture off, in their global configuration, in the repository's or as git reads it there (DR-183), removes from a store of a version that it knows (DR-187) every call waiting to be staged, every flag due, every note of a taken call and every session's notes, keeping only the notes that a take-back or a put-back still needs, whose calls and flags a take-back after it returns to nothing that waits, and the store removes itself once those are done (DR-175). An opt-out removes or changes no ledger file that a commit holds. A run holds the store's lock from when it reads the store until it has written it, reads both switches again under that lock before it writes a call to the store or stages a ledger file, and acts only on a store whose file is still the one that its lock holds, so that a run that began before an opt-out writes nothing after it.
 
 ## Alternatives
 
@@ -27,7 +27,7 @@ A run that finds the person's own capture off, in their global configuration, in
 
 - If capture is turned on again, every transcript is read afresh, since the store no longer notes how far each was read, and intervals that begin only at later runs keep the earlier calls out (DR-168).
 - Without the notes of taken calls, the calls of a committed ledger file could be staged again only if they answered a line written inside a later interval, which they cannot, so DR-055 still holds.
-- An opt-out that no run sees, because no session runs again in the repository, leaves the store as it was until a run comes or the person removes it, which the README says how to do (T114).
+- An opt-out that no run sees, because no session runs again in the repository, leaves the store as it was until a run comes or the person removes it, which the README says how to do (T114), and one that only an earlier release's runs see waits for a run of a release that knows the store's version (DR-187).
 - A ledger file that was pushed stays published (DR-182).
 - A run that waited for the lock while an opt-out emptied and removed the store writes nothing into it, and a run that notes another fingerprint does what an opt-out does (DR-169).
 

@@ -756,9 +756,19 @@ The step SHALL start no program but git, which it SHALL find at an absolute path
 - **WHEN** an absolute entry of `PATH` names a folder inside a linked worktree of this repository that lies outside the repository's folder, and that folder holds a program named `git`
 - **THEN** the step does not start it, and records and stages with the git that another absolute entry of `PATH` names
 
+#### Scenario: A checkout whose git folder holds no `commondir` file is recorded
+
+- **WHEN** the project directory is a submodule's checkout, or a working tree whose git folder was moved out of it, so that its `.git` file names a folder that holds no `commondir` file, and a session there makes calls and commits
+- **THEN** the step takes that folder as the git common directory, keeps its store there, and records the session's calls and stages a ledger file for the commit
+
+#### Scenario: A run that cannot read the files that name the worktrees starts no program
+
+- **WHEN** the project directory's `.git` file, the `commondir` file in the folder that it names, or the `gitdir` file of a folder in the git common directory's `worktrees/` cannot be read or is not a regular file, as a named pipe is not, or a folder in `worktrees/` holds no `gitdir` file
+- **THEN** the run starts no program, records, stages, takes back and puts back nothing, says so on standard error in its own words, and exits with success
+
 ### Requirement: Git runs without the session's git variables
 
-The capture step SHALL start every git command without the session's environment variables whose names begin with `GIT_`, setting only its own, so that the session's environment chooses neither the repository, its index, its objects nor the files that git reads its settings from, save for the one reading of the opt-in in the session's environment that "Git's own reading of the opt-in can turn capture off, never on" in `switch-and-opt-in` asks for.
+The capture step SHALL start every git command without the session's environment variables whose names begin with `GIT_`, setting only its own, so that the session's environment chooses neither the repository, its index, its objects nor the files that git reads its settings from, save for the one reading of the opt-in in the session's environment that "Git's own reading of the opt-in can turn capture off, never on" in `switch-and-opt-in` asks for, and SHALL start each of them without `PWD`.
 
 #### Scenario: The environment cannot move the store or a staged ledger file into another repository
 
@@ -769,6 +779,11 @@ The capture step SHALL start every git command without the session's environment
 
 - **WHEN** the session's environment sets `GIT_CEILING_DIRECTORIES` to this repository's folder, and a session makes calls from a folder inside it
 - **THEN** those calls are recorded in this repository
+
+#### Scenario: `PWD` does not change which files git reads the opt-in from
+
+- **WHEN** the person's `~/.gitconfig` turns capture on and includes a file that turns it off under a `gitdir:` condition that names the repository's folder through a symbolic link, and the session's `PWD` names the repository's folder through that link
+- **THEN** neither of git's readings of the opt-in names the included file, as neither does when git runs from the folder's real path
 
 ### Requirement: Capture reads both switches before it starts any program
 
@@ -852,7 +867,7 @@ The capture step SHALL finish within a time budget, leaving what it has not read
 
 ### Requirement: The store is versioned: an earlier version is upgraded, an unknown one left alone
 
-The store SHALL carry the version of its format from the first release on. A run that finds a store that an earlier release wrote SHALL rewrite it in its own version, keeping its waiting calls and its notes of taken calls and of staged and taken-back ledger files, and beginning every session's interval anew, and a run that finds a store whose version it does not know SHALL record, stage, take back and put back nothing, SHALL leave the store as it was, and SHALL exit with success.
+The store SHALL carry the version of its format from the first release on, in a field that every release reads in the same way. A run that finds a store of an earlier version SHALL rewrite it in its own, keeping its waiting calls and its notes of taken calls and of staged and taken-back ledger files, and beginning every session's interval anew, and one that finds a version that it does not know SHALL record, stage, take back and put back nothing, leave the store as it was, and exit with success.
 
 #### Scenario: A store of a format the step does not know is left alone
 
@@ -863,6 +878,11 @@ The store SHALL carry the version of its format from the first release on. A run
 
 - **WHEN** a run of the step finds a store that an earlier release wrote, which notes a staged ledger file and an open interval
 - **THEN** it rewrites the store in its own version, keeps the staged file's note, and records no call that answers a line written before that run
+
+#### Scenario: A store that a later release wrote is left alone by a run with a switch off
+
+- **WHEN** a run that finds either switch off finds a store whose version is one that a later release gives, and whose other fields are of a form that the run's own version does not have
+- **THEN** it leaves the store as it was, and exits with success
 
 ### Requirement: The store keeps only what attribution, deduplication and take-backs need
 
@@ -889,7 +909,7 @@ The store's note of a ledger file that a run staged SHALL hold only the file's p
 
 ### Requirement: The store keeps nothing past its retention window
 
-The capture step SHALL record no call whose day is more than the store's retention window, which its format documents, before the run's day. Each run that finds a store, whatever the switches say, SHALL drop each waiting call, flag due and note of a taken call once that is so of its day, and each session's notes once none of its runs has come within the window; SHALL take back, as for a command that is over, a ledger file whose note is older than the window; and drop a take-back's note that old.
+The step SHALL record no call whose day is more than the store's retention window, which its format documents, before the run's day. Each run that finds a store of a version that it knows, whatever the switches say, SHALL drop each waiting call, flag due and note of a taken call once its day is that old, and a session's notes once none of its runs came within the window; SHALL take back, as for a command that is over, a ledger file whose note is that old; and drop a take-back's note that old.
 
 #### Scenario: A call older than the retention window is not recorded
 
@@ -979,9 +999,14 @@ On each write, the capture step SHALL leave the store's folder and file readable
 - **WHEN** on Windows the store's folder is a junction or another reparse point
 - **THEN** the run writes nothing through it, records, stages, takes back and puts back nothing, and exits with success
 
+#### Scenario: A folder replaced by a link during a run is not written through
+
+- **WHEN** on Linux or macOS, after a run has checked its store's folder and before it writes the store, the folder is moved away and a symbolic link to another folder is put in its place
+- **THEN** the run creates, renames and removes no file in the folder that the link names
+
 ### Requirement: A removed store lets no earlier call be recorded
 
-When the store is removed, by the person or otherwise, or cannot be read, the capture step SHALL record no call that answers a line written before the next run that finds both switches on, which SHALL begin a new interval, and SHALL leave to git any ledger file that a run staged before the removal.
+When the store is removed, by the person or otherwise, or does not parse, which it does only when a run cannot read a version from it, the capture step SHALL record no call that answers a line written before the next run that finds both switches on, which SHALL begin a new interval, and SHALL leave to git any ledger file that a run staged before the removal.
 
 #### Scenario: Calls made before the store was removed are not recorded
 
@@ -993,7 +1018,7 @@ When the store is removed, by the person or otherwise, or cannot be read, the ca
 - **WHEN** the step has staged a ledger file, the store is then removed, and a later run comes
 - **THEN** that run does not take the file back, and the file stays as git holds it
 
-#### Scenario: A store that cannot be read is treated as removed
+#### Scenario: A store that does not parse is treated as removed
 
 - **WHEN** the store's file does not parse, as after a power loss or a sync that cut it short, and a run finds both switches on
 - **THEN** the run records no call that answers a line written before it, leaves to git any ledger file staged before, and writes a new store in its place

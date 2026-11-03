@@ -38,7 +38,7 @@ The list puts first the assumptions behind the threats of highest impact, then, 
 - **A18.** A merge into the default branch makes one push, and that push starts the adopter's calling workflow. Impact 3, risk 4. Page: [GitHub](github.md).
 - **A19.** A reusable workflow runs with its caller's context, and with only the token and the secrets that its caller gives it. Impact 3, risk 4. Page: [GitHub](github.md).
 - **A20.** Checkouts and GitHub's hosted runners are what the workflows expect. Impact 3, risk 4. Page: [GitHub](github.md).
-- **A21.** The git commands that the step runs start no program that the step did not choose, apart from those that the person's own configuration names. Impact 3, risk 4. Page: [git](git.md).
+- **A21.** The git commands that the step runs start no program that the step did not choose, apart from those that git's configuration names. Impact 3, risk 4. Page: [git](git.md).
 - **A22.** The test tools can do what the testing decision records ask of them. Impact 3, risk 4. Page: [Python, the development tools and prices](python-tools-and-prices.md).
 - **A23.** Adopters pin released commits, and update the hook and the pin together. Impact 3, risk 4. Page: [Adopters and people](adopters-and-people.md).
 - **A24.** The machine running a session, and the programs that a hook starts on it, are the person's own. Impact 3, risk 4. Page: [Adopters and people](adopters-and-people.md).

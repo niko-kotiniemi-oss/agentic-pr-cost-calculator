@@ -14,7 +14,7 @@ Before this change, the store kept a call's note for as long as the store lasted
 
 ## Decision
 
-The store's retention window is 30 days. A run records no call whose day is more than 30 days before the run's day, drops each waiting call, each flag due, by the day a run last raised it, and each note of a taken call once that is so of its day, flagging a dropped waiting call for its age in the next ledger file staged for its worktree and branch (DR-180), drops a session's notes once none of its runs has come within the window, takes back a ledger file whose note is older than the window, as for a command that is over, and drops a take-back's note that old. A run that leaves the store holding nothing, no flag among it, removes its file and its folder, and every run that finds a store does all this, whatever the switches say (DR-170).
+The store's retention window is 30 days. A run records no call whose day is more than 30 days before the run's day, drops each waiting call, each flag due, by the day a run last raised it, and each note of a taken call once that is so of its day, flagging a dropped waiting call for its age in the next ledger file staged for its worktree and branch (DR-180), drops a session's notes once none of its runs has come within the window, takes back a ledger file whose note is older than the window, as for a command that is over, and drops a take-back's note that old. A run that leaves the store holding nothing, no flag among it, removes its file and its folder, and every run that finds a store of a version that it knows does all this, whatever the switches say (DR-170), while one that finds a version that it does not know leaves the store as it was (DR-187).
 
 ## Alternatives
 

@@ -132,11 +132,14 @@ The assumptions about Claude Code: what its transcripts hold, when its hooks run
 
 ## A5. What a session loads comes from its settings and the branch it starts on, and a project's settings cannot set `HOME` or the `XDG_*` variables.
 
-- **Rests on it:** R1, R37, R103, R104, R160, R169, T3, T33, T34, T35, T36, T41, T66, T119, DR-022, DR-041, DR-046, DR-050, DR-071, DR-081, DR-082, DR-093, DR-115, DR-126, DR-142, DR-143, DR-145, DR-183, DR-188
+- **Rests on it:** R1, R37, R93, R103, R104, R160, R169, T3, T33, T34, T35, T36, T41, T60, T66, T119, DR-022, DR-041, DR-046, DR-050, DR-071, DR-081, DR-082, DR-093, DR-115, DR-126, DR-142, DR-143, DR-145, DR-183, DR-186, DR-188
 - **If it is wrong:** If a project's settings could set `HOME` or the `XDG_*` variables, a repository could point both the step's reading of the opt-in and git's at configuration files of its own, to opt every contributor in or to hide an opt-out, so their usage would be published without their consent (T3, T119). If a session loaded more from its branch than the rules expect, the rules that keep sessions off untrusted branches would not be enough (T34, T35, T66), and if the vendored skills did not load, agents would build without them unless they read their files (T35).
 - **Fact:** Environment variables that a repository's `.claude/settings.json` sets reach every process Claude Code starts, hooks included.
   - **Relied on:** R37, R160, R169, T3, T36, T119, DR-071, DR-183, DR-188
   - **Checked:** not yet: none will, since no test may reach Claude Code
+- **Fact:** Claude Code applies a repository's `.claude/settings.local.json` over its `.claude/settings.json`, hooks and environment variables among what it can set, and keeps it out of git only when Claude Code itself writes the file, so a repository can track one, which then needs the folder's trust as the other does.
+  - **Relied on:** R93, T60, DR-186
+  - **Checked:** documented: <https://code.claude.com/docs/en/settings>, read 2026-11-03
 - **Fact:** Claude Code does not let a project's settings set `HOME` or the `XDG_*` variables, as its documentation says.
   - **Relied on:** R1, R37, R103, R104, T3, T41, T119, DR-046, DR-050, DR-183
   - **Checked:** documented: <https://code.claude.com/docs/en/settings-reference>, read 2026-11-01

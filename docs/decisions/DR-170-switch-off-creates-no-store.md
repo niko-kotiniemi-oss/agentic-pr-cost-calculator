@@ -14,7 +14,7 @@ DR-047 had every run note in the store whether it found both switches on, so a r
 
 ## Decision
 
-A run that finds either switch off creates no store and adds no note of its session to one. In a store that exists, it only ends its own session's interval, does what an opt-out (DR-171) and the take-backs and put-backs that the store notes call for, drops what the retention window ends (DR-175), and removes the store when it then holds nothing or does not parse, since those only remove. It reads both switches before it starts any program: when its own reading finds either off, it starts git only to find the store, and when its own reading finds both on and git's reading of the opt-in then finds capture off (DR-183), it starts git only for that reading and to find the store.
+A run that finds either switch off creates no store and adds no note of its session to one. It removes a store that does not parse, and in one of a version that it knows (DR-187) only ends its own session's interval, does what an opt-out (DR-171) and the take-backs and put-backs that the store notes call for, drops what the retention window ends (DR-175), and removes the store when it then holds nothing, since those only remove. It reads both switches before it starts any program: when its own reading finds either off, it starts git only to find the store, and when its own reading finds both on and git's reading of the opt-in then finds capture off (DR-183), it starts git only for that reading and to find the store.
 
 ## Alternatives
 

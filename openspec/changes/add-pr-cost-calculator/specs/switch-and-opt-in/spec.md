@@ -240,7 +240,7 @@ The capture step SHALL note in its store, for each run that finds both switches 
 
 ### Requirement: A run that finds a switch off creates no store and notes no session
 
-A run of the capture step that finds either switch off SHALL create no store and SHALL add no note of its session to one. In a store that exists, it SHALL only end its own session's interval, do what "An opt-out ends every session's interval and empties the store" and "Ledger files are taken back and put back whatever the switches say" say, drop what the store's retention window ends, and remove the store when it then holds nothing or does not parse.
+A run of the capture step that finds either switch off SHALL create no store and add no note of its session to one. It SHALL remove a store that does not parse, and in one whose version it knows only end its session's interval and do what "An opt-out ends every session's interval and empties the store", "Ledger files are taken back and put back whatever the switches say" and, in `usage-capture`, "The store keeps nothing past its retention window" and "A store that holds nothing is removed" say.
 
 #### Scenario: A person who has not opted in leaves no store
 
@@ -302,7 +302,7 @@ A run that finds its clock earlier than its session's last run, or than the time
 
 ### Requirement: An opt-out ends every session's interval and empties the store
 
-A run of the capture step that finds the person's own capture off, in their global configuration or in the repository's own, SHALL end every session's interval and remove from the store every waiting call, every flag due, every note of a taken call and every session's notes, but those that a take-back or a put-back still needs (see "Ledger files are taken back and put back whatever the switches say"), and the step SHALL never stage, after that run, a call made or a flag noted before it.
+A run of the capture step that finds the person's own capture off, in their global configuration or in the repository's own, and a store whose version it knows, SHALL end every session's interval and remove every waiting call, flag due, note of a taken call and session's notes, but those that a take-back or a put-back still needs (see "Ledger files are taken back and put back whatever the switches say"), and the step SHALL never stage, after that run, a call made or a flag noted before it.
 
 #### Scenario: Calls recorded before an opt-out are not staged
 
@@ -373,7 +373,7 @@ An opt-out, a removal of the store, or the end of its retention window (see "The
 
 ### Requirement: Ledger files are taken back and put back whatever the switches say
 
-Whatever the switches (see "Capture runs only where the tool is on and the person has opted in") say, every run of the capture step that the floors in `releases-and-compatibility` let go on SHALL take back and put back ledger files, and note as taken the calls of a file that a commit holds, as the requirements from "A ledger file that no commit takes is taken back" to "A put-back is tried once, and in no other case" in `usage-capture` say.
+Whatever the switches (see "Capture runs only where the tool is on and the person has opted in") say, every run of the capture step that the floors in `releases-and-compatibility` let go on, and that finds no store whose version it does not know, SHALL take back and put back ledger files, and note as taken the calls of a file that a commit holds, as the requirements from "A ledger file that no commit takes is taken back" to "A put-back is tried once, and in no other case" in `usage-capture` say.
 
 #### Scenario: A file staged before capture is turned off is still taken back
 
@@ -419,7 +419,7 @@ A configuration file that is missing at a commit, is not a regular file there, i
 
 ### Requirement: A configuration file with a key that the tool does not know, or a key given twice, is not valid
 
-A configuration file SHALL count as not valid (see "A missing or unreadable configuration file neither turns the tool on nor stops the report") when it holds a key that the configuration's format, in the version of the tool that reads it, does not document, or gives a key more than once, whatever the keys' values and whatever `enabled` says.
+A configuration file SHALL count as not valid (see "A missing or unreadable configuration file neither turns the tool on nor stops the report") when it is not a JSON object whose `enabled` is `true` or `false`, as `{}` is not, or, whatever the keys' values and `enabled` say, when it holds a key that the configuration's format, in the version of the tool that reads it, does not document, or gives a key more than once.
 
 #### Scenario: A key that the tool does not know turns capture off
 
@@ -434,6 +434,11 @@ A configuration file SHALL count as not valid (see "A missing or unreadable conf
 #### Scenario: A configuration file that gives a key twice is not valid
 
 - **WHEN** the repository's configuration file in the working tree gives `enabled` twice, first as false and then as true, which Python's JSON reader would read as true, and the person running the session has turned capture on
+- **THEN** nothing is recorded, and no ledger file is created
+
+#### Scenario: A configuration file without an `enabled` of `true` or `false` is not valid
+
+- **WHEN** the repository's configuration file in the working tree is `{}`, or sets `enabled` to `1` or to `"true"`, and the person running the session has turned capture on
 - **THEN** nothing is recorded, and no ledger file is created
 
 ### Requirement: The report says when the configuration after the merge does not turn the tool on
@@ -467,7 +472,7 @@ When the configuration before the merge turns the tool on and the configuration 
 
 ### Requirement: A change to the configuration, the hook file, its registration or a workflow is flagged
 
-When a pull request changes the configuration file, the hook file at the path that the README gives, the project settings file `.claude/settings.json` that registers it, or any workflow file, its comment SHALL say so.
+When a pull request changes the configuration file, the hook file at the path that the README gives, `.claude/settings.json` or `.claude/settings.local.json`, the project settings files that can register it and set its environment, or any workflow file, its comment SHALL say so.
 
 #### Scenario: A changed report is flagged
 
@@ -481,5 +486,5 @@ When a pull request changes the configuration file, the hook file at the path th
 
 #### Scenario: A changed registration is flagged
 
-- **WHEN** a pull request changes `.claude/settings.json`
-- **THEN** its comment says that the pull request changed the project settings file that registers the hook
+- **WHEN** a pull request changes `.claude/settings.json`, or adds or changes `.claude/settings.local.json`
+- **THEN** its comment says that the pull request changed a project settings file that can register the hook
