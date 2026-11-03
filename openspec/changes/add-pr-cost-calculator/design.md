@@ -99,9 +99,11 @@ The type comes from the first tool call in a message: edits and writes are code 
 
 ### 6. The repository turns the tool on, and each person turns on their own capture
 
-*Records:* DR-021, DR-046, DR-049, DR-050, DR-051, DR-168, DR-169, DR-170, DR-171, DR-183 and DR-185.
+*Records:* DR-021, DR-046, DR-049, DR-050, DR-051, DR-168, DR-169, DR-170, DR-171, DR-183, DR-185 and DR-190.
 
 `.pr-cost.json` at the repository root holds `enabled`. Capture reads it in the working tree, and the report reads it as a blob from the default branch before and after the merge (decision 7), so the pull request being reported cannot turn its own report off. Both read it only as a regular file no larger than the size bound that its format documents, and take a file that is missing, larger, not a regular file or not valid to leave the tool off, so that the file cannot stall a run, as a named pipe in the working tree could, and a pull request that breaks it still gets its report, flagged, when the file before the merge turned the tool on.
+
+A file that holds a key that its format does not document, in the version of the tool that reads it, is not valid, whatever that key's value and whatever `enabled` says, as the owner chose on 2026-11-03 over passing such a key over (DR-190), so that a misspelt key leaves the tool off, and the pull request that adds it is flagged, rather than the file doing what its author did not mean. So a key that a later version adds turns every earlier version off where the file holds it, the report at an earlier pin and capture in a working tree whose hook file is earlier: capture there records nothing, and the report posts the comment of the pull request that adds the key, flagged, and none after it. The surface manifest therefore names each key that the format documents, so that the release check refuses a release that adds one without a raised major number and a `### Breaking` section (decision 11), and the README's section on adopting the tool that task 4.4 writes says to add such a key only with or after the pull request that moves the hook file and the calling workflow's pin to that version (T123).
 
 Capture also needs the consent of the person whose session it records: `pr-cost.capture` set to `true` in their global git configuration.
 

@@ -2,7 +2,7 @@
 
 What could go wrong with the tool, for the people who use it and for this repository, and what answers each threat. Every change revisits this file (see `CLAUDE.md`).
 
-It was written for the first change, `add-pr-cost-calculator`, before any code, so the answers are requirements and tasks rather than code. It holds 122 threats across 8 trust boundaries. T38 to T69 were found by the design-stage review, T70 to T78 by the design-stage review of the decision records in `docs/decisions/`, T79 to T81 by the implementation-stage review of those records and their checks, T82 to T100 by the design-stage review of the assumptions, the glossary and the golden set, T101 by the implementation-stage review of the assumptions, T102 and T103 by the implementation-stage review of the glossary, T104 to T116 at the design of the revision of consent, the store and the ledger's format, T117 and T118 by the design-stage review of that revision, and T119 to T122 by the review of that revision after its approval; they follow T37, each under a heading for its boundary, so that the numbers stay in order, and a threat that a change removes keeps its ID out of use (see Retired IDs). Where an answer can be a scenario in a spec, it is one, so that an acceptance test holds it. `tests/test_threat_model.py` checks that every citation below names a scenario, task, decision, decision record or file that exists.
+It was written for the first change, `add-pr-cost-calculator`, before any code, so the answers are requirements and tasks rather than code. It holds 123 threats across 8 trust boundaries. T38 to T69 were found by the design-stage review, T70 to T78 by the design-stage review of the decision records in `docs/decisions/`, T79 to T81 by the implementation-stage review of those records and their checks, T82 to T100 by the design-stage review of the assumptions, the glossary and the golden set, T101 by the implementation-stage review of the assumptions, T102 and T103 by the implementation-stage review of the glossary, T104 to T116 at the design of the revision of consent, the store and the ledger's format, T117 and T118 by the design-stage review of that revision, T119 to T122 by the review of that revision after its approval, and T123 with the owner's answer to a question that the check of that review's fixes raised; they follow T37, each under a heading for its boundary, so that the numbers stay in order, and a threat that a change removes keeps its ID out of use (see Retired IDs). Where an answer can be a scenario in a spec, it is one, so that an acceptance test holds it. `tests/test_threat_model.py` checks that every citation below names a scenario, task, decision, decision record or file that exists.
 
 ## How it was built
 
@@ -628,8 +628,8 @@ The trust boundaries:
 - **Likelihood:** 2 (possible)
 - **Risk:** 4
 - **What could happen:** a report that stopped on a malformed, oversized, linked or otherwise unreadable `.pr-cost.json` after the merge would post nothing, not even the notice that the pull request changed its report, so one changed file would undo T21's answer without touching a workflow.
-- **Answer:** the configuration is read only as a blob at each commit, within a small bound, and a missing, non-regular, oversized or unparseable file counts as not turning the tool on at that commit, without stopping the report. The change is flagged. Capture treats a configuration file that is not a regular file as turning capture off.
-- **Held by:** `switch-and-opt-in`: "A pull request that makes the configuration unreadable still gets its report"; `switch-and-opt-in`: "A pull request that makes the configuration unreadable is flagged"; `switch-and-opt-in`: "A configuration file that is not a regular file turns capture off"; DR-021; DR-044; DR-051; DR-186; `add-pr-cost-calculator` task 4.1
+- **Answer:** the configuration is read only as a blob at each commit, within a small bound, and a missing, non-regular, oversized or unparseable file, or one that holds a key that the configuration's format does not document, counts as not turning the tool on at that commit, without stopping the report. The change is flagged. Capture treats a configuration file that is not a regular file, or that holds such a key, as turning capture off.
+- **Held by:** `switch-and-opt-in`: "A pull request that makes the configuration unreadable still gets its report"; `switch-and-opt-in`: "A pull request that makes the configuration unreadable is flagged"; `switch-and-opt-in`: "A configuration file that is not a regular file turns capture off"; `switch-and-opt-in`: "A key that the tool does not know turns capture off"; `switch-and-opt-in`: "A key that the tool does not know turns the report off after the pull request that adds it"; DR-021; DR-044; DR-051; DR-186; DR-190; `add-pr-cost-calculator` task 2.4; `add-pr-cost-calculator` task 4.1
 - **Assumptions:** A58
 
 ### T50. A merge that a workflow makes gets no report, and nothing says so
@@ -1536,6 +1536,20 @@ The trust boundaries:
 - **Held by:** `usage-capture`: "A clone whose ownership git does not trust records nothing"; `usage-capture`: "A `safe.directory` setting that only the session's environment gives does not make the clone trusted"; `usage-capture`: "Each user has a store of their own"; DR-179; DR-188; `add-pr-cost-calculator` task 4.4
 - **Assumptions:** A10
 
+## Boundary 6, continued: found with the owner's answer on a key that the tool does not know
+
+### T123. A key that a later version adds turns an earlier version off
+
+- **Kind:** reliability
+- **Impact:** 2 (medium)
+- **Likelihood:** 2 (possible)
+- **Risk:** 4
+- **What could happen:** an adopter adds to `.pr-cost.json` a key that a later version of the tool documents while the calling workflow pins an earlier version, or while a working tree holds an earlier hook file. That version takes the file to be not valid, so capture there records nothing, and the report posts the comment of the pull request that adds the key, flagged, and none for the pull requests after it, with nothing on them to say why.
+- **Answer:** the surface manifest names each key that the configuration's format documents, so the release check refuses a release that adds one without a raised major number and a `### Breaking` section (DR-096). The comment of the pull request that adds the key says that it changed the tool's configuration, and the README's section on adopting the tool that task 4.4 writes says to add such a key only with or after the pull request that moves the hook file and the calling workflow's pin to that version.
+- **Residual:** an adopter who adds the key first gets no comment on the pull requests after it, and a person whose working tree holds an earlier hook file has none of their calls recorded, with nothing but the flag on the pull request that added the key to say why.
+- **Held by:** `releases-and-compatibility`: "The surface manifest names the configuration's keys"; `releases-and-compatibility`: "A changed public surface needs a major version"; `switch-and-opt-in`: "A key that the tool does not know turns the report off after the pull request that adds it"; DR-096; DR-190; `add-pr-cost-calculator` task 4.4; `add-pr-cost-calculator` task 6.1
+- **Assumptions:** A23
+
 ## Risk matrix
 
 Generated from the ratings above. Each cell lists the threats whose impact and likelihood it names.
@@ -1543,7 +1557,7 @@ Generated from the ratings above. Each cell lists the threats whose impact and l
 | Impact \ Likelihood | 1 unlikely | 2 possible | 3 likely |
 |---|---|---|---|
 | 3 high | T1, T12, T14, T15, T23, T24, T28, T29, T35, T43, T46, T58, T59, T63, T64, T66, T67, T68, T73, T77, T82, T83, T92, T93, T94, T95, T103, T107, T108, T119 | T2, T32, T33, T34, T61, T62, T65 |  |
-| 2 medium | T4, T6, T11, T13, T18, T25, T26, T38, T41, T42, T53, T55, T56, T57, T60, T69, T70, T76, T78, T79, T80, T81, T84, T85, T86, T87, T88, T89, T90, T91, T97, T98, T99, T100, T101, T102, T104, T105, T109, T112, T115 | T3, T9, T10, T17, T19, T20, T21, T22, T27, T30, T39, T40, T44, T45, T47, T48, T49, T50, T51, T52, T54, T71, T72, T74, T75, T96, T111, T116, T120, T121, T122 | T7, T8, T16 |
+| 2 medium | T4, T6, T11, T13, T18, T25, T26, T38, T41, T42, T53, T55, T56, T57, T60, T69, T70, T76, T78, T79, T80, T81, T84, T85, T86, T87, T88, T89, T90, T91, T97, T98, T99, T100, T101, T102, T104, T105, T109, T112, T115 | T3, T9, T10, T17, T19, T20, T21, T22, T27, T30, T39, T40, T44, T45, T47, T48, T49, T50, T51, T52, T54, T71, T72, T74, T75, T96, T111, T116, T120, T121, T122, T123 | T7, T8, T16 |
 | 1 low | T113 | T31, T36, T37, T110, T114, T118 | T5, T106, T117 |
 
 The threats with a risk of 6 or more:

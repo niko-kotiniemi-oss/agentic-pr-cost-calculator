@@ -2,7 +2,7 @@
 
 - **Type:** security and privacy
 - **Status:** accepted
-- **Decided by:** the owner, 2026-11-02
+- **Decided by:** the owner, 2026-11-02 and 2026-11-03
 - **Requirements:** R1, R160, R164
 - **Threats:** T3, T121
 - **Replaces:** none
@@ -22,6 +22,7 @@ One opt-in, in the person's global git configuration, covers every repository th
 - An optional list, under which a person who keeps no list is covered in every repository, as under this decision. It brings the same costs to whoever keeps a list, and since it leaves the default as it is, it can be added later without a breaking change.
 - A `true` in the repository's own git configuration as well as the opt-in. `git clone -c`, a repository's own hooks or a steered agent can write that file, and routine commands such as `git push -u` rewrite it, so it could not be part of the fingerprint (DR-169) without ending intervals at those commands, and an opt-out and back there between two runs would go unseen.
 - The repository's own git configuration alone, under which something other than the person could opt them in, which DR-050 rules out.
+- Taking an include whose file is missing as an opt-out, since capture cannot tell what the file held: in every repository, so that one missing file turns the person's capture off everywhere until it is back, or only where the include's condition holds, which would have capture judge git's conditions itself, a copy of git's matching rules that can drift from them. The owner chose on 2026-11-03 to leave the case to git, as the opt-in's feature page says, with the command that shows whether an opt-out reaches a repository (T121).
 
 ## Consequences
 

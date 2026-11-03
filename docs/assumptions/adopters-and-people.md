@@ -110,8 +110,8 @@ The assumptions about the teams that adopt the tool, the people who opt in, and 
 
 ## A23. Adopters pin released commits, and update the hook and the pin together.
 
-- **Rests on it:** R17, R24, R27, R28, R65, R71, R77, R88, R93, R98, R122, R123, T24, T28, T29, T53, T54, T58, T60, T64, T67, T69, DR-020, DR-022, DR-040, DR-054, DR-058, DR-062, DR-063, DR-065, DR-072, DR-073, DR-096, DR-097, DR-122, DR-123, DR-124, DR-132, DR-133, DR-139, DR-144, DR-149, DR-154, DR-156
-- **If it is wrong:** A commit that no release vouched for, or one that only a fork holds, would run as the tool in the adopter's CI and on their machines (T58, T28, T64), a hook and a report from different commits would disagree on models and prices (T54), and an adopter who gives the report more than it needs, or relies on what the public surface leaves out, could be harmed or broken by an ordinary update (T24, T29, T53).
+- **Rests on it:** R17, R24, R27, R28, R65, R71, R77, R88, R93, R98, R122, R123, T24, T28, T29, T53, T54, T58, T60, T64, T67, T69, T123, DR-020, DR-022, DR-040, DR-054, DR-058, DR-062, DR-063, DR-065, DR-072, DR-073, DR-096, DR-097, DR-122, DR-123, DR-124, DR-132, DR-133, DR-139, DR-144, DR-149, DR-154, DR-156
+- **If it is wrong:** A commit that no release vouched for, or one that only a fork holds, would run as the tool in the adopter's CI and on their machines (T58, T28, T64), a hook and a report from different commits would disagree on models and prices (T54), and an adopter who gives the report more than it needs, or relies on what the public surface leaves out, could be harmed or broken by an ordinary update (T24, T29, T53), and a key that a later version adds to `.pr-cost.json` would turn off whichever of the hook and the report is earlier (T123).
 - **Fact:** Adopters pin only a full commit that a release of this repository names, and check it with `git merge-base --is-ancestor`.
   - **Relied on:** R27, T28, T58, T64, T67, DR-022, DR-062, DR-072, DR-073, DR-122, DR-144, DR-156
   - **Checked:** not yet: none will, since no test may reach what adopters and people do
@@ -119,7 +119,7 @@ The assumptions about the teams that adopt the tool, the people who opt in, and 
   - **Relied on:** R65, R88, R93, T28, T60, DR-022, DR-058, DR-065
   - **Checked:** not yet: none will, since no test may reach what adopters and people do
 - **Fact:** Adopters update the hook file, its checksum and the workflow's pin together, in one pull request, so the hook's model names and the report's prices stay in step.
-  - **Relied on:** R17, R65, R77, R98, T54, DR-022, DR-054, DR-139
+  - **Relied on:** R17, R65, R77, R98, T54, T123, DR-022, DR-054, DR-139
   - **Checked:** not yet: none will, since no test may reach what adopters and people do
 - **Fact:** When the hook and the pin drift apart, the pin moves first: update bots that follow tags can propose a new pin but cannot change the copied hook file, and adopters update the pin more readily than the hook.
   - **Relied on:** R65, T53, T54, DR-022, DR-040, DR-139

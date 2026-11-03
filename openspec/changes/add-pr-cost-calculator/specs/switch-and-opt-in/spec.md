@@ -417,6 +417,20 @@ A configuration file that is missing at a commit, is not a regular file there, i
 - **WHEN** the configuration turns the tool on before the merge, and a pull request replaces the configuration file with one that is not valid, is larger than its size bound, is a symbolic link or is not a regular file
 - **THEN** its report comment is posted
 
+### Requirement: A configuration file with a key that the tool does not know is not valid
+
+A configuration file SHALL count as not valid (see "A missing or unreadable configuration file neither turns the tool on nor stops the report") when it holds a key that the configuration's format, in the version of the tool that reads it, does not document, whatever that key's value and whatever `enabled` says.
+
+#### Scenario: A key that the tool does not know turns capture off
+
+- **WHEN** the repository's configuration file in the working tree sets `enabled` to true and also holds a key that its format does not document, and the person running the session has turned capture on
+- **THEN** nothing is recorded, and no ledger file is created
+
+#### Scenario: A key that the tool does not know turns the report off after the pull request that adds it
+
+- **WHEN** the configuration turns the tool on, a pull request that adds to it a key that its format does not document merges, and then another pull request, which leaves the configuration file as it is, merges
+- **THEN** the first pull request's report comment is posted and says that it changed the tool's configuration, and the second pull request gets no comment
+
 ### Requirement: A change to the configuration, the hook file, its registration or a workflow is flagged
 
 When a pull request changes the configuration file, the hook file at the path that the README gives, the project settings file `.claude/settings.json` that registers it, or any workflow file, its comment SHALL say so.
