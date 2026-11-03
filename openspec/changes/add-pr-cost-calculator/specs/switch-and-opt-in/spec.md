@@ -27,7 +27,7 @@ The capture step SHALL record nothing unless the repository's configuration turn
 
 ### Requirement: Capture reads the configuration file only as a regular file within its bound
 
-The capture step SHALL read the repository's configuration file in the working tree only when it is a regular file no larger than the size bound that the configuration's format documents, and SHALL otherwise take the tool to be off.
+The capture step SHALL read the repository's configuration file in the working tree only when it is a regular file no larger than the size bound that the configuration's format documents, and SHALL take the tool to be off otherwise, or when the file there is not valid.
 
 #### Scenario: A configuration file that is not a regular file turns capture off
 
@@ -417,9 +417,9 @@ A configuration file that is missing at a commit, is not a regular file there, i
 - **WHEN** the configuration turns the tool on before the merge, and a pull request replaces the configuration file with one that is not valid, is larger than its size bound, is a symbolic link or is not a regular file
 - **THEN** its report comment is posted
 
-### Requirement: A configuration file with a key that the tool does not know is not valid
+### Requirement: A configuration file with a key that the tool does not know, or a key given twice, is not valid
 
-A configuration file SHALL count as not valid (see "A missing or unreadable configuration file neither turns the tool on nor stops the report") when it holds a key that the configuration's format, in the version of the tool that reads it, does not document, whatever that key's value and whatever `enabled` says.
+A configuration file SHALL count as not valid (see "A missing or unreadable configuration file neither turns the tool on nor stops the report") when it holds a key that the configuration's format, in the version of the tool that reads it, does not document, or gives a key more than once, whatever the keys' values and whatever `enabled` says.
 
 #### Scenario: A key that the tool does not know turns capture off
 
@@ -430,6 +430,30 @@ A configuration file SHALL count as not valid (see "A missing or unreadable conf
 
 - **WHEN** the configuration turns the tool on, a pull request that adds to it a key that its format does not document merges, and then another pull request, which leaves the configuration file as it is, merges
 - **THEN** the first pull request's report comment is posted and says that it changed the tool's configuration, and the second pull request gets no comment
+
+#### Scenario: A configuration file that gives a key twice is not valid
+
+- **WHEN** the repository's configuration file in the working tree gives `enabled` twice, first as false and then as true, which Python's JSON reader would read as true, and the person running the session has turned capture on
+- **THEN** nothing is recorded, and no ledger file is created
+
+### Requirement: The report says when the configuration after the merge does not turn the tool on
+
+When the configuration before the merge turns the tool on and the configuration after it does not, the comment SHALL say, in the report's own words, that the tool is off after the merge, and whether the file there is missing, disables the tool or cannot be read as a valid configuration (see "A missing or unreadable configuration file neither turns the tool on nor stops the report"). When neither turns the tool on, the report's job summary SHALL say the same of the file after the merge.
+
+#### Scenario: A pull request after which the tool is off is told so
+
+- **WHEN** the configuration turns the tool on before the merge, and a pull request that adds to it a key that its format does not document merges
+- **THEN** its comment says that the configuration file after the merge cannot be read as a valid configuration, so that the tool is off after it
+
+#### Scenario: A merge with the tool off at both commits says why in its job summary
+
+- **WHEN** the default branch has no configuration file, and a pull request merges that adds one that enables the tool and also holds a key that its format does not document
+- **THEN** no comment is posted, and the job summary says that the configuration file after the merge cannot be read as a valid configuration
+
+#### Scenario: A merge after which the tool is on says nothing of it being off
+
+- **WHEN** the configuration turns the tool on both before and after the merge
+- **THEN** the comment says nothing of the tool being off
 
 ### Requirement: A change to the configuration, the hook file, its registration or a workflow is flagged
 

@@ -88,7 +88,7 @@ The version SHALL raise its major number for a change that existing adopters mus
 
 ### Requirement: The public surface is kept in a manifest
 
-The public surface SHALL be the hook file's registration, by the events and matchers it names and its command's form, not the checksum that the command carries, and the hook file's path, the opt-in key, the ledger path and format, the store's format, the configuration file and the keys that its format documents, the reusable workflow's path, inputs and permissions, and the Python and git floors. A manifest of that surface SHALL be kept in the repository.
+The public surface SHALL be the hook file's registration, by the events and matchers it names and its command's form, not the checksum that the command carries, and the hook file's path, the opt-in key, the ledger path and format, the store's format, the configuration file and the keys and values that its format documents, the reusable workflow's path, inputs and permissions, and the Python and git floors. A manifest of that surface SHALL be kept in the repository.
 
 #### Scenario: The surface manifest names the whole public surface
 
@@ -103,7 +103,7 @@ The public surface SHALL be the hook file's registration, by the events and matc
 #### Scenario: The surface manifest names the configuration's keys
 
 - **WHEN** the surface manifest in the repository is read
-- **THEN** it names each key that the configuration's format documents
+- **THEN** it names each key that the configuration's format documents, and the values that each takes
 
 ### Requirement: The release workflow compares the surface manifest with the previous release's
 

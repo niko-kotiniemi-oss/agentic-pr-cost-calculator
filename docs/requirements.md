@@ -182,7 +182,8 @@ The capability names the spec that holds the requirement. Each capability is one
 | R168 | behavioural | `report-comment` | Ledger files that the default branch already holds are read by the version they state |
 | R169 | non-functional | `usage-capture` | Git runs without the session's git variables |
 | R170 | non-functional | `usage-capture` | A ledger file's note keeps only what a take-back needs |
-| R171 | behavioural | `switch-and-opt-in` | A configuration file with a key that the tool does not know is not valid |
+| R171 | behavioural | `switch-and-opt-in` | A configuration file with a key that the tool does not know, or a key given twice, is not valid |
+| R172 | functional | `switch-and-opt-in` | The report says when the configuration after the merge does not turn the tool on |
 
 IDs are stable: a requirement keeps its ID while it exists, and a new one takes the next free number, so the rows follow the order in which requirements were added rather than the order of the specs. A requirement that a later change removes leaves the table, and its ID is listed below with the change that removed it, never to be used again.
 
