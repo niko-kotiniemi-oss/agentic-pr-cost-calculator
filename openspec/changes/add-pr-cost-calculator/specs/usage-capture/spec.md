@@ -293,7 +293,7 @@ Capture SHALL run when a session starts, when Claude finishes responding, when a
 
 ### Requirement: A start run reads no transcript
 
-The run when a session starts, is resumed or forked, or is cleared or compacted SHALL read no transcript: it SHALL take back and put back what is due (see "Ledger files are taken back and put back whatever the switches say" in `switch-and-opt-in`) and, when it finds both switches on, begin its session's interval. Nothing SHALL depend on a start run coming: where none comes, the session's interval begins at its first run that finds both on.
+The run when a session starts, is resumed or forked, or is cleared or compacted SHALL read no transcript: it SHALL take back and put back what is due (see "Ledger files are taken back and put back whatever the switches say" in `switch-and-opt-in`) and, when it finds both switches on and no store whose version it does not know, begin its session's interval. Nothing SHALL depend on a start run coming: where none comes, the session's interval begins at its first run that finds both on.
 
 #### Scenario: A session started opted in records its first turn
 
@@ -766,9 +766,14 @@ The step SHALL start no program but git, which it SHALL find at an absolute path
 - **WHEN** the project directory's `.git` file, the `commondir` file in the folder that it names, or the `gitdir` file of a folder in the git common directory's `worktrees/` cannot be read or is not a regular file, as a named pipe is not, or a folder in `worktrees/` holds no `gitdir` file
 - **THEN** the run starts no program, records, stages, takes back and puts back nothing, says so on standard error in its own words, and exits with success
 
+#### Scenario: A run in a linked worktree whose main worktree it cannot tell starts no program
+
+- **WHEN** the project directory is a linked worktree of a submodule, or of a repository whose git folder was moved out of its working tree, so that its git common directory is not named `.git`
+- **THEN** the run starts no program, records, stages, takes back and puts back nothing, says so on standard error in its own words, and exits with success
+
 ### Requirement: Git runs without the session's git variables
 
-The capture step SHALL start every git command without the session's environment variables whose names begin with `GIT_`, setting only its own, so that the session's environment chooses neither the repository, its index, its objects nor the files that git reads its settings from, save for the one reading of the opt-in in the session's environment that "Git's own reading of the opt-in can turn capture off, never on" in `switch-and-opt-in` asks for, and SHALL start each of them without `PWD`.
+The capture step SHALL start every git command without the session's environment variables whose names begin with `GIT_`, setting only its own, so that the session's environment chooses neither the repository, its index, its objects nor the files that git reads its settings from, save for the one reading of the opt-in in the session's environment that "Git's own reading of the opt-in can turn capture off, never on" in `switch-and-opt-in` asks for, and SHALL start every other one without `PWD`.
 
 #### Scenario: The environment cannot move the store or a staged ledger file into another repository
 
@@ -780,10 +785,10 @@ The capture step SHALL start every git command without the session's environment
 - **WHEN** the session's environment sets `GIT_CEILING_DIRECTORIES` to this repository's folder, and a session makes calls from a folder inside it
 - **THEN** those calls are recorded in this repository
 
-#### Scenario: `PWD` does not change which files git reads the opt-in from
+#### Scenario: Only git's reading of the opt-in in the session's environment keeps its `PWD`
 
-- **WHEN** the person's `~/.gitconfig` turns capture on and includes a file that turns it off under a `gitdir:` condition that names the repository's folder through a symbolic link, and the session's `PWD` names the repository's folder through that link
-- **THEN** neither of git's readings of the opt-in names the included file, as neither does when git runs from the folder's real path
+- **WHEN** the session's `PWD` names the repository's top level through a symbolic link, and a run that finds both switches on stages a ledger file
+- **THEN** git's reading of the opt-in in the session's environment runs with that `PWD`, and every other git command that the run starts runs without `PWD`
 
 ### Requirement: Capture reads both switches before it starts any program
 
@@ -1006,7 +1011,7 @@ On each write, the capture step SHALL leave the store's folder and file readable
 
 ### Requirement: A removed store lets no earlier call be recorded
 
-When the store is removed, by the person or otherwise, or does not parse, which it does only when a run cannot read a version from it, the capture step SHALL record no call that answers a line written before the next run that finds both switches on, which SHALL begin a new interval, and SHALL leave to git any ledger file that a run staged before the removal.
+When the store is removed, by the person or otherwise, or does not parse, which it does only when a run cannot read a version from it, or reads one that it knows from a store that is not of that version's form, the capture step SHALL record no call that answers a line written before the next run that finds both switches on, which SHALL begin a new interval, and SHALL leave to git any ledger file that a run staged before the removal.
 
 #### Scenario: Calls made before the store was removed are not recorded
 
@@ -1020,7 +1025,7 @@ When the store is removed, by the person or otherwise, or does not parse, which 
 
 #### Scenario: A store that does not parse is treated as removed
 
-- **WHEN** the store's file does not parse, as after a power loss or a sync that cut it short, and a run finds both switches on
+- **WHEN** the store's file does not parse, as after a power loss or a sync that cut it short, or as when it gives a version that the run knows and a field of another form than that version's, and a run finds both switches on
 - **THEN** the run records no call that answers a line written before it, leaves to git any ledger file staged before, and writes a new store in its place
 
 ### Requirement: Capture keeps no copy of a transcript

@@ -138,7 +138,7 @@ The assumptions about Claude Code: what its transcripts hold, when its hooks run
   - **Relied on:** R37, R160, R169, T3, T36, T119, DR-071, DR-183, DR-188
   - **Checked:** not yet: none will, since no test may reach Claude Code
 - **Fact:** Claude Code applies a repository's `.claude/settings.local.json` over its `.claude/settings.json`, hooks and environment variables among what it can set, and keeps it out of git only when Claude Code itself writes the file, so a repository can track one, which then needs the folder's trust as the other does.
-  - **Relied on:** R93, T60, DR-186
+  - **Relied on:** R93, T60, T119, DR-186, DR-188
   - **Checked:** documented: <https://code.claude.com/docs/en/settings>, read 2026-11-03
 - **Fact:** Claude Code does not let a project's settings set `HOME` or the `XDG_*` variables, as its documentation says.
   - **Relied on:** R1, R37, R103, R104, T3, T41, T119, DR-046, DR-050, DR-183

@@ -141,6 +141,11 @@ Once a run finds both switches on, the capture step SHALL ask git, in the sessio
 - **WHEN** the person's `~/.gitconfig` turns capture on and then includes, under a condition that git finds false in this repository, a file that turns it off
 - **THEN** the session's calls are recorded
 
+#### Scenario: An opt-out that git finds through the session's `PWD` turns capture off
+
+- **WHEN** the person's `~/.gitconfig` turns capture on and includes a file that turns it off under a `gitdir:` condition that names the repository's folder through a symbolic link, and the session's `PWD` names the repository's top level through that link
+- **THEN** nothing is recorded
+
 #### Scenario: A global configuration file that the environment names can turn capture off
 
 - **WHEN** the person's `~/.gitconfig` turns capture on, and the session's environment points git's global configuration at another file, which does not turn it on
@@ -211,7 +216,7 @@ A call SHALL count as made inside an interval of its session when both switches 
 
 ### Requirement: A run that finds both switches on notes its time and a fingerprint
 
-The capture step SHALL note in its store, for each run that finds both switches on, the run's time, from the system's clock in UTC, which no environment variable sets, and a hash of a fingerprint, made of device and inode numbers, sizes and modification times and never of contents or paths, of the person's two global configuration files, each other file that git reads the opt-in key from (see "Git's own reading of the opt-in can turn capture off, never on"), and each link on the way to one.
+Each run of the capture step that finds both switches on, and no store whose version it does not know, SHALL note in its store the run's time, from the system's clock in UTC, which no environment variable sets, and a hash of a fingerprint, made of device and inode numbers, sizes and modification times and never of contents or paths, of the person's two global configuration files, each other file that git reads the opt-in key from in either of its two readings, and each link on the way to one.
 
 #### Scenario: A fingerprint holds nothing of a configuration file's contents
 
@@ -373,7 +378,7 @@ An opt-out, a removal of the store, or the end of its retention window (see "The
 
 ### Requirement: Ledger files are taken back and put back whatever the switches say
 
-Whatever the switches (see "Capture runs only where the tool is on and the person has opted in") say, every run of the capture step that the floors in `releases-and-compatibility` let go on, and that finds no store whose version it does not know, SHALL take back and put back ledger files, and note as taken the calls of a file that a commit holds, as the requirements from "A ledger file that no commit takes is taken back" to "A put-back is tried once, and in no other case" in `usage-capture` say.
+The switches (see "Capture runs only where the tool is on and the person has opted in") SHALL keep no run of the capture step that the floors in `releases-and-compatibility` let go on from taking back and putting back ledger files, and noting as taken the calls of a file that a commit holds, as the requirements from "A ledger file that no commit takes is taken back" to "A put-back is tried once, and in no other case" in `usage-capture` say.
 
 #### Scenario: A file staged before capture is turned off is still taken back
 
@@ -417,7 +422,7 @@ A configuration file that is missing at a commit, is not a regular file there, i
 - **WHEN** the configuration turns the tool on before the merge, and a pull request replaces the configuration file with one that is not valid, is larger than its size bound, is a symbolic link or is not a regular file
 - **THEN** its report comment is posted
 
-### Requirement: A configuration file with a key that the tool does not know, or a key given twice, is not valid
+### Requirement: A configuration file with a key that the tool does not know, a key given twice or no `enabled` of `true` or `false` is not valid
 
 A configuration file SHALL count as not valid (see "A missing or unreadable configuration file neither turns the tool on nor stops the report") when it is not a JSON object whose `enabled` is `true` or `false`, as `{}` is not, or, whatever the keys' values and `enabled` say, when it holds a key that the configuration's format, in the version of the tool that reads it, does not document, or gives a key more than once.
 
