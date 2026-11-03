@@ -87,7 +87,7 @@ def pattern(word: str) -> re.Pattern[str]:
     else:
         end = re.escape(last) + "(?:e?s)?"
     body = SPACE.join([*map(re.escape, start), end]).replace("'", APOSTROPHE)
-    return re.compile(rf"(?<![^\W_]){body}(?![^\W_])", re.IGNORECASE)
+    return re.compile(rf"(?<!{WORD.pattern}){body}(?!{WORD.pattern})", re.IGNORECASE)
 
 
 def entry_of(line: str, number: int) -> tuple[Entry | None, list[str]]:

@@ -37,6 +37,7 @@ from wording import (
     kept_at,
     readable,
     same,
+    shown,
 )
 
 USAGE = "usage: python3 scripts/rewording.py [BASE]"
@@ -58,14 +59,21 @@ def git(*args: str, refused: str = "") -> str:
     """What a git command prints, a byte that is not UTF-8 kept as an escape. If it fails,
     the comparison is refused for the reason given, or, where none is given since the
     command should not fail, for git's own."""
-    done = subprocess.run(["git", *args], capture_output=True, check=False)
-    if done.returncode:
-        raise Refused(refused or done.stderr.decode("utf-8", "replace").strip())
-    return done.stdout.decode("utf-8", "surrogateescape")
+    try:
+        return shown(Path.cwd(), *args)
+    except subprocess.CalledProcessError as failed:
+        raise Refused(refused or failed.stderr.decode("utf-8", "replace").strip()) from None
 
 
 def blob(commit: str, path: str) -> str:
     return git("cat-file", "blob", f"{commit}:{path}")
+
+
+def ticks(text: str, least: int = 1) -> str:
+    """A run of backticks longer than any in the text, and at least this long, so that the
+    text cannot close it."""
+    longest = max((len(run) for run in BACKTICKS.findall(text)), default=0)
+    return "`" * max(least, longest + 1)
 
 
 def code(text: str) -> str:
@@ -73,9 +81,9 @@ def code(text: str) -> str:
     the text, and each control character, a line break among them, is written as its
     escape. A space pads a text that starts or ends with a backtick or a space."""
     text = text.translate(CONTROL)
-    ticks = "`" * (max((len(run) for run in BACKTICKS.findall(text)), default=0) + 1)
+    run = ticks(text)
     pad = " " if text[:1] in ("`", " ") or text[-1:] in ("`", " ") else ""
-    return f"{ticks}{pad}{text}{pad}{ticks}"
+    return f"{run}{pad}{text}{pad}{run}"
 
 
 def entries_at(commit: str) -> list[Entry]:
@@ -170,8 +178,7 @@ def lines(start: int, end: int) -> str:
 def listed(label: str, shown: list[str]) -> list[str]:
     """A hunk as Markdown: its label, then its lines in a fence longer than any run of
     backticks that they hold."""
-    longest = max((len(run) for run in BACKTICKS.findall("\n".join(shown))), default=0)
-    fence = "`" * max(3, longest + 1)
+    fence = ticks("\n".join(shown), 3)
     return [label[0].upper() + label[1:] + ":", "\n".join([f"{fence}diff", *shown, fence])]
 
 
@@ -252,12 +259,14 @@ def report(base: str) -> str:
     files: list[str] = []
     words: Counter[str] = Counter()
     only = touched = 0
+    added = False
     for status, old, new in changes:
         if KEPT.match(new):
             moved = f", renamed to {code(new)}" if old != new else ""
             skipped.append((old, f"- {code(old)}{moved}, {KEPT_AS_WRITTEN}"))
         elif status == "A":
             files.append(f"- Added: {code(new)}")
+            added = True
         elif status == "D":
             files.append(f"- Removed: {code(new)}")
         else:
@@ -291,7 +300,6 @@ def report(base: str) -> str:
             ]
         ),
     ]
-    added = any(line.startswith("- Added: ") for line in files)
     blocks = [
         f"Compared HEAD at {code(head)} with {code(since)}, where it left {code(base)}, in the"
         " Markdown files that the wording test reads.",
