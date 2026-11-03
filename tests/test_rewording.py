@@ -568,17 +568,25 @@ def test_every_markdown_file_is_compared_from_any_folder_of_the_repository(
         **BEFORE,
         "NOTES.MARKDOWN": "The calculator.\n",
         "other/README.MD": "The calculator.\n",
+        "docs/page.mkd": "The calculator.\n",
+        "other/contents.lr": "The calculator.\n",
     }
     after = {
         "NOTES.MARKDOWN": "All about the tool.\n",
         "other/README.MD": "The tool.\n",
+        "docs/page.mkd": "All about the tool.\n",
+        "other/contents.lr": "The tool.\n",
         "docs/threat-model.md": BEFORE["docs/threat-model.md"].replace("calculator", "tool"),
     }
     history(tmp_path, after, before)
     _, out, _ = rewording(tmp_path / "docs", monkeypatch, capsys)
     headings = [line for line in out.split("\n") if line.startswith("### ")]
-    assert headings == ["### `NOTES.MARKDOWN`", "### `docs/threat-model.md`"]
-    assert "\n1 line in 1 file changed only by a word to avoid" in out
+    assert headings == [
+        "### `NOTES.MARKDOWN`",
+        "### `docs/page.mkd`",
+        "### `docs/threat-model.md`",
+    ]
+    assert "\n2 lines in 2 files changed only by a word to avoid" in out
 
 
 def test_a_word_to_avoid_added_to_the_glossary_is_listed(

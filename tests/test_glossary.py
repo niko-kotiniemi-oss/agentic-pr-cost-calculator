@@ -1,19 +1,19 @@
 """The specs and pages use the glossary's words, and each term is defined once.
 
 `docs/glossary.md` gives each term's meaning and the words to avoid for it, in a
-table per topic (R137, R138; design decision 14; DR-164). This test reads the
-prose of every Markdown file that git tracks and fails on each word to avoid that
-it finds, naming the file, the line and the term to use. A word to avoid is
-matched as a whole word in any case, and so is its plural, which adds "s" or "es"
-or, after a consonant, turns a final "y" into "ies". Where a word to avoid has a
-space, the page may break the line or use a no-break space instead, and where it
-has an apostrophe, the page may curl it, so that neither hides the word; nor does
-emphasis, since a word ends only where no letter or digit follows it. The space
-between a word's words, and the spaces after a heading's or a title's text, are
-matched in one way only, and a line's code spans are found in one pass over its
-backticks, so that a long run of spaces or of backticks does not slow this test:
-each pattern of the reader is timed on a long run of spaces after each shape that
-it reads.
+table per topic (R137, R138; design decision 14; DR-164). This test reads the prose
+of every file that git tracks and GitHub shows as Markdown, by the extensions and
+the name that GitHub's language list gives it, and fails on each word to avoid that
+it finds, naming the file, the line and the term to use. A word to avoid is matched
+as a whole word in any case, and so is its plural, which adds "s" or "es" or, after
+a consonant, turns a final "y" into "ies". Where a word to avoid has a space, the
+page may break the line or use a no-break space instead, and where it has an
+apostrophe, the page may curl it, so that neither hides the word; nor does emphasis,
+since a word ends only where no letter or digit follows it. The space between a
+word's words, and the spaces after a heading's or a title's text, are matched in one
+way only, and a line's code spans are found in one pass over its backticks, so that
+a long run of spaces or of backticks does not slow this test: each pattern of the
+reader is timed on a long run of spaces after each shape that it reads.
 
 Prose is the text that a reader reads as words. Inline code and fenced code
 blocks give names, commands, paths and snippets as they must be typed, so a word
@@ -228,6 +228,19 @@ def test_the_passing_repository_has_no_problem(tmp_path: Path) -> None:
         "docs/page.md",
         "docs/OTHER.MD",
         "docs/other.markdown",
+        "docs/page.livemd",
+        "docs/page.mdown",
+        "docs/page.mdwn",
+        "docs/page.mkd",
+        "docs/page.MKDN",
+        "docs/page.mkdown",
+        "docs/page.ronn",
+        "docs/page.scd",
+        "docs/page.workbook",
+        "docs/page.mdx",
+        "docs/page.litcoffee",
+        "contents.lr",
+        "docs/contents.lr",
         "CLAUDE.md",
         "docs/threat-model.md",
         ".claude/skills/hand-written/SKILL.md",
@@ -240,6 +253,17 @@ def test_a_word_to_avoid_in_a_file_that_is_read_fails(tmp_path: Path, path: str)
     assert problems_in(root) == [
         f'{path}:{line}: "The calculator" is a word to avoid; use "the tool"'
     ]
+
+
+@pytest.mark.parametrize(
+    "path", ["docs/page.txt", "docs/page.md.txt", "docs/xcontents.lr", "scripts/tool.py"]
+)
+def test_a_file_that_github_does_not_show_as_markdown_is_not_read(
+    tmp_path: Path, path: str
+) -> None:
+    root = repository(tmp_path, {path: "The calculator counts calls.\n"})
+    assert path not in read_files(root)
+    assert problems_in(root) == []
 
 
 def test_a_word_to_avoid_in_the_changelog_s_unreleased_entry_fails(tmp_path: Path) -> None:
@@ -890,4 +914,9 @@ def test_the_repository_s_files_are_read() -> None:
         r"docs/decisions/|vendor/|openspec/changes/archive/|\.claude/skills/openspec-"
     )
     assert not [path for path in files if kept.match(path)]
-    assert not [path for path in files if not re.search(r"\.(?:md|markdown)$", path, re.I)]
+    shown_as_markdown = re.compile(
+        r"(?:^|/)contents\.lr$|\.(?:md|livemd|markdown|mdown|mdwn|mkdn?|mkdown|ronn|scd|workbook"
+        r"|mdx|litcoffee)$",
+        re.I,
+    )
+    assert not [path for path in files if not shown_as_markdown.search(path)]

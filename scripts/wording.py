@@ -30,7 +30,30 @@ HEADER = ["Term", "Meaning", "Words to avoid"]
 KEPT = re.compile(
     r"(?:docs/decisions|openspec/changes/archive|vendor)/|\.claude/skills/openspec-[^/]+/"
 )
-MARKDOWN = (":(top,icase)*.md", ":(top,icase)*.markdown")
+# The files that GitHub shows as Markdown: those with the extensions and the name that
+# GitHub's language list, linguist, gives Markdown, MDX and Literate CoffeeScript, the
+# languages that its markup library renders as Markdown.
+MARKDOWN = (
+    *(
+        f":(top,icase)*.{extension}"
+        for extension in (
+            "md",
+            "livemd",
+            "markdown",
+            "mdown",
+            "mdwn",
+            "mkd",
+            "mkdn",
+            "mkdown",
+            "ronn",
+            "scd",
+            "workbook",
+            "mdx",
+            "litcoffee",
+        )
+    ),
+    ":(top,glob,icase)**/contents.lr",
+)
 # The specs are `openspec/specs/` and the active changes; an archived copy holds nothing.
 SPEC_FILE = re.compile(r"openspec/(?:specs/[^/]+|changes/(?!archive/)[^/]+/specs/[^/]+)/spec\.md")
 RECORD_FILE = re.compile(r"docs/decisions/DR-[^/]+\.md")
