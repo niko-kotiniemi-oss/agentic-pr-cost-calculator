@@ -143,7 +143,7 @@ Once a run finds both switches on, the capture step SHALL ask git, in the sessio
 
 #### Scenario: An opt-out that git finds through the session's `PWD` turns capture off
 
-- **WHEN** the person's `~/.gitconfig` turns capture on and includes a file that turns it off under a `gitdir:` condition that names the repository's folder through a symbolic link, and the session's `PWD` names the repository's top level through that link
+- **WHEN** the person's `~/.gitconfig` turns capture on and includes a file that turns it off under a `gitdir:` condition that names the repository's folder through a symbolic link, the repository's `.git` is a folder, and the session's `PWD` names the repository's top level through that link
 - **THEN** nothing is recorded
 
 #### Scenario: A global configuration file that the environment names can turn capture off

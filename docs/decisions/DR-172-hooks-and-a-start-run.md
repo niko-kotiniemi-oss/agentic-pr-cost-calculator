@@ -16,7 +16,7 @@ An interval when both switches were on now begins only at a run (DR-168), and th
 
 ## Decision
 
-Capture is one script that Claude Code runs as a hook while the session runs, registered for `SessionStart`, `Stop`, `SubagentStop`, `StopFailure` and `SessionEnd`, and for `PreToolUse`, `PostToolUse` and `PostToolUseFailure` on Bash commands. Every run but a start run, the run at `SessionStart`, reads the session's transcript, and its subagents' transcripts, on from where the previous run stopped. A start run reads no transcript and prints nothing: it takes back and puts back what is due and, when it finds both switches on, begins the session's interval. Nothing depends on a start run.
+Capture is one script that Claude Code runs as a hook while the session runs, registered for `SessionStart`, `Stop`, `SubagentStop`, `StopFailure` and `SessionEnd`, and for `PreToolUse`, `PostToolUse` and `PostToolUseFailure` on Bash commands. Every run but a start run, the run at `SessionStart`, reads the session's transcript, and its subagents' transcripts, on from where the previous run stopped. A start run reads no transcript and prints nothing: it takes back and puts back what is due, as any run does, and, when it finds both switches on and no store whose version it does not know, begins the session's interval. Nothing depends on a start run.
 
 ## Alternatives
 

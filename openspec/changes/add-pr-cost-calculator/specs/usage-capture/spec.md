@@ -293,7 +293,7 @@ Capture SHALL run when a session starts, when Claude finishes responding, when a
 
 ### Requirement: A start run reads no transcript
 
-The run when a session starts, is resumed or forked, or is cleared or compacted SHALL read no transcript: it SHALL take back and put back what is due (see "Ledger files are taken back and put back whatever the switches say" in `switch-and-opt-in`) and, when it finds both switches on and no store whose version it does not know, begin its session's interval. Nothing SHALL depend on a start run coming: where none comes, the session's interval begins at its first run that finds both on.
+The run when a session starts, is resumed or forked, or is cleared or compacted SHALL read no transcript and SHALL begin its session's interval when it finds both switches on and no store whose version it does not know, while it takes back and puts back as any run does (see "Ledger files are taken back and put back whatever the switches say" in `switch-and-opt-in`). Nothing SHALL depend on a start run coming: where none comes, the session's interval begins at its first run that finds both on.
 
 #### Scenario: A session started opted in records its first turn
 
@@ -768,7 +768,7 @@ The step SHALL start no program but git, which it SHALL find at an absolute path
 
 #### Scenario: A run in a linked worktree whose main worktree it cannot tell starts no program
 
-- **WHEN** the project directory is a linked worktree of a submodule, or of a repository whose git folder was moved out of its working tree, so that its git common directory is not named `.git`
+- **WHEN** the project directory is a linked worktree whose git common directory is not named `.git`, such as a linked worktree of a submodule, a worktree of a bare repository in a folder named `repo.git`, or a linked worktree of a repository whose git folder was moved out of its working tree to a folder named `gd`
 - **THEN** the run starts no program, records, stages, takes back and puts back nothing, says so on standard error in its own words, and exits with success
 
 ### Requirement: Git runs without the session's git variables
