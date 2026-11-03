@@ -33,7 +33,7 @@ records' folder, since an accepted record changes only to be closed (DR-121) and
 the index gives each record's title as the record has it; the archived changes;
 the changelog's released entries, which are the sections under a version's
 heading; the vendored files; and the skills that OpenSpec generates. A version's
-heading that a pull request adds hides what follows it, up to the next heading,
+heading that a pull request adds hides what follows it, up to the next `#` or `##` heading,
 as a released entry would, though no tag says that the version was released: the
 pull request's diff shows that heading to its review. A requirement's or a
 scenario's title that an accepted record quotes keeps its words wherever it
@@ -458,6 +458,15 @@ def test_a_word_to_avoid_that_a_line_break_splits_fails(tmp_path: Path) -> None:
     assert problems_in(repository(tmp_path, {"docs/page.md": page})) == [
         f"docs/page.md:1: {CALCULATOR}",
         f"docs/page.md:2: {CAPTURE_HOOK}",
+    ]
+
+
+def test_a_word_that_wraps_is_named_with_one_space_where_its_line_breaks(
+    tmp_path: Path,
+) -> None:
+    page = "Of the \u00a0\n\u00a0 calculator here.\n"
+    assert problems_in(repository(tmp_path, {"docs/page.md": page})) == [
+        f"docs/page.md:1: {CALCULATOR}"
     ]
 
 
