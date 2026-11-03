@@ -34,28 +34,29 @@ MARKDOWN = (":(top,icase)*.md", ":(top,icase)*.markdown")
 # The specs are `openspec/specs/` and the active changes; an archived copy holds nothing.
 SPEC_FILE = re.compile(r"openspec/(?:specs/[^/]+|changes/(?!archive/)[^/]+/specs/[^/]+)/spec\.md")
 RECORD_FILE = re.compile(r"docs/decisions/DR-[^/]+\.md")
-TOPIC = re.compile(r"^## (.+?)\s*$")
+# A heading's text, here and in a spec's titles below, ends on a character that is not a
+# space, so that the spaces after it are matched in one way only, however many they are.
+TOPIC = re.compile(r"^## (.*\S)\s*$")
 ROW = re.compile(r"^\|.*\|\s*$")
 DELIMITER = re.compile(r"^\|(?:\s*:?-{3,}:?\s*\|)+\s*$")
 CELL_BORDER = re.compile(r"(?<!\\)\|")
 PLAIN_WORDS = re.compile(r"[^\W_]+(?:[ '-][^\W_]+)*")
 # A space in a word to avoid stands for spaces, no-break spaces among them, with at most
 # one line break, so that a word that a page wraps still fails, and one that a blank line
-# splits does not. A run of them matches in one way only, so that no line, however long its
-# runs, makes the matching slow.
+# splits does not. A run of them matches in one way only, so that a long run does not slow
+# the matching.
 SPACE = r"(?:[ \t\u00a0]+(?:\n[ \t\u00a0]*)?|\n[ \t\u00a0]*)"
 APOSTROPHE = "['\u2019]"
 # A letter or a digit: a word to avoid or a kept title ends where neither follows, so that
 # the underscores of emphasis hide neither.
 WORD = re.compile(r"[^\W_]")
-LINE_BREAK = re.compile(r"[ \t\u00a0]*\n[ \t\u00a0]*")
 FINAL_Y = re.compile(r"[b-df-hj-np-tv-z]y$", re.I)
 # A fence may open after the markers of list items, which leave its lines indented.
 OPEN_FENCE = re.compile(r"^[ \t]*(?:(?:[-*+]|\d{1,9}[.)])[ \t]+)*(`{3,}|~{3,})(.*)$")
 BACKTICKS = re.compile(r"`+")
 SECTION_HEADING = re.compile(r"^#{1,2} ")
 VERSION_HEADING = re.compile(r"^## \[\d+\.\d+\.\d+")
-SPEC_TITLE = re.compile(r"^#{3,4} (?:Requirement|Scenario): (.+?)\s*$", re.M)
+SPEC_TITLE = re.compile(r"^#{3,4} (?:Requirement|Scenario): (.*\S)\s*$", re.M)
 QUOTATION = re.compile(r'"([^"\n]+?)[.,;:]?"')
 ACCEPTED = re.compile(r"^- \*\*Status:\*\* accepted$", re.M)
 UNREAD = "\0"
@@ -289,10 +290,16 @@ def hide_code_spans(chars: list[str], start: int, line: str) -> None:
     """Leave unread each code span of a line: a run of backticks up to the next run of as
     many. A run that no later one matches is a backtick of the prose."""
     runs = list(BACKTICKS.finditer(line))
+    # The next run of the same length after each run, found in one pass from the end, so
+    # that a line of many runs is read in time that grows with the line.
+    closes: list[int | None] = [None] * len(runs)
+    latest: dict[int, int] = {}
+    for at in reversed(range(len(runs))):
+        closes[at] = latest.get(len(runs[at][0]))
+        latest[len(runs[at][0])] = at
     at = 0
     while at < len(runs):
-        length = len(runs[at][0])
-        close = next((n for n in range(at + 1, len(runs)) if len(runs[n][0]) == length), None)
+        close = closes[at]
         if close is None:
             at += 1
         else:
@@ -408,7 +415,9 @@ def word_problems(
         starts = line_starts(text)
         for start, end, _word, term in found_words(words, entries):
             line = bisect.bisect_right(starts, start)
-            shown = LINE_BREAK.sub(" ", text[start:end])
+            # A word that wraps is named on one line, each line break and the spaces around
+            # it written as one space.
+            shown = " ".join(part.strip(" \t\u00a0") for part in text[start:end].split("\n"))
             found.append(
                 (path, line, start, f'{path}:{line}: "{shown}" is a word to avoid; use "{term}"')
             )

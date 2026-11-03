@@ -9,8 +9,11 @@ or, after a consonant, turns a final "y" into "ies". Where a word to avoid has a
 space, the page may break the line or use a no-break space instead, and where it
 has an apostrophe, the page may curl it, so that neither hides the word; nor does
 emphasis, since a word ends only where no letter or digit follows it. The space
-between a word's words is matched in one way only, so that no page, however long
-its runs of spaces, makes this test slow.
+between a word's words, and the spaces after a heading's or a title's text, are
+matched in one way only, and a line's code spans are found in one pass over its
+backticks, so that a long run of spaces or of backticks does not slow this test:
+each pattern of the reader is timed on a long run of spaces after each shape that
+it reads.
 
 Prose is the text that a reader reads as words. Inline code and fenced code
 blocks give names, commands, paths and snippets as they must be typed, so a word
@@ -56,16 +59,21 @@ import time
 from pathlib import Path
 
 import pytest
+import wording
 from wording import (
     CHANGELOG,
     DEFAULT_BRANCH,
     GLOSSARY,
     entry_problems,
+    found_words,
     glossary,
     kept_at,
     pattern,
     problems_in,
+    quoted_titles,
     read_files,
+    readable,
+    word_problems,
 )
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -398,6 +406,73 @@ def test_a_line_made_to_slow_the_matching_is_read_quickly(line: str) -> None:
     found = [pattern(word).search(line) for word in ("common git directory", "the calculator")]
     assert found == [None, None]
     assert time.perf_counter() - started < 1
+
+
+# A run of spaces long enough that a pattern which can match it in many ways takes seconds,
+# where one that matches it in one way takes milliseconds.
+LONG_RUN = " " * 40_000
+# What each pattern of the reader reads a run of spaces after: a heading of the glossary, a
+# requirement's or a scenario's title, a table's row, a quotation and a record's field.
+SHAPES = ["", "x", "## x", "### Requirement: x", "#### Scenario: x", "| x", '"x', "- **Status:** x"]
+
+
+def test_no_pattern_of_the_reader_is_slowed_by_a_run_of_spaces() -> None:
+    patterns = {
+        name: value for name, value in vars(wording).items() if isinstance(value, re.Pattern)
+    }
+    assert {"TOPIC", "SPEC_TITLE", "ROW", "QUOTATION"} <= patterns.keys()
+    slow = []
+    for shape in SHAPES:
+        for ending in ("y", "\ny"):
+            for name, compiled in patterns.items():
+                started = time.perf_counter()
+                compiled.findall(f"{shape}{LONG_RUN}{ending}")
+                if time.perf_counter() - started >= 1:
+                    slow.append(f"{name}: {shape!r}, a long run of spaces, {ending!r}")
+    assert not slow
+
+
+def test_a_heading_or_a_title_with_a_long_run_of_spaces_is_read_quickly() -> None:
+    started = time.perf_counter()
+    entries, problems = glossary(
+        f"## The tool{LONG_RUN}x\n\n" + GLOSSARY_TEXT[GLOSSARY_TEXT.index("| Term") :]
+    )
+    titles = quoted_titles([f"### Requirement: The tool{LONG_RUN}works\n"], [])
+    assert time.perf_counter() - started < 1
+    assert [entry.term for entry in entries][:1] == ["the tool"]
+    assert problems == []
+    assert titles == frozenset()
+
+
+@pytest.mark.parametrize(
+    "gap", [LONG_RUN, f"{LONG_RUN}\n{LONG_RUN}"], ids=["spaces", "spaces and a line break"]
+)
+def test_a_word_to_avoid_with_a_long_run_of_spaces_is_named_quickly(
+    tmp_path: Path, gap: str
+) -> None:
+    (tmp_path / "docs").mkdir()
+    (tmp_path / "docs" / "page.md").write_text(f"Of the{gap}calculator.\n", encoding="utf-8")
+    shown = "the calculator" if "\n" in gap else f"the{gap}calculator"
+    started = time.perf_counter()
+    found = word_problems(tmp_path, glossary(GLOSSARY_TEXT)[0], ["docs/page.md"], frozenset())
+    assert time.perf_counter() - started < 1
+    assert found == [f'docs/page.md:1: "{shown}" is a word to avoid; use "the tool"']
+
+
+def test_a_line_of_many_runs_of_backticks_is_read_quickly() -> None:
+    # Each of the first runs has a length that no later run has, so that each is a backtick
+    # of the prose, and the single backticks after them pair into code spans.
+    line = " ".join("`" * length for length in range(2, 802)) + " `a`" * 40_000
+    text = f"the calculator {line} the calculator\n"
+    started = time.perf_counter()
+    read, unclosed = readable("docs/page.md", text, frozenset())
+    assert time.perf_counter() - started < 1
+    assert unclosed == []
+    assert [found[2] for found in found_words(read, glossary(GLOSSARY_TEXT)[0])] == [
+        "the calculator",
+        "the calculator",
+    ]
+    assert "a" not in read.replace("calculator", "")
 
 
 def test_a_word_to_avoid_that_a_longer_one_holds_is_named_once(tmp_path: Path) -> None:
