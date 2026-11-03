@@ -15,6 +15,8 @@ It was written for the first change, `add-pr-cost-calculator`, before any code, 
    - The threats are modelled twice in every change (`CLAUDE.md`). At design, before the design is approved, reviewers who did not write the design, one per trust boundary, each in a context of their own, read the design and the specs, find the threats that are missing and rate their likelihood, and their findings change the design where they need to. At implementation, before the pull request merges, a review in a context separate from the builder's rates each threat again against the code and adds the threats that the code itself brings (`add-pr-cost-calculator` task 5.2).
 5. Give each threat its answer, and cite what holds that answer: a scenario (`capability`: "name"), a task or a decision of a change, a decision record by its ID, or a file. Name every decision record that lists the threat among its threats, and have every record that a change adds and names here list the threat (R131). Name in the field `Assumptions` each assumption in `docs/assumptions/` that the answer rests on, and have the assumption name the threat (R135). A threat with no answer is marked accepted, with the reason.
 
+The person whose sessions capture records decides whether it does (DR-046), so the model rates no threat for a person who avoids capture on purpose, which the tool is not built to stop (DR-189).
+
 ## How data moves
 
 ```mermaid

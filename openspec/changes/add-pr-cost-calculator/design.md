@@ -43,6 +43,7 @@ See `proposal.md` for why. These facts shape the approach:
 - GitHub Enterprise Server, which lacks the `job` context values that decision 7 relies on.
 - Repository and CI services other than GitHub, such as GitLab or Gitea.
 - Shell commands sent through Claude Code's PowerShell tool, which is on by default on Windows for claude.ai and Console accounts, always on there without Git Bash, and can be turned on elsewhere. A hook registered for Bash never runs for those commands, so capture stages nothing for a commit made through that tool and does not see a change of branch made through it. The hooks that run whatever tool Claude uses, when a turn, a subagent or a session ends, still run on Windows without Git Bash, in PowerShell, so the registered command is written to exit with success there too (DR-031).
+- A mode in which an organization turns capture on for its members and they cannot turn it off, and capture that tries to stop a person who avoids it on purpose. Capture is for people who opt in, and the README says how it works and where it stops (task 4.4). Nothing in this change rules such a mode out, since the ledger and the store state their versions, and the rule that only the person turns capture on is held by decision records that a later change can close (DR-189).
 
 ## Decisions
 
