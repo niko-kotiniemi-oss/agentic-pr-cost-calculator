@@ -382,7 +382,7 @@ Whatever the switches (see "Capture runs only where the tool is on and the perso
 
 ### Requirement: One file turns the tool on or off, and a pull request cannot turn off its own report
 
-A repository SHALL turn the tool on by adding a valid configuration file that enables the tool, and off by removing the file or disabling the tool in it. The report SHALL read the configuration from the default branch as it was before the merge and as it is after, only as a blob at each of those two commits and within the size bound that the configuration's format documents, and SHALL run when either turns the tool on.
+A repository SHALL turn the tool on by adding a configuration file that can be read as a valid configuration and enables the tool, and off by removing the file or disabling the tool in it. The report SHALL read the configuration from the default branch as it was before the merge and as it is after, only as a blob at each of those two commits and within the size bound that the configuration's format documents, and SHALL run when either turns the tool on.
 
 #### Scenario: Disabled means silent
 
@@ -396,7 +396,7 @@ A repository SHALL turn the tool on by adding a valid configuration file that en
 
 #### Scenario: The pull request that turns the tool on gets its report
 
-- **WHEN** the pull request that adds a valid configuration file that enables the tool merges
+- **WHEN** the pull request that adds a configuration file that turns the tool on merges
 - **THEN** its report comment is posted
 
 ### Requirement: Capture reads the configuration in the working tree

@@ -103,7 +103,7 @@ The public surface SHALL be the hook file's registration, by the events and matc
 #### Scenario: The surface manifest names the configuration's keys
 
 - **WHEN** the surface manifest in the repository is read
-- **THEN** it names each key that the configuration's format documents, and the values that each takes, and no other key or value
+- **THEN** it names each key that the configuration's format documents, and the values that each takes, and no other key or value of the configuration
 
 ### Requirement: The release workflow compares the surface manifest with the previous release's
 

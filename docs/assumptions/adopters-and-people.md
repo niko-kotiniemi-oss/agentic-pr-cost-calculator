@@ -136,7 +136,7 @@ The assumptions about the teams that adopt the tool, the people who opt in, and 
 - **Fact:** Adopters run supply-chain checks that read a CycloneDX bill of materials.
   - **Relied on:** R28, T69, DR-097
   - **Checked:** not yet: none will, since no test may reach what adopters and people do
-- **Fact:** Adopters depend on nothing outside the public surface that DR-154 lists: not on the comment's wording, the job summary, the bill of materials or the version numbering itself.
+- **Fact:** Adopters depend on nothing outside the public surface that DR-154 lists: not on the comment's wording, the job summary's wording, the bill of materials or the version numbering itself.
   - **Relied on:** R71, R122, T53, DR-123, DR-124, DR-133, DR-154
   - **Checked:** not yet: none will, since no test may reach what adopters and people do
 
