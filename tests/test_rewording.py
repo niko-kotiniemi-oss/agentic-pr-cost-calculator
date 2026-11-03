@@ -9,8 +9,9 @@ added, removed or renamed; each changed file that it did not compare; and how ma
 only replaced a word, by word (task 1.20; design decision 14). A renamed page is
 compared with what it was. It reads a page as the wording test does, so a word inside
 code or in a title that an accepted record quotes is never taken for a replacement, and
-a change to it is always listed (T90, T94). A path is written as a code span that
-nothing in it can close, so that no file's name writes the output's prose.
+a change to it is always listed (T90, T94). A path, and each word to avoid and term
+in the table, is written as a code span that nothing in it can close, so that no
+file's name and no row of the glossary writes the output's prose.
 """
 
 from __future__ import annotations
@@ -147,8 +148,8 @@ def test_a_line_that_only_replaces_a_word_to_avoid_is_counted_and_not_listed(
         "2 lines in 1 file changed only by a word to avoid replaced with its term:\n"
         "\n"
         f"{TABLE}"
-        "| the calculator | the tool | 1 | no |\n"
-        "| capture hook | capture step | 1 | no |\n",
+        "| `the calculator` | `the tool` | 1 | no |\n"
+        "| `capture hook` | `capture step` | 1 | no |\n",
         "",
     )
 
@@ -171,7 +172,7 @@ def test_a_line_that_replaces_a_word_the_base_s_glossary_did_not_list_is_listed_
         "```\n"
     )
     assert NOTHING_LISTED in out
-    assert f"{TABLE}| the calculator | the tool | 1 | yes |\n" in out
+    assert f"{TABLE}| `the calculator` | `the tool` | 1 | yes |\n" in out
 
 
 @pytest.mark.parametrize(
@@ -181,13 +182,13 @@ def test_a_line_that_replaces_a_word_the_base_s_glossary_did_not_list_is_listed_
             GLOSSARY_TEXT + "| sometimes | Now and then. | never |\n",
             "Never merge a pull request.",
             "Sometimes merge a pull request.",
-            "| never | sometimes | 1 | yes |",
+            "| `never` | `sometimes` | 1 | yes |",
         ),
         (
             GLOSSARY_TEXT.replace("| the tool |", "| the program |"),
             "The calculator counts calls.",
             "The program counts calls.",
-            "| the calculator | the program | 1 | yes |",
+            "| `the calculator` | `the program` | 1 | yes |",
         ),
     ],
     ids=["a new word to avoid", "a word to avoid given for a new term"],
@@ -229,8 +230,8 @@ def test_a_line_that_also_changes_another_word_is_listed_with_both(
         "```\n"
     )
     assert "1 line in 1 file changed only by a word to avoid" in out
-    assert "| capture hook | capture step | 1 |" in out
-    assert "| the calculator |" not in out
+    assert "| `capture hook` | `capture step` | 1 |" in out
+    assert "| `the calculator` |" not in out
 
 
 def test_a_long_line_shows_each_change_with_a_few_words_around_it(
@@ -281,7 +282,7 @@ def test_a_word_to_avoid_that_the_base_gave_in_another_case_is_not_new(
     )
     _, out, _ = rewording(tmp_path, monkeypatch, capsys)
     assert NOTHING_NEW in out
-    assert "| SBOM | bill of materials | 1 | no |" in out
+    assert "| `SBOM` | `bill of materials` | 1 | no |" in out
 
 
 def test_a_raised_first_letter_a_plural_and_a_word_to_avoid_in_another_case_count(
@@ -306,10 +307,10 @@ def test_a_raised_first_letter_a_plural_and_a_word_to_avoid_in_another_case_coun
         "4 lines in 1 file changed only by a word to avoid replaced with its term:\n"
         "\n"
         f"{TABLE}"
-        "| the calculator | the tool | 2 | no |\n"
-        "| capture hook | capture step | 1 | no |\n"
-        "| SBOM | bill of materials | 2 | no |\n"
-        "| git directory | git common directory | 1 | no |\n"
+        "| `the calculator` | `the tool` | 2 | no |\n"
+        "| `capture hook` | `capture step` | 1 | no |\n"
+        "| `SBOM` | `bill of materials` | 2 | no |\n"
+        "| `git directory` | `git common directory` | 1 | no |\n"
     ) in out
 
 
@@ -634,6 +635,25 @@ def test_a_path_is_written_as_code_that_it_cannot_close(
     history(history_root, {path: "A page.\n"})
     _, out, _ = rewording(history_root, monkeypatch, capsys)
     assert section(out, "Added, removed or renamed").startswith(f"- Added: {shown}\n")
+
+
+def test_a_term_and_its_word_to_avoid_are_written_as_code_that_they_cannot_close(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    term = "@someone, see [the rules](https://example.invalid/x) `x`"
+    before = {**BEFORE, "docs/page.md": "A gadget runs.\n"}
+    after = {
+        GLOSSARY: GLOSSARY_TEXT + f"| {term} | A row. | gadget |\n",
+        "docs/page.md": f"A {term} runs.\n",
+    }
+    history(tmp_path, after, before)
+    _, out, _ = rewording(tmp_path, monkeypatch, capsys)
+    assert section(out, "Only a word to avoid replaced") == (
+        "1 line in 1 file changed only by a word to avoid replaced with its term:\n"
+        "\n"
+        f"{TABLE}"
+        "| `gadget` | `` @someone, see [the rules](https://example.invalid/x) `x` `` | 1 | yes |\n"
+    )
 
 
 def test_a_path_or_a_line_that_is_not_utf_8_is_shown_with_a_replacement_character(

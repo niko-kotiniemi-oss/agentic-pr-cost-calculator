@@ -274,7 +274,8 @@ def report(base: str) -> str:
             only += replacing
             touched += bool(replacing)
     table = [
-        f"| {word} | {entry.term} | {words[word]} | {'yes' if word in fresh else 'no'} |"
+        f"| {code(word)} | {code(entry.term)} | {words[word]} |"
+        f" {'yes' if word in fresh else 'no'} |"
         for entry in entries
         for word in entry.avoid
         if words[word]
