@@ -3,8 +3,8 @@
 - **Type:** security and privacy
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`, as the owner asked on 2026-11-02
-- **Requirements:** R54, R118, R169
-- **Threats:** T2, T46, T119
+- **Requirements:** R54, R118, R147, R169
+- **Threats:** T2, T46, T119, T122
 - **Replaces:** DR-059
 - **Closed by:** none
 
@@ -26,6 +26,7 @@ The hook starts no program other than git. It looks for git only in the folders 
 - A program named `git` that is planted in Claude's current directory, in the repository's folder, in a folder that a relative entry of `PATH` names, or in a folder of the repository's, or of a linked worktree outside its folder, that an absolute entry names, is never the one started (R54), and task 2.3 plants one in each on a Windows runner.
 - The session's environment can neither move a call into this repository, nor move the store or a staged ledger file into another one, nor stop git from finding this repository (R169).
 - A person's own `GIT_` variables reach only git's first reading of the opt-in, where they can turn capture off and never on (DR-183).
+- A `safe.directory` setting that only the session's `GIT_` variables give, through `GIT_CONFIG_COUNT` or in the file that `GIT_CONFIG_GLOBAL` names, does not make git trust a clone that another user owns, so capture records nothing there until the person's global configuration, or the system's, names it (T122).
 - A run that finds capture off still starts git, by the same absolute path, to find its store and to take back and put back ledger files, which T46's residual accepts (R118).
 - A run that cannot read the files that list the repository's worktrees records nothing until it can.
 
@@ -35,4 +36,4 @@ This covers which programs the hook starts, from where, and with what environmen
 
 ## What reversing it would change
 
-R54 and R169 in `usage-capture` would change, with their scenarios "A program planted in the current directory is not run", "A git in a folder of the repository is not run", "A git in a worktree outside the repository's folder is not run" and "The environment cannot move the store or a staged ledger file into another repository", and so would R118, whose scenario "A run that finds a switch off starts git only for its store" holds that every program such a run starts is git, the design's decisions 1 and 6, T2's and T46's answers, T119, and tasks 2.1, 2.3 and 2.4, which build and test the lookup and the environment.
+R54 and R169 in `usage-capture` would change, with their scenarios "A program planted in the current directory is not run", "A git in a folder of the repository is not run", "A git in a worktree outside the repository's folder is not run" and "The environment cannot move the store or a staged ledger file into another repository", and so would R118, whose scenario "A run that finds a switch off starts git only for its store" holds that every program such a run starts is git, R147's scenario "A `safe.directory` setting that only the session's environment gives does not make the clone trusted", the design's decisions 1 and 6, T2's, T46's and T122's answers, T119, and tasks 2.1, 2.3 and 2.4, which build and test the lookup and the environment.

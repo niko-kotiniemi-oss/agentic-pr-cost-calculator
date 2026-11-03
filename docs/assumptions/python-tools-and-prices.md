@@ -49,8 +49,8 @@ The assumptions about Python, about the development tools of this repository, an
 
 ### A53. Files, locks and random names behave alike on every system where a repository's git common directory lives.
 
-- **Rests on it:** R8, R10, R11, R58, R107, R108, R119, R152, R162, T11, T13, T42, T47, T105, T109, T112, T117, DR-017, DR-036, DR-127, DR-169, DR-176
-- **If it is wrong:** Two runs could interleave their notes or both record one call, and a killed run could leave a torn store or a lock that stops later runs (T13, T42). A ledger write could leave the repository through a directory junction (T11), and two branches could add one ledger path, so that their merge conflicts or one pull request's usage is read as another's (T13, T47).
+- **Rests on it:** R8, R10, R11, R58, R107, R108, R119, R152, R162, T11, T13, T42, T47, T105, T109, T112, T117, T120, DR-017, DR-036, DR-127, DR-169, DR-176
+- **If it is wrong:** Two runs could interleave their notes or both record one call, and a killed run could leave a torn store or a lock that stops later runs (T13, T42). A ledger write could leave the repository through a directory junction (T11), and two branches could add one ledger path, so that their merge conflicts or one pull request's usage is read as another's (T13, T47), and a file system that gives an unchanged file other numbers would end every interval at each run that sees it, with a flag for consent (T120).
 - **Fact:** The operating system releases a file lock when the process holding it ends, even when that process is killed, on every system and filesystem where a repository's git common directory lives.
   - **Relied on:** R11, T13, T42, DR-036
   - **Checked:** not yet: `add-pr-cost-calculator` task 2.1 and `add-pr-cost-calculator` task 2.2 check it
@@ -68,6 +68,9 @@ The assumptions about Python, about the development tools of this repository, an
   - **Checked:** not yet: `add-pr-cost-calculator` task 2.2 checks it
 - **Fact:** Writing a file changes its size or its modification time, or puts a file of another identity in its place, on every file system where a person's git configuration lives, at a resolution fine enough to tell apart two writes that a run comes between.
   - **Relied on:** R107, R108, R162, T105, T117, DR-169
+  - **Checked:** not yet: `add-pr-cost-calculator` task 2.4 checks it in part, on the file systems that CI runs on
+- **Fact:** A file that nothing writes keeps its device and inode numbers, size and modification times from one run to the next, on every file system where a person's git configuration lives.
+  - **Relied on:** R107, T120, DR-169
   - **Checked:** not yet: `add-pr-cost-calculator` task 2.4 checks it in part, on the file systems that CI runs on
 - **Fact:** On Linux and macOS, a folder created with mode 0700 and a file with mode 0600 can be read only by their owner and an administrator, and Python's standard library can create them so, whatever the umask, without following a symbolic link.
   - **Relied on:** R152, T109, T112, DR-176

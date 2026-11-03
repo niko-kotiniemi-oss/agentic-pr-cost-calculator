@@ -27,7 +27,7 @@ The owner decided on 2026-11-02 that, where a call's repository is ambiguous, ca
 - A call made here that works on another repository through absolute paths or `git -C` is still recorded here, as DR-057 accepts, and a call made in another repository that works on this one is not (T2).
 - A call made in a worktree that is removed before a run reads it is left out, so the count is too low, and when that worktree was inside this repository's folder the comment says that calls were left out (R157). A worktree of this repository kept in another folder raises no flag.
 - A directory that holds another repository by the time a run reads the call sends the call to that repository, a gap that runs before and after every git command keep short (T108).
-- A clone that git does not trust, as one that another user owns and that no `safe.directory` setting names, holds no repository that git can tell, so nothing is recorded there and no ledger file says so, which the README will say (T122).
+- A clone that git does not trust, as one that another user owns and that no `safe.directory` setting names in the person's global configuration or the system's, the only files that git takes it from without the session's `GIT_` variables, holds no repository that git can tell, so nothing is recorded there and no ledger file says so, as the README's section that task 4.4 writes says (T122).
 
 ## Scope
 
