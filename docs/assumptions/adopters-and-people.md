@@ -50,7 +50,7 @@ The assumptions about the teams that adopt the tool, the people who opt in, and 
 
 ## A15. The owner merges, reads every diff and keeps the settings.
 
-- **Rests on it:** R26, R27, R59, R124, R129, T20, T28, T33, T35, T37, T47, T53, T61, T62, T64, T66, T67, T68, T71, T72, T76, T77, T79, T81, T93, T94, T95, T102, T103, T104, DR-015, DR-017, DR-072, DR-073, DR-074, DR-075, DR-076, DR-077, DR-078, DR-080, DR-082, DR-093, DR-095, DR-096, DR-108, DR-111, DR-116, DR-119, DR-121, DR-122, DR-131, DR-134, DR-140, DR-141, DR-144, DR-145, DR-151, DR-153, DR-156, DR-161
+- **Rests on it:** R26, R27, R59, R124, R129, T20, T28, T33, T35, T37, T47, T53, T61, T62, T64, T66, T67, T68, T71, T72, T76, T77, T79, T81, T93, T94, T95, T102, T103, DR-015, DR-017, DR-072, DR-073, DR-074, DR-075, DR-076, DR-077, DR-078, DR-080, DR-082, DR-093, DR-095, DR-096, DR-108, DR-111, DR-116, DR-119, DR-121, DR-122, DR-131, DR-134, DR-140, DR-141, DR-144, DR-145, DR-151, DR-153, DR-156, DR-161
 - **If it is wrong:** An agent's mistaken or steered merge, a weakened check, a false attribution or private text could reach `main` unnoticed (T64, T72, T71, T77, T33), a setting missing from what the threat model lists would let its answer fail without any sign (T62, T67), and reviews and fixes would queue behind one person (T66).
 - **Fact:** Only the owner merges pull requests here. Agent sessions, which act on GitHub as the owner's own account, never merge one, although the ruleset on `main` would let any of them merge a pull request that passes `ci`.
   - **Relied on:** R27, T28, T33, T35, T62, T64, T71, T72, DR-080, DR-122, DR-141, DR-156
@@ -62,7 +62,7 @@ The assumptions about the teams that adopt the tool, the people who opt in, and 
   - **Relied on:** T28, T33, T35, T37, T61, T62, T64, T67, T68, T76, DR-072, DR-073, DR-074, DR-075, DR-076, DR-077, DR-078, DR-119, DR-140, DR-141, DR-161
   - **Checked:** not yet: none will, since no test may reach what adopters and people do
 - **Fact:** The owner reads every pull request's diff here before merging, closely enough to catch a changed check or script, a vendored update, a false attribution in a decision record, private text in a title or a file name, a wrongly numbered version, a change to what steers agents, or a rewording that changes what a rule says.
-  - **Relied on:** R124, R129, T33, T35, T53, T71, T72, T77, T79, T81, T93, T94, T95, T102, T103, T104, DR-080, DR-082, DR-096, DR-108, DR-116, DR-121, DR-151, DR-153
+  - **Relied on:** R124, R129, T33, T35, T53, T71, T72, T77, T79, T81, T93, T94, T95, T102, T103, DR-080, DR-082, DR-096, DR-108, DR-116, DR-121, DR-151, DR-153
   - **Checked:** not yet: none will, since no test may reach what adopters and people do
 - **Fact:** The owner has time for every review, approval and report that waits on them: the reviews of each change, approving major updates, reviewing a dependency update's diff before any session uses it, deciding when the oldest Python rises, and acknowledging a security report within a week.
   - **Relied on:** R26, T35, T64, T66, DR-077, DR-093, DR-095, DR-111, DR-134, DR-145
@@ -159,10 +159,10 @@ The assumptions about the teams that adopt the tool, the people who opt in, and 
 
 ## A57. The reviews and the planned tests get done.
 
-- **Rests on it:** R29, R31, R73, R74, R100, R101, R124, T57, T74, T75, T78, T80, T83, T90, T94, T96, T97, T98, T101, T103, T104, DR-084, DR-085, DR-090, DR-091, DR-093, DR-094, DR-095, DR-098, DR-102, DR-103, DR-108, DR-112, DR-117, DR-120, DR-121, DR-147, DR-150, DR-158, DR-159
+- **Rests on it:** R29, R31, R73, R74, R100, R101, R124, T57, T74, T75, T78, T80, T83, T90, T94, T96, T97, T98, T101, T103, DR-084, DR-085, DR-090, DR-091, DR-093, DR-094, DR-095, DR-098, DR-102, DR-103, DR-108, DR-112, DR-117, DR-120, DR-121, DR-147, DR-150, DR-158, DR-159
 - **If it is wrong:** Stale citations would look like controls, and the threats that the code brings would be missed (T78, T80, T75), the matrix would show less risk than the built tool carries, a record could stay accepted after a change altered what it describes (T74), and the tool could do what its documentation leaves out (T57).
 - **Fact:** Reviews in a context separate from the builder's happen on every change, at design and before merge, and they find what tests cannot: missing threats, citations that no longer say what holds the answer, records that misstate their sources, and IDs whose meaning changed.
-  - **Relied on:** R31, R74, T74, T75, T78, T80, T83, T90, T94, T96, T97, T98, T101, T103, T104, DR-085, DR-093, DR-095, DR-108, DR-120, DR-150, DR-158, DR-159
+  - **Relied on:** R31, R74, T74, T75, T78, T80, T83, T90, T94, T96, T97, T98, T101, T103, DR-085, DR-093, DR-095, DR-108, DR-120, DR-150, DR-158, DR-159
   - **Checked:** not yet: none will, since no test can show what a review misses; `add-pr-cost-calculator` task 5.1 and `add-pr-cost-calculator` task 5.2 run the reviews
 - **Fact:** Every answer in the threat model gets built as specified, and the tests that the likelihood ratings count on get written. Until then each rating judges a design, not code.
   - **Relied on:** R31, DR-084, DR-094, DR-112

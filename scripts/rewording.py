@@ -16,7 +16,7 @@ compare.
 
 Its output is a pull request's account of its own rewording, so run the copies of this
 script and of `scripts/wording.py` that the default branch holds, not the pull
-request's (T104):
+request's (T94):
 
     copy=$(mktemp -d)
     git show refs/remotes/origin/main:scripts/rewording.py > "$copy/rewording.py"
