@@ -146,6 +146,15 @@ The capability names the spec that holds the requirement. Each capability is one
 | R132 | non-functional | `project-standards` | A removed threat's ID is retired, never used again |
 | R133 | non-functional | `project-standards` | The records' folder holds only the records and their index |
 | R134 | non-functional | `project-standards` | No attribute hides a record's diff |
+| R135 | non-functional | `project-standards` | The assumptions the design rests on are written down |
+| R136 | non-functional | `project-standards` | The assumptions with the most at stake come first |
+| R137 | non-functional | `project-standards` | The specs and pages use the glossary's words |
+| R138 | non-functional | `project-standards` | Each term is defined once |
+| R139 | non-functional | `project-standards` | Every version reproduces the golden set |
+| R140 | non-functional | `project-standards` | Each fact's check can be followed |
+| R141 | non-functional | `project-standards` | A golden figure changes only with the spec that gives it |
+| R142 | non-functional | `project-standards` | Each ledger format that a release wrote keeps its golden figures |
+| R143 | non-functional | `project-standards` | The assumptions give no other web address |
 
 IDs are stable: a requirement keeps its ID while it exists, and a new one takes the next free number, so the rows follow the order in which requirements were added rather than the order of the specs. A requirement that a later change removes leaves the table, and its ID is listed below with the change that removed it, never to be used again.
 

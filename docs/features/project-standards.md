@@ -1,12 +1,12 @@
 # Product-wide standards
 
-What holds for the whole product rather than for one feature: documentation that names everything the tool does, connections only where that documentation says, rated threats, pull request text without private references, action pins that their repositories tagged, and a record of each decision.
+What holds for the whole product rather than for one feature: documentation that names everything the tool does, connections only where that documentation says, rated threats, pull request text without private references, action pins that their repositories tagged, a record of each decision, the assumptions that the design rests on, a glossary of the words its documents use, and a golden set of figures that every version reproduces.
 
-**Status:** the documentation, the threat ratings, the workflow checks and the decision records are in place; the network guard, the check of pull request text and the check of pins are designed, not built yet.
+**Status:** the documentation, the threat ratings, the workflow checks, the decision records and the assumptions are in place; the network guard, the check of pull request text, the check of pins, the glossary and the golden set are designed, not built yet.
 
 **Spec:** `project-standards`
 
-**Requirements:** R29, R100, R101, R30, R31, R33, R34, R73, R74, R124, R125, R126, R127, R128, R129, R130, R131, R132, R133, R134
+**Requirements:** R29, R100, R101, R30, R31, R33, R34, R73, R74, R124, R125, R126, R127, R128, R129, R130, R131, R132, R133, R134, R135, R140, R143, R136, R137, R138, R139, R141, R142
 
 ## Expected behaviour
 
@@ -18,19 +18,27 @@ What holds for the whole product rather than for one feature: documentation that
 - **Pinned actions.** Every action and container image that a workflow uses is pinned to a full commit or a digest that a tag of its source names, so a commit that only a fork holds is refused.
 - **Decision records.** Each decision has a record of its own in [`../decisions/`](../decisions/README.md), holding one choice: its type, its status, who decided it, the requirements and threats it shapes, why it was made, what else was considered, what follows from it and what reversing it would change. An index lists every record. Once the default branch holds a record, it is never edited or removed, only closed by the record that replaces it, after which lines of its text may become `[removed]`, so each decision can be reversed on its own and its history stays readable. Tests fail when a record is out of form, holds anything but plain ASCII text, names something that does not exist, or changes other than by being closed, when the records' folder holds anything but the records and their index, when an attribute hides a record's diff, when the index and the records disagree, when a threat leaves out a record that lists it, when a document gives a record a title that is not its own, and when a document outside the history follows a closed record. Threat IDs, like requirement IDs, are retired rather than reused, so a record never comes to cite another threat.
 
+- **Assumptions.** Every assumption that the design rests on is in [`../assumptions/`](../assumptions/README.md), listed by the highest impact among the threats that rest on it, then least checked first, then by the highest risk among those threats, with what rests on it, what changes if it is wrong, and each of its facts with where it is relied on and how it is checked. A threat that rests on an assumption and the assumption name each other. A fact about Claude Code or GitHub, which no test may reach, is never checked by a test alone; an observation names the file that reproduces what was seen, its date and the build it was seen on, and never whose work it was seen in; and documentation is linked by its address, on a listed host or at a full commit of a listed repository, with the date it was read, while no page gives another web address. Tests fail when an assumption or a fact leaves any of these out, names something that does not exist or does not rest on it, a test that is not collected or may not run, or a task that is done as the one that will check it, holds a path under a home folder or a session identifier, gives a date that has not come, stands out of order, or gives a rating that differs from the threat model's, and when a subject has no page.
+- **Words.** A glossary, `docs/glossary.md`, gives each term's meaning and the words to avoid for it. Tests fail when a Markdown file that the repository tracks uses a word to avoid in its prose, except the records, archived changes, released changelog entries, vendored or generated files and the titles that an accepted record quotes, which keep their words, and when an entry gives no meaning or two entries give the same term or word. Words inside code are left as written, so a name that adopters type keeps its spelling. The glossary and the assumptions describe, and never steer: where they differ from `CLAUDE.md` or a spec, those hold.
+- **Golden set.** Synthetic sessions, each with the pull request it is reported for, a price table of its own, each call with its entry or the scenario that leaves it out, and the figures as the comment shows them, worked out by hand from the specs with the working beside each. Every version must reproduce them, a figure that its working does not give fails too, and no release is made until every acceptance test, these among them, passes. A golden figure changes only with the spec that gives it, and one that a release holds with a line in the changelog, and each ledger format that a release wrote keeps sessions with its figures for as long as the report reads it.
+
 ## Not covered
 
 - Whether a threat's answer still says what holds it. The tests check that each citation resolves; the reviews at design and before merge check what it says.
+- Whether an assumption is true. Its entry says how each fact is checked, and the check is no stronger than the test, the observation or the documentation that it names.
+- Whether a word with several senses is used in the right one. The glossary defines it, and the reviews check its uses.
+- Whether a meaning in the glossary narrows a rule without contradicting its words. The owner's review of the glossary's diff checks that.
+- Whether a setting on GitHub that the owner keeps is still as the threat model lists it. No test may read one, so the assumptions list each as not yet checked.
 - Whether a decision record holds one choice, describes rather than instructs, and says what its sources say, and whether the owner made a decision that a record attributes to the owner. The reviews check the first three, and the owner checks the last before merging.
 
 ## How it is validated
 
 This feature is validated first by its spec's scenarios: each whose code is still to be written gets an acceptance test before that code, seen to fail for the expected reason, and each that a check already in place holds is named in that check's test (task 1.4). Then come the checks that DR-084 to DR-093 and DR-109 apply to all the tool's code. Beyond those, this feature has its own:
 
-- Already in place: the documentation tests (tasks 1.12 and 1.17), the threat model's tests (task 1.10), the workflow checks (task 1.16) and the decision records' tests (task 1.18).
-- To be built: the network guard's two rules and the check of the report's git commands (task 1.13), the check of pull request text (task 1.14), the check that every pin is a tagged commit (task 1.15), and a check that every network call and environment variable the tool's code reads is named in the documentation (task 5.3).
+- Already in place: the documentation tests (tasks 1.12 and 1.17), the threat model's tests (task 1.10), the workflow checks (task 1.16), the decision records' tests (task 1.18) and the assumptions' tests (task 1.19).
+- To be built: the network guard's two rules and the check of the report's git commands (task 1.13), the check of pull request text (task 1.14), the check that every pin is a tagged commit (task 1.15), the check of the glossary's words (task 1.20), the golden set (task 1.21), the release's test job that runs every expected failure as an ordinary test (task 6.3), and a check that every network call and environment variable the tool's code reads is named in the documentation (task 5.3).
 - By review rather than by a test: that the threat model is revisited before a design is approved and again against what was built (tasks 1.10 and 5.2).
 
 ## See also
 
-- `project-standards` in `openspec/`, design decisions 8, 9, 12 and 13 of `add-pr-cost-calculator`, and the decision records' [index](../decisions/README.md).
+- `project-standards` in `openspec/`, design decisions 8, 9, 12, 13 and 14 of `add-pr-cost-calculator`, the decision records' [index](../decisions/README.md), and the assumptions' [index](../assumptions/README.md).

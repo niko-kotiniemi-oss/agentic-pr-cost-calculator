@@ -39,9 +39,9 @@ These tests hold what a machine can check:
   diff;
 - a record that the default branch holds is never removed, and never changed
   except to be closed, after which any line of text under its sections may
-  become `[removed]`; and an ID that the default branch's register or threat
-  model holds stays held or retired, an ID counting as retired only where the
-  section "Retired IDs" lists it.
+  become `[removed]`; and an ID that the default branch's register, threat model
+  or assumptions' index holds stays held or retired, an ID counting as retired
+  only where the section "Retired IDs" lists it.
 
 Whether a record holds one choice, describes rather than instructs, and says
 what its sources say is for the review to check.
@@ -127,6 +127,8 @@ REGISTER_ID = re.compile(r"^\| (R\d+) \|", re.M)
 RETIRED_ID = re.compile(r"^- (R\d+), removed by `", re.M)
 THREAT_HEADING = re.compile(r"^### (T\d+)\. ", re.M)
 RETIRED_THREAT = re.compile(r"^- (T\d+), removed by `", re.M)
+INDEX_ID = re.compile(r"^- \*\*(A\d+)\.\*\* ", re.M)
+RETIRED_ASSUMPTION = re.compile(r"^- (A\d+), removed by `", re.M)
 RETIRED_SECTION = re.compile(r"^## Retired IDs\n(.*?)(?=^## |\Z)", re.M | re.S)
 RETIRED_ENTRY = re.compile(r"^- [RT]\d+, removed by `([a-z0-9-]+)`", re.M)
 REQUIREMENT_MENTION = re.compile(r"\bR\d+\b")
@@ -731,12 +733,13 @@ def change_problems(root: Path, *bases: str) -> tuple[list[str], int]:
 
 
 def id_problems(root: Path, *bases: str) -> list[str]:
-    """Every requirement and threat ID that the bases hold or retire is still held or retired,
-    an ID counting as retired only where the section "Retired IDs" lists it."""
+    """Every requirement, threat and assumption ID that the bases hold or retire is still held
+    or retired, an ID counting as retired only where the section "Retired IDs" lists it."""
     problems = []
     for path, held, retired in (
         ("docs/requirements.md", REGISTER_ID, RETIRED_ID),
         ("docs/threat-model.md", THREAT_HEADING, RETIRED_THREAT),
+        ("docs/assumptions/README.md", INDEX_ID, RETIRED_ASSUMPTION),
     ):
         new = git(root, "show", f"HEAD:{path}").stdout.decode("utf-8")
         kept = set(held.findall(new)) | retired_in(new, retired)
@@ -855,7 +858,7 @@ def test_no_record_the_default_branch_holds_was_changed_but_to_be_closed() -> No
     assert not problems, "\n".join(problems)
 
 
-def test_every_requirement_and_threat_id_the_default_branch_holds_stays() -> None:
+def test_every_requirement_threat_and_assumption_id_the_default_branch_holds_stays() -> None:
     bases = base_commits(ROOT, os.environ)
     if all(
         git(ROOT, "cat-file", "-e", f"{base}:docs/requirements.md").returncode != 0
@@ -950,6 +953,12 @@ def synthetic_repository(root: Path, records: list[str], index: str | None = Non
         "### T1. One thing\n\n- **Held by:** DR-001\n\n"
         "### T2. Another\n\n- **Held by:** `docs/note.md`\n\n"
         "## Retired IDs\n\n- T3, removed by `old`\n"
+    )
+    (root / "docs" / "assumptions").mkdir(exist_ok=True)
+    (root / "docs" / "assumptions" / "README.md").write_text(
+        "## The assumptions, most at stake first\n\n"
+        "- **A1.** One thing holds.\n- **A3.** Another holds.\n\n"
+        "## Retired IDs\n\n- A2, removed by `old`\n"
     )
     (root / "openspec" / "changes" / "demo").mkdir(parents=True, exist_ok=True)
     (root / "openspec" / "changes" / "demo" / "design.md").write_text("### 1. A choice\n")
@@ -1900,6 +1909,25 @@ def test_an_id_the_default_branch_holds_that_vanishes_is_reported(tmp_path: Path
         "R2, which docs/requirements.md holds on the default branch, is neither held nor retired",
         "T2, which docs/threat-model.md holds on the default branch, is neither held nor retired",
     ]
+
+
+def test_an_assumption_id_the_default_branch_holds_stays_held_or_retired(
+    tmp_path: Path,
+) -> None:
+    repository_with_history(tmp_path, [record(1)])
+    bases = base_commits(tmp_path, {})
+    index = tmp_path / "docs" / "assumptions" / "README.md"
+    held = index.read_text()
+    index.write_text(held.replace("- A2, removed by `old`\n", "").replace("**A3.**", "**A4.**"))
+    commit(tmp_path)
+    assert id_problems(tmp_path, *bases) == [
+        f"A{each}, which docs/assumptions/README.md holds on the default branch, is neither held"
+        " nor retired"
+        for each in (2, 3)
+    ]
+    index.write_text(index.read_text() + "- A2, removed by `old`\n- A3, removed by `demo`\n")
+    commit(tmp_path)
+    assert id_problems(tmp_path, *bases) == []
 
 
 def test_an_id_retired_since_is_not_reported(tmp_path: Path) -> None:

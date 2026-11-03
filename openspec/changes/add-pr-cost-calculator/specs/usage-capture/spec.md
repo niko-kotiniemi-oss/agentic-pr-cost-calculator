@@ -162,6 +162,11 @@ The capture step SHALL record only the calls whose transcript line gives a worki
 - **WHEN** a session made calls while its working directory was in a worktree of this repository, whether inside the repository's own folder, as Claude Code's worktrees are, or outside it, and no ledger file that the step wrote was in a stash
 - **THEN** those calls are recorded, and only a commit made in that worktree carries them
 
+#### Scenario: A call whose line gives no working directory is not recorded
+
+- **WHEN** a call's lines give no working directory
+- **THEN** the call is not recorded, whatever directory the hook's input or the project directory names
+
 ### Requirement: Capture works on the repository that holds the project directory
 
 This repository SHALL be the one that holds the project directory that Claude Code gives the hook, whatever directory the hook runs in, and the registered command SHALL name the capture step's file through that project directory.

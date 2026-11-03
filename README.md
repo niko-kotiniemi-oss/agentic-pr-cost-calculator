@@ -57,7 +57,7 @@ npm ci --ignore-scripts
 scripts/verify-openspec.sh
 ```
 
-Cloud sessions of Claude Code run the same setup automatically through `.claude/hooks/session-start.sh`.
+A cloud session of Claude Code that has this repository alone, outside a project's threads, runs the same setup automatically through `.claude/hooks/session-start.sh`.
 
 Two tools are pinned here:
 

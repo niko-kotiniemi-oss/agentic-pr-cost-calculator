@@ -179,8 +179,10 @@ flowchart LR
 
 ```mermaid
 flowchart TD
-  A[Owner pushes tag vMAJOR.MINOR.PATCH] --> T{Is the tag v and a semantic version?}
-  T -->|no| X[Refuse, publishing nothing]
+  A[Owner pushes tag vMAJOR.MINOR.PATCH] --> Q{Do the tests pass at the tagged commit on the oldest and newest Python, with every expected failure run as an ordinary test?}
+  Q -->|no| X[Refuse, publishing nothing]
+  Q -->|yes| T{Is the tag v and a semantic version?}
+  T -->|no| X
   T -->|yes| B{Is its commit in the default branch's first-parent history?}
   B -->|no| X
   B -->|yes| C{Tag matches pyproject.toml and CHANGELOG.md?}
@@ -241,7 +243,7 @@ Prices are never fetched: the price table is a file at the tool's commit, change
 
 ## Environment variables
 
-As designed, the hook reads `CLAUDE_PROJECT_DIR`, `HOME`, `XDG_CONFIG_HOME` and `PATH`, and on Windows `HOMEDRIVE`, `HOMEPATH` and `USERPROFILE`. It sets `GIT_NO_LAZY_FETCH=1` and `GIT_TERMINAL_PROMPT=0` for every git command it runs, so that git fetches nothing and asks for no credentials. It ignores the variables that point git at other configuration files or add settings. The report reads `GITHUB_API_URL`, `GITHUB_TOKEN` and the event that GitHub passes the workflow. Task 5.3 checks this list against the code once it exists.
+As designed, the hook reads `CLAUDE_PROJECT_DIR`, `HOME`, `XDG_CONFIG_HOME` and `PATH`, and on Windows `HOMEDRIVE`, `HOMEPATH` and `USERPROFILE`. It sets `GIT_NO_LAZY_FETCH=1` and `GIT_TERMINAL_PROMPT=0` for every git command it runs, so that git fetches nothing and asks for no credentials. It ignores the variables that point git at other configuration files or add settings, and reads each run's time from the system's clock in UTC, which no variable sets. The report reads `GITHUB_API_URL`, `GITHUB_TOKEN` and the event that GitHub passes the workflow. Task 5.3 checks this list against the code once it exists.
 
 ## What it never does
 

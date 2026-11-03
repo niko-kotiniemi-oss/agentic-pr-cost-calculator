@@ -143,6 +143,11 @@ The report SHALL read the ledger files that the default branch's first-parent hi
 - **WHEN** a ledger file that the default branch held before the merge holds a line that does not match the ledger format
 - **THEN** the report skips that line, counts it neither as an entry nor as a refused line of the pull request, and posts its comment
 
+#### Scenario: An earlier ledger file's valid lines keep their calls beside an unreadable one
+
+- **WHEN** a ledger file that the default branch held before the merge holds a line that does not match the ledger format beside valid entries, and the pull request adds an entry for one of their calls
+- **THEN** the report does not count that entry
+
 ### Requirement: The report runs only trusted code, with the least it needs
 
 The report SHALL run only the tool's own code, from the commit at which the calling workflow pins the tool, and SHALL read the pull request's files only as data, never running, importing or installing anything from them. It SHALL use the workflow's own token, with no permissions beyond reading the repository and its Actions data and writing pull request comments, and SHALL never write the token to its output: its log, its job summary or its comment.

@@ -11,7 +11,7 @@ While a Claude Code session works in the repository, a hook records what each mo
 ## Expected behaviour
 
 - **What is recorded.** For each model call, once: its UTC day, its model, a hash of its message id, whether the main agent or a subagent made it, and its input, output, cache-write and cache-read tokens. Where the transcript gives them, it also records the attributes that change the price: service tier, speed, inference region and server-side tool requests.
-- **Where from.** Only calls made while Claude's working directory is in this repository or one of its worktrees. Calls made from anywhere else, including another repository that the same session works in, are not recorded here.
+- **Where from.** Only calls made while Claude's working directory is in this repository or one of its worktrees. Calls made from anywhere else, including another repository that the same session works in, are not recorded here, and neither is a call whose transcript lines give no working directory.
 - **When.** The hook runs when Claude finishes responding, when a subagent finishes, when a turn ends in an API error, when the session ends, and before and after each Bash command that runs git.
 - **How it reaches the pull request.** Just before the agent's `git commit`, the hook writes the waiting calls into one new ledger file and stages it, so that the commit takes it. It does this only for a commit whose branch and contents it can tell from the command. Otherwise the calls wait for a later commit.
 - **When no commit takes the file.** If the commit fails, is refused, is cancelled or never runs, the hook takes the file back, and its calls wait for a later commit.

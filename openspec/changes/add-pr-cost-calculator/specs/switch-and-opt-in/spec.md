@@ -138,12 +138,17 @@ Consent, the two switches that "Capture runs only where the tool is on and the p
 
 ### Requirement: Each run notes in the store whether it found both switches on
 
-The capture step SHALL note in its store, for each session, when a run finds both switches on and when a run finds either off (see "Capture runs only where the tool is on and the person has opted in"), creating the store where there is none.
+The capture step SHALL note in its store, for each session, when a run finds both switches on and when a run finds either off (see "Capture runs only where the tool is on and the person has opted in"), creating the store where there is none. It SHALL read each run's time from the system's clock in UTC, which no environment variable sets.
 
 #### Scenario: A run that finds a switch off creates the store to note it
 
 - **WHEN** a run of the step finds that the person has not turned capture on, and no store exists yet
 - **THEN** the run creates the store, and notes in it, for the run's session, when the run found a switch off
+
+#### Scenario: The environment cannot move a run's time
+
+- **WHEN** the session's environment sets `TZ` to a zone far from UTC, a run of the step has found both switches on, the person then turns capture off, the session makes calls, a run of the step comes, and the person then turns capture on again
+- **THEN** none of the calls that the session made while capture was off is recorded
 
 ### Requirement: An interval when both switches were on begins at the session's start or at a run, and ends at a run
 
