@@ -17,7 +17,7 @@ select = ["E", "F", "W", "I", "B", "UP"]
 [tool.mypy]
 strict = true
 python_version = "3.11"
-files = ["tests"]
+files = ["tests", "scripts"]
 
 [[tool.mypy.overrides]]
 module = ["yaml"]
@@ -26,3 +26,5 @@ ignore_missing_imports = false
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-q"
+# The wording test and the rewording script read the pages with the same module.
+pythonpath = ["scripts"]

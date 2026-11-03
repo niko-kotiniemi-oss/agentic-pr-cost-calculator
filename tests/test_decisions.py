@@ -39,9 +39,13 @@ These tests hold what a machine can check:
   diff;
 - a record that the default branch holds is never removed, and never changed
   except to be closed, after which any line of text under its sections may
-  become `[removed]`; and an ID that the default branch's register, threat model
+  become `[removed]`; an ID that the default branch's register, threat model
   or assumptions' index holds stays held or retired, an ID counting as retired
-  only where the section "Retired IDs" lists it.
+  only where the section "Retired IDs" lists it; and a requirement's or a
+  scenario's title that the default branch's specs hold and an accepted record
+  quotes stays in the specs, which are `openspec/specs/` and the active changes,
+  a title under "REMOVED Requirements" counting as gone, since the record keeps
+  its quote and the wording test keeps such a title's words.
 
 Whether a record holds one choice, describes rather than instructs, and says
 what its sources say is for the review to check.
@@ -68,10 +72,10 @@ from datetime import UTC, date, datetime
 from pathlib import Path
 
 import pytest
+from wording import ACCEPTED, DEFAULT_BRANCH, QUOTATION, SPEC_FILE, SPEC_TITLE
 
 ROOT = Path(__file__).resolve().parents[1]
 DECISIONS = Path("docs") / "decisions"
-DEFAULT_BRANCH = "refs/remotes/origin/main"
 REMOVED = "[removed]"
 
 FIELDS = ("Type", "Status", "Decided by", "Requirements", "Threats", "Replaces", "Closed by")
@@ -152,6 +156,9 @@ TASK_NUMBERS = r"[0-9]+\.[0-9]+(?:(?:,? and |,? or |, | to )[0-9]+\.[0-9]+)*"
 TASK_MENTION = re.compile(rf"\b[Tt]asks? ({TASK_NUMBERS})(?: of `([a-z0-9-]+)`)?")
 CHANGE_TASK = re.compile(rf"`([a-z0-9-]+)` tasks? ({TASK_NUMBERS})")
 TASK_LINE = re.compile(r"^- \[[ x]\] ([0-9]+\.[0-9]+) ", re.M)
+# Which specs, titles, quotations and records count is `scripts/wording.py`'s, so that this
+# check and the wording test agree on the titles that the records keep.
+REMOVED_SECTION = re.compile(r"^## REMOVED Requirements\s*$.*?(?=^## |\Z)", re.M | re.S)
 # What makes git or GitHub show a file's diff otherwise: git's `diff`, the `binary` macro
 # that unsets it, and `linguist-generated`, with which GitHub hides a diff by default.
 DIFF_ATTRIBUTES = {"binary", "diff", "linguist-generated"}
@@ -756,6 +763,50 @@ def id_problems(root: Path, *bases: str) -> list[str]:
     return problems
 
 
+def title_problems(root: Path, *bases: str) -> tuple[list[str], int]:
+    """Each title that the bases' specs hold and an accepted record quotes, and that the
+    specs no longer hold, naming the record. Also says how many such titles the bases hold."""
+    held: set[str] = set()
+    for base in bases:
+        held |= spec_titles(root, base)
+    now = spec_titles(root, "HEAD")
+    problems = []
+    compared: set[str] = set()
+    for path, (_mode, item) in sorted(records_in_tree(root, "HEAD").items()):
+        text = content(root, item)
+        if not ACCEPTED.search(text):
+            continue
+        named = FILE_NAME.fullmatch(posixpath.basename(path))
+        assert named is not None
+        for title in sorted(set(QUOTATION.findall(text)) & held):
+            compared.add(title)
+            if title not in now:
+                problems.append(
+                    f'DR-{named[1]} quotes "{title}", a title that the specs held on the default'
+                    " branch and no longer hold"
+                )
+    return problems, len(compared)
+
+
+def spec_titles(root: Path, commit: str) -> set[str]:
+    """The requirements' and scenarios' titles that the specs hold in a commit, leaving out
+    those under "REMOVED Requirements".
+
+    Raises LookupError when git cannot list the commit's files.
+    """
+    listing = git(
+        root, "ls-tree", "-r", "-z", "--name-only", "--full-tree", commit, "--", "openspec"
+    )
+    if listing.returncode != 0:
+        raise LookupError(f"cannot list the files of {commit}")
+    titles: set[str] = set()
+    for path in listing.stdout.decode("utf-8", "surrogateescape").split("\0"):
+        if SPEC_FILE.fullmatch(path):
+            text = git(root, "show", f"{commit}:{path}").stdout.decode("utf-8")
+            titles.update(SPEC_TITLE.findall(REMOVED_SECTION.sub("", text)))
+    return titles
+
+
 def listing_problems(
     model: str, records: dict[str, Record], new: set[str]
 ) -> tuple[list[str], int]:
@@ -869,6 +920,14 @@ def test_every_requirement_threat_and_assumption_id_the_default_branch_holds_sta
         )
     problems = id_problems(ROOT, *bases)
     assert not problems, "\n".join(problems)
+
+
+def test_every_title_that_an_accepted_record_quotes_stays_in_the_specs() -> None:
+    problems, compared = title_problems(ROOT, *base_commits(ROOT, os.environ))
+    assert not problems, "\n".join(problems)
+    assert compared, (
+        "no base's specs hold a title that an accepted record quotes, so none was compared"
+    )
 
 
 def test_a_threat_that_cites_a_record_new_here_is_listed_in_it() -> None:
@@ -1968,3 +2027,102 @@ def test_an_entry_outside_the_section_retires_nothing_on_the_default_branch_eith
     register.write_text(held)
     commit(tmp_path)
     assert id_problems(tmp_path, *base_commits(tmp_path, {})) == []
+
+
+SPEC = "openspec/changes/demo/specs/thing/spec.md"
+SPEC_TEXT = (
+    "## ADDED Requirements\n\n"
+    "### Requirement: It works\n\nIt SHALL work.\n\n"
+    "#### Scenario: It says so\n\n- **WHEN** it runs\n- **THEN** it works\n"
+)
+LEFT = 'DR-001 quotes "{}", a title that the specs held on the default branch and no longer hold'
+
+
+def quoting(*titles: str, status: str = "accepted") -> str:
+    """A record whose context quotes these titles."""
+    quotes = ", ".join(f'"{title}"' for title in titles)
+    return record(1, status=status).replace(
+        "Something made a choice necessary.", f"Something made a choice necessary: {quotes}."
+    )
+
+
+def spec_repository(root: Path, *titles: str) -> Path:
+    """A repository whose `main` holds a spec of one requirement with one scenario, and a
+    record that quotes these titles, checked out on a new branch. Returns the spec."""
+    spec = root / SPEC
+    spec.parent.mkdir(parents=True)
+    spec.write_text(SPEC_TEXT)
+    repository_with_history(root, [quoting(*titles)])
+    return spec
+
+
+def titles_compared(root: Path) -> tuple[list[str], int]:
+    return title_problems(root, *base_commits(root, {}))
+
+
+def test_a_title_that_a_record_quotes_and_the_specs_keep_is_not_reported(tmp_path: Path) -> None:
+    spec_repository(tmp_path, "It works", "It says so", "Not a title")
+    assert titles_compared(tmp_path) == ([], 2)
+
+
+@pytest.mark.parametrize(
+    ("title", "old", "new"),
+    [
+        ("It says so", "Scenario: It says so", "Scenario: It says that"),
+        (
+            "It says so",
+            "#### Scenario: It says so\n\n- **WHEN** it runs\n- **THEN** it works\n",
+            "",
+        ),
+        ("It works", "Requirement: It works", "Requirement: It runs"),
+        ("It works", "## ADDED Requirements", "## REMOVED Requirements"),
+        ("It says so", "## ADDED Requirements", "## REMOVED Requirements"),
+    ],
+)
+def test_a_title_that_a_record_quotes_changed_or_removed_in_the_specs_is_reported(
+    tmp_path: Path, title: str, old: str, new: str
+) -> None:
+    spec = spec_repository(tmp_path, title)
+    spec.write_text(spec.read_text().replace(old, new))
+    assert titles_compared(tmp_path) == ([], 1)
+    commit(tmp_path)
+    assert titles_compared(tmp_path) == ([LEFT.format(title)], 1)
+
+
+def test_a_title_that_moves_into_openspec_specs_stays_and_one_only_archived_leaves(
+    tmp_path: Path,
+) -> None:
+    spec = spec_repository(tmp_path, "It says so")
+    archived = tmp_path / "openspec/changes/archive/2026-01-02-demo/specs/thing/spec.md"
+    archived.parent.mkdir(parents=True)
+    archived.write_text(SPEC_TEXT)
+    held = tmp_path / "openspec/specs/thing/spec.md"
+    held.parent.mkdir(parents=True)
+    spec.rename(held)
+    commit(tmp_path)
+    assert titles_compared(tmp_path) == ([], 1)
+    held.unlink()
+    commit(tmp_path)
+    assert titles_compared(tmp_path) == ([LEFT.format("It says so")], 1)
+
+
+def test_a_title_that_only_a_closed_record_quotes_may_leave_the_specs(tmp_path: Path) -> None:
+    spec = spec_repository(tmp_path, "It says so")
+    (tmp_path / DECISIONS / "DR-001-a-choice.md").write_text(quoting("It says so", status="closed"))
+    spec.write_text(spec.read_text().replace("It says so", "It says that"))
+    commit(tmp_path)
+    assert titles_compared(tmp_path) == ([], 0)
+
+
+def test_a_title_after_a_removed_section_stays_in_the_specs(tmp_path: Path) -> None:
+    spec = spec_repository(tmp_path, "It says so")
+    spec.write_text("## REMOVED Requirements\n\n### Requirement: Gone\n\n" + spec.read_text())
+    commit(tmp_path)
+    assert titles_compared(tmp_path) == ([], 1)
+
+
+def test_a_title_that_no_base_held_is_not_compared(tmp_path: Path) -> None:
+    spec = spec_repository(tmp_path, "It is new", "It says so")
+    spec.write_text(spec.read_text() + "\n#### Scenario: It is new\n\n- **WHEN** it is\n")
+    commit(tmp_path)
+    assert titles_compared(tmp_path) == ([], 1)

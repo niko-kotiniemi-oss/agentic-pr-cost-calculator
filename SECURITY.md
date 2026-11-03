@@ -12,11 +12,11 @@ There is no release yet. Once there is, fixes go to the latest release only. The
 
 ## What this tool handles
 
-The calculator will read token-usage records and GitHub Actions job data, and it will write one comment on the pull request it measures. The usage ledger it reads is committed with the pull request. It is designed so that:
+The tool will read token-usage records and GitHub Actions job data, and it will write one comment on the pull request it measures. The ledger files it reads are committed with the pull requests that add them. It is designed so that:
 
 - it needs no secret beyond the `GITHUB_TOKEN` a workflow already has, with the narrowest permissions that work;
-- it records counts, the model, the price attributes, the UTC day, the activity type, whether the main agent or a subagent made the call, and a hash of the call's message id, and never prompts, code, tool names, transcript text or any session identifier;
-- it records a person's usage only when that person has turned capture on for themselves, and only for calls made while their session's working directory is in the repository that publishes it, which includes work that session does on other repositories from there;
+- the ledger entries it writes hold counts, the model, the price attributes, the UTC day, the activity type, whether the main agent or a subagent made the call, and a hash of the call's message id, and never prompts, code, tool names, transcript text or any session identifier, and the notes that capture keeps for its own use in the git common directory of the person's clone, among them the worktree and branch that each call goes to, when each run was and whether it found both switches on, and, for each ledger file it stages, the session's id, its transcript's path, the `tool_use_id` of the command it was staged for and, after a take-back, the commit it found checked out, never leave that directory;
+- it records a person's usage only when that person has turned capture on for themselves, and only for calls made while Claude's current directory is in the repository that publishes it, which includes work on other repositories from there;
 - its tests use synthetic fixtures only, never real usage data.
 
 A change that would break any of these is a security issue.

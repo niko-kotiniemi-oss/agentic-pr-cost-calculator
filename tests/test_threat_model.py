@@ -4,8 +4,10 @@
 in a spec, a task or a decision of a change, a decision record, or a file in this
 repository. A citation that names nothing reads as a control while holding none,
 so every citation must resolve, and every threat must cite something or say why
-it is accepted. `tests/test_decisions.py` also fails when an answer cites a
-closed record, since a closed decision no longer holds anything.
+it is accepted. A scenario resolves only in `openspec/specs/` and the active
+changes, so that a title that a rewording changed cannot pass on an archived
+copy. `tests/test_decisions.py` also fails when an answer cites a closed record,
+since a closed decision no longer holds anything.
 
 Threats are numbered from T1 in order. A threat that a change removes keeps its
 number out of use in the list of retired IDs, so that a record or a document
@@ -96,7 +98,12 @@ def threats_in(text: str) -> list[Threat]:
 
 def index(root: Path) -> Index:
     scenarios: dict[str, set[str]] = {}
-    for spec in sorted((root / "openspec").rglob("spec.md")):
+    # A scenario resolves only where the specs hold it now, never in an archived copy.
+    specs = [
+        *(root / "openspec" / "specs").glob("*/spec.md"),
+        *(root / "openspec" / "changes").glob("*/specs/*/spec.md"),
+    ]
+    for spec in sorted(specs):
         scenarios.setdefault(spec.parent.name, set()).update(SCENARIO.findall(spec.read_text()))
     changes: dict[str, Path] = {}
     base = root / "openspec" / "changes"
@@ -336,6 +343,23 @@ def test_a_citation_that_names_nothing_is_reported(
     (tmp_path.parent / "outside.md").write_text("Outside the repository.\n")
     problems, _ = problems_in(threat(held) + matrix(), tmp_path)
     assert [problem for problem in problems if expected in problem], problems
+
+
+def test_a_scenario_that_the_specs_hold_resolves(tmp_path: Path) -> None:
+    synthetic_repository(tmp_path)
+    specs = tmp_path / "openspec" / "specs" / "thing"
+    specs.mkdir(parents=True)
+    (specs / "spec.md").write_text("#### Scenario: It holds\n")
+    assert problems_in(threat('`thing`: "It holds"') + matrix(), tmp_path) == ([], 1)
+
+
+def test_a_scenario_that_only_an_archived_change_holds_does_not_resolve(tmp_path: Path) -> None:
+    synthetic_repository(tmp_path)
+    archived = tmp_path / "openspec" / "changes" / "archive" / "2026-01-01-old" / "specs"
+    (archived / "thing").mkdir(parents=True)
+    (archived / "thing" / "spec.md").write_text("#### Scenario: It once worked\n")
+    problems, _ = problems_in(threat('`thing`: "It once worked"') + matrix(), tmp_path)
+    assert problems == ['T1 cites `thing`: "It once worked", which no spec holds']
 
 
 def test_a_threat_without_its_fields_is_reported(tmp_path: Path) -> None:

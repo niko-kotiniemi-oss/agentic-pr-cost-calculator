@@ -8,11 +8,11 @@ In the scenarios below, a commit that is expected to carry a ledger file is made
 
 ### Requirement: Usage is recorded per model call
 
-The capture step SHALL record each model call once. Each record SHALL hold the call's UTC day, its model, a SHA-256 hash of its message id, whether the main agent or a subagent made it, its input tokens, output tokens, cache-write tokens split by cache lifetime where the source gives it, and cache-read tokens, and, where the source gives them, the attributes that change its price: service tier, speed, inference region and server-side tool requests.
+The capture step SHALL record each model call once. It SHALL record the call's UTC day, its model, a SHA-256 hash of its message id, whether the main agent or a subagent made it, its input tokens, output tokens, cache-write tokens split by cache lifetime where the source gives it, and cache-read tokens, and, where the source gives them, the attributes that change its price: service tier, speed, inference region and server-side tool requests.
 
 #### Scenario: A turn's calls are recorded once
 
-- **WHEN** a turn's transcript holds three model calls not yet recorded, which the agent made in one worktree, and the agent then commits in that worktree, with no change of branch there in between and no other call waiting to be staged there
+- **WHEN** the session's transcript holds three model calls of one turn, not yet recorded, which the agent made in one worktree, and the agent then commits in that worktree, with no change of branch there in between and no other call waiting to be staged there
 - **THEN** the commit's new ledger file holds exactly three entries, one per call, with each call's model and token counts
 
 #### Scenario: Running again records nothing twice
@@ -20,7 +20,7 @@ The capture step SHALL record each model call once. Each record SHALL hold the c
 - **WHEN** the capture step runs a second time over the same transcript with no new calls
 - **THEN** nothing new is recorded
 
-#### Scenario: Switching branches records nothing twice
+#### Scenario: A change of branch records nothing twice
 
 - **WHEN** the agent switches to another branch, and the capture step runs again over the same transcript
 - **THEN** no call already recorded is recorded again
@@ -68,7 +68,7 @@ A call SHALL be identified by its message id, so that a call the transcript writ
 - **WHEN** a call's first lines give partial usage and no stop reason, and its last line gives its stop reason and its final usage
 - **THEN** its entry records the final usage
 
-#### Scenario: Lines of one call that disagree are refused
+#### Scenario: A call whose lines disagree is refused
 
 - **WHEN** two transcript lines of one model call both give a stop reason, and give different usage
 - **THEN** no entry is recorded for that call, and the ledger counts one refused call
@@ -149,17 +149,17 @@ The capture step SHALL record only the calls whose transcript line gives a worki
 
 #### Scenario: Calls made from outside this repository are not recorded
 
-- **WHEN** a session made calls while its working directory was in another repository, or in a folder that contains this one
+- **WHEN** a session made calls while Claude's current directory was in another repository, or in a folder that contains this one
 - **THEN** none of those calls is recorded in this one
 
 #### Scenario: A repository nested inside this one is not this one
 
-- **WHEN** a session made calls while its working directory was in a separate git repository inside this repository's folder
+- **WHEN** a session made calls while Claude's current directory was in a separate git repository inside this repository's folder
 - **THEN** none of those calls is recorded in this one
 
 #### Scenario: A worktree of this repository is this repository
 
-- **WHEN** a session made calls while its working directory was in a worktree of this repository, whether inside the repository's own folder, as Claude Code's worktrees are, or outside it, and no ledger file that the step wrote was in a stash
+- **WHEN** a session made calls while Claude's current directory was in a worktree of this repository, whether inside the repository's own folder, as Claude Code's worktrees are, or outside it, and no ledger file that the step wrote was in a stash
 - **THEN** those calls are recorded, and only a commit made in that worktree carries them
 
 #### Scenario: A call whose line gives no working directory is not recorded
@@ -178,7 +178,7 @@ This repository SHALL be the one that holds the project directory that Claude Co
 
 ### Requirement: Counts are whole numbers
 
-Every token count and request count SHALL be a whole number from zero up to a ceiling that the ledger format documents. A value that is text, a fraction, negative, not a number, infinite, `true` or `false`, or above the ceiling SHALL be refused: the call is left out, and the ledger counts it as refused, once, with nothing else about it.
+Every token count and request count SHALL be a whole number from zero up to a ceiling that the ledger format documents. A value that is text, a fraction, negative, not a number, infinite, `true` or `false`, or above the ceiling SHALL be refused: no entry is recorded for the call, and the ledger counts it as refused, once, with nothing else about it.
 
 #### Scenario: A count that is not a whole number is refused
 
@@ -188,7 +188,7 @@ Every token count and request count SHALL be a whole number from zero up to a ce
 #### Scenario: A negative count is refused
 
 - **WHEN** a call's input tokens are negative
-- **THEN** no entry is recorded for that call
+- **THEN** no entry is recorded for that call, and the ledger counts one refused call
 
 #### Scenario: A count at the ceiling is recorded
 
@@ -226,7 +226,7 @@ Capture SHALL run when Claude finishes responding, when a subagent finishes, whe
 
 ### Requirement: A call goes only to a commit in its worktree, on the branch it was recorded on
 
-A call SHALL go only into a ledger file staged in the worktree that git itself finds from its line's working directory, which for a directory in a worktree inside the repository's folder is that worktree and not the main checkout around it, for a commit on the branch that was checked out there when the call was recorded.
+A call SHALL go only into a ledger file staged in the worktree that git itself finds from its line's working directory, which for a directory in a worktree inside the repository's folder is that worktree and not the main worktree around it, for a commit on the branch that was checked out there when the call was recorded.
 
 #### Scenario: Calls go to the worktree and branch they were recorded on
 
@@ -247,14 +247,14 @@ Calls recorded while no branch was checked out SHALL go only to a commit made wh
 - **WHEN** calls were recorded while no branch was checked out, and the agent then checks out a branch and commits
 - **THEN** that commit carries none of those calls
 
-### Requirement: Capture keeps what it records inside the common git directory
+### Requirement: Capture keeps what it records inside the git common directory
 
-Apart from staging a ledger file, taking it back and putting it back, as the requirements from "A ledger file is staged only for a commit whose branch and contents the step can tell" to "A put-back is tried once, and in no other case" say, the step SHALL keep what it records inside the repository's common git directory, and SHALL NOT change the working tree or the index.
+Apart from staging a ledger file, taking it back and putting it back, as the requirements from "A ledger file is staged only for a commit whose branch and contents the step can tell" to "A put-back is tried once, and in no other case" say, the step SHALL keep what it records inside the repository's git common directory, and SHALL NOT change the working tree or the index.
 
 #### Scenario: A turn's end leaves the working tree alone
 
 - **WHEN** capture runs at the end of a turn in which the agent did not commit, and no ledger file is due to be taken back or put back
-- **THEN** the working tree and the index are unchanged, so switching branches or rebasing is not blocked
+- **THEN** the working tree and the index are unchanged, so a change of branch or a rebase is not blocked
 
 ### Requirement: A ledger file is staged only for a commit whose branch and contents the step can tell
 
@@ -436,8 +436,8 @@ The step SHALL find the worktree where the commit runs from the current director
 
 #### Scenario: A commit stages in the worktree where it runs
 
-- **WHEN** calls were recorded in one of the repository's worktrees, with the branch now checked out there, and the agent commits there, while the hook runs in the repository's main folder, or after a `cd` to that worktree's path, or with a `-C` before `commit` that names it, written out in the same command
-- **THEN** the ledger file is staged in that worktree, holding those calls, and the main folder's index is unchanged
+- **WHEN** calls were recorded in one of the repository's worktrees, with the branch now checked out there, and the agent commits there, while the hook runs in the repository's main worktree, or after a `cd` to that worktree's path, or with a `-C` before `commit` that names it, written out in the same command
+- **THEN** the ledger file is staged in that worktree, holding those calls, and the main worktree's index is unchanged
 
 ### Requirement: A ledger file is added despite ignore rules and sparse checkouts, unless git refuses it
 
@@ -462,12 +462,12 @@ The step SHALL add the file even when the repository's ignore rules match it, or
 
 A run that comes again before the same command, as when a call that another hook deferred is resumed, SHALL stage nothing new while the file it staged for that command is still staged and the branch that it was staged for is still checked out there, and when that branch is no longer checked out there, SHALL first take that file back, as the requirements from "A ledger file that no commit takes is taken back" to "A put-back is tried once, and in no other case" say.
 
-#### Scenario: A command's repeated run stages its calls once
+#### Scenario: A run that comes again before a command stages that command's calls once
 
 - **WHEN** the run before a `git commit` fires a second time for the same call, as when a call that another hook deferred is resumed, with the same branch checked out, and no commit has taken the file staged the first time
 - **THEN** that commit carries one ledger file of those calls: the one staged the first time if it is still staged, or else a new one
 
-#### Scenario: A command's repeated run after a change of branch takes its file back
+#### Scenario: A run that comes again before a command after a change of branch takes that command's file back
 
 - **WHEN** the run before a `git commit` fires a second time for the same call, as when a call that another hook deferred is resumed, after the person checked out another branch while the file staged the first time was still staged, no commit has taken that file since, and no other git command holds the index
 - **THEN** that run takes the file back before the commit runs, and the commit carries none of the calls recorded on the first branch
@@ -481,11 +481,11 @@ A commit holds a ledger file in a worktree when the commit checked out there hol
 - **WHEN** the step has staged a ledger file for a `git commit` that then fails, no commit has taken the file, and no other git command holds the index when the run after that command runs
 - **THEN** after that run, the ledger file is neither staged nor in the working tree, and the agent's next commit on that branch in the worktree where the file was staged carries its calls
 
-### Requirement: A ledger file whose command is refused, blocked, cancelled or interrupted is taken back by a later run
+### Requirement: A ledger file whose command is refused at a permission prompt or by a permission rule, blocked, cancelled or interrupted is taken back by a later run
 
-A command that gets no run after it (see "A ledger file that no commit takes is taken back"), because it was refused, blocked by another hook, cancelled or interrupted, SHALL have its file taken back the same way by any later run of the step in the repository, in that session or another, that finds the command over: by its result in a transcript, by a later call of the agent that ran it, by that agent having stopped, or by its session having ended.
+A command that gets no run after it (see "A ledger file that no commit takes is taken back"), because it was refused at a permission prompt or by a permission rule, blocked by another hook, cancelled or interrupted, SHALL have its file taken back the same way by any later run of the step in the repository, in that session or another, that finds the command over: by its result in a transcript, by a later call of the agent that ran it, by that agent having stopped, or by its session having ended.
 
-#### Scenario: A refused commit leaves nothing staged
+#### Scenario: A commit refused at a permission prompt or by a permission rule leaves nothing staged
 
 - **WHEN** the step has staged a ledger file for a `git commit` that is then refused at a permission prompt or by a permission rule, blocked by another hook, or cancelled, the transcript then holds that command's result, no commit has taken the file, and no other git command holds the index at the step's next run
 - **THEN** after that run, the ledger file is neither staged nor in the working tree, and a later commit on that branch in the worktree where the file was staged carries its calls
@@ -516,7 +516,7 @@ Once a run finds a commit holding a ledger file that the step staged, the step S
 
 #### Scenario: A fresh clone stages a removed ledger file's calls again
 
-- **WHEN** a run of the step has found a commit holding a ledger file that the step staged, whose calls were made with the repository root as their working directory, the person then removes that file with `git rm`, commits and pushes, and the session is then resumed in a fresh clone of that branch, at the same path, with no change of branch there before the agent's next commit
+- **WHEN** a run of the step has found a commit holding a ledger file that the step staged, whose calls' lines give the repository root as their working directory, the person then removes that file with `git rm`, commits and pushes, and the session is then resumed in a fresh clone of that branch, at the same path, with no change of branch there before the agent's next commit
 - **THEN** the agent's next commit there carries the calls that the removed file held
 
 ### Requirement: Only a ledger file that no run has found in a commit is taken back
@@ -531,7 +531,7 @@ A take-back SHALL NOT remove a file from a worktree where a commit holds it (see
 #### Scenario: A ledger file that a removal leaves is left to git
 
 - **WHEN** the agent's commit took a ledger file that the step staged, that commit has a parent, a run of the step has found that commit checked out, and then, with that commit still checked out and that file in the working tree, the agent runs `git reset HEAD~1` or `git reset -N HEAD~1` alone, or the person removes that file from the index with `git rm --cached` and commits, and the step's next run comes before any other git command
-- **THEN** after that run, the working tree still holds that file, the index still has no entry for it, or only the intent-to-add entry that `git reset -N` leaves, and no ledger file that the step stages later in that clone holds its calls
+- **THEN** after that run, the working tree still holds that file, the index still has no entry for it, or only the intent-to-add index entry that `git reset -N` leaves, and no ledger file that the step stages later in that clone holds its calls
 
 #### Scenario: A squash with a plain reset keeps its ledger files
 
@@ -599,18 +599,18 @@ After a take-back of a ledger file from a worktree (see "Each take-back is noted
 - **WHEN** the step has taken a ledger file back and noted the commit it found checked out, and the first later run there finds another commit checked out, the index free, and that commit not holding the file
 - **THEN** that run puts nothing back, and after it the store holds no note for that file
 
-### Requirement: Runs at the same time keep every record whole
+### Requirement: Runs at the same time keep every note whole
 
-Two capture steps that run at the same time, such as a session's and a subagent's, or those of two worktrees of one repository, SHALL NOT split or interleave each other's records, and SHALL NOT both record the same call. The step SHALL write its store only by replacing it whole, under a lock that the operating system releases when the process that holds it ends, so that a run killed while it writes leaves the store whole and leaves no lock behind.
+Two runs of the capture step at the same time, such as the main agent's and a subagent's, or those of two worktrees of one repository, SHALL NOT split or interleave each other's notes, and SHALL NOT both record the same call. The step SHALL write its store only by replacing it whole, under a lock that the operating system releases when the process that holds it ends, so that a run killed while it writes leaves the store whole and leaves no lock behind.
 
 #### Scenario: Two runs at once
 
-- **WHEN** two capture steps run over the same transcripts at the same moment
-- **THEN** every record either kept is whole, and no call is recorded twice
+- **WHEN** two runs of the capture step go over the same transcripts at the same moment
+- **THEN** every note that either keeps is whole, and no call is recorded twice
 
-#### Scenario: Two worktrees share one record of a call
+#### Scenario: Two worktrees share one note of a call
 
-- **WHEN** a session in this repository's main folder and a subagent in one of its worktrees both read the subagent's transcript
+- **WHEN** the main agent in this repository's main worktree and a subagent in one of its worktrees both read the subagent's transcript
 - **THEN** each of its calls is recorded once
 
 #### Scenario: A run killed while it writes leaves its store whole
@@ -656,7 +656,7 @@ The capture step SHALL read both switches (see "Capture runs only where the tool
 
 ### Requirement: Capture never breaks or steers the session
 
-A failure inside the capture step SHALL NOT stop or fail the agent's session, and on failure the step SHALL leave the ledger and its own records as they were. The registered command SHALL exit with success even when its script cannot be read or started, in each shell that Claude Code runs a hook's command in: `sh`, Git Bash on Windows, and PowerShell on Windows without Git Bash. The step SHALL print nothing on standard output and SHALL let no git command that it runs print there.
+A failure inside the capture step SHALL NOT stop or fail the agent's session, and on failure the step SHALL leave the ledger and its store as they were. The registered command SHALL exit with success even when its script cannot be read or started, in each shell that Claude Code runs a hook's command in: `sh`, Git Bash on Windows, and PowerShell on Windows without Git Bash. The step SHALL print nothing on standard output and SHALL let no git command that it runs print there.
 
 #### Scenario: An unreadable transcript is skipped
 

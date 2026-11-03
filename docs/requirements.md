@@ -1,6 +1,6 @@
 # Requirements
 
-Every requirement the tool must meet, in one list. The specs under `openspec/` hold each requirement's full text and the scenarios that test it; this register is their index, so that what the product must do can be read in one place. `tests/test_documentation.py` checks that the register and the specs hold the same requirements, each once.
+Every requirement the tool must meet, in one list. The specs under `openspec/` hold each requirement's full text and the scenarios that test it; this register is their index, so that what the tool must do can be read in one place. `tests/test_documentation.py` checks that the register and the specs hold the same requirements, each once.
 
 Each requirement has one kind:
 
@@ -22,7 +22,7 @@ The capability names the spec that holds the requirement. Each capability is one
 | R8 | behavioural | `usage-capture` | A ledger file is staged only for a commit whose branch and contents the step can tell |
 | R9 | behavioural | `usage-capture` | A ledger file that no commit takes is taken back |
 | R10 | behavioural | `ledger` | A ledger file is written once |
-| R11 | behavioural | `usage-capture` | Runs at the same time keep every record whole |
+| R11 | behavioural | `usage-capture` | Runs at the same time keep every note whole |
 | R12 | non-functional | `usage-capture` | The capture step is one self-contained file |
 | R13 | behavioural | `usage-capture` | Capture never breaks or steers the session |
 | R14 | functional | `pricing` | Prices are dated |
@@ -48,8 +48,8 @@ The capability names the spec that holds the requirement. Each capability is one
 | R34 | non-functional | `project-standards` | Every pinned action is a commit its repository tagged |
 | R35 | behavioural | `report-comment` | Each ledger line is held to the ledger format |
 | R36 | behavioural | `switch-and-opt-in` | Capture reads the configuration file only as a regular file within its bound |
-| R37 | behavioural | `switch-and-opt-in` | The person's setting is read only from their global configuration files |
-| R38 | behavioural | `switch-and-opt-in` | The setting is read by git's rules |
+| R37 | behavioural | `switch-and-opt-in` | The person's opt-in is read only from their global configuration files |
+| R38 | behavioural | `switch-and-opt-in` | The person's opt-in is read by git's rules |
 | R39 | behavioural | `switch-and-opt-in` | A repository's own git configuration can turn capture off |
 | R40 | behavioural | `switch-and-opt-in` | Consent holds for each recorded call |
 | R41 | functional | `usage-capture` | A call is identified by its message id and read from its lines that give a stop reason |
@@ -58,7 +58,7 @@ The capability names the spec that holds the requirement. Each capability is one
 | R44 | functional | `usage-capture` | Capture reads only lines that end in a line break, and no one line holds it back |
 | R45 | functional | `usage-capture` | Capture reads the branch's ledger files only from git |
 | R46 | functional | `usage-capture` | Calls recorded with no branch checked out go only to a commit made the same way |
-| R47 | functional | `usage-capture` | Capture keeps what it records inside the common git directory |
+| R47 | functional | `usage-capture` | Capture keeps what it records inside the git common directory |
 | R48 | behavioural | `usage-capture` | A substitution counts as a command before the commit |
 | R49 | behavioural | `usage-capture` | A ledger file is staged in the worktree where its commit runs |
 | R50 | behavioural | `usage-capture` | A ledger file is added despite ignore rules and sparse checkouts, unless git refuses it |
@@ -76,8 +76,8 @@ The capability names the spec that holds the requirement. Each capability is one
 | R62 | functional | `ci-minutes` | Every job attempt of the pull request's own runs is counted |
 | R63 | functional | `ci-minutes` | Minutes on a runner the price table does not list are counted, not priced |
 | R64 | functional | `ci-minutes` | A CI cost missing any run or job is marked incomplete |
-| R65 | functional | `report-comment` | A hook that does not come from the report's commit is named, not quoted |
-| R66 | behavioural | `report-comment` | A ledger change larger than the size bound is refused |
+| R65 | functional | `report-comment` | A hook file that does not come from the report's commit is named, not quoted |
+| R66 | behavioural | `report-comment` | A pull request's ledger files larger in total than the size bound are refused |
 | R67 | behavioural | `report-comment` | Ledger files that the default branch already holds are read by capture's rules |
 | R68 | non-functional | `report-comment` | The report runs only for the push that a merge makes to the default branch |
 | R69 | non-functional | `report-comment` | A push gets a comment only when all its commits belong to one pull request |
@@ -98,13 +98,13 @@ The capability names the spec that holds the requirement. Each capability is one
 | R84 | behavioural | `usage-capture` | A commit with nothing to commit and no git add, rm or mv before it takes no ledger file |
 | R85 | behavioural | `usage-capture` | No ledger file is staged after a removal or move that may reach the ledger folder |
 | R86 | behavioural | `usage-capture` | No ledger file is staged where the ledger path has a filter or a working-tree encoding |
-| R87 | behavioural | `usage-capture` | A ledger file whose command is refused, blocked, cancelled or interrupted is taken back by a later run |
+| R87 | behavioural | `usage-capture` | A ledger file whose command is refused at a permission prompt or by a permission rule, blocked, cancelled or interrupted is taken back by a later run |
 | R88 | behavioural | `usage-capture` | The registered command runs the hook file only when its checksum matches |
 | R89 | behavioural | `usage-capture` | The capture step writes only its own words and numbers to standard error |
 | R90 | behavioural | `usage-capture` | The capture step finishes within a time budget |
 | R91 | functional | `switch-and-opt-in` | Capture reads the configuration in the working tree |
 | R92 | functional | `switch-and-opt-in` | A missing or unreadable configuration file neither turns the tool on nor stops the report |
-| R93 | functional | `switch-and-opt-in` | A change to the configuration, the hook or a workflow is flagged |
+| R93 | functional | `switch-and-opt-in` | A change to the configuration, the hook file or a workflow is flagged |
 | R94 | functional | `report-comment` | The comment says what its figure is and where it comes from |
 | R95 | functional | `report-comment` | The comment counts refused calls and calls that may leave the token cost low |
 | R96 | functional | `report-comment` | A report run again updates only its own comment |

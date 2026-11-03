@@ -1,6 +1,6 @@
 ## Purpose
 
-Hold the whole product to the standards that make it safe to adopt: documentation that names everything it does and says how each feature is validated, connections only where that documentation says, rated threats, pull request text without private references, action pins that their repositories tagged, a record of each decision, kept so that each can be reversed on its own, the assumptions that the design rests on, a glossary of the words its documents use, and a golden set of figures that every version reproduces.
+Hold the whole tool to the standards that make it safe to adopt: documentation that names everything it does and says how each feature is validated, connections only where that documentation says, rated threats, pull request text without private references, action pins that their repositories tagged, a record of each decision, kept so that each can be reversed on its own, the assumptions that the design rests on, a glossary of the words its documents use, and a golden set of figures that every version reproduces.
 
 ## ADDED Requirements
 
@@ -397,7 +397,7 @@ The assumptions SHALL be listed by the highest impact among the threats that res
 
 ### Requirement: The specs and pages use the glossary's words
 
-The repository SHALL keep a glossary that gives each term's meaning and the words to avoid for it. Tests SHALL fail when a tracked Markdown file uses a word to avoid outside code, and name the file, the line and the term to use. They SHALL NOT read the decision records, archived changes, released changelog entries, vendored or generated files, or titles that an accepted record quotes, which keep the words they were written with, and SHALL fail when such a title leaves the specs.
+The repository SHALL keep a glossary of each term's meaning and its words to avoid. Tests SHALL fail when a tracked Markdown file uses a word to avoid outside code, naming the file, the line and the term to use, and when they cannot read such a file whole, naming it. They SHALL NOT read decision records, archived changes, released changelog entries, vendored or generated files, or titles that an accepted record quotes, which keep their words, and SHALL fail when such a title leaves the specs.
 
 #### Scenario: An avoided word fails CI
 
@@ -419,6 +419,16 @@ The repository SHALL keep a glossary that gives each term's meaning and the word
 - **WHEN** a requirement's or a scenario's title that an accepted record quotes is changed or removed in the specs
 - **THEN** a test fails and names the record and the title
 
+#### Scenario: A title that only a new record quotes is read
+
+- **WHEN** a pull request adds a record whose status says accepted and that quotes a title holding a word to avoid
+- **THEN** a test fails and names the file, the line and the term to use, since only the records that the default branch holds keep the titles that they quote
+
+#### Scenario: A page that the test cannot read whole fails CI
+
+- **WHEN** a tracked Markdown file that the test reads is a symbolic link, is not UTF-8, opens a fenced code block that never closes, or holds a line that GitHub reads in a fence or after it depending on whether a list item holds that fence
+- **THEN** a test fails and names the file
+
 #### Scenario: A wording check that reads nothing fails CI
 
 - **WHEN** the glossary gives no word to avoid, or the test finds no file to read
@@ -426,16 +436,16 @@ The repository SHALL keep a glossary that gives each term's meaning and the word
 
 ### Requirement: Each term is defined once
 
-Tests SHALL fail when a glossary entry gives no meaning, when two entries give the same term or the same word to avoid, and when a word that the glossary says to avoid is found in one of its terms.
+Tests SHALL fail when a glossary row gives no meaning, when two rows give the same term or the same word to avoid, and when a word that the glossary says to avoid is found in one of its terms or is the plural of one.
 
-#### Scenario: An entry without a meaning fails CI
+#### Scenario: A glossary row without a meaning fails CI
 
-- **WHEN** a glossary entry gives a term and no meaning
+- **WHEN** a glossary row gives a term and no meaning
 - **THEN** a test fails and names the term
 
 #### Scenario: A term defined twice fails CI
 
-- **WHEN** two glossary entries give the same term or the same word to avoid, or a word to avoid is found in a term
+- **WHEN** two glossary rows give the same term or the same word to avoid, or a word to avoid is found in a term or is a term's plural
 - **THEN** a test fails and names the word
 
 ### Requirement: Every version reproduces the golden set
@@ -464,7 +474,7 @@ The repository SHALL hold a golden set of synthetic sessions, each with the pull
 
 #### Scenario: The golden set leaves the clone that runs it alone
 
-- **WHEN** the golden tests run from inside a clone of this repository whose tool is on, with the person running them opted in and a session's calls waiting in its store
+- **WHEN** the golden tests run from inside a clone of this repository whose tool is on, with the person running them opted in and a Claude Code session's calls waiting in its store
 - **THEN** that clone's store, the entries of its index and its working tree are as they were before
 
 #### Scenario: A version that does not reproduce the golden set is not released
@@ -474,7 +484,7 @@ The repository SHALL hold a golden set of synthetic sessions, each with the pull
 
 ### Requirement: A golden figure changes only with the spec that gives it
 
-A pull request that changes an entry, a figure or a working that the golden set at its base holds SHALL either change a spec or change nothing outside the golden set, and when the latest release's tag holds that session, SHALL name the session in the changelog's unreleased entry. Tests SHALL fail otherwise.
+A pull request that changes an entry, a figure or a working that the golden set at its base holds SHALL either change a spec or change nothing outside the golden set, and when the latest release's tag holds that session, SHALL name the session in the changelog's unreleased section. Tests SHALL fail otherwise.
 
 #### Scenario: A golden session changed beside other files without its spec fails CI
 
@@ -488,7 +498,7 @@ A pull request that changes an entry, a figure or a working that the golden set 
 
 #### Scenario: A released golden figure changed without a changelog line fails CI
 
-- **WHEN** a pull request changes or removes an entry or a figure of a golden session that the latest release's tag holds, and the changelog's unreleased entry does not name the session
+- **WHEN** a pull request changes or removes an entry or a figure of a golden session that the latest release's tag holds, and the changelog's unreleased section does not name the session
 - **THEN** a test fails and names the session
 
 ### Requirement: Each ledger format that a release wrote keeps its golden figures

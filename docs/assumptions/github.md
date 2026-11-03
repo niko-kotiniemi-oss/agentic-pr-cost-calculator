@@ -60,7 +60,7 @@ The assumptions about GitHub: this repository's settings there, and its workflow
 ## A9. GitHub shows text as the checks expect, and text posted on GitHub is public at once.
 
 - **Rests on it:** R21, R33, R97, R98, R128, R134, T26, T52, T61, T65, T73, T79, T81, DR-044, DR-108, DR-114, DR-115, DR-152
-- **If it is wrong:** Text shown as code could still render as a link, an image or a mention, and a log line could be read as a workflow command (T26, T52). A record could read one way to a reviewer and another way to an agent, or be collapsed and merged unread (T73, T79, T81), and a bug report opened without the form would never meet its privacy checkbox (T61, T65).
+- **If it is wrong:** Text shown as code could still render as a link, an image or a mention, and a log line could be read as a workflow command (T26, T52). A decision record could read one way to a reviewer and another way to an agent, or be collapsed and merged unread (T73, T79, T81), and a bug report opened without the form would never meet its privacy checkbox (T61, T65).
 - **Fact:** GitHub shows text inside inline code in a comment or a job summary as code, never as a link, an image or a mention.
   - **Relied on:** R21, T26, T52, DR-044
   - **Checked:** not yet: none will, since no test may reach GitHub
@@ -245,7 +245,7 @@ The assumptions about GitHub: this repository's settings there, and its workflow
 ## A50. GitHub's runs and jobs API gives complete, timed listings, within known limits.
 
 - **Rests on it:** R18, R21, R24, R62, R63, R64, R70, R94, R120, R121, T22, T27, T51, DR-015, DR-017, DR-019, DR-020, DR-038, DR-039, DR-044, DR-063, DR-110
-- **If it is wrong:** Re-run attempts, unfinished jobs or listings cut short without a sign would make the CI cost too low, or price it as if whole, while the comment shows it as complete (T22, T51). The call budget would be set against the wrong limits (T51), and once runs expire, a report's CI figures could not be recomputed (T27).
+- **If it is wrong:** Job attempts after the first, unfinished jobs or listings cut short without a sign would make the CI cost too low, or price it as if whole, while the comment shows it as complete (T22, T51). The call budget would be set against the wrong limits (T51), and once runs expire, a report's CI figures could not be recomputed (T27).
 - **Fact:** GitHub lists a repository's runs per commit, or filtered by event and by creation time, and each run names the event and branch that started it, so runs that a push to the default branch started can be told apart.
   - **Relied on:** R62, R120, R121, T22, T51, DR-019, DR-039, DR-110
   - **Checked:** not yet: `add-pr-cost-calculator` task 7.1 meets it once, at this change's own merge

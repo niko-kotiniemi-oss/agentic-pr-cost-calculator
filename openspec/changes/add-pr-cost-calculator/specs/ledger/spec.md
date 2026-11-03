@@ -41,7 +41,7 @@ A call's model name and each of its price attribute values (see "Usage is record
 
 ### Requirement: A ledger file is written once
 
-Each ledger file SHALL be a new regular file with a random name, in the ledger folder for the UTC month in which it is written, and SHALL never be changed after it is written: a file that no commit took is removed whole, never edited. The capture step SHALL refuse to write when any folder on the ledger file's path below the repository root is a symbolic link, or when a file of that name already exists.
+Each ledger file SHALL be a new regular file with a random name, in the ledger folder's subfolder for the UTC month in which it is written, and SHALL never be changed after it is written: a file that no commit took is removed whole, never edited. The capture step SHALL refuse to write when any folder on the ledger file's path below the repository root is a symbolic link, or when a file of that name already exists.
 
 #### Scenario: A new file for every commit
 
@@ -73,7 +73,7 @@ The capture step SHALL note a ledger file in its store before it writes it, so t
 
 ### Requirement: The ledger is the record
 
-The pull request's usage ledger SHALL remain on the default branch after merge, as its record, and the report SHALL write nothing to the repository.
+The pull request's ledger SHALL remain on the default branch after merge, as its record, and the report SHALL write nothing to the repository.
 
 #### Scenario: The ledger stays after merge
 

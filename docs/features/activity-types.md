@@ -22,7 +22,7 @@ The label comes from the first tool the call used:
 | A tool the classification does not know | other |
 | No tool at all | conversation |
 
-The tool's name is read only to choose the label. It is never recorded, because an MCP server's name can name a private service.
+The name of the call's first tool is read only to choose the label. It is never recorded, because an MCP server's name can name a private service.
 
 ## Not covered
 

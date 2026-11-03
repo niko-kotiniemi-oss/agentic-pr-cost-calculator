@@ -1,12 +1,12 @@
 ---
 name: Feature request
-about: Something the calculator should do that it does not
+about: Something the tool should do that it does not
 labels: enhancement
 ---
 
 ## What you want to do
 
-## Why the calculator should do it
+## Why the tool should do it
 
 ## What would show it works
 
