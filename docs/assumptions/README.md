@@ -74,7 +74,7 @@ The list puts first the assumptions behind the threats of highest impact, then, 
 - **A53.** Files, locks and random names behave alike on every system where a repository's git common directory lives. Impact 2, risk 4. Page: [Python, the development tools and prices](python-tools-and-prices.md).
 - **A55.** Anthropic prices each token type at its own rate for each model. Impact 2, risk 4. Page: [Python, the development tools and prices](python-tools-and-prices.md).
 - **A56.** Only the facts that the ledger records set a call's price, and prices change rarely and from a given day. Impact 2, risk 4. Page: [Python, the development tools and prices](python-tools-and-prices.md).
-- **A58.** Someone reads the report comments and keeps the prices current. Impact 2, risk 4. Page: [Adopters and people](adopters-and-people.md).
+- **A58.** Someone reads the report comments and job summaries, and keeps the prices current. Impact 2, risk 4. Page: [Adopters and people](adopters-and-people.md).
 - **A64.** GitHub bills job minutes from job times. Impact 2, risk 4. Page: [GitHub](github.md).
 - **A59.** The development tools support Python 3.11, and report code that needs a newer Python. Impact 2, risk 2. Page: [Python, the development tools and prices](python-tools-and-prices.md).
 - **A60.** Adopters' machines and runners meet the floors, and their policies allow the workflow. Impact 2, risk 2. Page: [Adopters and people](adopters-and-people.md).

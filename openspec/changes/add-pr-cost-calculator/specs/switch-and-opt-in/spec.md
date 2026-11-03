@@ -382,12 +382,12 @@ Whatever the switches (see "Capture runs only where the tool is on and the perso
 
 ### Requirement: One file turns the tool on or off, and a pull request cannot turn off its own report
 
-A repository SHALL turn the tool on by adding its configuration file with the tool enabled, and off by removing the file or disabling the tool in it. The report SHALL read the configuration from the default branch as it was before the merge and as it is after, only as a blob at each of those two commits and within the size bound that the configuration's format documents, and SHALL run when either turns the tool on.
+A repository SHALL turn the tool on by adding a valid configuration file that enables the tool, and off by removing the file or disabling the tool in it. The report SHALL read the configuration from the default branch as it was before the merge and as it is after, only as a blob at each of those two commits and within the size bound that the configuration's format documents, and SHALL run when either turns the tool on.
 
 #### Scenario: Disabled means silent
 
 - **WHEN** a pull request merges, and the configuration disables the tool both before and after the merge
-- **THEN** no comment is posted
+- **THEN** no comment is posted, and the job summary says that the configuration file after the merge disables the tool
 
 #### Scenario: A pull request cannot turn off its own report
 
@@ -396,7 +396,7 @@ A repository SHALL turn the tool on by adding its configuration file with the to
 
 #### Scenario: The pull request that turns the tool on gets its report
 
-- **WHEN** the pull request that adds the configuration file, with the tool enabled, merges
+- **WHEN** the pull request that adds a valid configuration file that enables the tool merges
 - **THEN** its report comment is posted
 
 ### Requirement: Capture reads the configuration in the working tree
@@ -429,7 +429,7 @@ A configuration file SHALL count as not valid (see "A missing or unreadable conf
 #### Scenario: A key that the tool does not know turns the report off after the pull request that adds it
 
 - **WHEN** the configuration turns the tool on, a pull request that adds to it a key that its format does not document merges, and then another pull request, which leaves the configuration file as it is, merges
-- **THEN** the first pull request's report comment is posted and says that it changed the tool's configuration, and the second pull request gets no comment
+- **THEN** the first pull request's report comment is posted and says that it changed the tool's configuration, and the second pull request gets no comment, while the job summary of its merge says that the configuration file after the merge cannot be read as a valid configuration
 
 #### Scenario: A configuration file that gives a key twice is not valid
 
@@ -444,6 +444,16 @@ When the configuration before the merge turns the tool on and the configuration 
 
 - **WHEN** the configuration turns the tool on before the merge, and a pull request that adds to it a key that its format does not document merges
 - **THEN** its comment says that the configuration file after the merge cannot be read as a valid configuration, so that the tool is off after it
+
+#### Scenario: A pull request that removes the configuration file is told that it is missing
+
+- **WHEN** the configuration turns the tool on before the merge, and a pull request that removes the configuration file merges
+- **THEN** its comment says that the configuration file is missing after the merge, so that the tool is off after it
+
+#### Scenario: A pull request that disables the tool is told so
+
+- **WHEN** the configuration turns the tool on before the merge, and a pull request that sets `enabled` to false merges
+- **THEN** its comment says that the configuration file after the merge disables the tool, so that the tool is off after it
 
 #### Scenario: A merge with the tool off at both commits says why in its job summary
 

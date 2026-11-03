@@ -268,12 +268,15 @@ The assumptions about the teams that adopt the tool, the people who opt in, and 
   - **Relied on:** R52, R113, T8, DR-055, DR-184
   - **Checked:** not yet: none will, since no test may reach what adopters and people do
 
-## A58. Someone reads the report comments and keeps the prices current.
+## A58. Someone reads the report comments and job summaries, and keeps the prices current.
 
 - **Rests on it:** R14, R16, R17, R93, R172, T21, T30, T49, T60, T123, DR-020, DR-051, DR-065, DR-124, DR-156, DR-186, DR-191
-- **If it is wrong:** A changed switch, hook file or workflow, or a tool that a merge leaves off, would go unnoticed after the merge (T21, T49, T60, T123), and a wrong or missing price row would leave the figure low or stale for as long as the table lags (T30).
+- **If it is wrong:** A changed switch, hook file or workflow, or a tool that a merge leaves off, would go unnoticed after the merge, and so would the reason that a merge with the tool off at both commits gets no comment (T21, T49, T60, T123), and a wrong or missing price row would leave the figure low or stale for as long as the table lags (T30).
 - **Fact:** Someone reads the report's comment on each merged pull request and acts on its flags, such as a changed switch, hook file or workflow, and on its word that a merge leaves the tool off.
   - **Relied on:** R93, R172, T21, T49, T60, T123, DR-051, DR-065, DR-186, DR-191
+  - **Checked:** not yet: none will, since no test may reach what adopters and people do
+- **Fact:** Someone who expects a report comment on a merged pull request and finds none opens the run's job summary, which says why.
+  - **Relied on:** R172, T21, T49, T123, DR-191
   - **Checked:** not yet: none will, since no test may reach what adopters and people do
 - **Fact:** Each price row is right when it merges: whoever adds it copies the price from its source page, and the review of its diff catches a mistake.
   - **Relied on:** R14, R16, T30, DR-020
