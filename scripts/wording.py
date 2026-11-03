@@ -19,6 +19,7 @@ from collections.abc import Iterable
 from dataclasses import dataclass
 from itertools import pairwise
 from pathlib import Path
+from typing import NamedTuple
 
 GLOSSARY = "docs/glossary.md"
 DEFAULT_BRANCH = "refs/remotes/origin/main"
@@ -336,32 +337,83 @@ def width(text: str) -> int:
     return len(text[: len(text) - len(text.lstrip(" \t"))].expandtabs(4))
 
 
+class Fence(NamedTuple):
+    """An open fence: its character, its length, its line, the column where it starts, and
+    whether a list item's marker opens it on its line."""
+
+    char: str
+    length: int
+    line: int
+    column: int
+    marker: bool
+
+
+UNSURE = (
+    "GitHub reads this line in the fence that opens on line {} or after it, depending on"
+    " whether a list item holds that fence, so the test cannot tell whether it is code and"
+    " reads no further: indent the line as far as the fence, or close the fence before it"
+)
+
+
+def fence_line(fence: Fence, line: str) -> str:
+    """What a line that is not blank is to an open fence: "text", "close", "end" where it
+    ends the list item that holds the fence, or "unsure" where GitHub reads it one way in a
+    list item and another outside one. Where a list item's marker opens the fence, the
+    item's text starts where the fence does. Elsewhere an item whose text starts up to
+    three columns before the fence may hold it, or none may, and the test does not follow
+    the lists that would tell. A closing fence may be indented up to three columns past
+    the item's text, or past the margin outside a list."""
+    indent = width(line)
+    run = line.strip(" \t")
+    closing = set(run) == {fence.char} and len(run) >= fence.length
+    if fence.marker:
+        if indent < fence.column:
+            return "end"
+        return "close" if closing and indent <= fence.column + 3 else "text"
+    if fence.column < 2:
+        # A list item's text starts two columns in or more, so no item holds this fence.
+        return "close" if closing and indent <= 3 else "text"
+    if indent < fence.column:
+        return "unsure"
+    if closing and indent <= max(fence.column, 3):
+        return "close"
+    if closing and indent <= fence.column + 3:
+        return "unsure"
+    return "text"
+
+
 def prose(path: str, text: str) -> tuple[list[str], list[tuple[int, str]]]:
-    """A file's characters with each that is not prose left unread, and each fence that
-    never closes, by its line."""
+    """A file's characters with each that is not prose left unread, and where the reading
+    stopped short: a fence that never closes, or a line that the test cannot place, by its
+    line. A blank line is one of spaces and tabs alone."""
     chars = list(text)
-    # An open fence: its character, its length, its line, and the column where it starts.
-    fence: tuple[str, int, int, int] | None = None
+    fence: Fence | None = None
     released = False
     start = 0
     for number, line in enumerate(text.split("\n"), 1):
         end = start + len(line)
-        opened = OPEN_FENCE.match(line)
-        if fence is not None and line.strip() and width(line) < fence[3]:
-            # A line less indented than the fence ends the list item that would hold it, and
-            # the fence with it, so it is read as any other line.
-            fence = None
         if fence is not None:
-            hide(chars, start, end)
-            closing = line.strip()
-            if closing and set(closing) == {fence[0]} and len(closing) >= fence[1]:
-                fence = None
-        elif opened and not (opened[1][0] == "`" and "`" in opened[2]):
-            fence = (
+            kind = fence_line(fence, line) if line.strip(" \t") else "text"
+            if kind == "unsure":
+                hide(chars, start, len(text))
+                return chars, [(number, UNSURE.format(fence.line))]
+            if kind != "end":
+                hide(chars, start, end)
+                if kind == "close":
+                    fence = None
+                start = end + 1
+                continue
+            # The line ends the list item that holds the fence, and the fence with it, so
+            # it is read as any other line.
+            fence = None
+        opened = OPEN_FENCE.match(line)
+        if opened and not (opened[1][0] == "`" and "`" in opened[2]):
+            fence = Fence(
                 opened[1][0],
                 len(opened[1]),
                 number,
                 len(line[: opened.start(1)].expandtabs(4)),
+                bool(line[: opened.start(1)].strip(" \t")),
             )
             hide(chars, start, end)
         else:
@@ -376,7 +428,7 @@ def prose(path: str, text: str) -> tuple[list[str], list[tuple[int, str]]]:
         return chars, []
     return chars, [
         (
-            fence[2],
+            fence.line,
             "a fenced code block opens here and never closes, so the lines after it were not read",
         )
     ]
@@ -389,7 +441,7 @@ def line_starts(text: str) -> list[int]:
 
 def readable(path: str, text: str, kept: frozenset[str]) -> tuple[str, list[tuple[int, str]]]:
     """A file's text with each character that is not read replaced by NUL, its line breaks
-    kept, and each fence that never closes, by its line. In the glossary, its entries'
+    kept, and where the reading stopped short, by its line. In the glossary, its entries'
     words to avoid are not read, and in every file, nor are the titles kept."""
     chars, unclosed = prose(path, text)
     if path == GLOSSARY:
@@ -434,8 +486,8 @@ def found_words(text: str, entries: list[Entry]) -> list[tuple[int, int, str, st
 def word_problems(
     root: Path, entries: list[Entry], files: Iterable[str], kept: frozenset[str]
 ) -> list[str]:
-    """Each word to avoid in the prose of the files, with the term to use, and each fence
-    that never closes."""
+    """Each word to avoid in the prose of the files, with the term to use, and each file
+    that was not read whole."""
     found: list[tuple[str, int, int, str]] = []
     for path in files:
         named = path.encode("utf-8", "surrogateescape").decode("utf-8", "replace")

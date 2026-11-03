@@ -18,15 +18,19 @@ reader is timed on a long run of spaces after each shape that it reads.
 Prose is the text that a reader reads as words. Inline code and fenced code
 blocks give names, commands, paths and snippets as they must be typed, so a word
 inside them keeps its spelling (T90). A code span is read on its own line, so one
-that wraps onto the next line is read as prose. A fence may open after a list
-item's marker. It closes on a run of its own character as long as the one that
-opened it or longer and, where it opens indented or after a marker, at the first
-line that is not blank and is indented less than it, which ends the list item
-that holds it, so that line is read; outside a list, GitHub keeps such a line in
-the fence, so there the test reads more than GitHub shows as prose. A file that
-this test cannot read whole fails, named: a fence that never closes, which would
-leave the rest of its file unread; a symbolic link, which is not followed; and a
-file or a path that is not UTF-8.
+that wraps onto the next line is read as prose. A fence closes on a run of its own
+character as long as the one that opened it or longer, indented as GitHub allows.
+A fence may open after a list item's marker, and then also ends at the first line
+that is not blank and is indented less than it, which ends the item, so that line
+is read. A fence that opens on its own line, two columns in or more, may be held
+by a list item or not, and GitHub reads a line that is not blank and is indented
+less than the fence, or a closing fence indented more than three columns and more
+than the fence, but no more than three past it, one way in an item and another
+outside one. The test does not follow lists, so it fails on such a line and reads
+no further. A blank line is one of spaces and tabs alone. A file that this test
+cannot read whole fails, named: a fence that never closes, which would leave the
+rest of its file unread; a line that it cannot place, as above; a symbolic link,
+which is not followed; and a file or a path that is not UTF-8.
 
 Some files keep the words that they were written with and are not read: the
 records' folder, since an accepted record changes only to be closed (DR-121) and
@@ -385,19 +389,88 @@ def test_a_fence_that_opens_after_a_list_item_s_marker_is_code(tmp_path: Path) -
 @pytest.mark.parametrize(
     ("page", "line"),
     [
-        ("- ```\n  the calculator in code\nThe calculator after the item.\n", 3),
-        ("1. ```\n   the calculator in code\n  The calculator at two spaces.\n", 3),
-        ("- An item:\n\n  ```\n  the calculator in code\nThe calculator after it.\n", 5),
-        ("\t- ```\n\t  the calculator in code\n    The calculator at four spaces.\n", 3),
+        ("- ```\n  the calculator in code\nthe calculator after the item.\n", 3),
+        ("1. ```\n   the calculator in code\n  the calculator at two spaces.\n", 3),
+        ("-\t```\n\tthe calculator in code\n   the calculator at three spaces.\n", 3),
+        ("- ```\n  code\n\u00a0\n  the calculator after a no-break space.\n", 4),
     ],
-    ids=["after a marker", "after a number", "indented in an item", "after a tab"],
+    ids=["after a marker", "after a number", "after a tab", "after a no-break space"],
 )
 def test_a_fence_in_a_list_item_ends_where_a_line_less_indented_ends_the_item(
     tmp_path: Path, page: str, line: int
 ) -> None:
     assert problems_in(repository(tmp_path, {"docs/page.md": page})) == [
-        f'docs/page.md:{line}: "The calculator" is a word to avoid; use "the tool"'
+        f"docs/page.md:{line}: {CALCULATOR}"
     ]
+
+
+@pytest.mark.parametrize(
+    ("page", "line"),
+    [
+        (" ```\nx\n```\nthe calculator is prose\n```\ncode\n```\n", 4),
+        ("```\n    ```\nx\n```\nthe calculator\n```\ny\n```\n", 5),
+        ("```\n\u00a0```\nx\n```\nthe calculator\n```\ny\n```\n", 5),
+        ("  ```\n  the calculator in code\n   ```\nthe calculator after it.\n", 4),
+        ("10. Step:\n\n    ```\n    the calculator in code\n    ```\n\n    the calculator.\n", 7),
+        ("- ```\n      ```\n  x\n  ```\n  the calculator\n", 5),
+        ("- ```\n  code\n     ```\n  the calculator after it.\n", 4),
+        ("```\ncode\n   ```\nthe calculator after it.\n", 4),
+        ("  ```\n  code\n      ```\n  ```\nthe calculator after it.\n", 5),
+    ],
+    ids=[
+        "a line less indented than its fence",
+        "a run four spaces in",
+        "a run after a no-break space",
+        "closed three spaces in",
+        "closed at its column in an item",
+        "a run too deep in its item",
+        "closed three columns past its item's text",
+        "closed three spaces in from the margin",
+        "a run four columns past its fence",
+    ],
+)
+def test_a_fence_holds_each_line_up_to_the_one_that_github_closes_it_on(
+    tmp_path: Path, page: str, line: int
+) -> None:
+    assert problems_in(repository(tmp_path, {"docs/page.md": page})) == [
+        f"docs/page.md:{line}: {CALCULATOR}"
+    ]
+
+
+def unsure(line: int, fence: int) -> str:
+    return (
+        f"docs/page.md:{line}: GitHub reads this line in the fence that opens on line {fence}"
+        " or after it, depending on whether a list item holds that fence, so the test cannot"
+        " tell whether it is code and reads no further: indent the line as far as the fence,"
+        " or close the fence before it"
+    )
+
+
+@pytest.mark.parametrize(
+    ("page", "line", "fence"),
+    [
+        ("- An item:\n\n  ```\n  the calculator in code\nthe calculator after it.\n", 5, 3),
+        (
+            "- An item:\n\n    ```\n  x\n  ```\n  the calculator is prose\n  ```\n  code\n  ```\n",
+            4,
+            3,
+        ),
+        ("- An item:\n\n    ```\n    code\n  the calculator in code\n    ```\n", 5, 3),
+        ("- An item:\n\n    ```\n    code\n  ```\n  the calculator is prose.\n", 5, 3),
+        ("  ```\n  code\n     ```\nthe calculator in code\n", 3, 1),
+    ],
+    ids=[
+        "a line after the item",
+        "a line at the item's text, closed there",
+        "a line at the item's text, in the fence",
+        "a closing fence at the item's text",
+        "a closing fence five spaces in",
+    ],
+)
+def test_a_line_that_github_reads_by_a_list_item_fails(
+    tmp_path: Path, page: str, line: int, fence: int
+) -> None:
+    assert problems_in(repository(tmp_path, {"docs/page.md": page})) == [unsure(line, fence)]
 
 
 def test_a_fence_in_a_list_item_runs_on_over_a_blank_line_and_closes_on_its_fence(
