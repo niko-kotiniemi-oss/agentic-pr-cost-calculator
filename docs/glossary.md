@@ -22,7 +22,7 @@ Each concept that a rule tells apart from another has a term of its own, so that
 | price table | The tool's dated prices, `prices/models.json` and `prices/github-actions.json`, each price with its effective date and the page it came from, which the capture step ships a copy of. | |
 | store | Where the capture step keeps its notes between runs: one file for each user in the git common directory, outside the working tree, shared by every worktree, never committed and removed once it holds nothing, whose layout and protection the usage-capture feature page gives. | |
 | notes | What the capture step keeps in its store for no longer than the retention window, only what it needs to tell a call's worktree and branch, to record each call once and to take back a ledger file, as the usage-capture feature page lists it. | |
-| retention window | The 14 days for which the store keeps what capture needs, and within which a call's day must fall for a run to record it, as the usage-capture feature page sets out. | |
+| retention window | The 30 days for which the store keeps what capture needs, and within which a call's day must fall for a run to record it, as the usage-capture feature page sets out. | |
 
 ## Repositories, directories and branches
 
