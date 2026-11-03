@@ -202,6 +202,14 @@ def added(root: Path, files: dict[str, str | None]) -> Path:
     return root
 
 
+def committed(root: Path, files: dict[str, str | None]) -> Path:
+    """The repository with these files written and committed after the default branch, as
+    a pull request's branch commits them, so that HEAD has left the default branch."""
+    added(root, files)
+    git(root, "commit", "-q", "-m", "The pull request")
+    return root
+
+
 def test_the_passing_repository_has_no_problem(tmp_path: Path) -> None:
     root = repository(tmp_path)
     assert problems_in(root) == []
@@ -575,22 +583,53 @@ def test_a_kept_title_inside_a_longer_word_is_read(tmp_path: Path) -> None:
     ]
 
 
-def test_a_title_that_only_a_new_record_quotes_is_read(tmp_path: Path) -> None:
+def test_a_kept_title_under_emphasis_keeps_its_words(tmp_path: Path) -> None:
+    page = "It follows _The calculator says so_ and __The calculator says so__.\n"
+    assert problems_in(repository(tmp_path, {"docs/page.md": page})) == []
+
+
+COUNTS_SPEC = (
+    PASSING["openspec/changes/demo/specs/thing/spec.md"]
+    + "\n#### Scenario: The calculator counts\n\n- **WHEN** it counts\n- **THEN** it works\n"
+)
+COUNTS_RECORD = ACCEPTED_RECORD.replace(
+    "# DR-001: The calculator is built", "# DR-002: It counts"
+).replace("says so", "counts")
+COUNTS_READ = [
+    'openspec/changes/demo/specs/thing/spec.md:12: "The calculator" is a word to avoid;'
+    ' use "the tool"'
+]
+
+
+@pytest.mark.parametrize("commit", [False, True], ids=["staged", "committed on a branch"])
+def test_a_title_that_only_a_new_record_quotes_is_read(tmp_path: Path, commit: bool) -> None:
     root = repository(tmp_path)
-    spec = PASSING["openspec/changes/demo/specs/thing/spec.md"]
-    new = "#### Scenario: The calculator counts\n\n- **WHEN** it counts\n- **THEN** it works\n"
-    record = ACCEPTED_RECORD.replace("# DR-001: The calculator is built", "# DR-002: It counts")
-    added(
+    (committed if commit else added)(
         root,
         {
-            "openspec/changes/demo/specs/thing/spec.md": spec + "\n" + new,
-            "docs/decisions/DR-002-it-counts.md": record.replace("says so", "counts"),
+            "openspec/changes/demo/specs/thing/spec.md": COUNTS_SPEC,
+            "docs/decisions/DR-002-it-counts.md": COUNTS_RECORD,
         },
     )
-    assert problems_in(root) == [
-        'openspec/changes/demo/specs/thing/spec.md:12: "The calculator" is a word to avoid;'
-        ' use "the tool"'
-    ]
+    assert problems_in(root) == COUNTS_READ
+
+
+def test_a_record_that_the_default_branch_gains_after_head_left_it_keeps_no_title(
+    tmp_path: Path,
+) -> None:
+    root = repository(tmp_path)
+    git(root, "checkout", "-q", "-b", "later")
+    committed(
+        root,
+        {
+            "openspec/changes/demo/specs/thing/spec.md": COUNTS_SPEC,
+            "docs/decisions/DR-002-it-counts.md": COUNTS_RECORD,
+        },
+    )
+    git(root, "update-ref", DEFAULT_BRANCH, "HEAD")
+    git(root, "checkout", "-q", "-")
+    committed(root, {"openspec/changes/demo/specs/thing/spec.md": COUNTS_SPEC})
+    assert problems_in(root) == COUNTS_READ
 
 
 def test_a_check_that_cannot_find_the_default_branch_keeps_no_title(tmp_path: Path) -> None:
