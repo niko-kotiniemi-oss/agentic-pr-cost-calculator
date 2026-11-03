@@ -168,7 +168,7 @@ Once a run finds both switches on, the capture step SHALL ask git, in the sessio
 
 ### Requirement: Consent holds for each recorded call
 
-Consent, the two switches that "Capture runs only where the tool is on and the person has opted in" requires, SHALL hold for each call that the capture step records, not only for the run that records it. The step SHALL record a call only when it was made inside one of its session's intervals when both were on (see "An interval when both switches were on begins and ends at a run" and "A call is inside an interval only when the line it answers and its first line are").
+Consent, the two switches that "Capture runs only where the tool is on and the person has opted in" requires, SHALL hold for each call that the capture step records, not only for the run that records it. The step SHALL record a call only when it was made inside one of its session's intervals when both were on (see "An interval when both switches were on begins and ends at a run" and "A call is inside an interval only when the line it answers and its first line are inside it").
 
 #### Scenario: Calls made before a person opts in are not recorded
 
@@ -180,7 +180,7 @@ Consent, the two switches that "Capture runs only where the tool is on and the p
 - **WHEN** the repository turns the tool on, a session makes calls while the person has not turned capture on, and the person turns capture on before the step's next run in that session
 - **THEN** none of those calls is recorded, and the calls that answer lines written after that run are recorded
 
-### Requirement: A call is inside an interval only when the line it answers and its first line are
+### Requirement: A call is inside an interval only when the line it answers and its first line are inside it
 
 A call SHALL count as made inside an interval of its session when both switches were on (see "Consent holds for each recorded call") only when, by each line's own time, the line it answers, the nearest up its first line's chain of parents in its transcript that gives the person's prompt, a tool's result or a compaction's summary, was written at or after the run that began the interval and no later than the call's first line, and that first line no later than the interval's last run.
 

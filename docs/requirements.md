@@ -155,7 +155,7 @@ The capability names the spec that holds the requirement. Each capability is one
 | R141 | non-functional | `project-standards` | A golden figure changes only with the spec that gives it |
 | R142 | non-functional | `project-standards` | Each ledger format that a release wrote keeps its golden figures |
 | R143 | non-functional | `project-standards` | The assumptions give no other web address |
-| R144 | behavioural | `switch-and-opt-in` | A call is inside an interval only when the line it answers and its first line are |
+| R144 | behavioural | `switch-and-opt-in` | A call is inside an interval only when the line it answers and its first line are inside it |
 | R145 | non-functional | `switch-and-opt-in` | A run that finds a switch off creates no store and notes no session |
 | R146 | behavioural | `switch-and-opt-in` | An opt-out leaves committed ledger files to git |
 | R147 | functional | `usage-capture` | A call's repository is told by its working directory alone |
