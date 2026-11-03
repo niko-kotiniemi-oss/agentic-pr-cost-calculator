@@ -197,7 +197,7 @@ The capture step SHALL record only the calls whose transcript line gives a worki
 
 #### Scenario: A call whose line gives no working directory is not recorded
 
-- **WHEN** a call's lines give no working directory
+- **WHEN** a session in this repository has a call whose lines give no working directory
 - **THEN** the call is not recorded, whatever directory the hook's input or the project directory names, and the next ledger file that holds a call of its session says that calls whose repository could not be told were left out
 
 ### Requirement: A call's repository is told by its working directory alone
@@ -226,7 +226,12 @@ The capture step SHALL tell a call's repository and worktree by its line's worki
 
 #### Scenario: A clone whose ownership git does not trust records nothing
 
-- **WHEN** the repository's folder is owned by another user than the one that a run runs as, and no `safe.directory` setting that git reads names it
+- **WHEN** the repository's folder is owned by another user than the one that a run runs as, and no `safe.directory` setting that git reads without the session's `GIT_` variables names it
+- **THEN** no call is recorded, no store is created, no ledger file is staged, and the run exits with success
+
+#### Scenario: A `safe.directory` setting that only the session's environment gives does not make the clone trusted
+
+- **WHEN** the repository's folder is owned by another user than the one that a run runs as, and only the session's `GIT_` variables give a `safe.directory` setting that names it, through `GIT_CONFIG_COUNT` or in a file that `GIT_CONFIG_GLOBAL` names
 - **THEN** no call is recorded, no store is created, no ledger file is staged, and the run exits with success
 
 ### Requirement: Capture works on the repository that holds the project directory
@@ -932,7 +937,7 @@ A run that leaves the store holding no session's notes, no call, no flag and no 
 
 ### Requirement: The store is readable and writable by its owner alone
 
-On each write, the capture step SHALL leave the store's folder and file open to their owner alone, where Python's standard library can, never through a link; SHALL keep each user's store in its own folder of the git common directory where the system numbers users; SHALL leave alone a store whose file or folder is a link or a reparse point, is not a regular file or folder, or is not its user's; and SHALL act on a note only for a ledger file of its own form, in a worktree of this repository.
+On each write, the capture step SHALL leave the store's folder and file readable and writable by their owner alone, except on Windows, never through a link; SHALL keep each user's store in its own folder of the git common directory where the system numbers users; SHALL leave alone a store whose file or folder is a link or a reparse point, is not a regular file or folder, or is not its user's; and SHALL act on a note only for a ledger file of its own form, in a worktree of this repository.
 
 #### Scenario: The store is created for its owner alone
 
@@ -967,7 +972,7 @@ On each write, the capture step SHALL leave the store's folder and file open to 
 #### Scenario: A run that cannot make its store's folder records nothing
 
 - **WHEN** no store of the user that a run runs as exists, and the git common directory does not let that user create a folder
-- **THEN** the run records, stages, takes back and puts back nothing, and exits with success
+- **THEN** the run records, stages, takes back and puts back nothing, says so on standard error in its own words, and exits with success
 
 #### Scenario: On Windows, a store reached through a junction is left alone
 

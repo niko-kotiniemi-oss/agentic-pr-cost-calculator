@@ -522,7 +522,7 @@ The README and the opt-in's feature page SHALL say that one opt-in covers every 
 #### Scenario: The opt-in's pages say where an opt-in applies
 
 - **WHEN** the README's section on the opt-in and the opt-in's feature page are read
-- **THEN** each says that one opt-in covers every repository that turns the tool on, later ones too, with no notice, that a repository's own setting that turns capture off holds only in that clone, and how to turn capture off for a folder and where that stops: in a linked worktree there whose repository lies elsewhere, and for a folder named through a symbolic link
+- **THEN** each says that one opt-in covers every repository that turns the tool on, later ones too, with no notice, that a repository's own setting that turns capture off holds only in that clone, and how to turn capture off for a folder and where that stops: in a linked worktree there whose repository lies elsewhere, for a folder named through a symbolic link, and when the file that the include names is missing
 
 ### Requirement: Each ledger format that a release wrote keeps its golden figures
 

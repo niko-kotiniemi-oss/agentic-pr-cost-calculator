@@ -129,7 +129,7 @@ The capture step SHALL record nothing in a repository whose own git configuratio
 
 ### Requirement: Git's own reading of the opt-in can turn capture off, never on
 
-Once a run finds both switches on, the capture step SHALL ask git, in the session's environment and again without its `GIT_` variables, for each value of the opt-in key that git reads in this repository, and SHALL take the person's capture to be off when either answer gives no value or a refusal, ends in a value that is not true, or holds a file other than the person's two global configuration files, or the variables, whose last value is not true. What git reads SHALL never turn capture on.
+Once a run finds both switches on, the capture step SHALL ask git, in the session's environment and again without its `GIT_` variables, for each value of the opt-in key here, and SHALL take capture to be off when either answer does not come within the run's time budget, gives no value or a refusal, ends in a value that is not true, or holds a file other than the person's two global configuration files, or the variables, whose last value is not true. What git reads SHALL never turn capture on.
 
 #### Scenario: An opt-out in an included file turns capture off
 
@@ -155,6 +155,11 @@ Once a run finds both switches on, the capture step SHALL ask git, in the sessio
 
 - **WHEN** the person's `~/.gitconfig` turns capture on, and the system's git configuration, the repository's own, or a file that `~/.gitconfig` includes under a condition that git finds true in this repository turns it off, and the session's environment sets `GIT_CONFIG_NOSYSTEM`, or sets `GIT_DIR` to name another repository
 - **THEN** nothing is recorded
+
+#### Scenario: A reading of the opt-in that does not finish turns capture off
+
+- **WHEN** the person's `~/.gitconfig` turns capture on, and the session's environment points git's global configuration at a named pipe that nothing writes to
+- **THEN** nothing is recorded, and the run exits with success within its time budget
 
 #### Scenario: A later value that turns capture on does not undo an opt-out in an included file
 
