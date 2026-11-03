@@ -10,7 +10,8 @@ only replaced a word, by word (task 1.20; design decision 14). A renamed page is
 compared with what it was. It reads a page as the wording test does, so a word inside
 code or in a title that an accepted record quotes is never taken for a replacement, and
 a change to it is always listed (T90, T94). A path, and each word to avoid and term
-in the table, is written as a code span that nothing in it can close, so that no
+in the table, is written as a code span that nothing in it can close, and the script
+refuses a glossary out of its form, in which no term holds a backslash, so that no
 file's name and no row of the glossary writes the output's prose.
 """
 
@@ -709,6 +710,13 @@ def test_only_what_the_branch_changed_is_compared(
             },
             (),
             f"rewording: {GLOSSARY} at HEAD gives no word to avoid",
+        ),
+        (
+            {GLOSSARY: GLOSSARY_TEXT + "| @someone \\\\| x | A row. | gadget |\n"},
+            (),
+            f"rewording: {GLOSSARY} at HEAD is not in its form:\n{GLOSSARY}:11: the term"
+            ' "@someone \\\\| x" holds a backslash, so a pipe after it could split a table\'s'
+            " cell",
         ),
         (
             {},

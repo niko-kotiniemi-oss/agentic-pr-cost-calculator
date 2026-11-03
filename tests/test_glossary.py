@@ -926,6 +926,16 @@ def test_an_escaped_pipe_is_part_of_its_cell() -> None:
     assert entries[-1].meaning == "A \\| B."
 
 
+@pytest.mark.parametrize("term", ["@someone \\\\| x", "a \\| b", "a\\b"])
+def test_a_term_that_holds_a_backslash_or_a_pipe_fails(term: str) -> None:
+    entries, problems = glossary(GLOSSARY_TEXT + f"| {term} | A row. | gadget |\n")
+    assert problems == [
+        f'{GLOSSARY}:19: the term "{term}" holds a backslash, so a pipe after it could split'
+        " a table's cell"
+    ]
+    assert [entry for entry in entries if entry.line == 19] == []
+
+
 def test_a_glossary_that_gives_no_word_to_avoid_fails(tmp_path: Path) -> None:
     text = GLOSSARY_TEXT
     for words in ("the calculator, the product", "capture hook", "branch switch", "git directory"):

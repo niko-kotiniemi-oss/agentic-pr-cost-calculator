@@ -12,7 +12,7 @@ glossary's words to avoid or in a title that an accepted record quotes is never 
 for a replacement. A replacement is judged by the glossary at HEAD, and a line that
 replaces a word that the base's glossary does not give for the same term is also listed
 apart, since that rule is the pull request's own. It exits 2, saying why, when it cannot
-compare.
+compare, as when the glossary at HEAD is not in its form.
 
 Its output is a pull request's account of its own rewording, so run the copies of this
 script and of `scripts/wording.py` that the default branch holds, not the pull
@@ -247,7 +247,9 @@ def report(base: str) -> str:
     ).strip()
     head = git("rev-parse", "--verify", "HEAD").strip()
     text = git("cat-file", "blob", f"HEAD:{GLOSSARY}", refused=f"HEAD holds no {GLOSSARY}")
-    entries = glossary(text)[0]
+    entries, problems = glossary(text)
+    if problems:
+        raise Refused("\n".join([f"{GLOSSARY} at HEAD is not in its form:", *problems]))
     if not any(entry.avoid for entry in entries):
         raise Refused(f"{GLOSSARY} at HEAD gives no word to avoid")
     fresh = new_words(entries, entries_at(since))

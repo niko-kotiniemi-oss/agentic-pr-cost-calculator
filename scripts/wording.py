@@ -125,6 +125,14 @@ def entry_of(line: str, number: int) -> tuple[Entry | None, list[str]]:
     term, meaning, avoid = (line[start:end].strip() for start, end in spans)
     if not term:
         return None, [f"{GLOSSARY}:{number}: a row that gives no term"]
+    if "\\" in term:
+        # A pipe after an escaped backslash is a border of the table's cell that the
+        # rewording script writes the term in, even inside a code span, and a term can hold
+        # a pipe only after a backslash.
+        return None, [
+            f'{GLOSSARY}:{number}: the term "{term}" holds a backslash, so a pipe after it'
+            " could split a table's cell"
+        ]
     words = [word.strip() for word in avoid.split(",") if word.strip()]
     plain = tuple(word for word in words if PLAIN_WORDS.fullmatch(word))
     return Entry(term, meaning, plain, number), [
