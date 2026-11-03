@@ -13,6 +13,15 @@ for a replacement. A replacement is judged by the glossary at HEAD, and a line t
 replaces a word that the base's glossary does not give for the same term is also listed
 apart, since that rule is the pull request's own. It exits 2, saying why, when it cannot
 compare.
+
+Its output is a pull request's account of its own rewording, so run the copies of this
+script and of `scripts/wording.py` that the default branch holds, not the pull
+request's (T104):
+
+    copy=$(mktemp -d)
+    git show refs/remotes/origin/main:scripts/rewording.py > "$copy/rewording.py"
+    git show refs/remotes/origin/main:scripts/wording.py > "$copy/wording.py"
+    python3 "$copy/rewording.py"
 """
 
 from __future__ import annotations
