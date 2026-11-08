@@ -269,7 +269,7 @@ A run of the capture step that finds either switch off SHALL create no store and
 
 ### Requirement: An interval when both switches were on begins and ends at a run
 
-A session's interval when both switches were on (see "Consent holds for each recorded call") SHALL begin only at a run that finds both on while the session has no open interval, never at the session's start, and SHALL end at its last run before one that finds either off or notes a fingerprint other than the interval's last run noted (see "A run that finds both switches on notes its time and a fingerprint"), which then begins the next interval if it finds both on.
+A session's interval when both switches were on (see "Consent holds for each recorded call") SHALL begin only at a run that finds both on while the session has no open interval, never at the session's start, and SHALL end at its last run before one that finds either off or a fingerprint other than the last one that its store notes, which then begins the next interval if it finds both on and its clock has not moved back (see "A clock that moves back ends the session's intervals").
 
 #### Scenario: Calls made while capture was off are not recorded when it is on again
 
@@ -293,7 +293,7 @@ A session's interval when both switches were on (see "Consent holds for each rec
 
 ### Requirement: A clock that moves back ends the session's intervals
 
-A run that finds its clock earlier than its session's last run, or than the time that a line it has read gives, SHALL end each of that session's intervals, and SHALL place no call that it or a later run reads inside any of them, so that a clock that moved back places no call inside an interval.
+A run that finds its clock earlier than the latest time that its session's runs noted, or that a line they read gave, SHALL end each of that session's intervals, begin none, and place no call that it or a later run reads inside any of them, so that a clock that moved back places no call that answers a line written before it inside an interval.
 
 #### Scenario: A clock set back between two runs ends the interval
 
@@ -304,6 +304,11 @@ A run that finds its clock earlier than its session's last run, or than the time
 
 - **WHEN** a run of the step reads a line whose time is later than its own clock reads once it has read that line
 - **THEN** none of the calls that answer a line written before that run is recorded
+
+#### Scenario: A clock set back past earlier lines begins no interval until it passes them
+
+- **WHEN** a run of the step has found both switches on, the configuration file in the working tree then turns the tool off, the session makes calls, a run of the step comes, the clock is then set back to before those calls, the file turns the tool on again, and runs of the step come until the clock has passed the times of those calls' lines
+- **THEN** none of those calls is recorded, and no run whose clock reads earlier than the latest of those times begins an interval
 
 ### Requirement: An opt-out ends every session's interval and empties the store
 
@@ -350,12 +355,17 @@ A run of the capture step SHALL hold its lock from when it reads the store until
 
 ### Requirement: A change to the files that hold the opt-in is taken as an opt-out
 
-A run that finds both switches on, and a fingerprint other than the last one that its store notes, SHALL first do what an opt-out does (see "An opt-out ends every session's interval and empties the store"), so that no call recorded before an opt-out that no run saw, or before any other change to those files, is staged.
+A run that finds both switches on, and a fingerprint other than the last one that its store notes, whichever session's run noted it, SHALL first do what an opt-out does (see "An opt-out ends every session's interval and empties the store"), so that no call recorded before an opt-out that no run saw, or before any other change to those files, is staged.
 
 #### Scenario: Calls recorded before an opt-out that no run saw are not staged
 
 - **WHEN** calls were recorded and wait to be staged, the person turns capture off and on again with no run of the step in between, and a run then finds both switches on
 - **THEN** the agent's next commit in the worktree and on the branch where those calls were made carries none of them, and its ledger file says that calls were left out for consent
+
+#### Scenario: Another session's run drops calls recorded before an opt-out that no run saw
+
+- **WHEN** a session's calls were recorded and wait to be staged, the person turns capture off and on again with no run of the step in between, and the next run, of another session in the same clone, finds both switches on
+- **THEN** no commit made after that run carries any of those calls
 
 #### Scenario: A copy of the store put back after an opt-out brings back no call
 

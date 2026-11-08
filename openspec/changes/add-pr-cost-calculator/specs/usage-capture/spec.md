@@ -891,7 +891,7 @@ The store SHALL carry the version of its format from the first release on, in a 
 
 ### Requirement: The store keeps only what attribution, deduplication and take-backs need
 
-The store SHALL hold only its format's version; for each session, hashes of its id and its transcripts' paths, where runs read each transcript, its intervals, its flag for calls whose repository could not be told, and its last run's time; each waiting call's entry and each flag due with its day, with hashes of its session, worktree and branch; each taken call's hash and day; and the notes of ledger files (see "A ledger file's note keeps only what a take-back needs").
+The store SHALL hold only its format's version and the last fingerprint's hash; for each session, hashes of its id and transcripts' paths, where runs read each, its intervals, its flag for calls whose repository could not be told, its last run's time and the latest time its runs saw; each waiting call's entry and each flag due with its day, with hashes of its session, worktree and branch; each taken call's hash and day; and the notes of ledger files that a take-back or put-back needs.
 
 #### Scenario: The store holds ids and paths only as hashes while no file is staged
 

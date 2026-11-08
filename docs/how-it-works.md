@@ -105,11 +105,16 @@ sequenceDiagram
     H->>G: Create no store. Remove one that does not parse. In one that parses, end this session's interval, empty it if the person's capture is off, take back or put back what is due, drop what is older than the retention window, remove it if it then holds nothing, and record nothing
   else both are on
     H->>G: Under the store's lock, read both switches again, then note the run's time and the fingerprint of the files that hold the opt-in
-    alt the fingerprint changed, or the clock moved back
-      H->>G: Do what an opt-out does, or end the session's intervals, and begin a new interval here
+    alt the fingerprint is not the last one that the store notes, of whichever session
+      H->>G: Do what an opt-out does
+    end
+    alt the clock reads earlier than the latest time that this session's runs noted or read
+      H->>G: End the session's intervals, and begin none
+    else the session has no open interval
+      H->>G: Begin a new interval here
     end
     H->>G: Take back or put back what is due, and drop what is older than the retention window
-    H->>H: Unless this is a start run, read the transcripts again from the earliest line that a call not yet recorded may answer, up to the time budget
+    H->>H: Unless this is a start run, read the transcripts again from the earliest line that a call not yet recorded may answer, up to the time budget, and at a line whose time is later than the clock, end the session's intervals
     H->>H: Keep the calls that are over, whose working directory is in this repository, and whose answered line falls inside an interval
     H->>G: Record each new call once, by the hash of its message id, with hashes of its session, worktree and branch, and note a flag for calls left out
   end
