@@ -12,7 +12,7 @@
 
 A person's usage is published only with their consent (DR-046), which the design's goals ask to hold for each call. Each run reads a transcript on from where the last one stopped, and a run that finds a switch off records nothing, so the calls made while capture was off would be read by the next run that finds both switches on (T38). DR-047 held consent for each call, but let a session's interval begin at the session's start when its first run found both switches on, so a person who opted in during a session, before its first run, had the session's earlier calls recorded.
 
-The owner asked on 2026-11-02 that no call made before an opt-in be recorded, that the boundary of consent be a conservative one, that `SessionStart` be considered for it without being depended on, and that a call be left out, with the gap reported, whenever capture cannot establish that it was made while consent held. In the transcripts examined for the design, the line that a call's first line names as its parent was sometimes written after that first line, while the first line up that chain of parents that gives a prompt or a tool result was always in the same transcript and written before it (see the design's context).
+The owner asked on 2026-11-02 that no call made before an opt-in be recorded, that the boundary of consent be a conservative one, that `SessionStart` be considered for it without being depended on, and that a call be left out, with the gap reported, whenever capture cannot establish that it was made while consent held. In the transcripts examined for the design, the line that a call's first line names as its parent was sometimes written after that first line, while the first line up that chain of parents that gives a prompt or a tool result was always in the same transcript and written before it (see the design's context). On 2026-11-08 the owner chose to keep as T104's residual a clock set back past lines written after the latest time that the session's runs noted or read, rather than have a session record nothing more once its clock has moved back.
 
 ## Decision
 
@@ -26,6 +26,7 @@ Consent holds for each call, not only for the run that records it, as DR-047 dec
 - Placing a call only by a line that the same run read, which would leave out a call whose answered line an earlier run read, as when a run stops between a tool's result and the call that answers it.
 - Trusting each line's time whatever the clock did, which would let a clock set back between two runs place a call made while capture was off inside an earlier interval.
 - Beginning the next interval at the run that finds the clock moved back, which would place inside it a call that answers a line written before the clock moved back, once a later run's clock had passed that line's time.
+- Recording nothing more in a session once its clock has moved back, which would close T104's residual of lines that no run read before the clock moved back, but would leave out the rest of every such session, as when the clock is corrected backwards.
 - Registering `UserPromptSubmit` as well, which would add a run to every prompt that the person sends, for a gain only to sessions that get no start run (DR-172).
 
 ## Consequences
