@@ -503,7 +503,7 @@ A pull request that changes an entry, a figure or a working that the golden set 
 
 ### Requirement: The documentation says what stays published after an opt-out and what a hash does not hide
 
-The README, the opt-in's feature page and the ledger's SHALL say that an opt-out, a removed ledger file or a removed store leaves each pushed ledger file in its branch's history, clones, forks and posted comments, and each one in a commit not yet pushed for its push to publish, and that a hashed id does not hide whose record it is, since a ledger file's commit names its author and whoever holds the transcript can match each hash. The glossary SHALL list `anonymous` as a word to avoid.
+The README, the opt-in's feature page and the ledger's SHALL say that an opt-out, a removed ledger file or a removed store leaves each pushed ledger file in its branch's history, clones, forks and posted comments, and each one in a commit not yet pushed for its push to publish, that a force-push does not remove what GitHub keeps for the pull requests that referenced a commit, and that a hashed id does not hide whose record it is. The glossary SHALL list `anonymous` as a word to avoid.
 
 #### Scenario: A page that calls an entry `anonymous` fails the wording test
 
