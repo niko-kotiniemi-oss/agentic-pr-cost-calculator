@@ -245,7 +245,7 @@ Each run of the capture step that finds both switches on, and no store whose ver
 
 ### Requirement: A run that finds a switch off creates no store and notes no session
 
-A run of the capture step that finds either switch off SHALL create no store and add no note of its session to one. It SHALL remove a store that does not parse, and in one whose version it knows only end its session's interval and do what "An opt-out ends every session's interval and empties the store", "Ledger files are taken back and put back whatever the switches say" and, in `usage-capture`, "The store keeps nothing past its retention window" and "A store that holds nothing is removed" say.
+A run that finds either switch off SHALL create no store and add no note of its session to one. It SHALL remove a store that does not parse, and in one whose version it knows only end its session's interval, noting its time, and do what "An opt-out ends every session's interval and empties the store", "Ledger files are taken back and put back whatever the switches say" and, in `usage-capture`, "The store keeps nothing past its retention window" and "A store that holds nothing is removed" say.
 
 #### Scenario: A person who has not opted in leaves no store
 

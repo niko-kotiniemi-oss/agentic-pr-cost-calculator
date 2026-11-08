@@ -102,7 +102,7 @@ sequenceDiagram
   end
   H->>G: Find the store, and stop, leaving it as it was, when this release does not know its version
   alt either switch is off
-    H->>G: Create no store. Remove one that does not parse. In one that parses, end this session's interval, empty it if the person's capture is off, take back or put back what is due, drop what is older than the retention window, remove it if it then holds nothing, and record nothing
+    H->>G: Create no store. Remove one that does not parse. In one that parses, end this session's interval, noting this run's time, empty it if the person's capture is off, take back or put back what is due, drop what is older than the retention window, remove it if it then holds nothing, and record nothing
   else both are on
     H->>G: Under the store's lock, read both switches again, then note the run's time and the fingerprint of the files that hold the opt-in
     alt the fingerprint is not the last one that the store notes, of whichever session
