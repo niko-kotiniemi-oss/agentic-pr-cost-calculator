@@ -21,7 +21,7 @@ The list puts first the assumptions behind the threats of highest impact, then, 
 - **A2.** A transcript line gives its call's model, usage, time and current directory, in fields whose meaning stays put. Impact 3, risk 6. Page: [Claude Code](claude-code.md).
 - **A3.** Hooks get enough time to finish, and every adopter's Claude Code has the hook events and the condition that the tool registers. Impact 3, risk 6. Page: [Claude Code](claude-code.md).
 - **A4.** A hook's input gives the directories, the paths and the command text that capture needs, and a hook that exits with success and prints nothing steers nothing. Impact 3, risk 6. Page: [Claude Code](claude-code.md).
-- **A5.** What a session loads comes from its settings and the branch it starts on, and a project's settings cannot set `HOME` or the `XDG_*` variables. Impact 3, risk 6. Page: [Claude Code](claude-code.md).
+- **A5.** What a session loads comes from its settings and the branch it starts on, and a project's settings cannot set the variables that name a person's home folder or the `XDG_*` variables. Impact 3, risk 6. Page: [Claude Code](claude-code.md).
 - **A6.** The agent runs git in forms that capture recognises, and acts on GitHub as the owner's own account. Impact 3, risk 6. Page: [Claude Code](claude-code.md).
 - **A7.** The repository's settings on GitHub are applied, and stay applied, as the threat model's section on the settings the owner keeps lists them. Impact 3, risk 6. Page: [GitHub](github.md).
 - **A8.** Workflows and required checks run when the design expects them to. Impact 3, risk 6. Page: [GitHub](github.md).
