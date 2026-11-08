@@ -501,6 +501,29 @@ A pull request that changes an entry, a figure or a working that the golden set 
 - **WHEN** a pull request changes or removes an entry or a figure of a golden session that the latest release's tag holds, and the changelog's unreleased section does not name the session
 - **THEN** a test fails and names the session
 
+### Requirement: The documentation says what stays published after an opt-out and what a hash does not hide
+
+The README, the opt-in's feature page and the ledger's SHALL say that an opt-out, a removed ledger file or a removed store leaves each pushed ledger file in its branch's history, clones, forks and posted comments, and each one in a commit not yet pushed for its push to publish, that a force-push does not remove what GitHub keeps for the pull requests that referenced a commit, and that a hashed id does not hide whose record it is. The glossary SHALL list `anonymous` as a word to avoid.
+
+#### Scenario: A page that calls an entry `anonymous` fails the wording test
+
+- **WHEN** a spec or a page, in its prose, calls the ledger, a ledger file or an entry `anonymous`
+- **THEN** the wording test fails, naming the file and the line
+
+#### Scenario: The opt-in's pages say what stays published
+
+- **WHEN** the README's section on the opt-in, the opt-in's feature page and the ledger's feature page are read
+- **THEN** each says that an opt-out, a removed ledger file or a removed store leaves pushed ledger files in their branch's history, in clones, forks and posted comments, that a later push publishes those in commits not yet pushed, that a force-push does not remove what GitHub keeps for the pull requests that referenced them, and that a hashed id does not hide whose record it is
+
+### Requirement: The documentation says where an opt-in applies
+
+The README and the opt-in's feature page SHALL say that one opt-in covers every repository that turns the tool on, those that adopt it later among them, with no notice in any of them; that a repository's own setting that turns capture off holds only in that clone; and how a person turns capture off for a folder with git's own conditional includes, and where that stops.
+
+#### Scenario: The opt-in's pages say where an opt-in applies
+
+- **WHEN** the README's section on the opt-in and the opt-in's feature page are read
+- **THEN** each says that one opt-in covers every repository that turns the tool on, later ones too, with no notice, that a repository's own setting that turns capture off holds only in that clone, and how to turn capture off for a folder and where that stops: in a linked worktree there whose repository lies elsewhere, for a folder named through a symbolic link, and when the file that the include names is missing
+
 ### Requirement: Each ledger format that a release wrote keeps its golden figures
 
 For each ledger format that a release's capture step wrote, the golden set SHALL keep sessions whose entries are as that release wrote them, with the figures that the report must give for them, for as long as the report reads that format. Tests SHALL fail when the report gives another figure for them.

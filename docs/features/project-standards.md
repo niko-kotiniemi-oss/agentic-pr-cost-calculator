@@ -2,16 +2,17 @@
 
 What holds for the whole tool rather than for one feature: documentation that names everything the tool does, connections only where that documentation says, rated threats, pull request text without private references, action pins that their repositories tagged, a record of each decision, the assumptions that the design rests on, a glossary of the words its documents use, and a golden set of figures that every version reproduces.
 
-**Status:** the documentation, the threat ratings, the workflow checks, the decision records, the assumptions and the glossary are in place; the network guard, the check of pull request text, the check of pins and the golden set are designed, not built yet.
+**Status:** the documentation, the threat ratings, the workflow checks, the decision records, the assumptions and the glossary are in place; the network guard, the check of pull request text, the check of pins, the golden set and the README's section on adopting the tool are designed, not built yet.
 
 **Spec:** `project-standards`
 
-**Requirements:** R29, R100, R101, R30, R31, R33, R34, R73, R74, R124, R125, R126, R127, R128, R129, R130, R131, R132, R133, R134, R135, R140, R143, R136, R137, R138, R139, R141, R142
+**Requirements:** R29, R100, R101, R30, R31, R33, R34, R73, R74, R124, R125, R126, R127, R128, R129, R130, R131, R132, R133, R134, R135, R140, R143, R136, R137, R138, R139, R141, R159, R164, R142
 
 ## Expected behaviour
 
 - **Documentation.** A register of every requirement, one page per feature, and [`../how-it-works.md`](../how-it-works.md), which names every credential, permission, connection and flow. Tests fail when the register and the specs disagree, when a workflow grants a permission or runs an action that the page does not name, and when a flow has no diagram.
 - **Validation, written down.** Each feature is one spec, with a page that names all its requirements and says how the feature is validated, and each change's proposal says how each of its capabilities is validated. Tests fail when a page and its spec disagree, when a page is missing from the index, and when a proposal leaves a capability out.
+- **What the opt-in publishes, and where it applies.** The README, the opt-in's feature page and the ledger's say that an opt-out, a removed ledger file or a removed store leaves each pushed ledger file in its branch's history, in clones, forks and posted comments, that a later push publishes those in commits not yet pushed, that a force-push does not remove what GitHub keeps for the pull requests that referenced them, and that a hashed id does not hide whose record it is. The README and the opt-in's page also say that one opt-in covers every repository that turns the tool on, later ones too, with no notice in any of them, that a repository's own setting that turns capture off holds only in that clone, and how a person turns capture off for a folder. The glossary lists `anonymous` as a word to avoid, so that the wording test fails on a page whose prose uses it.
 - **Connections.** The hook opens no network connection. The report connects only to GitHub, over HTTPS, with the workflow's own token: to its REST API, at the address the workflow gives, and by git to the tool's own repository and the one it reports on. Prices are read from the price table in the repository and never fetched.
 - **Threats.** Every threat in [`../threat-model.md`](../threat-model.md) is rated for impact and likelihood from 1 to 3, with a risk that is their product, and placed in the one cell of the risk matrix that its ratings name. The threat model is reviewed independently before a design is approved, and again against what was built before its pull request merges.
 - **Pull request text.** A pull request's title and body are checked against the same private patterns as the repository's files, each time the pull request is opened, edited, reopened or updated. A match fails the check, which names the pattern and quotes none of the text.
@@ -36,10 +37,10 @@ What holds for the whole tool rather than for one feature: documentation that na
 
 This feature is validated first by its spec's scenarios: each whose code is still to be written gets an acceptance test before that code, seen to fail for the expected reason, and each that a check already in place holds is named in that check's test (task 1.4). Then come the checks that DR-084 to DR-093 and DR-109 apply to all the tool's code. Beyond those, this feature has its own:
 
-- Already in place: the documentation tests (tasks 1.12 and 1.17), the threat model's tests (task 1.10), the workflow checks (task 1.16), the decision records' tests (task 1.18), the assumptions' tests (task 1.19) and the glossary's tests (task 1.20).
-- To be built: the network guard's two rules and the check of the report's git commands (task 1.13), the check of pull request text (task 1.14), the check that every pin is a tagged commit (task 1.15), the golden set (task 1.21), the release's test job that runs every expected failure as an ordinary test (task 6.3), and a check that every network call and environment variable the tool's code reads is named in the documentation (task 5.3).
+- Already in place: the documentation tests (tasks 1.12 and 1.17), the threat model's tests (task 1.10), the workflow checks (task 1.16), the decision records' tests (task 1.18), the assumptions' tests (task 1.19) and the glossary's tests (task 1.20), with the test that a page that calls an entry `anonymous` fails (task 1.22).
+- To be built: the network guard's two rules and the check of the report's git commands (task 1.13), the check of pull request text (task 1.14), the check that every pin is a tagged commit (task 1.15), the golden set (task 1.21), the release's test job that runs every expected failure as an ordinary test (task 6.3), the README's section on adopting the tool, which says what stays published and where an opt-in applies (task 4.4), and a check that every network call and environment variable the tool's code reads is named in the documentation (task 5.3).
 - By review rather than by a test: that the threat model is revisited before a design is approved and again against what was built (tasks 1.10 and 5.2).
 
 ## See also
 
-- `project-standards` in `openspec/`, design decisions 8, 9, 12, 13 and 14 of `add-pr-cost-calculator`, the decision records' [index](../decisions/README.md), and the assumptions' [index](../assumptions/README.md).
+- `project-standards` in `openspec/`, design decisions 8, 9, 12, 13, 14 and 16 of `add-pr-cost-calculator`, the decision records' [index](../decisions/README.md), and the assumptions' [index](../assumptions/README.md).

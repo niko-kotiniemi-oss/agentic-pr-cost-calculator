@@ -66,7 +66,7 @@ The capability names the spec that holds the requirement. Each capability is one
 | R52 | behavioural | `usage-capture` | A ledger file that a commit takes stays taken |
 | R53 | non-functional | `usage-capture` | The capture step's first line names its release |
 | R54 | non-functional | `usage-capture` | The capture step starts only git, from an absolute path |
-| R55 | behavioural | `usage-capture` | The store is versioned, and an unknown version is left alone |
+| R55 | behavioural | `usage-capture` | The store is versioned: an earlier version is upgraded, an unknown one left alone |
 | R56 | behavioural | `ledger` | The capture step stages only the ledger file it wrote |
 | R57 | behavioural | `ledger` | A ledger file is noted before it is written |
 | R58 | functional | `ledger` | Only the ledger files that the merge adds are counted |
@@ -104,7 +104,7 @@ The capability names the spec that holds the requirement. Each capability is one
 | R90 | behavioural | `usage-capture` | The capture step finishes within a time budget |
 | R91 | functional | `switch-and-opt-in` | Capture reads the configuration in the working tree |
 | R92 | functional | `switch-and-opt-in` | A missing or unreadable configuration file neither turns the tool on nor stops the report |
-| R93 | functional | `switch-and-opt-in` | A change to the configuration, the hook file or a workflow is flagged |
+| R93 | functional | `switch-and-opt-in` | A change to the configuration, the hook file, its registration or a workflow is flagged |
 | R94 | functional | `report-comment` | The comment says what its figure is and where it comes from |
 | R95 | functional | `report-comment` | The comment counts refused calls and calls that may leave the token cost low |
 | R96 | functional | `report-comment` | A report run again updates only its own comment |
@@ -118,9 +118,9 @@ The capability names the spec that holds the requirement. Each capability is one
 | R104 | behavioural | `switch-and-opt-in` | Only an absolute home folder is read |
 | R105 | behavioural | `switch-and-opt-in` | The home configuration file decides over the XDG one |
 | R106 | behavioural | `switch-and-opt-in` | Only some of git's true values turn capture on |
-| R107 | behavioural | `switch-and-opt-in` | Each run notes in the store whether it found both switches on |
-| R108 | behavioural | `switch-and-opt-in` | An interval when both switches were on begins at the session's start or at a run, and ends at a run |
-| R109 | behavioural | `switch-and-opt-in` | An opt-out ends every session's interval and withholds earlier calls |
+| R107 | behavioural | `switch-and-opt-in` | A run that finds both switches on notes its time and a fingerprint |
+| R108 | behavioural | `switch-and-opt-in` | An interval when both switches were on begins and ends at a run |
+| R109 | behavioural | `switch-and-opt-in` | An opt-out ends every session's interval and empties the store |
 | R110 | behavioural | `switch-and-opt-in` | Ledger files are taken back and put back whatever the switches say |
 | R111 | functional | `usage-capture` | The capture step's git commands stay offline |
 | R112 | behavioural | `usage-capture` | An unquoted here-document in or before the commit stages nothing |
@@ -155,6 +155,35 @@ The capability names the spec that holds the requirement. Each capability is one
 | R141 | non-functional | `project-standards` | A golden figure changes only with the spec that gives it |
 | R142 | non-functional | `project-standards` | Each ledger format that a release wrote keeps its golden figures |
 | R143 | non-functional | `project-standards` | The assumptions give no other web address |
+| R144 | behavioural | `switch-and-opt-in` | A call is inside an interval only when the line it answers and its first line are inside it |
+| R145 | non-functional | `switch-and-opt-in` | A run that finds a switch off creates no store and notes no session |
+| R146 | behavioural | `switch-and-opt-in` | An opt-out leaves committed ledger files to git |
+| R147 | functional | `usage-capture` | A call's repository is told by its working directory alone |
+| R148 | functional | `usage-capture` | A start run reads no transcript |
+| R149 | non-functional | `usage-capture` | The store keeps only what attribution, deduplication and take-backs need |
+| R150 | non-functional | `usage-capture` | The store keeps nothing past its retention window |
+| R151 | non-functional | `usage-capture` | A store that holds nothing is removed |
+| R152 | non-functional | `usage-capture` | The store is readable and writable by its owner alone |
+| R153 | behavioural | `usage-capture` | A removed store lets no earlier call be recorded |
+| R154 | non-functional | `usage-capture` | Capture keeps no copy of a transcript |
+| R155 | functional | `usage-capture` | A ledger file says when calls of its sessions were left out |
+| R156 | non-functional | `ledger` | Each ledger file states its format's version, and each version is published with a schema |
+| R157 | functional | `report-comment` | The comment says when the ledger files flag calls left out |
+| R158 | behavioural | `report-comment` | The report reads each ledger file by the version it states |
+| R159 | non-functional | `project-standards` | The documentation says what stays published after an opt-out and what a hash does not hide |
+| R160 | behavioural | `switch-and-opt-in` | Git's own reading of the opt-in can turn capture off, never on |
+| R161 | behavioural | `switch-and-opt-in` | A run that began before an opt-out leaves nothing after it |
+| R162 | behavioural | `switch-and-opt-in` | A change to the files that hold the opt-in is taken as an opt-out |
+| R163 | non-functional | `ledger` | Every version of the ledger format names a call by the same id |
+| R164 | non-functional | `project-standards` | The documentation says where an opt-in applies |
+| R165 | behavioural | `usage-capture` | A call is placed by the line it answers, whichever run read that line |
+| R166 | behavioural | `switch-and-opt-in` | A clock that moves back ends the session's intervals |
+| R167 | behavioural | `usage-capture` | Capture reads each ledger file by the version that it states |
+| R168 | behavioural | `report-comment` | Ledger files that the default branch already holds are read by the version they state |
+| R169 | non-functional | `usage-capture` | Git runs without the session's git variables |
+| R170 | non-functional | `usage-capture` | A ledger file's note keeps only what a take-back needs |
+| R171 | behavioural | `switch-and-opt-in` | A configuration file with a key that the tool does not know, a key given twice or no `enabled` of `true` or `false` is not valid |
+| R172 | functional | `switch-and-opt-in` | The report says when the configuration after the merge does not turn the tool on |
 
 IDs are stable: a requirement keeps its ID while it exists, and a new one takes the next free number, so the rows follow the order in which requirements were added rather than the order of the specs. A requirement that a later change removes leaves the table, and its ID is listed below with the change that removed it, never to be used again.
 

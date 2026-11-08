@@ -8,7 +8,7 @@ Scenarios below that run the capture step follow the conventions that `usage-cap
 
 ### Requirement: The ledger holds counts, never content
 
-A ledger entry SHALL contain no prompt text, response text, code, file contents, tool name, tool input or output, file path, working directory, branch name, user name, session identifier or time of day. The only text an entry takes from the transcript SHALL be the model's name and the values of the price attributes (see "Usage is recorded per model call" in `usage-capture`).
+A ledger file SHALL contain no prompt text, response text, code, file contents, tool name, tool input or output, file path, working directory, branch name, user name, session identifier, transcript path, `tool_use_id` or time of day, nor a hash of any of them. The only text a ledger file takes from the transcript SHALL be the model's name and the values of the price attributes (see "Usage is recorded per model call" in `usage-capture`).
 
 #### Scenario: Content in the transcript does not reach the ledger
 
@@ -18,7 +18,45 @@ A ledger entry SHALL contain no prompt text, response text, code, file contents,
 #### Scenario: A planted string never reaches the ledger
 
 - **WHEN** every text value in a transcript and in the hook's input, and the name of the branch checked out, is a distinct marker string, except the model names and price attribute values that the price table lists
-- **THEN** no marker appears in any ledger file, whether in its contents or in its path
+- **THEN** no marker appears in any ledger file, whether in its contents or in its path, and neither does the SHA-256 hash of any marker but a message id
+
+#### Scenario: The store's notes never reach the ledger
+
+- **WHEN** the store notes, for a staged ledger file, its worktree's name and its transcript's path, and hashes of the session's id, the branch and the command's `tool_use_id`
+- **THEN** none of those names, paths or hashes appears in any ledger file, whether in its contents or in its path
+
+#### Scenario: A waiting call planted in the store carries nothing into the ledger
+
+- **WHEN** the store holds a waiting call whose entry holds a field that capture does not write, or a value that it would not record, such as text in place of a count or a model name that the price table does not list
+- **THEN** no ledger file that the step stages holds that entry, and the step drops it
+
+### Requirement: Each ledger file states its format's version, and each version is published with a schema
+
+Each ledger file SHALL state on its first line the version of the ledger format that it is written in, and the ledger format SHALL be published for every version that a release's capture step wrote, with a JSON Schema for each kind of its lines, so that anyone can check a ledger file without the tool. A ledger file SHALL hold nothing that the schema of its version does not allow.
+
+#### Scenario: A ledger file names its format's version
+
+- **WHEN** a run of the capture step writes a ledger file
+- **THEN** its first line states the ledger format's version, and every line of the file validates against that version's published schema
+
+#### Scenario: The published schema refuses what the report refuses
+
+- **WHEN** each ledger line that a scenario of "Each ledger line is held to the ledger format" in `report-comment` refuses is checked against the published schema of its version, by a standard validator with its default options, and so is each line that the report counts as an entry
+- **THEN** the schema refuses each line that the report refuses, apart from what the ledger format lists as beyond any schema, such as a field given twice, and accepts each line that the report counts
+
+#### Scenario: A released version's schema does not change
+
+- **WHEN** a change alters the published schema of a version of the ledger format that a release wrote
+- **THEN** the checks fail, naming that version
+
+### Requirement: Every version of the ledger format names a call by the same id
+
+Every version of the ledger format SHALL name a call by the same id, the SHA-256 hash of its message id, so that capture stages, and the report counts, each call once, whichever versions its entries are written in.
+
+#### Scenario: One call in two versions is counted once
+
+- **WHEN** a pull request adds an entry, in one version of the ledger format, for a call that a ledger file of another version, which the default branch held before the merge, already holds
+- **THEN** that entry is not counted
 
 ### Requirement: A model name or attribute value the price table does not list is recorded as unknown
 

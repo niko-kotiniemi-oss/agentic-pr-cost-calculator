@@ -85,7 +85,7 @@ The assumptions about GitHub: this repository's settings there, and its workflow
 
 ## A18. A merge into the default branch makes one push, and that push starts the adopter's calling workflow.
 
-- **Rests on it:** R19, R27, R58, R62, R68, R69, R93, R120, R129, T19, T20, T21, T22, T23, T50, T67, T68, T70, T88, DR-005, DR-017, DR-018, DR-019, DR-051, DR-061, DR-064, DR-073, DR-092, DR-121, DR-122, DR-133, DR-147, DR-148
+- **Rests on it:** R19, R27, R58, R62, R68, R69, R93, R120, R129, T19, T20, T21, T22, T23, T50, T67, T68, T70, T88, DR-005, DR-017, DR-018, DR-019, DR-051, DR-061, DR-073, DR-092, DR-121, DR-122, DR-133, DR-147, DR-148, DR-186
 - **If it is wrong:** A merge that makes no push, or whose push starts no workflow, would get no report, and nothing would say why (T21, T23). A push that named another commit as the one it replaced would make the report count the wrong ledger files as the merge's own (T19, T20), and a run that a merge starts through another event, created before the merge time, would be counted as the pull request's, so the CI figure would be too high without saying so (T22, T88).
 - **Fact:** Every merge into the default branch, by hand, by auto-merge or through a merge queue, makes a push to that branch, and that push starts the adopter's calling workflow.
   - **Relied on:** R19, R58, R68, R69, T19, T21, T23, DR-005, DR-018, DR-061, DR-092, DR-133, DR-147
@@ -100,12 +100,12 @@ The assumptions about GitHub: this repository's settings there, and its workflow
   - **Relied on:** R62, R120, T22, T88, DR-019, DR-147
   - **Checked:** not yet: none will, since none of this repository's own workflows runs on such an event, so its own merges cannot check this
 - **Fact:** A push, of a branch or of a tag, runs the workflow files as the pushed commit holds them: a pull request's merge runs the calling workflow as the pull request left it, and a tag runs the release workflow as the tagged commit holds it.
-  - **Relied on:** R19, R27, R93, T21, T67, T68, DR-051, DR-064, DR-073, DR-122, DR-148
+  - **Relied on:** R19, R27, R93, T21, T67, T68, DR-051, DR-073, DR-122, DR-148, DR-186
   - **Checked:** not yet: none will, since no test may reach GitHub
 
 ## A19. A reusable workflow runs with its caller's context, and with only the token and the secrets that its caller gives it.
 
-- **Rests on it:** R24, R30, R65, R93, R96, R101, T21, T23, T24, T25, T28, T29, T54, T57, T60, DR-006, DR-016, DR-044, DR-062, DR-063, DR-064, DR-090, DR-102, DR-117, DR-132, DR-139
+- **Rests on it:** R24, R30, R65, R93, R96, R101, T21, T23, T24, T25, T28, T29, T54, T57, T60, DR-006, DR-016, DR-044, DR-062, DR-063, DR-090, DR-102, DR-117, DR-132, DR-139, DR-186
 - **If it is wrong:** The report could run the caller's code instead of its own, with a token that can write (T23), or reach a token or secrets beyond those it declares (T24, T29). If its three permissions were not enough, every adopter's report would fail, and if the API's host could be pointed elsewhere, the token could go there (T24).
 - **Fact:** A reusable workflow gets its caller's `GITHUB_TOKEN`, with the permissions that the calling job grants or else the default ones, and the secrets that the caller passes it, all of them with `secrets: inherit`.
   - **Relied on:** R24, T24, T29, DR-063, DR-132
@@ -123,7 +123,7 @@ The assumptions about GitHub: this repository's settings there, and its workflow
   - **Relied on:** R30, T24, DR-090
   - **Checked:** not yet: none will, since no test may reach GitHub; `add-pr-cost-calculator` task 1.13 tests only what this repository does with it
 - **Fact:** Every workflow in a repository that uses `GITHUB_TOKEN` posts comments under one identity, so a comment's author tells the report's comment from a person's but not from another workflow's.
-  - **Relied on:** R93, R96, T21, T25, DR-044, DR-064
+  - **Relied on:** R93, R96, T21, T25, DR-044, DR-186
   - **Checked:** not yet: none will, since no test may reach GitHub; `add-pr-cost-calculator` task 4.1 tests only what this repository does with it
 - **Fact:** GitHub runs workflow files that end in `.yml` or `.yaml`, and a job's token gets the permissions of its own block or, without one, of its workflow's.
   - **Relied on:** R101, T57, DR-102, DR-117

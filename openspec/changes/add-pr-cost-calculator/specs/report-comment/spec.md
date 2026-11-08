@@ -46,6 +46,40 @@ The report's comment (see "A merged pull request gets one report comment") SHALL
 - **WHEN** the ledger files that a pull request adds count calls whose usage held a field that capture does not know
 - **THEN** the comment gives their number, and says that the token cost may be low
 
+#### Scenario: A restored or copied ledger file adds no counts or flags
+
+- **WHEN** a pull request adds a ledger file that is counted as restored, or one that holds at least one entry, each of which the default branch already held before the merge
+- **THEN** the comment counts none of that file's counts and none of its flags
+
+#### Scenario: A mark on an entry that is not counted is not counted
+
+- **WHEN** a pull request adds an entry, marked as read without a stop reason, for a call that the default branch already held before the merge
+- **THEN** the comment's count of calls read without a stop reason leaves that entry out
+
+### Requirement: The comment says when the ledger files flag calls left out
+
+When a pull request's ledger files say that calls were left out, for consent, for their age or because their repository could not be told (see "A ledger file says when calls of its sessions were left out" in `usage-capture`), the report's comment SHALL say, for each reason, that its ledger files say so, with no count, and that the token cost, each of its parts and the total are then lower bounds.
+
+#### Scenario: Calls left out for consent are flagged in the comment
+
+- **WHEN** a ledger file that a pull request adds says that calls were left out for consent
+- **THEN** the comment says that the pull request's ledger files say that capture could not show that some calls were made while it was on, says nothing of capture being off, gives no count of them, and says that the token cost, its parts and the total are lower bounds
+
+#### Scenario: Calls whose repository could not be told are flagged in the comment
+
+- **WHEN** a ledger file that a pull request adds says that calls whose repository could not be told were left out
+- **THEN** the comment says that the pull request's ledger files say so, gives no count of them, and says that the token cost, its parts and the total are lower bounds
+
+#### Scenario: Calls left out for their age are flagged in the comment
+
+- **WHEN** a ledger file that a pull request adds says that calls were left out for their age
+- **THEN** the comment says that the pull request's ledger files say that some calls waited too long for a commit to be recorded, gives no count of them, and says that the token cost, its parts and the total are lower bounds
+
+#### Scenario: A comment with no flag still says what it does not count
+
+- **WHEN** no ledger file that a pull request adds says that calls were left out
+- **THEN** the comment still says that calls that no ledger file holds are neither counted nor flagged
+
 ### Requirement: A report run again updates only its own comment
 
 When the report runs again, it SHALL update its earlier comment (see "A merged pull request gets one report comment"), and SHALL update only a comment that its own identity wrote.
@@ -147,6 +181,20 @@ The report SHALL read the ledger files that the default branch's first-parent hi
 
 - **WHEN** a ledger file that the default branch held before the merge holds a line that does not match the ledger format beside valid entries, and the pull request adds an entry for one of their calls
 - **THEN** the report does not count that entry
+
+### Requirement: Ledger files that the default branch already holds are read by the version they state
+
+The report SHALL read each ledger file that the default branch's first-parent history held before the merge by the version that its first line states, and SHALL skip one whose first line states no version or a version that it does not read, counting none of it as the pull request's and giving in its job summary how many it skipped.
+
+#### Scenario: An earlier ledger file is read by the version it states
+
+- **WHEN** the default branch held, before the merge, a ledger file of an earlier version that the report reads, and the pull request adds an entry for a call that it holds
+- **THEN** the report reads that file's call ids by its version's rules, and does not count that entry
+
+#### Scenario: An earlier ledger file of a version the report does not read is skipped and counted in the job summary
+
+- **WHEN** the default branch held, before the merge, a ledger file whose first line states a version that the report does not read
+- **THEN** the report reads nothing of that file, counts none of it as the pull request's, says in its job summary how many such files it skipped, and posts its comment
 
 ### Requirement: The report runs only trusted code, with the least it needs
 
@@ -257,6 +305,35 @@ The report SHALL read each line of the ledger files that the merge adds (see "On
 
 - **WHEN** a ledger line that the pull request adds gives a day that is not a date in the calendar, such as `2026-02-30`
 - **THEN** that line is refused, counted as refused, and not counted as an entry
+
+### Requirement: The report reads each ledger file by the version it states
+
+The report SHALL read each ledger file that the merge adds by the rules of the version of the ledger format that its first line states (see "Each ledger file states its format's version, and each version is published with a schema" in `ledger`), and SHALL count as a refused file, using none of its entries, counts or flags, a ledger file whose first line states no version or a version that the report does not read, or breaks its version's rules.
+
+#### Scenario: A ledger file of an earlier version is read by that version's rules
+
+- **WHEN** a pull request adds a ledger file that an earlier release's capture step wrote in an earlier version of the ledger format
+- **THEN** the report reads its lines by that version's rules
+
+#### Scenario: A ledger file of a version the report does not read is refused
+
+- **WHEN** a ledger file that the pull request adds states a version of the ledger format that the report does not read, or states none
+- **THEN** none of its entries is counted, and the comment counts it as a refused file
+
+#### Scenario: A ledger file whose first line breaks its version's rules is refused
+
+- **WHEN** a ledger file that the pull request adds states, on its first line, a version that the report reads, but gives a flag twice, a count above the ceiling, a field that the version does not have, or a value of another kind than the version allows
+- **THEN** none of its entries, counts or flags is used, and the comment counts it as a refused file
+
+#### Scenario: A first line anywhere but first is refused
+
+- **WHEN** a line shaped as a ledger file's first line comes after that file's first line
+- **THEN** that line is counted as a refused line, and nothing that it states is used
+
+#### Scenario: A version is matched exactly, and chooses no code by its value
+
+- **WHEN** a ledger file's first line states its version as `true`, as `1.0`, as a string, as the name of a module or as a number thousands of digits long
+- **THEN** the file is refused, and the report imports nothing and looks nothing up by that value
 
 ### Requirement: A refused ledger line is counted as refused, and no line stops the report
 

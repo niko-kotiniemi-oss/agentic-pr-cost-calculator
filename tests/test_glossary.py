@@ -1012,3 +1012,12 @@ def test_the_repository_s_files_are_read() -> None:
         re.I,
     )
     assert not [path for path in files if not shown_as_markdown.search(path)]
+
+
+def test_a_page_that_calls_an_entry_anonymous_fails(tmp_path: Path) -> None:
+    # A page that calls an entry `anonymous` fails the wording test, read with this
+    # repository's own glossary (R159). That the check reads a spec as it reads a page, and
+    # matches a word in any case, the tests above hold with the test glossary.
+    own = (ROOT / GLOSSARY).read_text(encoding="utf-8")
+    root = repository(tmp_path, {GLOSSARY: own, "docs/page.md": "The ledger is anonymous.\n"})
+    assert problems_in(root) == ['docs/page.md:1: "anonymous" is a word to avoid; use "hashed id"']

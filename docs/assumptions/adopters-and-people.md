@@ -24,8 +24,8 @@ The assumptions about the teams that adopt the tool, the people who opt in, and 
 
 ## A14. People who opt in know what it publishes, and keep other work apart.
 
-- **Rests on it:** R1, R2, R3, R4, R37, R52, R108, T2, T3, T4, T5, T31, T38, DR-045, DR-046, DR-047, DR-048, DR-050, DR-052, DR-053, DR-055, DR-057, DR-136, DR-138
-- **If it is wrong:** Work on another repository, private ones included, would be published here (T2), the ledger would reveal more about a person than they expected (T31, T3, T4, T5), and calls made before an opt-in would be recorded too (T38). A person whose opt-in is not where the step reads it, or does not outlive a cloud session, would have nothing recorded.
+- **Rests on it:** R1, R2, R3, R4, R37, R52, R108, R146, R155, R159, R164, T2, T3, T4, T5, T31, T38, T106, T111, T114, T116, T117, DR-045, DR-046, DR-050, DR-052, DR-053, DR-055, DR-057, DR-136, DR-138, DR-168, DR-171, DR-180, DR-182, DR-183
+- **If it is wrong:** Work on another repository, private ones included, would be published here (T2), the ledger would reveal more about a person than they expected (T31, T3, T4, T5), a person who opts in during a session would have its calls up to the next run left out, so that its count is too low (T38), and a person who keeps the store in their backups, or puts back a copy of it after an opt-out, would keep its notes there, or bring back calls to be staged (T117). A person whose opt-in is not where the step reads it, or does not outlive a cloud session, would have nothing recorded.
 - **Fact:** People who opt in start each session in the repository, and keep work on other repositories, private ones above all, in sessions of their own.
   - **Relied on:** R3, T2, DR-057
   - **Checked:** not yet: none will, since no test may reach what adopters and people do
@@ -36,13 +36,16 @@ The assumptions about the teams that adopt the tool, the people who opt in, and 
   - **Relied on:** R1, R4, T3, T4, T5, T31, DR-045, DR-046, DR-052, DR-053, DR-136, DR-138
   - **Checked:** not yet: none will, since no test may reach what adopters and people do
 - **Fact:** People opt in before they start a session.
-  - **Relied on:** R108, T38, DR-047
+  - **Relied on:** R108, T38, DR-168
+  - **Checked:** not yet: none will, since no test may reach what adopters and people do
+- **Fact:** People who opt in read what the README says stays published after an opt-out, what a flag for calls left out says, that one opt-in covers every repository that turns the tool on, and where the store is, how to keep it out of backups and syncs, and how to remove it.
+  - **Relied on:** R146, R155, R159, R164, T3, T106, T111, T114, T116, T117, DR-171, DR-180, DR-182
   - **Checked:** not yet: none will, since no test may reach what adopters and people do
 - **Fact:** People write their opt-in directly in `~/.gitconfig` or in git's file in their XDG configuration folder, not in a file that those include and not through an environment variable.
-  - **Relied on:** R37, DR-048
+  - **Relied on:** R37, DR-183
   - **Checked:** not yet: none will, since no test may reach what adopters and people do
 - **Fact:** Each person keeps a global git configuration that outlives the session, also when they work in cloud sessions, whose machines are thrown away.
-  - **Relied on:** R1, DR-046, DR-048, DR-050
+  - **Relied on:** R1, DR-046, DR-050, DR-183
   - **Checked:** not yet: none will, since no test may reach what adopters and people do
 - **Fact:** Commit times in git already show when someone worked, so a ledger entry's UTC day discloses nothing new.
   - **Relied on:** R2, T5, DR-052
@@ -107,8 +110,8 @@ The assumptions about the teams that adopt the tool, the people who opt in, and 
 
 ## A23. Adopters pin released commits, and update the hook and the pin together.
 
-- **Rests on it:** R17, R24, R27, R28, R65, R71, R77, R88, R93, R98, R122, R123, T24, T28, T29, T53, T54, T58, T60, T64, T67, T69, DR-020, DR-022, DR-040, DR-054, DR-058, DR-062, DR-063, DR-065, DR-072, DR-073, DR-096, DR-097, DR-122, DR-123, DR-124, DR-132, DR-133, DR-139, DR-144, DR-149, DR-154, DR-156
-- **If it is wrong:** A commit that no release vouched for, or one that only a fork holds, would run as the tool in the adopter's CI and on their machines (T58, T28, T64), a hook and a report from different commits would disagree on models and prices (T54), and an adopter who gives the report more than it needs, or relies on what the public surface leaves out, could be harmed or broken by an ordinary update (T24, T29, T53).
+- **Rests on it:** R17, R24, R27, R28, R65, R71, R77, R88, R93, R98, R122, R123, T24, T28, T29, T53, T54, T58, T60, T64, T67, T69, T123, DR-020, DR-022, DR-040, DR-054, DR-058, DR-062, DR-063, DR-065, DR-072, DR-073, DR-096, DR-097, DR-122, DR-123, DR-124, DR-132, DR-133, DR-139, DR-144, DR-149, DR-154, DR-156, DR-190
+- **If it is wrong:** A commit that no release vouched for, or one that only a fork holds, would run as the tool in the adopter's CI and on their machines (T58, T28, T64), a hook and a report from different commits would disagree on models and prices (T54), and an adopter who gives the report more than it needs, or relies on what the public surface leaves out, could be harmed or broken by an ordinary update (T24, T29, T53). A key that only some versions of the tool document would turn off the hook or the report that does not know it (T123).
 - **Fact:** Adopters pin only a full commit that a release of this repository names, and check it with `git merge-base --is-ancestor`.
   - **Relied on:** R27, T28, T58, T64, T67, DR-022, DR-062, DR-072, DR-073, DR-122, DR-144, DR-156
   - **Checked:** not yet: none will, since no test may reach what adopters and people do
@@ -116,7 +119,7 @@ The assumptions about the teams that adopt the tool, the people who opt in, and 
   - **Relied on:** R65, R88, R93, T28, T60, DR-022, DR-058, DR-065
   - **Checked:** not yet: none will, since no test may reach what adopters and people do
 - **Fact:** Adopters update the hook file, its checksum and the workflow's pin together, in one pull request, so the hook's model names and the report's prices stay in step.
-  - **Relied on:** R17, R65, R77, R98, T54, DR-022, DR-054, DR-139
+  - **Relied on:** R17, R65, R77, R98, T54, T123, DR-022, DR-054, DR-139, DR-190
   - **Checked:** not yet: none will, since no test may reach what adopters and people do
 - **Fact:** When the hook and the pin drift apart, the pin moves first: update bots that follow tags can propose a new pin but cannot change the copied hook file, and adopters update the pin more readily than the hook.
   - **Relied on:** R65, T53, T54, DR-022, DR-040, DR-139
@@ -128,33 +131,33 @@ The assumptions about the teams that adopt the tool, the people who opt in, and 
   - **Relied on:** R24, T24, T29, DR-063, DR-132
   - **Checked:** not yet: none will, since no test may reach what adopters and people do
 - **Fact:** Adopters' update bots treat minor and patch releases as safe and let them through, so the version number tells adopters what they must act on.
-  - **Relied on:** R71, R123, T53, DR-096, DR-123, DR-149, DR-154
+  - **Relied on:** R71, R123, T53, T123, DR-096, DR-123, DR-149, DR-154
   - **Checked:** not yet: none will, since no test may reach what adopters and people do
 - **Fact:** Adopters run supply-chain checks that read a CycloneDX bill of materials.
   - **Relied on:** R28, T69, DR-097
   - **Checked:** not yet: none will, since no test may reach what adopters and people do
-- **Fact:** Adopters depend on nothing outside the public surface that DR-154 lists: not on the comment's wording, the job summary, the bill of materials or the version numbering itself.
+- **Fact:** Adopters depend on nothing outside the public surface that DR-154 lists: not on the comment's wording, the job summary's wording, the bill of materials or the version numbering itself.
   - **Relied on:** R71, R122, T53, DR-123, DR-124, DR-133, DR-154
   - **Checked:** not yet: none will, since no test may reach what adopters and people do
 
 ## A24. The machine running a session, and the programs that a hook starts on it, are the person's own.
 
-- **Rests on it:** R1, R12, R13, R32, R54, T3, T15, T46, T56, DR-027, DR-031, DR-046, DR-048, DR-059, DR-125
+- **Rests on it:** R1, R12, R13, R32, R54, R152, T3, T15, T46, T56, T107, T109, T112, DR-027, DR-031, DR-046, DR-125, DR-176, DR-183, DR-188
 - **If it is wrong:** On a shared machine one person's opt-in would record everyone who uses it (T3), and a program planted where the step or git looks for one would run as part of it with the person's rights (T46, T15). A machine without a working `python3` or `git` would record nothing and say nothing (T56). The capture step does not defend against a compromised machine.
 - **Fact:** The machine running a session belongs to the person running it.
-  - **Relied on:** R1, R54, T3, T46, DR-046, DR-048, DR-059
+  - **Relied on:** R1, R54, R152, T3, T46, T107, T109, T112, DR-046, DR-176, DR-183, DR-188
   - **Checked:** not yet: none will, since no test may reach what adopters and people do
 - **Fact:** On Windows, a program started by a bare name, such as `git`, is looked for first in the starting program's folder and in the current directory, and only then in the system's folders and the folders that `PATH` names.
-  - **Relied on:** R54, T46, DR-059
+  - **Relied on:** R54, T46, DR-188
   - **Checked:** not yet: `add-pr-cost-calculator` task 2.3 checks it
 - **Fact:** `/`, and Windows' system folder, can be written only by the system's administrator.
-  - **Relied on:** R54, T46, DR-059
+  - **Relied on:** R54, T46, DR-188
   - **Checked:** not yet: none will, since no test may reach what adopters and people do
 - **Fact:** Every machine that runs a session has a working `python3`, and a `git` in a folder that an absolute entry of `PATH` names.
-  - **Relied on:** R13, R32, R54, T56, DR-027, DR-031, DR-059
+  - **Relied on:** R13, R32, R54, T56, DR-027, DR-031, DR-188
   - **Checked:** not yet: none will, since no test may reach what adopters and people do
 - **Fact:** The `python3` that the registered command starts, and the `git` found through the absolute entries of `PATH`, are the person's own programs, not ones that a repository's content put there.
-  - **Relied on:** R12, R54, T15, T46, DR-059, DR-125
+  - **Relied on:** R12, R54, T15, T46, DR-125, DR-188
   - **Checked:** not yet: none will, since no test may reach what adopters and people do
 
 ## A57. The reviews and the planned tests get done.
@@ -216,7 +219,7 @@ The assumptions about the teams that adopt the tool, the people who opt in, and 
 
 ## A45. Adopters merge into the default branch by hand, after CI, having read the diff, and never rewrite that branch's history.
 
-- **Rests on it:** R20, R58, R59, R62, R64, R67, R68, R93, R96, T16, T20, T21, T22, T47, T50, DR-005, DR-015, DR-017, DR-018, DR-019, DR-039, DR-051, DR-061, DR-064, DR-066, DR-110, DR-131
+- **Rests on it:** R20, R58, R59, R62, R64, R67, R68, R93, R96, T16, T20, T21, T22, T47, T50, DR-005, DR-015, DR-017, DR-018, DR-019, DR-039, DR-051, DR-061, DR-066, DR-110, DR-131, DR-186
 - **If it is wrong:** Merges made by a workflow would get no report (T50), a stacked pull request's CI cost would count its base's runs again (T22), and a hand-edited ledger or a repointed workflow would change the reported cost unnoticed (T16, T21). A rewrite of the default branch's history could erase earlier ledger files, so that a returning call is counted again (T47, T20).
 - **Fact:** Adopters' pull requests merge into the default branch. A pull request closed without merging, or merged into another branch as in a stack, needs no report of its own.
   - **Relied on:** R20, R58, R68, DR-005, DR-017, DR-018, DR-061
@@ -231,7 +234,7 @@ The assumptions about the teams that adopt the tool, the people who opt in, and 
   - **Relied on:** R64, R96, T22, DR-039, DR-110
   - **Checked:** not yet: none will, since no test may reach what adopters and people do
 - **Fact:** In an adopting repository, whoever merges reads the pull request's diff before merging, its ledger files and workflow changes included.
-  - **Relied on:** R93, T16, T21, DR-051, DR-064, DR-066
+  - **Relied on:** R93, T16, T21, DR-051, DR-066, DR-186
   - **Checked:** not yet: none will, since no test may reach what adopters and people do
 - **Fact:** Nobody rewrites the default branch's history, so its first-parent history before a merge holds every earlier ledger file.
   - **Relied on:** R59, R67, T20, T47, DR-015, DR-017, DR-131
@@ -253,7 +256,7 @@ The assumptions about the teams that adopt the tool, the people who opt in, and 
 
 ## A47. Ledger files stay small, and their commits are rarely undone.
 
-- **Rests on it:** R22, R52, R67, R70, R113, T8, T42, T48, DR-011, DR-015, DR-039, DR-055, DR-056, DR-092, DR-127, DR-131
+- **Rests on it:** R22, R52, R67, R70, R113, T8, T42, T48, DR-011, DR-015, DR-039, DR-055, DR-092, DR-127, DR-131, DR-184
 - **If it is wrong:** In a busy, long-lived repository the report would reach its time limit and post nothing, and capture would spend its budget on old ledger files (T48, T42). Teams that rework their history often would lose much of their usage from reports (T8).
 - **Fact:** Adopters' histories, ledger folders and stores stay small enough that capture reads them within its time budget and the report within its time limit.
   - **Relied on:** R22, R67, R70, T42, T48, DR-011, DR-015, DR-039, DR-092, DR-131
@@ -262,15 +265,18 @@ The assumptions about the teams that adopt the tool, the people who opt in, and 
   - **Relied on:** R22, DR-015, DR-127
   - **Checked:** not yet: none will, since no test may reach what adopters and people do
 - **Fact:** Reverting, resetting or splitting a commit that holds a ledger file is rare in adopters' work.
-  - **Relied on:** R52, R113, T8, DR-055, DR-056
+  - **Relied on:** R52, R113, T8, DR-055, DR-184
   - **Checked:** not yet: none will, since no test may reach what adopters and people do
 
-## A58. Someone reads the report comments and keeps the prices current.
+## A58. Someone reads the report comments and job summaries, and keeps the prices current.
 
-- **Rests on it:** R14, R16, R17, R93, T21, T30, T49, T60, DR-020, DR-051, DR-064, DR-065, DR-124, DR-156
-- **If it is wrong:** A changed switch, hook file or workflow would go unnoticed after the merge (T21, T49, T60), and a wrong or missing price row would leave the figure low or stale for as long as the table lags (T30).
-- **Fact:** Someone reads the report's comment on each merged pull request and acts on its flags, such as a changed switch, hook file or workflow.
-  - **Relied on:** R93, T21, T49, T60, DR-051, DR-064, DR-065
+- **Rests on it:** R14, R16, R17, R93, R172, T21, T30, T49, T60, T123, DR-020, DR-051, DR-065, DR-124, DR-156, DR-186, DR-191
+- **If it is wrong:** A changed switch, hook file or workflow, or a tool that a merge leaves off, would go unnoticed after the merge, and so would the reason that a merge with the tool off at both commits gets no comment (T21, T49, T60, T123), and a wrong or missing price row would leave the figure low or stale for as long as the table lags (T30).
+- **Fact:** Someone reads the report's comment on each merged pull request and acts on its flags, such as a changed switch, hook file or workflow, and on its word that a merge leaves the tool off.
+  - **Relied on:** R93, R172, T21, T49, T60, T123, DR-051, DR-065, DR-186, DR-191
+  - **Checked:** not yet: none will, since no test may reach what adopters and people do
+- **Fact:** Someone who expects a report comment on a merged pull request and finds none opens the run's job summary, which says why.
+  - **Relied on:** R172, T21, T49, T123, DR-191
   - **Checked:** not yet: none will, since no test may reach what adopters and people do
 - **Fact:** Each price row is right when it merges: whoever adds it copies the price from its source page, and the review of its diff catches a mistake.
   - **Relied on:** R14, R16, T30, DR-020

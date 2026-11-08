@@ -1,12 +1,12 @@
 # DR-009: Capture reads the transcripts through hooks while the session runs
 
 - **Type:** architecture
-- **Status:** accepted
+- **Status:** closed
 - **Decided by:** the change `add-pr-cost-calculator`, as the owner asked on 2026-10-17
 - **Requirements:** R7, R13, R44, R90
 - **Threats:** T8, T14, T40, T42
 - **Replaces:** none
-- **Closed by:** none
+- **Closed by:** DR-172
 
 ## Context
 
