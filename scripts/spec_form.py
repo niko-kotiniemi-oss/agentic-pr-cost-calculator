@@ -20,6 +20,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, NamedTuple, TypeVar
 
+from wording import code_spans
+
 OPENSPEC = "openspec"
 ARCHIVE = "openspec/changes/archive"
 CHANGES = "openspec/changes"
@@ -33,7 +35,6 @@ JS_SPACE = (
 # A character that is not printable ASCII. A spec's lines end at line feeds, so none is
 # left in a line.
 NOT_PLAIN = re.compile(r"[^ -~]")
-BACKTICKS = re.compile(r"`+")
 # As OpenSpec finds them: whole words, where a word is ASCII letters, digits and `_`.
 SHALL_OR_MUST = re.compile(r"\b(?:SHALL|MUST)\b", re.ASCII)
 # A line that starts with a bold label and a colon, as OpenSpec's METADATA_LINE matches a
@@ -200,28 +201,14 @@ def changes_in(root: Path) -> frozenset[str]:
 
 def prose_of(line: str) -> tuple[list[str], list[int]]:
     """The parts of a line outside inline code, and the length of each run of backticks
-    that no later run as long closes on the line. A code span is a run of backticks up to
-    the next run as long; a run that none follows is a backtick of the prose."""
-    runs = list(BACKTICKS.finditer(line))
-    # The next run of the same length after each run, found in one pass from the end, so
-    # that a line of many runs is read in time that grows with the line.
-    closes: list[int | None] = [None] * len(runs)
-    latest: dict[int, int] = {}
-    for at in reversed(range(len(runs))):
-        closes[at] = latest.get(len(runs[at][0]))
-        latest[len(runs[at][0])] = at
+    that no later run as long closes on the line, with the code spans that
+    `scripts/wording.py` finds in a page's line."""
+    spans, unclosed = code_spans(line)
     parts: list[str] = []
-    unclosed: list[int] = []
-    start = at = 0
-    while at < len(runs):
-        close = closes[at]
-        if close is None:
-            unclosed.append(len(runs[at][0]))
-            at += 1
-        else:
-            parts.append(line[start : runs[at].start()])
-            start = runs[close].end()
-            at = close + 1
+    start = 0
+    for begin, end in spans:
+        parts.append(line[start:begin])
+        start = end
     parts.append(line[start:])
     return parts, unclosed
 
@@ -712,7 +699,7 @@ def cli_reading(run: Run) -> tuple[Reading, list[str]]:
         requirements = asked(run, args, shown_spec, problems)
         if requirements is not None:
             specs[("", ident)] = requirements
-    changes = asked(run, ["list", "--json"], listed_changes, problems) or []
+    changes = asked(run, ["list", "--json", "--sort", "name"], listed_changes, problems) or []
     for change in changes:
         args = ["show", "--type", "change", "--json", "--deltas-only", "--", change]
         for ident, requirement in asked(run, args, shown_change, problems) or []:

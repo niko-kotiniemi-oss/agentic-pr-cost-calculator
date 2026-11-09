@@ -55,8 +55,10 @@ among them a change's spec from which the test reads no requirement, on the firs
 difference in each spec's requirements, naming the field, on a call of the CLI that
 fails or prints JSON in another form, naming the call, and when it compares no
 requirement. A test fails when a tree changes and its recording does not, when the
-recording is of another release than the one that `package-lock.json` pins, and when it
-holds a time of day; this file, run with the CLI's path, rewrites the recording.
+recording is of another release than the one that `package-lock.json` pins, when it
+holds a time of day, and when it lists a tree's changes otherwise than by their names, as
+the comparison asks the CLI to list them; this file, run with the CLI's path, rewrites
+the recording.
 """
 
 from __future__ import annotations
@@ -660,21 +662,19 @@ def test_a_scenario_s_heading_out_of_form_fails(
 
 
 @pytest.mark.parametrize(
-    ("heading", "what"),
+    "heading",
     [
-        ("### Requirement:", "requirement"),
-        ("### Requirement: ", "requirement"),
-        ("### Requirement:   ", "requirement"),
-        ("### Requirement: #", "requirement"),
-        ("### Requirement: ###   ", "requirement"),
+        "### Requirement:",
+        "### Requirement: ",
+        "### Requirement:   ",
+        "### Requirement: #",
+        "### Requirement: ###   ",
     ],
 )
-def test_a_requirement_s_heading_without_a_name_fails(
-    tmp_path: Path, heading: str, what: str
-) -> None:
+def test_a_requirement_s_heading_without_a_name_fails(tmp_path: Path, heading: str) -> None:
     defect = planted(ALPHA, FIRST, heading)
     assert problems_of(tmp_path, MAIN_ALPHA, defect)[:1] == [
-        f"{MAIN_ALPHA}:{line(ALPHA, FIRST)}: is a {what}'s heading without a name"
+        f"{MAIN_ALPHA}:{line(ALPHA, FIRST)}: is a requirement's heading without a name"
     ]
 
 
@@ -1354,10 +1354,12 @@ TREES = {
     "no proposal": PASSING,
 }
 LIST_SPECS = ["list", "--specs", "--json"]
-LIST_CHANGES = ["list", "--json"]
-SHOW_ALPHA = ["show", "--type", "spec", "--json", "--", "alpha"]
-SHOW_BETA = ["show", "--type", "spec", "--json", "--", "area/beta"]
-SHOW_DEMO = ["show", "--type", "change", "--json", "--deltas-only", "--", "demo"]
+LIST_CHANGES = ["list", "--json", "--sort", "name"]
+SHOW_SPEC = ["show", "--type", "spec", "--json", "--"]
+SHOW_CHANGE = ["show", "--type", "change", "--json", "--deltas-only", "--"]
+SHOW_ALPHA = [*SHOW_SPEC, "alpha"]
+SHOW_BETA = [*SHOW_SPEC, "area/beta"]
+SHOW_DEMO = [*SHOW_CHANGE, "demo"]
 FORM = "prints JSON in another form than the comparison reads"
 RERECORD = (
     "run `PYTHONPATH=scripts .venv/bin/python tests/test_spec_form.py node_modules/.bin/openspec`"
@@ -1375,11 +1377,12 @@ def digest(files: Mapping[str, str]) -> str:
 
 def recorded_calls(program: str, root: Path, env: dict[str, str]) -> list[dict[str, Any]]:
     """Each call that the comparison makes of the CLI in the tree at root, with what it
-    printed, as `spec_form.cli_reading` makes them, but the folder that it ran in and the
-    time at which each change was last changed, which the comparison does not read."""
+    printed, but the folder that it ran in and the time at which each change was last
+    changed, which the comparison does not read. `spec_form.cli_reading` itself makes the
+    calls, so the recorder asks what the comparison asks, in its order."""
     calls: list[dict[str, Any]] = []
 
-    def call(*args: str) -> Any:
+    def run(args: list[str]) -> tuple[int, str, str]:
         done = subprocess.run(
             [program, *args], cwd=root, env=env, capture_output=True, text=True, check=False
         )
@@ -1387,13 +1390,10 @@ def recorded_calls(program: str, root: Path, env: dict[str, str]) -> list[dict[s
         output.pop("root", None)
         for change in output.get("changes", []):
             change.pop("lastModified", None)
-        calls.append(a_call(list(args), output, done.returncode, done.stderr))
-        return output
+        calls.append(a_call(args, output, done.returncode, done.stderr))
+        return done.returncode, json.dumps(output), done.stderr
 
-    for spec in call(*LIST_SPECS).get("specs", []):
-        call(*SHOW_ALPHA[:-1], spec["id"])
-    for change in call(*LIST_CHANGES).get("changes", []):
-        call(*SHOW_DEMO[:-1], change["name"])
+    spec_form.cli_reading(run)
     return calls
 
 
@@ -1490,6 +1490,14 @@ def test_the_recording_holds_no_time_of_day() -> None:
     assert times == [], "the recording holds the time of day at which it was made"
 
 
+def test_the_recording_lists_the_changes_by_name() -> None:
+    # Asked for no order, the CLI lists first the change whose files it finds last changed,
+    # so a recording made again could list the same changes in another order.
+    for name, made in recorded()["trees"].items():
+        listed = [change["name"] for change in printed(made["calls"], LIST_CHANGES)["changes"]]
+        assert listed == sorted(listed), name
+
+
 def test_the_readings_of_a_tree_that_openspec_reads_as_the_test_does_agree(
     tmp_path: Path,
 ) -> None:
@@ -1570,7 +1578,7 @@ def change_of_openspec_alone(calls: list[dict[str, Any]]) -> None:
     # any other but `archive`, though no reader of the specs reads it.
     for change in ("other", ".draft"):
         printed(calls, LIST_CHANGES)["changes"].append({"name": change})
-        calls.append(a_call([*SHOW_DEMO[:-1], change], {"deltas": []}))
+        calls.append(a_call([*SHOW_CHANGE, change], {"deltas": []}))
 
 
 DIFFERS = "differs in its {}: the test reads {}, and OpenSpec shows {}"
@@ -1874,7 +1882,7 @@ def test_no_line_of_a_spec_or_of_openspec_s_output_starts_a_line_of_the_comparis
     calls = calls_of("agreeing")
     printed(calls, SHOW_ALPHA)["requirements"][0]["name"] = f"a\n{command}"
     printed(calls, LIST_CHANGES)["changes"].append({"name": f"b\n{command}"})
-    calls.append(a_call([*SHOW_DEMO[:-1], f"b\n{command}"], {"deltas": []}))
+    calls.append(a_call([*SHOW_CHANGE, f"b\n{command}"], {"deltas": []}))
     failing = calls_of("agreeing")
     failing[-1].update({"exit": 1, "stdout": {"status": [{"message": f"c\n{command}"}]}})
     failing[0].update({"exit": 1, "stderr": f"d\n{command}"})

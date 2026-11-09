@@ -126,7 +126,9 @@
         {
           "args": [
             "list",
-            "--json"
+            "--json",
+            "--sort",
+            "name"
           ],
           "exit": 0,
           "stdout": {
@@ -385,7 +387,9 @@
         {
           "args": [
             "list",
-            "--json"
+            "--json",
+            "--sort",
+            "name"
           ],
           "exit": 0,
           "stdout": {
@@ -547,7 +551,9 @@
         {
           "args": [
             "list",
-            "--json"
+            "--json",
+            "--sort",
+            "name"
           ],
           "exit": 0,
           "stdout": {
@@ -682,7 +688,9 @@
         {
           "args": [
             "list",
-            "--json"
+            "--json",
+            "--sort",
+            "name"
           ],
           "exit": 0,
           "stdout": {
