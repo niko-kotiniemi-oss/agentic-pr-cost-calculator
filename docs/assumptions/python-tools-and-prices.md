@@ -164,17 +164,17 @@ The assumptions about Python, about the development tools of this repository, an
 
 ### A32. OpenSpec behaves as the checks expect.
 
-- **Rests on it:** R73, R74, R100, T35, DR-024, DR-042, DR-079, DR-105, DR-113, DR-143
-- **If it is wrong:** The check of the generated skills could fail with no hand edit made, or pass while a person's settings shaped the skills that agents load (T35), and the documentation checks could fail with nothing wrong in the documents.
+- **Rests on it:** R73, R74, R100, R173, R174, T35, DR-024, DR-042, DR-079, DR-105, DR-143, DR-193, DR-194
+- **If it is wrong:** The check of the generated skills could fail with no hand edit made, or pass while a person's settings shaped the skills that agents load (T35), and the documentation checks and the check of the specs' form could fail with nothing wrong in the documents.
 - **Fact:** OpenSpec's pinned command-line tool writes the same skills every time it runs, whatever a person's own OpenSpec settings.
   - **Relied on:** T35, DR-042, DR-143
   - **Checked:** not yet: none will, since CI's regeneration of the skills shows only that they match in CI, not under a person's own settings
 - **Fact:** OpenSpec keeps the file layout that the documentation checks read.
-  - **Relied on:** R73, R74, R100, DR-079
+  - **Relied on:** R73, R74, R100, R173, R174, DR-079, DR-193
   - **Checked:** not yet: none will, since it is about OpenSpec's later releases, though the documentation checks fail where it does not hold
-- **Fact:** OpenSpec asks that each requirement state one behaviour in 500 characters or fewer, measured on its trimmed lines that are not blank, and its validator reports a longer text only as information, even with `--strict`, and only for the main specs.
-  - **Relied on:** DR-105, DR-113
-  - **Checked:** not yet: none will, since it is about how OpenSpec's later releases treat the limit
+- **Fact:** OpenSpec asks that each requirement state one behaviour in 500 characters or fewer, measured on its trimmed lines that are not blank.
+  - **Relied on:** DR-105, DR-194
+  - **Checked:** not yet: none will, since it is about what OpenSpec's later releases ask
 - **Fact:** Node is needed only for the OpenSpec command-line tool.
   - **Relied on:** DR-024, DR-042
   - **Checked:** not yet: none will, since no task plans a test of it

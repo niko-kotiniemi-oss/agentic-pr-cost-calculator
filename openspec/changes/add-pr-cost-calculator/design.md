@@ -173,9 +173,11 @@ The tool has no dependencies beyond Python's standard library, so its bill of ma
 
 ### 12. The documentation names everything the tool does
 
-*Records:* DR-100, DR-101, DR-102, DR-103, DR-104, DR-106, DR-117 and DR-150.
+*Records:* DR-100, DR-101, DR-102, DR-103, DR-104, DR-106, DR-117, DR-150, DR-193 and DR-194.
 
 `docs/how-it-works.md` gives each workflow's permissions as a table, per workflow and per job, and `tests/test_documentation.py` compares that table with every workflow, `.yml` and `.yaml` alike, in both directions, so that a permission granted and not listed fails it, and so does one listed and not granted. The test compares every action and every container or service image the workflows use with the connections the page names. Task 5.3 adds the check that compares the page with the network calls and environment variables in the tool's own code.
+
+`tests/test_spec_form.py` reads every spec in `openspec/specs/` and in each change that is not archived, line by line, as OpenSpec reads it, and fails where a spec would be read otherwise than it is written: on a requirement whose text has no SHALL or MUST or is longer than 500 characters, or that has no scenario, on a scenario other than one WHEN line and then one THEN line, each followed by any AND lines, on a heading out of form or out of place, and on a scenario's line outside a scenario (DR-193, DR-194). OpenSpec's strict validation fails the first three where a change adds the requirement or the main specs hold it, though not a longer one that a change modifies, and passes the rest; the test holds all of them, whatever a later release of OpenSpec checks.
 
 ### 13. Each decision has a record of its own
 

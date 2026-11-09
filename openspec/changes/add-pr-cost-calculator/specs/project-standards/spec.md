@@ -1,6 +1,6 @@
 ## Purpose
 
-Hold the whole tool to the standards that make it safe to adopt: documentation that names everything it does and says how each feature is validated, connections only where that documentation says, rated threats, pull request text without private references, action pins that their repositories tagged, a record of each decision, kept so that each can be reversed on its own, the assumptions that the design rests on, a glossary of the words its documents use, and a golden set of figures that every version reproduces.
+Hold the whole tool to the standards that make it safe to adopt: documentation that names everything it does and says how each feature is validated, connections only where that documentation says, rated threats, pull request text without private references, action pins that their repositories tagged, a record of each decision, kept so that each can be reversed on its own, the assumptions that the design rests on, a glossary of the words its documents use, specs that OpenSpec reads as they are written, and a golden set of figures that every version reproduces.
 
 ## ADDED Requirements
 
@@ -129,6 +129,59 @@ A change's proposal SHALL list every capability that the change's specs hold, an
 
 - **WHEN** a change's proposal gives one of its capabilities no row, or an empty one, in its section on how the outcome is validated
 - **THEN** a test fails and names the capability
+
+### Requirement: Each requirement's text keeps OpenSpec's form
+
+Tests SHALL fail when a requirement that a spec in `openspec/specs/` gives under `## Requirements`, or that a change not archived gives under `## ADDED Requirements` or `## MODIFIED Requirements`, has no scenario, or has text, between its heading and its first scenario, that holds neither SHALL nor MUST as a word or is longer than 500 characters, measured on its lines that are not blank, each trimmed and joined by line breaks, and when they read no requirement or no scenario.
+
+#### Scenario: A requirement with no SHALL or MUST fails CI
+
+- **WHEN** a requirement's text holds neither SHALL nor MUST as a word, as when it gives them in lower case or in its heading alone
+- **THEN** a test fails and names the spec and the requirement
+
+#### Scenario: A requirement longer than 500 characters fails CI
+
+- **WHEN** a requirement's text is longer than 500 characters, whether a main spec gives it or a change adds or modifies it
+- **THEN** a test fails and names the spec, the requirement and its length
+
+#### Scenario: A requirement with no scenario fails CI
+
+- **WHEN** a requirement that a main spec gives, or that a change adds or modifies, has no scenario
+- **THEN** a test fails and names the spec and the requirement
+
+#### Scenario: A requirement that a change removes or renames is not read for its text
+
+- **WHEN** a change removes a requirement, giving its heading with its reason and its migration and no scenario, or renames one
+- **THEN** the test passes it
+
+#### Scenario: A test that reads no requirement or no scenario fails
+
+- **WHEN** the test finds no spec, or specs that give no requirement or no scenario
+- **THEN** it fails and says what it did not read
+
+### Requirement: Each scenario and heading of the specs keeps OpenSpec's form
+
+Tests SHALL fail when a spec in `openspec/specs/` or in a change not archived gives a heading other than a title before its sections, the sections OpenSpec reads, and `### Requirement:` and `#### Scenario:` headings, both with a name, the second under a requirement; a scenario other than one `- **WHEN**` line then one `- **THEN**` line, each followed by any `- **AND**` lines; a scenario's line in a requirement's text; or a line before the first requirement of a section that gives their text.
+
+#### Scenario: A scenario out of form fails CI
+
+- **WHEN** a scenario has no `- **WHEN**` line or no `- **THEN**` line, gives one of them twice or its THEN first, or holds another line, such as a later scenario's heading made plain text or bold
+- **THEN** a test fails and names the spec, the requirement, the scenario and the line
+
+#### Scenario: A heading out of form or out of place fails CI
+
+- **WHEN** a requirement's or a scenario's heading is at another level, or lacks `Requirement:` or `Scenario:` or its name, a scenario's heading stands before any requirement, or a spec gives a title after its first section, a section that OpenSpec does not read or any other heading
+- **THEN** a test fails and names the spec and the line
+
+#### Scenario: A scenario's line outside a scenario fails CI
+
+- **WHEN** a `- **WHEN**`, `- **THEN**` or `- **AND**` line stands in a requirement's text, as when its first scenario's heading is made plain text, or a line stands before the first requirement of a section that gives their text, as when that requirement's heading is made plain text
+- **THEN** a test fails and names the spec and the line
+
+#### Scenario: A spec in OpenSpec's own form passes
+
+- **WHEN** a main spec opens with the title that archiving a change gives it, then `## Purpose` and `## Requirements`, and a scenario gives `- **AND**` lines after its WHEN or its THEN
+- **THEN** the test passes it
 
 ### Requirement: Each decision has a record of its own, in a fixed form
 

@@ -35,7 +35,7 @@ The tool is made of nine capabilities, each one spec. Seven are the features tha
 - `ci-minutes`: the cost of the GitHub Actions minutes that the pull request's own commits used.
 - `report-comment`: the one comment a merged pull request gets, and the trusted code that computes it.
 - `releases-and-compatibility`: the Python and git versions the tool supports, how its dependencies move, and its releases with their bill of materials.
-- `project-standards`: what holds for the whole tool: documentation that names everything the tool does, the tool's connections, rated threats, pull request text without private references, pinned actions, a record of each decision, the assumptions that the design rests on, the words its documents use, and a golden set of its figures.
+- `project-standards`: what holds for the whole tool: documentation that names everything the tool does, the tool's connections, rated threats, pull request text without private references, pinned actions, a record of each decision, the assumptions that the design rests on, the words its documents use, the specs' form, and a golden set of its figures.
 
 ### Modified Capabilities
 
@@ -55,7 +55,7 @@ Every capability is validated first by its scenarios. Task 1.3 traces each scena
 | `ci-minutes` | recorded API responses for each way a pull request can merge (task 3.3) |
 | `report-comment` | a property test that no planted string reaches its outputs (task 4.1), tests that it refuses every other event and never shows its token (task 4.3), and the end-to-end run on this repository's own merge (task 7.1) |
 | `releases-and-compatibility` | the version checks already in place (task 1.11), the capture step's floors (task 6.5), a CI job with git 2.43, the oldest git that CI tests (task 4.4), and the release check and bill of materials (tasks 6.1 to 6.3) |
-| `project-standards` | the documentation, threat model, workflow and decision record tests already in place (tasks 1.10, 1.12 and 1.16 to 1.18), the checks of connections, pull request text and pins (tasks 1.13 to 1.15), the checks of the assumptions and of the glossary's words (tasks 1.19 and 1.20), the golden set (task 1.21), the release's test job (task 6.3), and the check of what the code reads (task 5.3) |
+| `project-standards` | the documentation, threat model, workflow and decision record tests already in place (tasks 1.10, 1.12 and 1.16 to 1.18), the checks of connections, pull request text and pins (tasks 1.13 to 1.15), the checks of the assumptions and of the glossary's words (tasks 1.19 and 1.20), the golden set (task 1.21), the check of the specs' form (task 1.23), the release's test job (task 6.3), and the check of what the code reads (task 5.3) |
 
 The change as a whole succeeds when:
 
