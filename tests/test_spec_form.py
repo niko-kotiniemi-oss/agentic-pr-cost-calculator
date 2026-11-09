@@ -46,18 +46,35 @@ ASCII replaced by its code point, so that no line of a spec starts a line of the
 long run of spaces after each shape of line that it reads. The rules are in
 `scripts/spec_form.py`, which `scripts/verify-openspec.sh` also runs to compare this
 reading with the pinned OpenSpec CLI's (R178, DR-196).
+
+That comparison is tested here on what the pinned CLI printed for four trees, recorded in
+`tests/spec_form_openspec.json` with the folder that it ran in left out, and through a
+stand-in CLI that prints it, so that no test runs Node. It fails on a spec or a change
+that only one reading gives, on the first difference in each spec's requirements, naming
+the field, on a call of the CLI that fails or prints JSON in another form, naming the
+call, and when it compares no requirement. A test fails when a tree changes and its
+recording does not; this file, run with the CLI's path, rewrites the recording.
 """
 
 from __future__ import annotations
 
+import copy
+import functools
+import hashlib
+import json
 import os
 import re
+import subprocess
+import sys
+import tempfile
 import time
+from collections.abc import Callable, Mapping
 from pathlib import Path
+from typing import Any
 
 import pytest
 import spec_form
-from spec_form import Spec, find_specs, problems_in, prose_of, shown
+from spec_form import Requirement, Spec, find_specs, problems_in, prose_of, shown
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -227,7 +244,7 @@ PASSING = {
 }
 
 
-def tree(root: Path, files: dict[str, str | bytes]) -> Path:
+def tree(root: Path, files: Mapping[str, str | bytes]) -> Path:
     """A folder holding these files, each written as these bytes or this text in UTF-8,
     with no line ending changed."""
     for name, content in files.items():
@@ -1283,3 +1300,530 @@ def test_no_line_of_a_spec_starts_a_line_of_the_output(tmp_path: Path) -> None:
     assert command in output.replace("U+000A", "").replace("U+000D", "")
     assert all(not part.lstrip(" \t").startswith("::") for part in output.splitlines())
     assert all(" " <= character <= "~" or character == "\n" for character in output)
+
+
+# The comparison with the pinned OpenSpec CLI (R178, DR-196).
+
+# What the pinned CLI printed for each tree below, call by call, with the folder that it
+# ran in left out, and a digest of the tree. `record` writes it.
+RECORDING = ROOT / "tests" / "spec_form_openspec.json"
+# The passing tree but its change with no proposal, which OpenSpec does not show.
+AGREEING = {name: text for name, text in PASSING.items() if name != DRAFT_GAMMA}
+# Two lines that open and close a fence, each inside an HTML comment that GitHub hides,
+# take the second requirement of the first spec out of OpenSpec's reading.
+COMMENTED_FENCE = "<!--\n```\n-->\n"
+FENCED = {**AGREEING, MAIN_ALPHA: planted(ALPHA, SECOND, f"{COMMENTED_FENCE}\n{SECOND}")}
+FENCED[MAIN_ALPHA] += COMMENTED_FENCE
+TREES = {
+    "agreeing": AGREEING,
+    "fenced": FENCED,
+    "no spec": {"openspec/config.yaml": PASSING["openspec/config.yaml"]},
+    "no proposal": PASSING,
+}
+LIST_SPECS = ["list", "--specs", "--json"]
+LIST_CHANGES = ["list", "--json"]
+SHOW_ALPHA = ["show", "--type", "spec", "--json", "--", "alpha"]
+SHOW_BETA = ["show", "--type", "spec", "--json", "--", "area/beta"]
+SHOW_DEMO = ["show", "--type", "change", "--json", "--deltas-only", "--", "demo"]
+FORM = "prints JSON in another form than the comparison reads"
+
+
+def a_call(args: list[str], stdout: Any, status: int = 0, stderr: str = "") -> dict[str, Any]:
+    return {"args": args, "exit": status, "stdout": stdout, "stderr": stderr}
+
+
+def digest(files: Mapping[str, str]) -> str:
+    return hashlib.sha256(json.dumps(sorted(files.items())).encode()).hexdigest()
+
+
+def recorded_calls(program: str, root: Path, env: dict[str, str]) -> list[dict[str, Any]]:
+    """Each call that the comparison makes of the CLI in the tree at root, with what it
+    printed, as `spec_form.cli_reading` makes them."""
+    calls: list[dict[str, Any]] = []
+
+    def call(*args: str) -> Any:
+        done = subprocess.run(
+            [program, *args], cwd=root, env=env, capture_output=True, text=True, check=False
+        )
+        output = json.loads(done.stdout)
+        output.pop("root", None)
+        calls.append(a_call(list(args), output, done.returncode, done.stderr))
+        return output
+
+    for spec in call(*LIST_SPECS).get("specs", []):
+        call(*SHOW_ALPHA[:-1], spec["id"])
+    for change in call(*LIST_CHANGES).get("changes", []):
+        call(*SHOW_DEMO[:-1], change["name"])
+    return calls
+
+
+def record(cli: str) -> None:
+    """Rewrites the recording with what the CLI at this path prints for each tree, its own
+    settings kept in a scratch folder, as `scripts/verify-openspec.sh` keeps them."""
+    program = str(Path(cli).resolve())
+    with tempfile.TemporaryDirectory() as scratch:
+        env = {
+            **os.environ,
+            "XDG_CONFIG_HOME": f"{scratch}/config",
+            "XDG_DATA_HOME": f"{scratch}/data",
+            "DO_NOT_TRACK": "1",
+            "OPENSPEC_TELEMETRY": "0",
+            "OPENSPEC_NO_UPDATE_CHECK": "1",
+        }
+        version = subprocess.run(
+            [program, "--version"], env=env, capture_output=True, text=True, check=True
+        ).stdout.strip()
+        trees = {
+            name: {
+                "tree": digest(files),
+                "calls": recorded_calls(program, tree(Path(scratch) / name, files), env),
+            }
+            for name, files in TREES.items()
+        }
+        text = json.dumps({"openspec": version, "trees": trees}, indent=2) + "\n"
+        assert scratch not in text, "the recording names the folder it was made in"
+    RECORDING.write_text(text, encoding="utf-8")
+
+
+@functools.cache
+def recorded() -> Any:
+    return json.loads(RECORDING.read_text(encoding="utf-8"))
+
+
+def calls_of(name: str) -> list[dict[str, Any]]:
+    """A copy of the calls recorded for a tree, for a test to plant a defect in."""
+    calls: list[dict[str, Any]] = copy.deepcopy(recorded()["trees"][name]["calls"])
+    return calls
+
+
+def printed(calls: list[dict[str, Any]], args: list[str]) -> Any:
+    """The JSON that the recorded call with these arguments printed."""
+    return next(call["stdout"] for call in calls if call["args"] == args)
+
+
+class Replay:
+    """The pinned CLI, replayed from its recorded calls, noting what it is asked."""
+
+    def __init__(self, calls: list[dict[str, Any]]) -> None:
+        self.calls = calls
+        self.asked: list[list[str]] = []
+
+    def __call__(self, args: list[str]) -> tuple[int, str, str]:
+        self.asked.append(args)
+        for call in self.calls:
+            if call["args"] == args:
+                out = call["stdout"]
+                return (
+                    call["exit"],
+                    out if isinstance(out, str) else json.dumps(out),
+                    call["stderr"],
+                )
+        raise AssertionError(f"no call of OpenSpec was recorded with {args}")
+
+
+def comparison(root: Path, calls: list[dict[str, Any]]) -> list[str]:
+    """The problems of the CLI's reading, or else its differences from the test's reading
+    of the tree at root."""
+    theirs, problems = spec_form.cli_reading(Replay(calls))
+    return problems or spec_form.differences(spec_form.read_all(root)[0], theirs)
+
+
+def test_the_recording_is_of_the_trees_that_the_tests_read() -> None:
+    assert sorted(recorded()["trees"]) == sorted(TREES)
+    for name, files in TREES.items():
+        assert recorded()["trees"][name]["tree"] == digest(files), (
+            f"the tree {name!r} changed after its recording: run"
+            " `PYTHONPATH=scripts .venv/bin/python tests/test_spec_form.py"
+            " node_modules/.bin/openspec` at the repository's root"
+        )
+
+
+def test_the_readings_of_a_tree_that_openspec_reads_as_the_test_does_agree(
+    tmp_path: Path,
+) -> None:
+    replay = Replay(calls_of("agreeing"))
+    theirs, problems = spec_form.cli_reading(replay)
+    ours = spec_form.read_all(tree(tmp_path, AGREEING))[0]
+    assert problems == []
+    assert replay.asked == [call["args"] for call in calls_of("agreeing")]
+    assert theirs == ours
+    assert theirs.specs[("demo", "area/beta")][-1] == Requirement(
+        "RENAMED", "The old rule holds", "", (), "The renamed rule holds"
+    )
+    assert spec_form.differences(ours, theirs) == []
+
+
+def test_a_requirement_that_a_fence_hides_from_openspec_fails(tmp_path: Path) -> None:
+    after = FENCED[MAIN_ALPHA].split(f"{SCENARIO}\n", 1)[1]
+    ours, theirs = after.split(f"\n\n{SECOND}", 1)[0].strip(), after.strip()
+    assert comparison(tree(tmp_path, FENCED), calls_of("fenced")) == [
+        f'{MAIN_ALPHA}: requirement 1, "The first rule holds", differs in its scenario 1\'s'
+        f' lines: the test reads "{shown(ours)}", and OpenSpec shows "{shown(theirs)}"'
+    ]
+
+
+def operation(calls: list[dict[str, Any]]) -> None:
+    printed(calls, SHOW_DEMO)["deltas"][0]["operation"] = "MODIFIED"
+
+
+def name(calls: list[dict[str, Any]]) -> None:
+    printed(calls, SHOW_ALPHA)["requirements"][1]["name"] = "The other rule holds"
+
+
+def text(calls: list[dict[str, Any]]) -> None:
+    printed(calls, SHOW_ALPHA)["requirements"][0]["text"] = "The tool SHALL hold a rule."
+
+
+def new_name(calls: list[dict[str, Any]]) -> None:
+    printed(calls, SHOW_DEMO)["deltas"][-1]["rename"]["to"] = "The other rule holds"
+
+
+def scenarios(calls: list[dict[str, Any]]) -> None:
+    printed(calls, SHOW_ALPHA)["requirements"][0]["scenarios"].append(
+        {"name": "Another", "rawText": "- **WHEN** x\n- **THEN** y"}
+    )
+
+
+def scenario_name(calls: list[dict[str, Any]]) -> None:
+    printed(calls, SHOW_ALPHA)["requirements"][0]["scenarios"][0]["name"] = "The rule is held"
+
+
+def scenario_lines(calls: list[dict[str, Any]]) -> None:
+    printed(calls, SHOW_ALPHA)["requirements"][1]["scenarios"][0]["rawText"] = "- **WHEN** x"
+
+
+def order(calls: list[dict[str, Any]]) -> None:
+    printed(calls, SHOW_BETA)["requirements"].reverse()
+
+
+def number(calls: list[dict[str, Any]]) -> None:
+    printed(calls, SHOW_ALPHA)["requirements"].pop()
+
+
+def spec_of_the_test_alone(calls: list[dict[str, Any]]) -> None:
+    printed(calls, LIST_SPECS)["specs"].pop()
+
+
+def spec_of_openspec_alone(calls: list[dict[str, Any]]) -> None:
+    deltas = printed(calls, SHOW_DEMO)["deltas"]
+    deltas.append({**deltas[0], "spec": "gamma"})
+
+
+def change_of_the_test_alone(calls: list[dict[str, Any]]) -> None:
+    printed(calls, LIST_CHANGES)["changes"].clear()
+
+
+def change_of_openspec_alone(calls: list[dict[str, Any]]) -> None:
+    # The CLI lists a folder in `openspec/changes/` whose name starts with a dot, as it lists
+    # any other but `archive`, though no reader of the specs reads it.
+    for change in ("other", ".draft"):
+        printed(calls, LIST_CHANGES)["changes"].append({"name": change})
+        calls.append(a_call([*SHOW_DEMO[:-1], change], {"deltas": []}))
+
+
+DIFFERS = "differs in its {}: the test reads {}, and OpenSpec shows {}"
+
+
+@pytest.mark.parametrize(
+    ("plant", "expected"),
+    [
+        (
+            operation,
+            [
+                f'{CHANGE_ALPHA}: requirement 1, "The third rule holds", '
+                + DIFFERS.format("operation", '"ADDED"', '"MODIFIED"')
+            ],
+        ),
+        (
+            name,
+            [
+                f'{MAIN_ALPHA}: requirement 2, "The second rule holds", '
+                + DIFFERS.format("name", '"The second rule holds"', '"The other rule holds"')
+            ],
+        ),
+        (
+            text,
+            [
+                f'{MAIN_ALPHA}: requirement 1, "The first rule holds", '
+                + DIFFERS.format("text", f'"{TEXT}"', '"The tool SHALL hold a rule."')
+            ],
+        ),
+        (
+            new_name,
+            [
+                f'{CHANGE_BETA}: requirement 4, "The old rule holds", '
+                + DIFFERS.format("new name", '"The renamed rule holds"', '"The other rule holds"')
+            ],
+        ),
+        (
+            scenarios,
+            [
+                f'{MAIN_ALPHA}: requirement 1, "The first rule holds", '
+                + DIFFERS.format("number of scenarios", "1", "2")
+            ],
+        ),
+        (
+            scenario_name,
+            [
+                f'{MAIN_ALPHA}: requirement 1, "The first rule holds", '
+                + DIFFERS.format("scenario 1's name", '"The rule holds"', '"The rule is held"')
+            ],
+        ),
+        (
+            scenario_lines,
+            [
+                f'{MAIN_ALPHA}: requirement 2, "The second rule holds", '
+                + DIFFERS.format(
+                    "scenario 1's lines", '"' + shown(f"{WHEN_2}\n{THEN_2}") + '"', '"- **WHEN** x"'
+                )
+            ],
+        ),
+        (
+            order,
+            [
+                f'{MAIN_BETA}: requirement 1, "The beta rule holds", '
+                + DIFFERS.format("name", '"The beta rule holds"', '"The spent rule holds"')
+            ],
+        ),
+        (number, [f"{MAIN_ALPHA}: the test reads 2 requirements, and OpenSpec shows 1"]),
+        (spec_of_the_test_alone, [f"{MAIN_BETA}: the test reads it, and OpenSpec does not"]),
+        (
+            spec_of_openspec_alone,
+            ["openspec/changes/demo/specs/gamma/spec.md: OpenSpec reads it, and the test does not"],
+        ),
+        (
+            change_of_the_test_alone,
+            [
+                "openspec/changes/demo: the test reads it as a change, and OpenSpec does not",
+                f"{CHANGE_ALPHA}: the test reads it, and OpenSpec does not",
+                f"{CHANGE_BETA}: the test reads it, and OpenSpec does not",
+            ],
+        ),
+        (
+            change_of_openspec_alone,
+            [
+                "openspec/changes/.draft: OpenSpec reads it as a change, and the test does not",
+                "openspec/changes/other: OpenSpec reads it as a change, and the test does not",
+            ],
+        ),
+    ],
+)
+def test_each_kind_of_difference_fails(
+    tmp_path: Path, plant: Callable[[list[dict[str, Any]]], None], expected: list[str]
+) -> None:
+    calls = calls_of("agreeing")
+    plant(calls)
+    assert comparison(tree(tmp_path, AGREEING), calls) == expected
+
+
+def test_a_difference_in_the_test_s_own_reading_fails(tmp_path: Path) -> None:
+    files = {name: text for name, text in AGREEING.items() if name != MAIN_BETA}
+    assert comparison(tree(tmp_path, files), calls_of("agreeing")) == [
+        f"{MAIN_BETA}: OpenSpec reads it, and the test does not"
+    ]
+
+
+def test_a_tree_with_no_requirement_to_compare_fails(tmp_path: Path) -> None:
+    assert comparison(tree(tmp_path, TREES["no spec"]), calls_of("no spec")) == [
+        "openspec/: the comparison compares no requirement"
+    ]
+
+
+def test_a_change_that_openspec_does_not_show_fails_naming_the_call(tmp_path: Path) -> None:
+    assert comparison(tree(tmp_path, PASSING), calls_of("no proposal")) == [
+        "openspec show --type change --json --deltas-only -- draft: exits with 1: Change"
+        ' "draft" has no proposal.md yet. Run "openspec status --change draft" to see which'
+        " artifact comes next."
+    ]
+
+
+@pytest.mark.parametrize(
+    ("out", "err", "said"),
+    [
+        ("", "boom\n", ": boom"),
+        ("", "", ""),
+        ("[]", "", ": []"),
+        ("{}", "x\n", ": x"),
+        ('{"status": [{"message": 1}, "y"]}', "z\n", ": z"),
+    ],
+)
+def test_a_call_that_fails_fails_naming_it(tmp_path: Path, out: str, err: str, said: str) -> None:
+    calls = calls_of("agreeing")
+    calls[-1].update({"exit": 3, "stdout": out, "stderr": err})
+    assert comparison(tree(tmp_path, AGREEING), calls) == [
+        f"openspec {' '.join(SHOW_DEMO)}: exits with 3{said}"
+    ]
+
+
+def no_json(calls: list[dict[str, Any]]) -> list[str]:
+    calls[0]["stdout"] = "Specs:\n  alpha"
+    return LIST_SPECS
+
+
+def a_list(calls: list[dict[str, Any]]) -> list[str]:
+    calls[0]["stdout"] = []
+    return LIST_SPECS
+
+
+def no_id(calls: list[dict[str, Any]]) -> list[str]:
+    del printed(calls, LIST_SPECS)["specs"][0]["id"]
+    return LIST_SPECS
+
+
+def an_id_not_text(calls: list[dict[str, Any]]) -> list[str]:
+    printed(calls, LIST_SPECS)["specs"][0]["id"] = 1
+    return LIST_SPECS
+
+
+def changes_not_a_list(calls: list[dict[str, Any]]) -> list[str]:
+    printed(calls, LIST_CHANGES)["changes"] = {}
+    return LIST_CHANGES
+
+
+def a_text_not_text(calls: list[dict[str, Any]]) -> list[str]:
+    printed(calls, SHOW_ALPHA)["requirements"][0]["text"] = None
+    return SHOW_ALPHA
+
+
+def scenarios_not_a_list(calls: list[dict[str, Any]]) -> list[str]:
+    printed(calls, SHOW_ALPHA)["requirements"][0]["scenarios"] = "none"
+    return SHOW_ALPHA
+
+
+def a_scenario_without_lines(calls: list[dict[str, Any]]) -> list[str]:
+    del printed(calls, SHOW_ALPHA)["requirements"][0]["scenarios"][0]["rawText"]
+    return SHOW_ALPHA
+
+
+def an_unknown_operation(calls: list[dict[str, Any]]) -> list[str]:
+    printed(calls, SHOW_DEMO)["deltas"][0]["operation"] = "CHANGED"
+    return SHOW_DEMO
+
+
+def a_rename_without_names(calls: list[dict[str, Any]]) -> list[str]:
+    del printed(calls, SHOW_DEMO)["deltas"][-1]["rename"]
+    return SHOW_DEMO
+
+
+def a_new_name_not_text(calls: list[dict[str, Any]]) -> list[str]:
+    printed(calls, SHOW_DEMO)["deltas"][-1]["rename"]["to"] = 2
+    return SHOW_DEMO
+
+
+def a_delta_without_its_spec(calls: list[dict[str, Any]]) -> list[str]:
+    del printed(calls, SHOW_DEMO)["deltas"][0]["spec"]
+    return SHOW_DEMO
+
+
+def a_requirement_not_an_object(calls: list[dict[str, Any]]) -> list[str]:
+    printed(calls, SHOW_DEMO)["deltas"][0]["requirement"] = "x"
+    return SHOW_DEMO
+
+
+@pytest.mark.parametrize(
+    "plant",
+    [
+        no_json,
+        a_list,
+        no_id,
+        an_id_not_text,
+        changes_not_a_list,
+        a_text_not_text,
+        scenarios_not_a_list,
+        a_scenario_without_lines,
+        an_unknown_operation,
+        a_rename_without_names,
+        a_new_name_not_text,
+        a_delta_without_its_spec,
+        a_requirement_not_an_object,
+    ],
+)
+def test_a_call_that_prints_json_in_another_form_fails_naming_it(
+    tmp_path: Path, plant: Callable[[list[dict[str, Any]]], list[str]]
+) -> None:
+    calls = calls_of("agreeing")
+    args = plant(calls)
+    assert comparison(tree(tmp_path, AGREEING), calls) == [f"openspec {' '.join(args)}: {FORM}"]
+
+
+def stand_in(folder: Path, calls: list[dict[str, Any]]) -> str:
+    """An OpenSpec CLI that prints what the pinned one printed for these calls."""
+    folder.mkdir()
+    script = folder / "openspec"
+    script.write_text(
+        f"#!{sys.executable}\n"
+        "import json, sys\n"
+        f"CALLS = json.loads({json.dumps(calls)!r})\n"
+        "call = next(each for each in CALLS if each['args'] == sys.argv[1:])\n"
+        "out = call['stdout']\n"
+        "print(out if isinstance(out, str) else json.dumps(out, indent=2))\n"
+        "print(call['stderr'], end='', file=sys.stderr)\n"
+        "sys.exit(call['exit'])\n",
+        encoding="utf-8",
+    )
+    script.chmod(0o755)
+    return str(script)
+
+
+@pytest.mark.parametrize(
+    ("name", "status"), [("agreeing", 0), ("fenced", 1), ("no spec", 1), ("no proposal", 1)]
+)
+def test_the_comparison_runs_the_cli_and_exits_by_what_it_finds(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+    name: str,
+    status: int,
+) -> None:
+    cli = stand_in(tmp_path / "cli", calls_of(name))
+    root = tree(tmp_path / "tree", TREES[name])
+    monkeypatch.chdir(root)
+    assert spec_form.main([cli]) == status
+    out, err = capsys.readouterr()
+    if status:
+        assert (out, err.splitlines()) == (
+            "",
+            [f"verify-openspec: {each}" for each in comparison(root, calls_of(name))],
+        )
+    else:
+        assert (out, err) == ("verify-openspec: 10 requirement(s) read alike\n", "")
+
+
+def test_the_comparison_exits_2_when_the_cli_does_not_run(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    monkeypatch.chdir(tree(tmp_path / "tree", AGREEING))
+    plain = tmp_path / "plain"
+    plain.write_text("not a program\n")
+    for argv in ([str(tmp_path / "missing")], [str(plain)], [], ["a", "b"]):
+        assert spec_form.main(argv) == 2, argv
+        out, err = capsys.readouterr()
+        assert out == ""
+        assert err.startswith("verify-openspec: ") and err.count("\n") == 1, err
+
+
+def test_no_line_of_a_spec_or_of_openspec_s_output_starts_a_line_of_the_comparison_s(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    command = "::error file=x::y"
+    calls = calls_of("agreeing")
+    printed(calls, SHOW_ALPHA)["requirements"][0]["name"] = f"a\n{command}"
+    printed(calls, LIST_CHANGES)["changes"].append({"name": f"b\n{command}"})
+    calls.append(a_call([*SHOW_DEMO[:-1], f"b\n{command}"], {"deltas": []}))
+    failing = calls_of("agreeing")
+    failing[-1].update({"exit": 1, "stdout": {"status": [{"message": f"c\n{command}"}]}})
+    failing[0].update({"exit": 1, "stderr": f"d\n{command}"})
+    files = {**AGREEING, f"openspec/specs/e\r{command}/spec.md": ALPHA}
+    for number, each in enumerate((calls, failing)):
+        cli = stand_in(tmp_path / f"cli-{number}", each)
+        monkeypatch.chdir(tree(tmp_path / f"tree-{number}", files))
+        assert spec_form.main([cli]) == 1
+        out, err = capsys.readouterr()
+        assert out == ""
+        assert command in err.replace("U+000A", "").replace("U+000D", "")
+        assert all(part.startswith("verify-openspec: openspec") for part in err.splitlines())
+        assert all(" " <= character <= "~" or character == "\n" for character in err)
+
+
+if __name__ == "__main__":
+    record(sys.argv[1])

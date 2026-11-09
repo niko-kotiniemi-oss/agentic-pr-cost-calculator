@@ -174,7 +174,7 @@ The assumptions about Python, about the development tools of this repository, an
   - **Checked:** not yet: none will, since it is about OpenSpec's later releases, though the documentation checks fail where it does not hold
 - **Fact:** OpenSpec's pinned command-line tool reads each spec that the check of the specs' form passes as that check reads it.
   - **Relied on:** R178, T124, DR-196
-  - **Checked:** not yet: `add-pr-cost-calculator` task 1.24 checks it
+  - **Checked:** observed: `tests/test_spec_form.py`, 2026-11-09, OpenSpec, version `1.14.1`, build `sha512-IU9ggB7UYMDU47S0R59NH2ngJp+CK2X/r1B8+QU2Fm8LLBPFatQRO1Ia7B8nO3FHbTE7xRXAIs9NcuUF8Beeag==`
 - **Fact:** OpenSpec asks that each requirement state one behaviour in 500 characters or fewer, measured on its trimmed lines that are not blank.
   - **Relied on:** DR-105, DR-194
   - **Checked:** not yet: none will, since it is about what OpenSpec's later releases ask

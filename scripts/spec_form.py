@@ -1,18 +1,24 @@
-"""How the specs are found and read, as the pinned OpenSpec reads them, and where their
-form fails.
+"""How the specs are found and read, as the pinned OpenSpec reads them, where their
+form fails, and where that reading differs from what the pinned OpenSpec CLI shows.
 
-`tests/test_spec_form.py` describes these rules and holds them (R173 to R177; design
-decision 12; DR-193 to DR-195). Like the tool, this runs on Python 3.11 and later with
-the standard library alone.
+`tests/test_spec_form.py` describes these rules and holds them (R173 to R178; design
+decision 12; DR-193 to DR-196). Like the tool, this runs on Python 3.11 and later with
+the standard library alone, so that CI's `openspec` job, which installs no Python
+package, runs the comparison: `python3 scripts/spec_form.py <openspec>`, at the
+repository's root, as `scripts/verify-openspec.sh` does.
 """
 
 from __future__ import annotations
 
+import json
 import os
 import re
+import subprocess
+import sys
+from collections.abc import Callable, Iterator
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import NamedTuple
+from typing import Any, NamedTuple, TypeVar
 
 OPENSPEC = "openspec"
 ARCHIVE = "openspec/changes/archive"
@@ -601,3 +607,216 @@ def read_all(root: Path) -> tuple[Reading, list[str]]:
 def problems_in(root: Path) -> list[str]:
     """Every problem of the form of the specs below `root`."""
     return read_all(root)[1]
+
+
+# The comparison with the pinned OpenSpec CLI (R178, DR-196).
+
+# A call of the CLI with these arguments: its exit code, and what it printed to standard
+# output and to standard error.
+Run = Callable[[list[str]], tuple[int, str, str]]
+T = TypeVar("T")
+SHOWN = ("ADDED", "MODIFIED", "REMOVED")
+FORM = "prints JSON in another form than the comparison reads"
+NOTHING_COMPARED = "openspec/: the comparison compares no requirement"
+
+
+def text_of(value: object) -> str:
+    if not isinstance(value, str):
+        raise ValueError("not text")
+    return value
+
+
+def objects(value: object) -> list[dict[str, Any]]:
+    if not isinstance(value, list) or not all(isinstance(each, dict) for each in value):
+        raise ValueError("not a list of objects")
+    return value
+
+
+def listed_specs(value: Any) -> list[str]:
+    return [text_of(each["id"]) for each in objects(value["specs"])]
+
+
+def listed_changes(value: Any) -> list[str]:
+    return [text_of(each["name"]) for each in objects(value["changes"])]
+
+
+def shown_requirement(value: Any, operation: str) -> Requirement:
+    scenarios = tuple(
+        Scenario(text_of(each["name"]), text_of(each["rawText"]))
+        for each in objects(value["scenarios"])
+    )
+    return Requirement(operation, text_of(value["name"]), text_of(value["text"]), scenarios)
+
+
+def shown_spec(value: Any) -> list[Requirement]:
+    return [shown_requirement(each, "") for each in objects(value["requirements"])]
+
+
+def shown_change(value: Any) -> list[tuple[str, Requirement]]:
+    """Each requirement that a change gives, with the id of its spec, in the CLI's order."""
+    deltas = []
+    for delta in objects(value["deltas"]):
+        operation = delta["operation"]
+        if operation == "RENAMED":
+            rename = delta["rename"]
+            old, new = text_of(rename["from"]), text_of(rename["to"])
+            requirement = Requirement(operation, old, "", (), new)
+        elif operation in SHOWN:
+            requirement = shown_requirement(delta["requirement"], operation)
+        else:
+            raise ValueError("not an operation")
+        deltas.append((text_of(delta["spec"]), requirement))
+    return deltas
+
+
+def said(out: str, err: str) -> str:
+    """What the CLI said of a call that failed: the messages that it prints as JSON with
+    `--json`, or else what it printed."""
+    try:
+        status = json.loads(out)["status"]
+        messages = [
+            each["message"]
+            for each in status
+            if isinstance(each, dict) and isinstance(each.get("message"), str)
+        ]
+    except (ValueError, KeyError, TypeError):
+        messages = []
+    return "; ".join(messages) or err.strip() or out.strip()
+
+
+def asked(run: Run, args: list[str], read: Callable[[Any], T], problems: list[str]) -> T | None:
+    """What the CLI prints for these arguments, as `read` reads its JSON, or None, with a
+    problem that names the call, when the call fails or prints JSON in another form."""
+    status, out, err = run(args)
+    command = shown(" ".join(["openspec", *args]))
+    if status:
+        message = said(out, err)
+        problems.append(
+            f"{command}: exits with {status}" + (f": {shown(message)}" if message else "")
+        )
+        return None
+    try:
+        return read(json.loads(out))
+    except (ValueError, KeyError, TypeError):
+        problems.append(f"{command}: {FORM}")
+        return None
+
+
+def cli_reading(run: Run) -> tuple[Reading, list[str]]:
+    """The specs and the changes that the CLI lists, and the requirements that it shows of
+    each, with a problem for each call that fails or prints JSON in another form."""
+    problems: list[str] = []
+    specs: dict[tuple[str, str], list[Requirement]] = {}
+    for ident in asked(run, ["list", "--specs", "--json"], listed_specs, problems) or []:
+        args = ["show", "--type", "spec", "--json", "--", ident]
+        requirements = asked(run, args, shown_spec, problems)
+        if requirements is not None:
+            specs[("", ident)] = requirements
+    changes = asked(run, ["list", "--json"], listed_changes, problems) or []
+    for change in changes:
+        args = ["show", "--type", "change", "--json", "--deltas-only", "--", change]
+        for ident, requirement in asked(run, args, shown_change, problems) or []:
+            specs.setdefault((change, ident), []).append(requirement)
+    reading = Reading(frozenset(changes), {key: tuple(value) for key, value in specs.items()})
+    return reading, problems
+
+
+def spec_path(change: str, ident: str) -> str:
+    folder = f"{CHANGES}/{change}/specs" if change else f"{OPENSPEC}/specs"
+    return shown(f"{folder}/{ident}/spec.md")
+
+
+def quoted(value: object) -> str:
+    return f'"{shown(value)}"' if isinstance(value, str) else str(value)
+
+
+def fields(ours: Requirement, theirs: Requirement) -> Iterator[tuple[str, object, object]]:
+    """The fields of two requirements, in the order in which a difference is looked for."""
+    yield "operation", ours.operation, theirs.operation
+    yield "name", ours.name, theirs.name
+    yield "text", ours.text, theirs.text
+    yield "new name", ours.renamed_to, theirs.renamed_to
+    yield "number of scenarios", len(ours.scenarios), len(theirs.scenarios)
+    for number, (mine, its) in enumerate(zip(ours.scenarios, theirs.scenarios, strict=False), 1):
+        yield f"scenario {number}'s name", mine.name, its.name
+        yield f"scenario {number}'s lines", mine.text, its.text
+
+
+def first_difference(ours: tuple[Requirement, ...], theirs: tuple[Requirement, ...]) -> str:
+    for number, (mine, its) in enumerate(zip(ours, theirs, strict=False), 1):
+        for label, one, other in fields(mine, its):
+            if one != other:
+                return (
+                    f"requirement {number}, {quoted(mine.name)}, differs in its {label}: the test"
+                    f" reads {quoted(one)}, and OpenSpec shows {quoted(other)}"
+                )
+    if len(ours) != len(theirs):
+        return f"the test reads {len(ours)} requirements, and OpenSpec shows {len(theirs)}"
+    return ""
+
+
+def differences(ours: Reading, theirs: Reading) -> list[str]:
+    """Each change or spec that only one reading gives, and the first difference in the
+    requirements of each spec that both give, with one when no requirement was compared.
+    A change's spec that gives no requirement is left out, since the CLI shows the
+    requirements of a change and not its specs."""
+    found = [
+        f"{CHANGES}/{shown(change)}: the test reads it as a change, and OpenSpec does not"
+        for change in sorted(ours.changes - theirs.changes)
+    ] + [
+        f"{CHANGES}/{shown(change)}: OpenSpec reads it as a change, and the test does not"
+        for change in sorted(theirs.changes - ours.changes)
+    ]
+    mine, its = (
+        {key: value for key, value in reading.specs.items() if value or not key[0]}
+        for reading in (ours, theirs)
+    )
+    compared = 0
+    for key in sorted(mine.keys() | its.keys()):
+        path = spec_path(*key)
+        if key not in its:
+            found.append(f"{path}: the test reads it, and OpenSpec does not")
+        elif key not in mine:
+            found.append(f"{path}: OpenSpec reads it, and the test does not")
+        else:
+            compared += min(len(mine[key]), len(its[key]))
+            difference = first_difference(mine[key], its[key])
+            if difference:
+                found.append(f"{path}: {difference}")
+    if not compared:
+        found.append(NOTHING_COMPARED)
+    return found
+
+
+def main(argv: list[str]) -> int:
+    """Compares the test's reading of the specs below the current folder with what the
+    OpenSpec CLI at the path given lists and shows, printing each problem of the CLI's
+    reading, or else each difference: 0 when they agree, 1 when they do not, and 2 when
+    the CLI does not run."""
+    if len(argv) != 1:
+        print("verify-openspec: usage: python3 scripts/spec_form.py <openspec>", file=sys.stderr)
+        return 2
+    cli = argv[0]
+
+    def run(args: list[str]) -> tuple[int, str, str]:
+        done = subprocess.run(
+            [cli, *args], capture_output=True, encoding="utf-8", errors="replace", check=False
+        )
+        return done.returncode, done.stdout, done.stderr
+
+    try:
+        theirs, found = cli_reading(run)
+    except OSError as error:
+        print(f"verify-openspec: {shown(cli)} does not run: {shown(str(error))}", file=sys.stderr)
+        return 2
+    found = found or differences(read_all(Path.cwd())[0], theirs)
+    for each in found:
+        print(f"verify-openspec: {each}", file=sys.stderr)
+    if found:
+        return 1
+    print(f"verify-openspec: {sum(map(len, theirs.specs.values()))} requirement(s) read alike")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv[1:]))
