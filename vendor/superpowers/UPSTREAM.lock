@@ -9,7 +9,7 @@
 # with --check, so a hand edit is a red build. This file is the one exception: it
 # is written here, not upstream, and the check excludes it by name.
 repo=obra/superpowers
-sha=b36e0829c6d0140e93cfef2ca599b1b07d4a7797
-tag=v6.3.0
+sha=8ca22dba9a94f28898bbce59f2537ff4d87c747d
+tag=v6.4.2
 vendored_paths=.claude-plugin,skills,hooks/run-hook.cmd,hooks/session-start,LICENSE
 vendored_at=2026-10-17
