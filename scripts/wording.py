@@ -5,7 +5,8 @@ decision 14). `scripts/rewording.py` reads with them when it compares a rewordin
 its base, so that the test and the script never read a page in two ways.
 `tests/test_decisions.py` finds the specs, their titles, the accepted records and their
 quotations with the same patterns, so that the two tests never tell a quoted title in
-two ways. Like the tool, this runs on Python 3.11 and later with the standard library
+two ways, and `scripts/spec_form.py` finds the code spans of a spec's line as this finds
+those of a page's line. Like the tool, this runs on Python 3.11 and later with the standard library
 alone.
 """
 
@@ -318,9 +319,11 @@ def hide(chars: list[str], start: int, end: int) -> None:
             chars[at] = UNREAD
 
 
-def hide_code_spans(chars: list[str], start: int, line: str) -> None:
-    """Leave unread each code span of a line: a run of backticks up to the next run of as
-    many. A run that no later one matches is a backtick of the prose."""
+def code_spans(line: str) -> tuple[list[tuple[int, int]], list[int]]:
+    """Where each code span of a line starts and ends, and the length of each run of
+    backticks that no later run as long closes on the line. A code span is a run of
+    backticks up to the next run of as many; a run that no later one matches is a backtick
+    of the prose."""
     runs = list(BACKTICKS.finditer(line))
     # The next run of the same length after each run, found in one pass from the end, so
     # that a line of many runs is read in time that grows with the line.
@@ -329,14 +332,24 @@ def hide_code_spans(chars: list[str], start: int, line: str) -> None:
     for at in reversed(range(len(runs))):
         closes[at] = latest.get(len(runs[at][0]))
         latest[len(runs[at][0])] = at
+    spans: list[tuple[int, int]] = []
+    unclosed: list[int] = []
     at = 0
     while at < len(runs):
         close = closes[at]
         if close is None:
+            unclosed.append(len(runs[at][0]))
             at += 1
         else:
-            hide(chars, start + runs[at].start(), start + runs[close].end())
+            spans.append((runs[at].start(), runs[close].end()))
             at = close + 1
+    return spans, unclosed
+
+
+def hide_code_spans(chars: list[str], start: int, line: str) -> None:
+    """Leave unread each code span of a line."""
+    for begin, end in code_spans(line)[0]:
+        hide(chars, start + begin, start + end)
 
 
 def width(text: str) -> int:

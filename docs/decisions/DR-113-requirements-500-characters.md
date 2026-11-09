@@ -1,12 +1,12 @@
 # DR-113: Each requirement is 500 characters or fewer
 
 - **Type:** process
-- **Status:** accepted
+- **Status:** closed
 - **Decided by:** the owner, 2026-10-26
 - **Requirements:** none
 - **Threats:** none
 - **Replaces:** none
-- **Closed by:** none
+- **Closed by:** DR-194
 
 ## Context
 

@@ -1,0 +1,1435 @@
+{
+  "openspec": "1.14.1",
+  "trees": {
+    "agreeing": {
+      "tree": "91c330ff404b14a38a4701320f95aaeb6f3b8ac4ee27e3d50aac76b182a64243",
+      "calls": [
+        {
+          "args": [
+            "list",
+            "--specs",
+            "--json"
+          ],
+          "exit": 0,
+          "stdout": {
+            "specs": [
+              {
+                "id": "alpha",
+                "requirementCount": 2
+              },
+              {
+                "id": "area/beta",
+                "requirementCount": 3
+              }
+            ]
+          },
+          "stderr": ""
+        },
+        {
+          "args": [
+            "show",
+            "--type",
+            "spec",
+            "--json",
+            "--",
+            "alpha"
+          ],
+          "exit": 0,
+          "stdout": {
+            "id": "alpha",
+            "title": "alpha",
+            "overview": "What the first capability does.",
+            "requirementCount": 2,
+            "requirements": [
+              {
+                "name": "The first rule holds",
+                "text": "The tool SHALL hold the first rule.",
+                "scenarios": [
+                  {
+                    "name": "The rule holds",
+                    "rawText": "- **WHEN** the rule is tested\n- **AND** the test runs again\n- **THEN** it holds\n- **AND** it holds again"
+                  }
+                ]
+              },
+              {
+                "name": "The second rule holds",
+                "text": "The tool SHALL hold the second rule,\nover two lines.",
+                "scenarios": [
+                  {
+                    "name": "The second rule holds",
+                    "rawText": "- **WHEN** the second rule is tested\n- **THEN** it holds"
+                  }
+                ]
+              }
+            ],
+            "metadata": {
+              "version": "1.0.0",
+              "format": "openspec"
+            }
+          },
+          "stderr": ""
+        },
+        {
+          "args": [
+            "show",
+            "--type",
+            "spec",
+            "--json",
+            "--",
+            "area/beta"
+          ],
+          "exit": 0,
+          "stdout": {
+            "id": "area/beta",
+            "title": "area/beta",
+            "overview": "What the beta capability does.",
+            "requirementCount": 3,
+            "requirements": [
+              {
+                "name": "The beta rule holds",
+                "text": "The tool SHALL hold the beta rule.",
+                "scenarios": [
+                  {
+                    "name": "The beta rule holds",
+                    "rawText": "- **WHEN** the beta rule is tested\n- **THEN** it holds"
+                  }
+                ]
+              },
+              {
+                "name": "The old rule holds",
+                "text": "The tool SHALL hold the old rule.",
+                "scenarios": [
+                  {
+                    "name": "The old rule holds",
+                    "rawText": "- **WHEN** the old rule is tested\n- **THEN** it holds"
+                  }
+                ]
+              },
+              {
+                "name": "The spent rule holds",
+                "text": "The tool SHALL hold the spent rule.",
+                "scenarios": [
+                  {
+                    "name": "The spent rule holds",
+                    "rawText": "- **WHEN** the spent rule is tested\n- **THEN** it holds"
+                  }
+                ]
+              }
+            ],
+            "metadata": {
+              "version": "1.0.0",
+              "format": "openspec"
+            }
+          },
+          "stderr": ""
+        },
+        {
+          "args": [
+            "list",
+            "--json",
+            "--sort",
+            "name"
+          ],
+          "exit": 0,
+          "stdout": {
+            "changes": [
+              {
+                "name": "demo",
+                "completedTasks": 0,
+                "totalTasks": 0,
+                "status": "no-tasks"
+              }
+            ]
+          },
+          "stderr": ""
+        },
+        {
+          "args": [
+            "show",
+            "--type",
+            "change",
+            "--json",
+            "--deltas-only",
+            "--",
+            "demo"
+          ],
+          "exit": 0,
+          "stdout": {
+            "id": "demo",
+            "title": "demo",
+            "deltaCount": 5,
+            "deltas": [
+              {
+                "spec": "alpha",
+                "operation": "ADDED",
+                "description": "Add requirement: The tool SHALL hold the third rule.",
+                "requirement": {
+                  "name": "The third rule holds",
+                  "text": "The tool SHALL hold the third rule.",
+                  "scenarios": [
+                    {
+                      "name": "The third rule holds",
+                      "rawText": "- **WHEN** the third rule is tested\n- **THEN** it holds"
+                    }
+                  ]
+                },
+                "requirements": [
+                  {
+                    "name": "The third rule holds",
+                    "text": "The tool SHALL hold the third rule.",
+                    "scenarios": [
+                      {
+                        "name": "The third rule holds",
+                        "rawText": "- **WHEN** the third rule is tested\n- **THEN** it holds"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "spec": "area/beta",
+                "operation": "ADDED",
+                "description": "Add requirement: The tool SHALL hold the new beta rule.",
+                "requirement": {
+                  "name": "The new beta rule holds",
+                  "text": "The tool SHALL hold the new beta rule.",
+                  "scenarios": [
+                    {
+                      "name": "The new beta rule holds",
+                      "rawText": "- **WHEN** the new beta rule is tested\n- **THEN** it holds"
+                    }
+                  ]
+                },
+                "requirements": [
+                  {
+                    "name": "The new beta rule holds",
+                    "text": "The tool SHALL hold the new beta rule.",
+                    "scenarios": [
+                      {
+                        "name": "The new beta rule holds",
+                        "rawText": "- **WHEN** the new beta rule is tested\n- **THEN** it holds"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "spec": "area/beta",
+                "operation": "MODIFIED",
+                "description": "Modify requirement: The tool SHALL hold the beta rule, and say so.",
+                "requirement": {
+                  "name": "The beta rule holds",
+                  "text": "The tool SHALL hold the beta rule, and say so.",
+                  "scenarios": [
+                    {
+                      "name": "The beta rule holds",
+                      "rawText": "- **WHEN** the beta rule is tested\n- **THEN** it holds and says so"
+                    }
+                  ]
+                },
+                "requirements": [
+                  {
+                    "name": "The beta rule holds",
+                    "text": "The tool SHALL hold the beta rule, and say so.",
+                    "scenarios": [
+                      {
+                        "name": "The beta rule holds",
+                        "rawText": "- **WHEN** the beta rule is tested\n- **THEN** it holds and says so"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "spec": "area/beta",
+                "operation": "REMOVED",
+                "description": "Remove requirement: **Reason**: The new beta rule replaces it.\n**Migration**: Hold the new beta rule.",
+                "requirement": {
+                  "name": "The spent rule holds",
+                  "text": "**Reason**: The new beta rule replaces it.\n**Migration**: Hold the new beta rule.",
+                  "scenarios": []
+                },
+                "requirements": [
+                  {
+                    "name": "The spent rule holds",
+                    "text": "**Reason**: The new beta rule replaces it.\n**Migration**: Hold the new beta rule.",
+                    "scenarios": []
+                  }
+                ]
+              },
+              {
+                "spec": "area/beta",
+                "operation": "RENAMED",
+                "description": "Rename requirement from \"The old rule holds\" to \"The renamed rule holds\"",
+                "rename": {
+                  "from": "The old rule holds",
+                  "to": "The renamed rule holds"
+                }
+              }
+            ]
+          },
+          "stderr": ""
+        }
+      ]
+    },
+    "fenced": {
+      "tree": "bcfb4596bf62c8e0d3cc8d3280f2f75f0c1d4c7015a3fae48993621ecc82675d",
+      "calls": [
+        {
+          "args": [
+            "list",
+            "--specs",
+            "--json"
+          ],
+          "exit": 0,
+          "stdout": {
+            "specs": [
+              {
+                "id": "alpha",
+                "requirementCount": 1
+              },
+              {
+                "id": "area/beta",
+                "requirementCount": 3
+              }
+            ]
+          },
+          "stderr": ""
+        },
+        {
+          "args": [
+            "show",
+            "--type",
+            "spec",
+            "--json",
+            "--",
+            "alpha"
+          ],
+          "exit": 0,
+          "stdout": {
+            "id": "alpha",
+            "title": "alpha",
+            "overview": "What the first capability does.",
+            "requirementCount": 1,
+            "requirements": [
+              {
+                "name": "The first rule holds",
+                "text": "The tool SHALL hold the first rule.",
+                "scenarios": [
+                  {
+                    "name": "The rule holds",
+                    "rawText": "- **WHEN** the rule is tested\n- **AND** the test runs again\n- **THEN** it holds\n- **AND** it holds again\n\n<!--\n```\n-->\n\n### Requirement: The second rule holds\n\nThe tool SHALL hold the second rule,\nover two lines.\n\n#### Scenario: The second rule holds\n\n- **WHEN** the second rule is tested\n- **THEN** it holds\n<!--\n```\n-->"
+                  }
+                ]
+              }
+            ],
+            "metadata": {
+              "version": "1.0.0",
+              "format": "openspec"
+            }
+          },
+          "stderr": ""
+        },
+        {
+          "args": [
+            "show",
+            "--type",
+            "spec",
+            "--json",
+            "--",
+            "area/beta"
+          ],
+          "exit": 0,
+          "stdout": {
+            "id": "area/beta",
+            "title": "area/beta",
+            "overview": "What the beta capability does.",
+            "requirementCount": 3,
+            "requirements": [
+              {
+                "name": "The beta rule holds",
+                "text": "The tool SHALL hold the beta rule.",
+                "scenarios": [
+                  {
+                    "name": "The beta rule holds",
+                    "rawText": "- **WHEN** the beta rule is tested\n- **THEN** it holds"
+                  }
+                ]
+              },
+              {
+                "name": "The old rule holds",
+                "text": "The tool SHALL hold the old rule.",
+                "scenarios": [
+                  {
+                    "name": "The old rule holds",
+                    "rawText": "- **WHEN** the old rule is tested\n- **THEN** it holds"
+                  }
+                ]
+              },
+              {
+                "name": "The spent rule holds",
+                "text": "The tool SHALL hold the spent rule.",
+                "scenarios": [
+                  {
+                    "name": "The spent rule holds",
+                    "rawText": "- **WHEN** the spent rule is tested\n- **THEN** it holds"
+                  }
+                ]
+              }
+            ],
+            "metadata": {
+              "version": "1.0.0",
+              "format": "openspec"
+            }
+          },
+          "stderr": ""
+        },
+        {
+          "args": [
+            "list",
+            "--json",
+            "--sort",
+            "name"
+          ],
+          "exit": 0,
+          "stdout": {
+            "changes": [
+              {
+                "name": "demo",
+                "completedTasks": 0,
+                "totalTasks": 0,
+                "status": "no-tasks"
+              }
+            ]
+          },
+          "stderr": ""
+        },
+        {
+          "args": [
+            "show",
+            "--type",
+            "change",
+            "--json",
+            "--deltas-only",
+            "--",
+            "demo"
+          ],
+          "exit": 0,
+          "stdout": {
+            "id": "demo",
+            "title": "demo",
+            "deltaCount": 5,
+            "deltas": [
+              {
+                "spec": "alpha",
+                "operation": "ADDED",
+                "description": "Add requirement: The tool SHALL hold the third rule.",
+                "requirement": {
+                  "name": "The third rule holds",
+                  "text": "The tool SHALL hold the third rule.",
+                  "scenarios": [
+                    {
+                      "name": "The third rule holds",
+                      "rawText": "- **WHEN** the third rule is tested\n- **THEN** it holds"
+                    }
+                  ]
+                },
+                "requirements": [
+                  {
+                    "name": "The third rule holds",
+                    "text": "The tool SHALL hold the third rule.",
+                    "scenarios": [
+                      {
+                        "name": "The third rule holds",
+                        "rawText": "- **WHEN** the third rule is tested\n- **THEN** it holds"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "spec": "area/beta",
+                "operation": "ADDED",
+                "description": "Add requirement: The tool SHALL hold the new beta rule.",
+                "requirement": {
+                  "name": "The new beta rule holds",
+                  "text": "The tool SHALL hold the new beta rule.",
+                  "scenarios": [
+                    {
+                      "name": "The new beta rule holds",
+                      "rawText": "- **WHEN** the new beta rule is tested\n- **THEN** it holds"
+                    }
+                  ]
+                },
+                "requirements": [
+                  {
+                    "name": "The new beta rule holds",
+                    "text": "The tool SHALL hold the new beta rule.",
+                    "scenarios": [
+                      {
+                        "name": "The new beta rule holds",
+                        "rawText": "- **WHEN** the new beta rule is tested\n- **THEN** it holds"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "spec": "area/beta",
+                "operation": "MODIFIED",
+                "description": "Modify requirement: The tool SHALL hold the beta rule, and say so.",
+                "requirement": {
+                  "name": "The beta rule holds",
+                  "text": "The tool SHALL hold the beta rule, and say so.",
+                  "scenarios": [
+                    {
+                      "name": "The beta rule holds",
+                      "rawText": "- **WHEN** the beta rule is tested\n- **THEN** it holds and says so"
+                    }
+                  ]
+                },
+                "requirements": [
+                  {
+                    "name": "The beta rule holds",
+                    "text": "The tool SHALL hold the beta rule, and say so.",
+                    "scenarios": [
+                      {
+                        "name": "The beta rule holds",
+                        "rawText": "- **WHEN** the beta rule is tested\n- **THEN** it holds and says so"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "spec": "area/beta",
+                "operation": "REMOVED",
+                "description": "Remove requirement: **Reason**: The new beta rule replaces it.\n**Migration**: Hold the new beta rule.",
+                "requirement": {
+                  "name": "The spent rule holds",
+                  "text": "**Reason**: The new beta rule replaces it.\n**Migration**: Hold the new beta rule.",
+                  "scenarios": []
+                },
+                "requirements": [
+                  {
+                    "name": "The spent rule holds",
+                    "text": "**Reason**: The new beta rule replaces it.\n**Migration**: Hold the new beta rule.",
+                    "scenarios": []
+                  }
+                ]
+              },
+              {
+                "spec": "area/beta",
+                "operation": "RENAMED",
+                "description": "Rename requirement from \"The old rule holds\" to \"The renamed rule holds\"",
+                "rename": {
+                  "from": "The old rule holds",
+                  "to": "The renamed rule holds"
+                }
+              }
+            ]
+          },
+          "stderr": ""
+        }
+      ]
+    },
+    "no spec": {
+      "tree": "704aadc081d430bb4b1ee37d13141d0426c3cd800696f1cb433f46383e9f56cd",
+      "calls": [
+        {
+          "args": [
+            "list",
+            "--specs",
+            "--json"
+          ],
+          "exit": 0,
+          "stdout": {
+            "specs": []
+          },
+          "stderr": ""
+        },
+        {
+          "args": [
+            "list",
+            "--json",
+            "--sort",
+            "name"
+          ],
+          "exit": 0,
+          "stdout": {
+            "changes": []
+          },
+          "stderr": ""
+        }
+      ]
+    },
+    "no proposal": {
+      "tree": "632b72e09a5fef67d2425b30143158a55e18f30b777b50c8a0c3b45be5255539",
+      "calls": [
+        {
+          "args": [
+            "list",
+            "--specs",
+            "--json"
+          ],
+          "exit": 0,
+          "stdout": {
+            "specs": [
+              {
+                "id": "alpha",
+                "requirementCount": 2
+              },
+              {
+                "id": "area/beta",
+                "requirementCount": 3
+              }
+            ]
+          },
+          "stderr": ""
+        },
+        {
+          "args": [
+            "show",
+            "--type",
+            "spec",
+            "--json",
+            "--",
+            "alpha"
+          ],
+          "exit": 0,
+          "stdout": {
+            "id": "alpha",
+            "title": "alpha",
+            "overview": "What the first capability does.",
+            "requirementCount": 2,
+            "requirements": [
+              {
+                "name": "The first rule holds",
+                "text": "The tool SHALL hold the first rule.",
+                "scenarios": [
+                  {
+                    "name": "The rule holds",
+                    "rawText": "- **WHEN** the rule is tested\n- **AND** the test runs again\n- **THEN** it holds\n- **AND** it holds again"
+                  }
+                ]
+              },
+              {
+                "name": "The second rule holds",
+                "text": "The tool SHALL hold the second rule,\nover two lines.",
+                "scenarios": [
+                  {
+                    "name": "The second rule holds",
+                    "rawText": "- **WHEN** the second rule is tested\n- **THEN** it holds"
+                  }
+                ]
+              }
+            ],
+            "metadata": {
+              "version": "1.0.0",
+              "format": "openspec"
+            }
+          },
+          "stderr": ""
+        },
+        {
+          "args": [
+            "show",
+            "--type",
+            "spec",
+            "--json",
+            "--",
+            "area/beta"
+          ],
+          "exit": 0,
+          "stdout": {
+            "id": "area/beta",
+            "title": "area/beta",
+            "overview": "What the beta capability does.",
+            "requirementCount": 3,
+            "requirements": [
+              {
+                "name": "The beta rule holds",
+                "text": "The tool SHALL hold the beta rule.",
+                "scenarios": [
+                  {
+                    "name": "The beta rule holds",
+                    "rawText": "- **WHEN** the beta rule is tested\n- **THEN** it holds"
+                  }
+                ]
+              },
+              {
+                "name": "The old rule holds",
+                "text": "The tool SHALL hold the old rule.",
+                "scenarios": [
+                  {
+                    "name": "The old rule holds",
+                    "rawText": "- **WHEN** the old rule is tested\n- **THEN** it holds"
+                  }
+                ]
+              },
+              {
+                "name": "The spent rule holds",
+                "text": "The tool SHALL hold the spent rule.",
+                "scenarios": [
+                  {
+                    "name": "The spent rule holds",
+                    "rawText": "- **WHEN** the spent rule is tested\n- **THEN** it holds"
+                  }
+                ]
+              }
+            ],
+            "metadata": {
+              "version": "1.0.0",
+              "format": "openspec"
+            }
+          },
+          "stderr": ""
+        },
+        {
+          "args": [
+            "list",
+            "--json",
+            "--sort",
+            "name"
+          ],
+          "exit": 0,
+          "stdout": {
+            "changes": [
+              {
+                "name": "demo",
+                "completedTasks": 0,
+                "totalTasks": 0,
+                "status": "no-tasks"
+              },
+              {
+                "name": "draft",
+                "completedTasks": 0,
+                "totalTasks": 0,
+                "status": "no-tasks"
+              }
+            ]
+          },
+          "stderr": ""
+        },
+        {
+          "args": [
+            "show",
+            "--type",
+            "change",
+            "--json",
+            "--deltas-only",
+            "--",
+            "demo"
+          ],
+          "exit": 0,
+          "stdout": {
+            "id": "demo",
+            "title": "demo",
+            "deltaCount": 5,
+            "deltas": [
+              {
+                "spec": "alpha",
+                "operation": "ADDED",
+                "description": "Add requirement: The tool SHALL hold the third rule.",
+                "requirement": {
+                  "name": "The third rule holds",
+                  "text": "The tool SHALL hold the third rule.",
+                  "scenarios": [
+                    {
+                      "name": "The third rule holds",
+                      "rawText": "- **WHEN** the third rule is tested\n- **THEN** it holds"
+                    }
+                  ]
+                },
+                "requirements": [
+                  {
+                    "name": "The third rule holds",
+                    "text": "The tool SHALL hold the third rule.",
+                    "scenarios": [
+                      {
+                        "name": "The third rule holds",
+                        "rawText": "- **WHEN** the third rule is tested\n- **THEN** it holds"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "spec": "area/beta",
+                "operation": "ADDED",
+                "description": "Add requirement: The tool SHALL hold the new beta rule.",
+                "requirement": {
+                  "name": "The new beta rule holds",
+                  "text": "The tool SHALL hold the new beta rule.",
+                  "scenarios": [
+                    {
+                      "name": "The new beta rule holds",
+                      "rawText": "- **WHEN** the new beta rule is tested\n- **THEN** it holds"
+                    }
+                  ]
+                },
+                "requirements": [
+                  {
+                    "name": "The new beta rule holds",
+                    "text": "The tool SHALL hold the new beta rule.",
+                    "scenarios": [
+                      {
+                        "name": "The new beta rule holds",
+                        "rawText": "- **WHEN** the new beta rule is tested\n- **THEN** it holds"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "spec": "area/beta",
+                "operation": "MODIFIED",
+                "description": "Modify requirement: The tool SHALL hold the beta rule, and say so.",
+                "requirement": {
+                  "name": "The beta rule holds",
+                  "text": "The tool SHALL hold the beta rule, and say so.",
+                  "scenarios": [
+                    {
+                      "name": "The beta rule holds",
+                      "rawText": "- **WHEN** the beta rule is tested\n- **THEN** it holds and says so"
+                    }
+                  ]
+                },
+                "requirements": [
+                  {
+                    "name": "The beta rule holds",
+                    "text": "The tool SHALL hold the beta rule, and say so.",
+                    "scenarios": [
+                      {
+                        "name": "The beta rule holds",
+                        "rawText": "- **WHEN** the beta rule is tested\n- **THEN** it holds and says so"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "spec": "area/beta",
+                "operation": "REMOVED",
+                "description": "Remove requirement: **Reason**: The new beta rule replaces it.\n**Migration**: Hold the new beta rule.",
+                "requirement": {
+                  "name": "The spent rule holds",
+                  "text": "**Reason**: The new beta rule replaces it.\n**Migration**: Hold the new beta rule.",
+                  "scenarios": []
+                },
+                "requirements": [
+                  {
+                    "name": "The spent rule holds",
+                    "text": "**Reason**: The new beta rule replaces it.\n**Migration**: Hold the new beta rule.",
+                    "scenarios": []
+                  }
+                ]
+              },
+              {
+                "spec": "area/beta",
+                "operation": "RENAMED",
+                "description": "Rename requirement from \"The old rule holds\" to \"The renamed rule holds\"",
+                "rename": {
+                  "from": "The old rule holds",
+                  "to": "The renamed rule holds"
+                }
+              }
+            ]
+          },
+          "stderr": ""
+        },
+        {
+          "args": [
+            "show",
+            "--type",
+            "change",
+            "--json",
+            "--deltas-only",
+            "--",
+            "draft"
+          ],
+          "exit": 1,
+          "stdout": {
+            "status": [
+              {
+                "severity": "error",
+                "code": "show_error",
+                "message": "Change \"draft\" has no proposal.md yet. Run \"openspec status --change draft\" to see which artifact comes next."
+              }
+            ]
+          },
+          "stderr": ""
+        }
+      ]
+    },
+    "no delta section": {
+      "tree": "4df76ee228ebf94502ddf72230fc03aad66a4f8ed8e55900e22e5bfefc9827a8",
+      "calls": [
+        {
+          "args": [
+            "list",
+            "--specs",
+            "--json"
+          ],
+          "exit": 0,
+          "stdout": {
+            "specs": [
+              {
+                "id": "alpha",
+                "requirementCount": 2
+              },
+              {
+                "id": "area/beta",
+                "requirementCount": 3
+              }
+            ]
+          },
+          "stderr": ""
+        },
+        {
+          "args": [
+            "show",
+            "--type",
+            "spec",
+            "--json",
+            "--",
+            "alpha"
+          ],
+          "exit": 0,
+          "stdout": {
+            "id": "alpha",
+            "title": "alpha",
+            "overview": "What the first capability does.",
+            "requirementCount": 2,
+            "requirements": [
+              {
+                "name": "The first rule holds",
+                "text": "The tool SHALL hold the first rule.",
+                "scenarios": [
+                  {
+                    "name": "The rule holds",
+                    "rawText": "- **WHEN** the rule is tested\n- **AND** the test runs again\n- **THEN** it holds\n- **AND** it holds again"
+                  }
+                ]
+              },
+              {
+                "name": "The second rule holds",
+                "text": "The tool SHALL hold the second rule,\nover two lines.",
+                "scenarios": [
+                  {
+                    "name": "The second rule holds",
+                    "rawText": "- **WHEN** the second rule is tested\n- **THEN** it holds"
+                  }
+                ]
+              }
+            ],
+            "metadata": {
+              "version": "1.0.0",
+              "format": "openspec"
+            }
+          },
+          "stderr": ""
+        },
+        {
+          "args": [
+            "show",
+            "--type",
+            "spec",
+            "--json",
+            "--",
+            "area/beta"
+          ],
+          "exit": 0,
+          "stdout": {
+            "id": "area/beta",
+            "title": "area/beta",
+            "overview": "What the beta capability does.",
+            "requirementCount": 3,
+            "requirements": [
+              {
+                "name": "The beta rule holds",
+                "text": "The tool SHALL hold the beta rule.",
+                "scenarios": [
+                  {
+                    "name": "The beta rule holds",
+                    "rawText": "- **WHEN** the beta rule is tested\n- **THEN** it holds"
+                  }
+                ]
+              },
+              {
+                "name": "The old rule holds",
+                "text": "The tool SHALL hold the old rule.",
+                "scenarios": [
+                  {
+                    "name": "The old rule holds",
+                    "rawText": "- **WHEN** the old rule is tested\n- **THEN** it holds"
+                  }
+                ]
+              },
+              {
+                "name": "The spent rule holds",
+                "text": "The tool SHALL hold the spent rule.",
+                "scenarios": [
+                  {
+                    "name": "The spent rule holds",
+                    "rawText": "- **WHEN** the spent rule is tested\n- **THEN** it holds"
+                  }
+                ]
+              }
+            ],
+            "metadata": {
+              "version": "1.0.0",
+              "format": "openspec"
+            }
+          },
+          "stderr": ""
+        },
+        {
+          "args": [
+            "list",
+            "--json",
+            "--sort",
+            "name"
+          ],
+          "exit": 0,
+          "stdout": {
+            "changes": [
+              {
+                "name": "demo",
+                "completedTasks": 0,
+                "totalTasks": 0,
+                "status": "no-tasks"
+              },
+              {
+                "name": "tooling",
+                "completedTasks": 0,
+                "totalTasks": 0,
+                "status": "no-tasks"
+              }
+            ]
+          },
+          "stderr": ""
+        },
+        {
+          "args": [
+            "show",
+            "--type",
+            "change",
+            "--json",
+            "--deltas-only",
+            "--",
+            "demo"
+          ],
+          "exit": 0,
+          "stdout": {
+            "id": "demo",
+            "title": "demo",
+            "deltaCount": 5,
+            "deltas": [
+              {
+                "spec": "alpha",
+                "operation": "ADDED",
+                "description": "Add requirement: The tool SHALL hold the third rule.",
+                "requirement": {
+                  "name": "The third rule holds",
+                  "text": "The tool SHALL hold the third rule.",
+                  "scenarios": [
+                    {
+                      "name": "The third rule holds",
+                      "rawText": "- **WHEN** the third rule is tested\n- **THEN** it holds"
+                    }
+                  ]
+                },
+                "requirements": [
+                  {
+                    "name": "The third rule holds",
+                    "text": "The tool SHALL hold the third rule.",
+                    "scenarios": [
+                      {
+                        "name": "The third rule holds",
+                        "rawText": "- **WHEN** the third rule is tested\n- **THEN** it holds"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "spec": "area/beta",
+                "operation": "ADDED",
+                "description": "Add requirement: The tool SHALL hold the new beta rule.",
+                "requirement": {
+                  "name": "The new beta rule holds",
+                  "text": "The tool SHALL hold the new beta rule.",
+                  "scenarios": [
+                    {
+                      "name": "The new beta rule holds",
+                      "rawText": "- **WHEN** the new beta rule is tested\n- **THEN** it holds"
+                    }
+                  ]
+                },
+                "requirements": [
+                  {
+                    "name": "The new beta rule holds",
+                    "text": "The tool SHALL hold the new beta rule.",
+                    "scenarios": [
+                      {
+                        "name": "The new beta rule holds",
+                        "rawText": "- **WHEN** the new beta rule is tested\n- **THEN** it holds"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "spec": "area/beta",
+                "operation": "MODIFIED",
+                "description": "Modify requirement: The tool SHALL hold the beta rule, and say so.",
+                "requirement": {
+                  "name": "The beta rule holds",
+                  "text": "The tool SHALL hold the beta rule, and say so.",
+                  "scenarios": [
+                    {
+                      "name": "The beta rule holds",
+                      "rawText": "- **WHEN** the beta rule is tested\n- **THEN** it holds and says so"
+                    }
+                  ]
+                },
+                "requirements": [
+                  {
+                    "name": "The beta rule holds",
+                    "text": "The tool SHALL hold the beta rule, and say so.",
+                    "scenarios": [
+                      {
+                        "name": "The beta rule holds",
+                        "rawText": "- **WHEN** the beta rule is tested\n- **THEN** it holds and says so"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "spec": "area/beta",
+                "operation": "REMOVED",
+                "description": "Remove requirement: **Reason**: The new beta rule replaces it.\n**Migration**: Hold the new beta rule.",
+                "requirement": {
+                  "name": "The spent rule holds",
+                  "text": "**Reason**: The new beta rule replaces it.\n**Migration**: Hold the new beta rule.",
+                  "scenarios": []
+                },
+                "requirements": [
+                  {
+                    "name": "The spent rule holds",
+                    "text": "**Reason**: The new beta rule replaces it.\n**Migration**: Hold the new beta rule.",
+                    "scenarios": []
+                  }
+                ]
+              },
+              {
+                "spec": "area/beta",
+                "operation": "RENAMED",
+                "description": "Rename requirement from \"The old rule holds\" to \"The renamed rule holds\"",
+                "rename": {
+                  "from": "The old rule holds",
+                  "to": "The renamed rule holds"
+                }
+              }
+            ]
+          },
+          "stderr": ""
+        },
+        {
+          "args": [
+            "show",
+            "--type",
+            "change",
+            "--json",
+            "--deltas-only",
+            "--",
+            "tooling"
+          ],
+          "exit": 0,
+          "stdout": {
+            "id": "tooling",
+            "title": "tooling",
+            "deltaCount": 2,
+            "deltas": [
+              {
+                "spec": "alpha",
+                "operation": "ADDED",
+                "description": "Add a check of the first rule."
+              },
+              {
+                "spec": "area/beta",
+                "operation": "RENAMED",
+                "description": "Rename the step that checks the beta rule."
+              }
+            ]
+          },
+          "stderr": ""
+        }
+      ]
+    },
+    "out of order": {
+      "tree": "975920c87c85f7e87fa169a9ee90eb89ab949b33cb05e2e0a8b1eff9f9ac10ee",
+      "calls": [
+        {
+          "args": [
+            "list",
+            "--specs",
+            "--json"
+          ],
+          "exit": 0,
+          "stdout": {
+            "specs": [
+              {
+                "id": "alpha",
+                "requirementCount": 2
+              },
+              {
+                "id": "area/beta",
+                "requirementCount": 3
+              }
+            ]
+          },
+          "stderr": ""
+        },
+        {
+          "args": [
+            "show",
+            "--type",
+            "spec",
+            "--json",
+            "--",
+            "alpha"
+          ],
+          "exit": 0,
+          "stdout": {
+            "id": "alpha",
+            "title": "alpha",
+            "overview": "What the first capability does.",
+            "requirementCount": 2,
+            "requirements": [
+              {
+                "name": "The first rule holds",
+                "text": "The tool SHALL hold the first rule.",
+                "scenarios": [
+                  {
+                    "name": "The rule holds",
+                    "rawText": "- **WHEN** the rule is tested\n- **AND** the test runs again\n- **THEN** it holds\n- **AND** it holds again"
+                  }
+                ]
+              },
+              {
+                "name": "The second rule holds",
+                "text": "The tool SHALL hold the second rule,\nover two lines.",
+                "scenarios": [
+                  {
+                    "name": "The second rule holds",
+                    "rawText": "- **WHEN** the second rule is tested\n- **THEN** it holds"
+                  }
+                ]
+              }
+            ],
+            "metadata": {
+              "version": "1.0.0",
+              "format": "openspec"
+            }
+          },
+          "stderr": ""
+        },
+        {
+          "args": [
+            "show",
+            "--type",
+            "spec",
+            "--json",
+            "--",
+            "area/beta"
+          ],
+          "exit": 0,
+          "stdout": {
+            "id": "area/beta",
+            "title": "area/beta",
+            "overview": "What the beta capability does.",
+            "requirementCount": 3,
+            "requirements": [
+              {
+                "name": "The beta rule holds",
+                "text": "The tool SHALL hold the beta rule.",
+                "scenarios": [
+                  {
+                    "name": "The beta rule holds",
+                    "rawText": "- **WHEN** the beta rule is tested\n- **THEN** it holds"
+                  }
+                ]
+              },
+              {
+                "name": "The old rule holds",
+                "text": "The tool SHALL hold the old rule.",
+                "scenarios": [
+                  {
+                    "name": "The old rule holds",
+                    "rawText": "- **WHEN** the old rule is tested\n- **THEN** it holds"
+                  }
+                ]
+              },
+              {
+                "name": "The spent rule holds",
+                "text": "The tool SHALL hold the spent rule.",
+                "scenarios": [
+                  {
+                    "name": "The spent rule holds",
+                    "rawText": "- **WHEN** the spent rule is tested\n- **THEN** it holds"
+                  }
+                ]
+              }
+            ],
+            "metadata": {
+              "version": "1.0.0",
+              "format": "openspec"
+            }
+          },
+          "stderr": ""
+        },
+        {
+          "args": [
+            "list",
+            "--json",
+            "--sort",
+            "name"
+          ],
+          "exit": 0,
+          "stdout": {
+            "changes": [
+              {
+                "name": "demo",
+                "completedTasks": 0,
+                "totalTasks": 0,
+                "status": "no-tasks"
+              }
+            ]
+          },
+          "stderr": ""
+        },
+        {
+          "args": [
+            "show",
+            "--type",
+            "change",
+            "--json",
+            "--deltas-only",
+            "--",
+            "demo"
+          ],
+          "exit": 0,
+          "stdout": {
+            "id": "demo",
+            "title": "demo",
+            "deltaCount": 4,
+            "deltas": [
+              {
+                "spec": "alpha",
+                "operation": "ADDED",
+                "description": "Add requirement: The tool SHALL hold the third rule.",
+                "requirement": {
+                  "name": "The third rule holds",
+                  "text": "The tool SHALL hold the third rule.",
+                  "scenarios": [
+                    {
+                      "name": "The third rule holds",
+                      "rawText": "- **WHEN** the third rule is tested\n- **THEN** it holds"
+                    }
+                  ]
+                },
+                "requirements": [
+                  {
+                    "name": "The third rule holds",
+                    "text": "The tool SHALL hold the third rule.",
+                    "scenarios": [
+                      {
+                        "name": "The third rule holds",
+                        "rawText": "- **WHEN** the third rule is tested\n- **THEN** it holds"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "spec": "area/beta",
+                "operation": "ADDED",
+                "description": "Add requirement: The tool SHALL hold the new beta rule.",
+                "requirement": {
+                  "name": "The new beta rule holds",
+                  "text": "The tool SHALL hold the new beta rule.",
+                  "scenarios": [
+                    {
+                      "name": "The new beta rule holds",
+                      "rawText": "- **WHEN** the new beta rule is tested\n- **THEN** it holds"
+                    }
+                  ]
+                },
+                "requirements": [
+                  {
+                    "name": "The new beta rule holds",
+                    "text": "The tool SHALL hold the new beta rule.",
+                    "scenarios": [
+                      {
+                        "name": "The new beta rule holds",
+                        "rawText": "- **WHEN** the new beta rule is tested\n- **THEN** it holds"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "spec": "area/beta",
+                "operation": "MODIFIED",
+                "description": "Modify requirement: The tool SHALL hold the beta rule, and say so.",
+                "requirement": {
+                  "name": "The beta rule holds",
+                  "text": "The tool SHALL hold the beta rule, and say so.",
+                  "scenarios": [
+                    {
+                      "name": "The beta rule holds",
+                      "rawText": "- **WHEN** the beta rule is tested\n- **THEN** it holds and says so"
+                    }
+                  ]
+                },
+                "requirements": [
+                  {
+                    "name": "The beta rule holds",
+                    "text": "The tool SHALL hold the beta rule, and say so.",
+                    "scenarios": [
+                      {
+                        "name": "The beta rule holds",
+                        "rawText": "- **WHEN** the beta rule is tested\n- **THEN** it holds and says so"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "spec": "area/beta",
+                "operation": "REMOVED",
+                "description": "Remove requirement: Requirement: The spent rule holds",
+                "requirement": {
+                  "name": "The spent rule holds",
+                  "text": "Requirement: The spent rule holds",
+                  "scenarios": []
+                },
+                "requirements": [
+                  {
+                    "name": "The spent rule holds",
+                    "text": "Requirement: The spent rule holds",
+                    "scenarios": []
+                  }
+                ]
+              }
+            ]
+          },
+          "stderr": ""
+        }
+      ]
+    }
+  }
+}

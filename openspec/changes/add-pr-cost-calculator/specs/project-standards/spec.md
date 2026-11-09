@@ -1,6 +1,6 @@
 ## Purpose
 
-Hold the whole tool to the standards that make it safe to adopt: documentation that names everything it does and says how each feature is validated, connections only where that documentation says, rated threats, pull request text without private references, action pins that their repositories tagged, a record of each decision, kept so that each can be reversed on its own, the assumptions that the design rests on, a glossary of the words its documents use, and a golden set of figures that every version reproduces.
+Hold the whole tool to the standards that make it safe to adopt: documentation that names everything it does and says how each feature is validated, connections only where that documentation says, rated threats, pull request text without private references, action pins that their repositories tagged, a record of each decision, kept so that each can be reversed on its own, the assumptions that the design rests on, a glossary of the words its documents use, specs that OpenSpec reads as they are written, and a golden set of figures that every version reproduces.
 
 ## ADDED Requirements
 
@@ -129,6 +129,145 @@ A change's proposal SHALL list every capability that the change's specs hold, an
 
 - **WHEN** a change's proposal gives one of its capabilities no row, or an empty one, in its section on how the outcome is validated
 - **THEN** a test fails and names the capability
+
+### Requirement: The tests of the specs' form read every spec that OpenSpec reads
+
+Tests SHALL read as specs each `spec.md` in a folder at any depth below `openspec/specs/`, or below the `specs/` folder of each folder in `openspec/changes/` but `archive`, that no folder whose name starts with a dot holds, and SHALL fail when a file or a folder in `openspec/` outside `openspec/changes/archive/` is a symbolic link, which they never follow, or when a file is named `spec.md` in any case and is not one of those specs.
+
+#### Scenario: A spec in a deeper folder is read
+
+- **WHEN** a spec two folders below `openspec/specs/` or below a change's `specs/` folder, or in a change that has no proposal, holds a scenario with no THEN line
+- **THEN** a test fails and names that spec
+
+#### Scenario: A spec that the tests do not read fails CI
+
+- **WHEN** a file named `spec.md` in any case stands in `openspec/`, outside `openspec/changes/archive/`, where the tests do not read it, as at the top of a `specs/` folder, in a change's own folder or in a folder whose name starts with a dot
+- **THEN** a test fails and names the file
+
+#### Scenario: A symbolic link among the specs fails CI
+
+- **WHEN** a file or a folder in `openspec/`, outside `openspec/changes/archive/`, is a symbolic link
+- **THEN** a test fails and names it, and no test reads what it points to
+
+### Requirement: Each requirement's text keeps OpenSpec's form
+
+Tests SHALL fail when a requirement that a spec they read gives under `## Requirements`, `## ADDED Requirements` or `## MODIFIED Requirements` has no scenario, or has text, between its heading and its first scenario, that holds neither SHALL nor MUST as a word, is longer than 500 characters, measured on its lines that are not blank, each trimmed and joined by line breaks, or holds a line that starts with a bold label and a colon, and when they read no requirement or no scenario.
+
+#### Scenario: A requirement with no SHALL or MUST fails CI
+
+- **WHEN** a requirement's text holds neither SHALL nor MUST as a word, as when it gives them in lower case or in its heading alone
+- **THEN** a test fails and names the spec and the requirement
+
+#### Scenario: A requirement longer than 500 characters fails CI
+
+- **WHEN** a requirement's text is longer than 500 characters, whether a main spec gives it or a change adds or modifies it
+- **THEN** a test fails and names the spec, the requirement and its length
+
+#### Scenario: A requirement with no scenario fails CI
+
+- **WHEN** a requirement that a main spec gives, or that a change adds or modifies, has no scenario
+- **THEN** a test fails and names the spec and the requirement
+
+#### Scenario: A label line in a requirement's text fails CI
+
+- **WHEN** a requirement's text holds a line that starts with a bold label and a colon, such as `**Note**:`, which OpenSpec leaves out of the text when other lines remain
+- **THEN** a test fails and names the spec, the requirement and the line
+
+#### Scenario: A requirement that a change removes or renames is not read for its text
+
+- **WHEN** a change removes a requirement, giving its heading with its reason and its migration and no scenario, or renames one
+- **THEN** the test passes it
+
+#### Scenario: A test that reads no requirement or no scenario fails
+
+- **WHEN** the test finds no spec, or specs that give no requirement or no scenario
+- **THEN** it fails and says what it did not read
+
+### Requirement: Each scenario of the specs keeps OpenSpec's form
+
+Tests SHALL fail when a scenario in a spec that they read holds other than one `- **WHEN**` line and then one `- **THEN**` line, each followed by any `- **AND**` lines, when it has the name of another scenario in that spec, and when a requirement's text holds a line that starts as a scenario's lines do.
+
+#### Scenario: A scenario out of form fails CI
+
+- **WHEN** a scenario has no `- **WHEN**` line or no `- **THEN**` line, gives one of them twice or its THEN first, or holds another line, such as a later scenario's heading made plain text or bold
+- **THEN** a test fails and names the spec, the requirement, the scenario and the line
+
+#### Scenario: A scenario that takes another's name fails CI
+
+- **WHEN** two scenarios in one spec have the same name, under one requirement or under two
+- **THEN** a test fails and names the spec and the name
+
+#### Scenario: A scenario's line in a requirement's text fails CI
+
+- **WHEN** a `- **WHEN**`, `- **THEN**` or `- **AND**` line stands in a requirement's text, as when its first scenario's heading is made plain text
+- **THEN** a test fails and names the spec and the line
+
+#### Scenario: A scenario with AND lines passes
+
+- **WHEN** a scenario gives `- **AND**` lines after its WHEN line and after its THEN line
+- **THEN** the test passes it
+
+### Requirement: Each heading and line of the specs is read as GitHub shows it
+
+Tests SHALL fail when a spec that they read gives text other than a title before its sections; a heading other than that title, the sections that OpenSpec reads, and `### Requirement:` and `#### Scenario:` headings with a name, the second under a requirement; another line that, after any spaces, tabs or list or quote markers, starts with `#` or three backticks or tildes, or holds only `=` or `-` signs and spaces or tabs; or a line before the first requirement of a section that gives their text.
+
+#### Scenario: A heading out of form or out of place fails CI
+
+- **WHEN** a requirement's or a scenario's heading is at another level, or lacks `Requirement:` or `Scenario:` or its name, a scenario's heading stands before any requirement, or a spec gives a title after its first section, a section that OpenSpec does not read or any other heading
+- **THEN** a test fails and names the spec and the line
+
+#### Scenario: A line that OpenSpec or GitHub alone reads as a fence or a heading fails CI
+
+- **WHEN** a line, after any spaces, tabs or list or quote markers, starts with three backticks or three tildes, as a fence's opening line or a code span does, inside an HTML comment or not, starts with `#` and is not a heading in form, such as `###Requirement:` with no space or `- ### Requirement:` in a list item, or holds only `=` or `-` signs and spaces or tabs, with which GitHub makes the line above it a heading
+- **THEN** a test fails and names the spec and the line
+
+#### Scenario: A line before a section's first requirement fails CI
+
+- **WHEN** a line stands before the first requirement of a section that gives their text, as when that requirement's heading is made plain text
+- **THEN** a test fails and names the spec and the line
+
+#### Scenario: A line before a spec's first section fails CI
+
+- **WHEN** a line of text other than a title stands before a spec's first section, where GitHub shows it and OpenSpec reads no text
+- **THEN** a test fails and names the spec and the line
+
+#### Scenario: A spec in OpenSpec's own form passes
+
+- **WHEN** a main spec opens with the title that archiving a change gives it, then `## Purpose` and `## Requirements`, and a change's spec gives the sections of OpenSpec's template
+- **THEN** the test passes it
+
+### Requirement: The specs hold only text that GitHub shows as it is
+
+Tests SHALL fail when a spec that they read holds a character other than printable ASCII and line breaks, a run of backticks that no run as long closes on its line, or, outside inline code, a `<`, an `&`, a backslash, a `|`, a `](`, a `]:`, a `$` or a `~`, with which GitHub would show the spec otherwise than OpenSpec and agents read it.
+
+#### Scenario: Text that GitHub would hide or show otherwise fails CI
+
+- **WHEN** a spec holds a character other than printable ASCII and line breaks, such as a carriage return, a byte-order mark or a line separator, bytes that are not UTF-8, inline code that does not close on its line, or, outside inline code, an HTML comment, a character reference, an escaped character, a table, a link, a link reference definition, a mathematical expression or struck-through text
+- **THEN** a test fails and names the spec, the line and what it holds
+
+#### Scenario: Inline code may hold those marks
+
+- **WHEN** a spec gives `<`, `&`, `|`, `](`, `]:`, `$`, `~` or a backslash inside inline code that closes on its line
+- **THEN** the test passes it
+
+### Requirement: CI checks that the tests read each spec as OpenSpec does
+
+CI SHALL fail when the specs and changes that the tests of the specs' form read, or the requirements that they read from each, in order, each with its operation in a change, its name, its text and its scenarios' names and lines, differ from what the pinned OpenSpec CLI lists and shows for them, and when it compares none.
+
+#### Scenario: A spec that the tests read otherwise than OpenSpec fails CI
+
+- **WHEN** the pinned OpenSpec CLI lists a spec or a change that the tests do not read, or the other way round, or shows a requirement's operation, name, text or scenarios otherwise than the tests read them, as for a requirement that a fence hides from OpenSpec
+- **THEN** CI fails and names the spec and the first difference
+
+#### Scenario: A comparison of nothing fails CI
+
+- **WHEN** the comparison finds no requirement to compare
+- **THEN** CI fails and says so
+
+#### Scenario: Readings that agree pass
+
+- **WHEN** the tests and the pinned CLI read the same specs and changes, and the same requirements in each
+- **THEN** the comparison passes
 
 ### Requirement: Each decision has a record of its own, in a fixed form
 

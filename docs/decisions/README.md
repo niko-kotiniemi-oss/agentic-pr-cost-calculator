@@ -118,7 +118,7 @@ A record that the default branch holds is accepted, and from then on it changes 
 | [DR-110](DR-110-ci-minutes-counted.md) | The cost counts CI minutes as well as model tokens | scope | accepted | the change `add-pr-cost-calculator`, as the owner asked on 2026-10-17 | R14, R18, R20, R21, R24, R62, R63, R64, R66, R69, R94, R97, R120, R121 | T18, T22, T24, T26, T51 |
 | [DR-111](DR-111-major-updates-wait.md) | Major updates wait for the owner's approval | technical | accepted | the change `add-pr-cost-calculator`, as the owner asked on 2026-10-20 | R26 | T64 |
 | [DR-112](DR-112-likelihood-with-the-answer-in-place.md) | Likelihood is rated with the answer in place | process | accepted | the change `add-pr-cost-calculator` | none | none |
-| [DR-113](DR-113-requirements-500-characters.md) | Each requirement is 500 characters or fewer | process | accepted | the owner, 2026-10-26 | none | none |
+| [DR-113](DR-113-requirements-500-characters.md) | Each requirement is 500 characters or fewer | process | closed | the owner, 2026-10-26 | none | none |
 | [DR-114](DR-114-open-source.md) | The tool is open source, in a public repository | scope | accepted | the owner, 2026-10-17 | none | T32, T61, T65 |
 | [DR-115](DR-115-outside-contributions-welcome.md) | Outside contributions are welcome | process | accepted | the owner, 2026-10-18 | none | T33, T34, T37, T61 |
 | [DR-116](DR-116-open-source-files.md) | The repository carries the usual open-source files | process | accepted | the change `add-pr-cost-calculator`, as the owner asked on 2026-10-20 | none | T61, T62 |
@@ -198,3 +198,7 @@ A record that the default branch holds is accepted, and from then on it changes 
 | [DR-190](DR-190-unknown-configuration-key-not-valid.md) | A configuration file with a key that the tool does not know is not valid | technical | accepted | the owner, 2026-11-03 | R92, R122, R171 | T49, T123 |
 | [DR-191](DR-191-report-says-when-tool-left-off.md) | The report says when a merge leaves the tool off | technical | accepted | the change `add-pr-cost-calculator` | R172 | T49, T123 |
 | [DR-192](DR-192-key-twice-or-enabled-not-boolean-not-valid.md) | A configuration file that gives a key twice, or no `enabled` of `true` or `false`, is not valid | technical | accepted | the change `add-pr-cost-calculator` | R92, R171 | T49 |
+| [DR-193](DR-193-test-holds-spec-form.md) | A test of the repository's own holds the specs' form | process | accepted | the change `add-pr-cost-calculator`, as the owner asked on 2026-11-09 | R173, R174, R175, R177 | T124, T126 |
+| [DR-194](DR-194-requirements-500-characters.md) | Each requirement is 500 characters or fewer | process | accepted | the owner, 2026-10-26 | R173 | none |
+| [DR-195](DR-195-specs-are-plain-text.md) | The specs hold only text that GitHub shows as it is | security and privacy | accepted | the change `add-pr-cost-calculator`, as the owner asked on 2026-11-09 | R176 | T125 |
+| [DR-196](DR-196-ci-compares-spec-reading-with-openspec.md) | CI compares the test's reading of the specs with OpenSpec's | process | accepted | the change `add-pr-cost-calculator`, as the owner asked on 2026-11-09 | R178 | T124, T127 |

@@ -184,6 +184,12 @@ The capability names the spec that holds the requirement. Each capability is one
 | R170 | non-functional | `usage-capture` | A ledger file's note keeps only what a take-back needs |
 | R171 | behavioural | `switch-and-opt-in` | A configuration file with a key that the tool does not know, a key given twice or no `enabled` of `true` or `false` is not valid |
 | R172 | functional | `switch-and-opt-in` | The report says when the configuration after the merge does not turn the tool on |
+| R173 | non-functional | `project-standards` | Each requirement's text keeps OpenSpec's form |
+| R174 | non-functional | `project-standards` | Each scenario of the specs keeps OpenSpec's form |
+| R175 | non-functional | `project-standards` | Each heading and line of the specs is read as GitHub shows it |
+| R176 | non-functional | `project-standards` | The specs hold only text that GitHub shows as it is |
+| R177 | non-functional | `project-standards` | The tests of the specs' form read every spec that OpenSpec reads |
+| R178 | non-functional | `project-standards` | CI checks that the tests read each spec as OpenSpec does |
 
 IDs are stable: a requirement keeps its ID while it exists, and a new one takes the next free number, so the rows follow the order in which requirements were added rather than the order of the specs. A requirement that a later change removes leaves the table, and its ID is listed below with the change that removed it, never to be used again.
 

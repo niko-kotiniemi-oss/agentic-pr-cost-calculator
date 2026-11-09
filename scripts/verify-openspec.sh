@@ -6,6 +6,8 @@
 #   2. The generated openspec-* skills are exactly what that CLI writes.
 #   3. Every spec and change validates under --strict, and there was something
 #      to validate.
+#   4. That CLI lists and shows every spec and change, and each requirement, as
+#      tests/test_spec_form.py reads them, and there was something to compare.
 #
 # Exit 1 when a property does not hold, 2 when the check cannot run.
 set -euo pipefail
@@ -81,3 +83,6 @@ if [ "$count" -eq 0 ]; then
   exit 1
 fi
 echo "verify-openspec: $count item(s) valid"
+
+echo "--- the CLI reads every spec as the test of the specs' form reads it ---"
+python3 scripts/spec_form.py "$OPENSPEC"
