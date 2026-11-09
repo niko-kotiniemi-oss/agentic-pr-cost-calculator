@@ -2,22 +2,22 @@
 
 An open-source tool to estimate what a GitHub pull request cost when it was built with an AI coding agent.
 
-**Status: proposal.** No calculator code exists yet. The design is an OpenSpec change under
+**Status: proposal.** None of the tool's code exists yet. The design is an OpenSpec change under
 [`openspec/changes/`](openspec/changes/), and code starts once it is approved.
 
 ## What it will do
 
-For each pull request, the calculator will:
+For each pull request, the tool will:
 
 - capture the tokens the agent spent while its session was working in the repository, per model and by type: input, output, cache writes and cache reads, and carry them to the pull request with the agent's own commits;
-- price them from a dated price table kept in this repository, so the estimate uses the price that applied on the day the tokens were spent;
+- price them from a dated price table kept in the tool's own repository, so the estimate uses the price that applied on the day the tokens were spent;
 - add the GitHub Actions minutes the pull request's CI used, priced at GitHub's published rate;
 - where the data allows, split the cost by activity: code generation, file reading, tooling, MCP calls, subagents and conversation, with any tool it does not know counted as other;
-- post a short report comment when the pull request merges, and keep the usage ledger in the repository as the record.
+- post a short report comment when the pull request merges, and keep the ledger in the repository as the record.
 
-A repository turns it on or off with one setting, and each person decides for themselves whether their own sessions are recorded.
+A repository turns it on or off with one file, its configuration file, and each person decides for themselves whether their own sessions are recorded.
 
-Usage is recorded by the directory the session is in, not by which files it touches. A session in the repository is recorded there even for work it does on another repository from there, so work on other repositories, private ones above all, belongs in sessions of its own.
+Usage is recorded by the directory that Claude is in when it makes each call, not by which files it touches. A call made from the repository is recorded there even when it works on another repository, so work on other repositories, private ones above all, belongs in sessions of its own.
 
 The figure is an **API-equivalent estimate**, meaning what the same tokens would cost at list prices. It is not a bill: subscription plans and included CI minutes change what you actually pay.
 
@@ -32,11 +32,13 @@ Each line links the decision record that leaves it out. A later version may add 
 
 ## Documentation
 
-- [How it works](docs/how-it-works.md): the product as a whole, with its flows, how a cost is computed, and every credential, permission and outside connection it uses.
+- [How it works](docs/how-it-works.md): the tool as a whole, with its flows, how a cost is computed, and every credential, permission and outside connection it uses.
 - [Features](docs/features/README.md): one page per feature, with its expected behaviour, its requirements and how it is validated.
 - [Requirements](docs/requirements.md): every functional, behavioural and non-functional requirement, indexed to the specs that hold them.
 - [Threat model](docs/threat-model.md): what could go wrong, each threat rated for impact and likelihood, and what answers it.
+- [Assumptions](docs/assumptions/README.md): what the design assumes about what lies outside the tool's own code, and how each of those facts is checked.
 - [Decisions](docs/decisions/README.md): one record per decision, with why it was made, what else was considered and what reversing it would change.
+- [Glossary](docs/glossary.md): the words that the pages use, each with its meaning and the words to avoid for it.
 - [Changelog](CHANGELOG.md).
 
 ## Compatibility and releases
@@ -57,11 +59,11 @@ npm ci --ignore-scripts
 scripts/verify-openspec.sh
 ```
 
-Cloud sessions of Claude Code run the same setup automatically through `.claude/hooks/session-start.sh`.
+A cloud session of Claude Code that has this repository alone, outside a project's threads, runs the same setup automatically through `.claude/hooks/session-start.sh`.
 
 Two tools are pinned here:
 
-- [OpenSpec](https://github.com/Fission-AI/OpenSpec), installed at an exact version from `package-lock.json`. It holds what the calculator must do.
+- [OpenSpec](https://github.com/Fission-AI/OpenSpec), installed at an exact version from `package-lock.json`. It holds what the tool must do.
 - [Superpowers](https://github.com/obra/superpowers), vendored under `vendor/superpowers/` at the commit `UPSTREAM.lock` names. It guides how the code is built. CI checks that the copy matches upstream.
 
 ## Security

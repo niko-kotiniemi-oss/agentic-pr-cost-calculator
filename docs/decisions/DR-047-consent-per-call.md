@@ -1,12 +1,12 @@
 # DR-047: Consent holds for each recorded call
 
 - **Type:** security and privacy
-- **Status:** accepted
+- **Status:** closed
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** R40, R107, R108, R109, R118
 - **Threats:** T38, T46
 - **Replaces:** none
-- **Closed by:** none
+- **Closed by:** DR-168
 
 ## Context
 

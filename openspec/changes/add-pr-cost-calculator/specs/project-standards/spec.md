@@ -1,6 +1,6 @@
 ## Purpose
 
-Hold the whole product to the standards that make it safe to adopt: documentation that names everything it does and says how each feature is validated, connections only where that documentation says, rated threats, pull request text without private references, action pins that their repositories tagged, and a record of each decision, kept so that each can be reversed on its own.
+Hold the whole tool to the standards that make it safe to adopt: documentation that names everything it does and says how each feature is validated, connections only where that documentation says, rated threats, pull request text without private references, action pins that their repositories tagged, a record of each decision, kept so that each can be reversed on its own, the assumptions that the design rests on, a glossary of the words its documents use, specs that OpenSpec reads as they are written, and a golden set of figures that every version reproduces.
 
 ## ADDED Requirements
 
@@ -130,6 +130,145 @@ A change's proposal SHALL list every capability that the change's specs hold, an
 - **WHEN** a change's proposal gives one of its capabilities no row, or an empty one, in its section on how the outcome is validated
 - **THEN** a test fails and names the capability
 
+### Requirement: The tests of the specs' form read every spec that OpenSpec reads
+
+Tests SHALL read as specs each `spec.md` in a folder at any depth below `openspec/specs/`, or below the `specs/` folder of each folder in `openspec/changes/` but `archive`, that no folder whose name starts with a dot holds, and SHALL fail when a file or a folder in `openspec/` outside `openspec/changes/archive/` is a symbolic link, which they never follow, or when a file is named `spec.md` in any case and is not one of those specs.
+
+#### Scenario: A spec in a deeper folder is read
+
+- **WHEN** a spec two folders below `openspec/specs/` or below a change's `specs/` folder, or in a change that has no proposal, holds a scenario with no THEN line
+- **THEN** a test fails and names that spec
+
+#### Scenario: A spec that the tests do not read fails CI
+
+- **WHEN** a file named `spec.md` in any case stands in `openspec/`, outside `openspec/changes/archive/`, where the tests do not read it, as at the top of a `specs/` folder, in a change's own folder or in a folder whose name starts with a dot
+- **THEN** a test fails and names the file
+
+#### Scenario: A symbolic link among the specs fails CI
+
+- **WHEN** a file or a folder in `openspec/`, outside `openspec/changes/archive/`, is a symbolic link
+- **THEN** a test fails and names it, and no test reads what it points to
+
+### Requirement: Each requirement's text keeps OpenSpec's form
+
+Tests SHALL fail when a requirement that a spec they read gives under `## Requirements`, `## ADDED Requirements` or `## MODIFIED Requirements` has no scenario, or has text, between its heading and its first scenario, that holds neither SHALL nor MUST as a word, is longer than 500 characters, measured on its lines that are not blank, each trimmed and joined by line breaks, or holds a line that starts with a bold label and a colon, and when they read no requirement or no scenario.
+
+#### Scenario: A requirement with no SHALL or MUST fails CI
+
+- **WHEN** a requirement's text holds neither SHALL nor MUST as a word, as when it gives them in lower case or in its heading alone
+- **THEN** a test fails and names the spec and the requirement
+
+#### Scenario: A requirement longer than 500 characters fails CI
+
+- **WHEN** a requirement's text is longer than 500 characters, whether a main spec gives it or a change adds or modifies it
+- **THEN** a test fails and names the spec, the requirement and its length
+
+#### Scenario: A requirement with no scenario fails CI
+
+- **WHEN** a requirement that a main spec gives, or that a change adds or modifies, has no scenario
+- **THEN** a test fails and names the spec and the requirement
+
+#### Scenario: A label line in a requirement's text fails CI
+
+- **WHEN** a requirement's text holds a line that starts with a bold label and a colon, such as `**Note**:`, which OpenSpec leaves out of the text when other lines remain
+- **THEN** a test fails and names the spec, the requirement and the line
+
+#### Scenario: A requirement that a change removes or renames is not read for its text
+
+- **WHEN** a change removes a requirement, giving its heading with its reason and its migration and no scenario, or renames one
+- **THEN** the test passes it
+
+#### Scenario: A test that reads no requirement or no scenario fails
+
+- **WHEN** the test finds no spec, or specs that give no requirement or no scenario
+- **THEN** it fails and says what it did not read
+
+### Requirement: Each scenario of the specs keeps OpenSpec's form
+
+Tests SHALL fail when a scenario in a spec that they read holds other than one `- **WHEN**` line and then one `- **THEN**` line, each followed by any `- **AND**` lines, when it has the name of another scenario in that spec, and when a requirement's text holds a line that starts as a scenario's lines do.
+
+#### Scenario: A scenario out of form fails CI
+
+- **WHEN** a scenario has no `- **WHEN**` line or no `- **THEN**` line, gives one of them twice or its THEN first, or holds another line, such as a later scenario's heading made plain text or bold
+- **THEN** a test fails and names the spec, the requirement, the scenario and the line
+
+#### Scenario: A scenario that takes another's name fails CI
+
+- **WHEN** two scenarios in one spec have the same name, under one requirement or under two
+- **THEN** a test fails and names the spec and the name
+
+#### Scenario: A scenario's line in a requirement's text fails CI
+
+- **WHEN** a `- **WHEN**`, `- **THEN**` or `- **AND**` line stands in a requirement's text, as when its first scenario's heading is made plain text
+- **THEN** a test fails and names the spec and the line
+
+#### Scenario: A scenario with AND lines passes
+
+- **WHEN** a scenario gives `- **AND**` lines after its WHEN line and after its THEN line
+- **THEN** the test passes it
+
+### Requirement: Each heading and line of the specs is read as GitHub shows it
+
+Tests SHALL fail when a spec that they read gives text other than a title before its sections; a heading other than that title, the sections that OpenSpec reads, and `### Requirement:` and `#### Scenario:` headings with a name, the second under a requirement; another line that, after any spaces, tabs or list or quote markers, starts with `#` or three backticks or tildes, or holds only `=` or `-` signs and spaces or tabs; or a line before the first requirement of a section that gives their text.
+
+#### Scenario: A heading out of form or out of place fails CI
+
+- **WHEN** a requirement's or a scenario's heading is at another level, or lacks `Requirement:` or `Scenario:` or its name, a scenario's heading stands before any requirement, or a spec gives a title after its first section, a section that OpenSpec does not read or any other heading
+- **THEN** a test fails and names the spec and the line
+
+#### Scenario: A line that OpenSpec or GitHub alone reads as a fence or a heading fails CI
+
+- **WHEN** a line, after any spaces, tabs or list or quote markers, starts with three backticks or three tildes, as a fence's opening line or a code span does, inside an HTML comment or not, starts with `#` and is not a heading in form, such as `###Requirement:` with no space or `- ### Requirement:` in a list item, or holds only `=` or `-` signs and spaces or tabs, with which GitHub makes the line above it a heading
+- **THEN** a test fails and names the spec and the line
+
+#### Scenario: A line before a section's first requirement fails CI
+
+- **WHEN** a line stands before the first requirement of a section that gives their text, as when that requirement's heading is made plain text
+- **THEN** a test fails and names the spec and the line
+
+#### Scenario: A line before a spec's first section fails CI
+
+- **WHEN** a line of text other than a title stands before a spec's first section, where GitHub shows it and OpenSpec reads no text
+- **THEN** a test fails and names the spec and the line
+
+#### Scenario: A spec in OpenSpec's own form passes
+
+- **WHEN** a main spec opens with the title that archiving a change gives it, then `## Purpose` and `## Requirements`, and a change's spec gives the sections of OpenSpec's template
+- **THEN** the test passes it
+
+### Requirement: The specs hold only text that GitHub shows as it is
+
+Tests SHALL fail when a spec that they read holds a character other than printable ASCII and line breaks, a run of backticks that no run as long closes on its line, or, outside inline code, a `<`, an `&`, a backslash, a `|`, a `](`, a `]:`, a `$` or a `~`, with which GitHub would show the spec otherwise than OpenSpec and agents read it.
+
+#### Scenario: Text that GitHub would hide or show otherwise fails CI
+
+- **WHEN** a spec holds a character other than printable ASCII and line breaks, such as a carriage return, a byte-order mark or a line separator, bytes that are not UTF-8, inline code that does not close on its line, or, outside inline code, an HTML comment, a character reference, an escaped character, a table, a link, a link reference definition, a mathematical expression or struck-through text
+- **THEN** a test fails and names the spec, the line and what it holds
+
+#### Scenario: Inline code may hold those marks
+
+- **WHEN** a spec gives `<`, `&`, `|`, `](`, `]:`, `$`, `~` or a backslash inside inline code that closes on its line
+- **THEN** the test passes it
+
+### Requirement: CI checks that the tests read each spec as OpenSpec does
+
+CI SHALL fail when the specs and changes that the tests of the specs' form read, or the requirements that they read from each, in order, each with its operation in a change, its name, its text and its scenarios' names and lines, differ from what the pinned OpenSpec CLI lists and shows for them, and when it compares none.
+
+#### Scenario: A spec that the tests read otherwise than OpenSpec fails CI
+
+- **WHEN** the pinned OpenSpec CLI lists a spec or a change that the tests do not read, or the other way round, or shows a requirement's operation, name, text or scenarios otherwise than the tests read them, as for a requirement that a fence hides from OpenSpec
+- **THEN** CI fails and names the spec and the first difference
+
+#### Scenario: A comparison of nothing fails CI
+
+- **WHEN** the comparison finds no requirement to compare
+- **THEN** CI fails and says so
+
+#### Scenario: Readings that agree pass
+
+- **WHEN** the tests and the pinned CLI read the same specs and changes, and the same requirements in each
+- **THEN** the comparison passes
+
 ### Requirement: Each decision has a record of its own, in a fixed form
 
 Each decision about what the tool is, how it works or how it is built SHALL have a record of its own in `docs/decisions/`, holding one choice and named for its number, and the records SHALL be numbered from DR-001 without a gap or a repeat. A record SHALL give its type, status, decider, requirements, threats, the records it replaces and the one that closed it, then its context, decision, alternatives, consequences, scope and what reversing it would change, each once, in that order, none empty.
@@ -251,11 +390,11 @@ Tests SHALL fail when a commit removes, renames or moves a record that the base 
 
 ### Requirement: IDs that the default branch holds stay held or retired
 
-Tests SHALL fail when a requirement or threat ID that the base commit's register or threat model holds or retires is neither held nor retired at HEAD, so that no record comes to cite another requirement or threat.
+Tests SHALL fail when a requirement, threat or assumption ID that the base commit's register, threat model or assumptions' index holds or retires is neither held nor retired at HEAD, so that no record or threat comes to cite another requirement, threat or assumption.
 
 #### Scenario: An ID that vanishes fails CI
 
-- **WHEN** a commit drops a requirement or a threat, or a retired ID, that the base holds, without retiring it
+- **WHEN** a commit drops a requirement, a threat or an assumption, or a retired ID, that the base holds, without retiring it
 - **THEN** a test fails and names the ID
 
 ### Requirement: A record and the threats it lists name each other
@@ -308,3 +447,232 @@ No attribute that the repository sets SHALL make git show a record's or the inde
 
 - **WHEN** a person's global attributes file gives the records such an attribute
 - **THEN** the test does not read it
+
+### Requirement: The assumptions the design rests on are written down
+
+The repository SHALL keep the assumptions that the specs, design, threat model and records rest on, each with what rests on it, by requirement, threat or record, and what changes if it is wrong, and each of its facts with where it is relied on and how it is checked: by a test, an observation, documentation, or not yet, with the task that will check it or why none will. A threat that rests on an assumption SHALL name it, and the assumption SHALL name the threat. Tests SHALL fail otherwise.
+
+#### Scenario: An assumption without its check fails CI
+
+- **WHEN** an assumption names nothing that rests on it or does not say what changes if it is wrong, or one of its facts does not say where it is relied on or how it is checked, or names a task that is done as the one that will check it
+- **THEN** a test fails and names the assumption
+
+#### Scenario: A citation of nothing fails CI
+
+- **WHEN** an assumption or one of its facts names a requirement, a threat, a record or a task that does not exist, or a test that is not collected or that a mark skips or expects to fail
+- **THEN** a test fails and names the assumption and what it names
+
+#### Scenario: An assumption that names what does not rest on it fails CI
+
+- **WHEN** an assumption names a requirement, a threat or a record, in what changes if it is wrong or in a fact, that it does not name as resting on it, or names as resting on it one that none of its facts is relied on by
+- **THEN** a test fails and names the assumption and what it names
+
+#### Scenario: A subject without its page fails CI
+
+- **WHEN** a subject that the design gives a page of its own, such as Claude Code or GitHub, has no page under `docs/assumptions/`
+- **THEN** a test fails and names the page
+
+#### Scenario: An assumption and a threat that do not name each other fail CI
+
+- **WHEN** a threat names an assumption that does not name the threat, or an assumption names a threat that does not name the assumption
+- **THEN** a test fails and names both
+
+#### Scenario: A threat that names its assumptions in prose fails CI
+
+- **WHEN** a threat's field `Assumptions` holds text that is not an assumption's ID
+- **THEN** a test fails and names the threat
+
+### Requirement: Each fact's check can be followed
+
+A fact whose subject no test may reach, such as Claude Code or GitHub, SHALL NOT be checked by a test alone. An observation SHALL name the file under `tests/` that reproduces what was seen, the date, and the program, version and build it was seen on, and never whose work it was seen in. Documentation SHALL be linked by its address, as a vendor's page on a host or a file at a full commit of a GitHub repository that the test lists, with the date it was read. Tests SHALL fail otherwise.
+
+#### Scenario: A fact that no test can reach, checked by a test alone, fails CI
+
+- **WHEN** a fact whose subject no test may reach, such as Claude Code or GitHub, gives a test as its only check
+- **THEN** a test fails and names the assumption and the fact
+
+#### Scenario: An observation that cannot be followed fails CI
+
+- **WHEN** a fact checked by observation names no file under `tests/` that exists and holds a test that no mark skips or expects to fail, gives no date or one later than the day the test runs, or does not name the program, the version that it prints and its build
+- **THEN** a test fails and names the assumption and the fact
+
+#### Scenario: A documented fact that links elsewhere fails CI
+
+- **WHEN** a fact checked by documentation links anything but an `https` address of a page on a vendor's documentation host that the test lists, or of a file at a full commit of a GitHub repository that it lists by a path with no `.` or `..` segment, shows link text other than its address, or gives no date or one later than the day the test runs
+- **THEN** a test fails and names the assumption and the link
+
+#### Scenario: An assumption that names a private source fails CI
+
+- **WHEN** a page of the assumptions, or a file that a fact names as reproducing what was seen, holds a path under a home folder or a session identifier
+- **THEN** a test fails and names the file and the line, and quotes neither
+
+### Requirement: The assumptions give no other web address
+
+No page of the assumptions SHALL give a web address but in the check of a fact checked by documentation, so that a link that no check reads cannot lead an agent elsewhere. Tests SHALL fail otherwise.
+
+#### Scenario: A web address outside a documented check fails CI
+
+- **WHEN** a page of the assumptions holds a web address anywhere but in the check of a fact checked by documentation
+- **THEN** a test fails and names the file and the line
+
+### Requirement: The assumptions with the most at stake come first
+
+The assumptions SHALL be listed by the highest impact among the threats that rest on them, as the threat model rates those threats, then with the least checked first, then by the highest risk among those threats, with the assumptions that no threat rests on last. Each line of the index SHALL give that impact beside that risk. Tests SHALL fail when the list's order differs from the order that these give, or a line of the index does not give both ratings as the threat model does.
+
+#### Scenario: An assumption out of order fails CI
+
+- **WHEN** a threat's rating or a fact's check changes, and an assumption no longer stands in the order that they give
+- **THEN** a test fails and names the assumption
+
+#### Scenario: An assumption behind a threat of higher impact comes first
+
+- **WHEN** one assumption rests on a threat of impact 3 and likelihood 1, and another only on threats of lower impact and higher risk
+- **THEN** the first stands before the second, or a test fails and names it
+
+#### Scenario: An index line without the impact fails CI
+
+- **WHEN** a line of the assumptions' index gives an assumption's risk without the highest impact among the threats that rest on it, or gives a rating that differs from the threat model's
+- **THEN** a test fails and names the assumption
+
+### Requirement: The specs and pages use the glossary's words
+
+The repository SHALL keep a glossary of each term's meaning and its words to avoid. Tests SHALL fail when a tracked Markdown file uses a word to avoid outside code, naming the file, the line and the term to use, and when they cannot read such a file whole, naming it. They SHALL NOT read decision records, archived changes, released changelog entries, vendored or generated files, or titles that an accepted record quotes, which keep their words, and SHALL fail when such a title leaves the specs.
+
+#### Scenario: An avoided word fails CI
+
+- **WHEN** a spec, a change's proposal, design or tasks, or another Markdown page that the repository tracks uses a word that the glossary says to avoid
+- **THEN** a test fails and names the file, the line and the term to use
+
+#### Scenario: A decision record keeps its words
+
+- **WHEN** a decision record, an archived change, a released changelog entry, or a vendored or generated file uses a word that the glossary says to avoid
+- **THEN** no test fails for it
+
+#### Scenario: A word to avoid in code is left as written
+
+- **WHEN** a tracked Markdown file gives a word that the glossary says to avoid inside inline code or a fenced code block
+- **THEN** no test fails for it there, while the same word in the prose of that line fails
+
+#### Scenario: A title that a record quotes keeps its words
+
+- **WHEN** a requirement's or a scenario's title that an accepted record quotes is changed or removed in the specs
+- **THEN** a test fails and names the record and the title
+
+#### Scenario: A title that only a new record quotes is read
+
+- **WHEN** a pull request adds a record whose status says accepted and that quotes a title holding a word to avoid
+- **THEN** a test fails and names the file, the line and the term to use, since only the records that the default branch holds keep the titles that they quote
+
+#### Scenario: A page that the test cannot read whole fails CI
+
+- **WHEN** a tracked Markdown file that the test reads is a symbolic link, is not UTF-8, opens a fenced code block that never closes, or holds a line that GitHub reads in a fence or after it depending on whether a list item holds that fence
+- **THEN** a test fails and names the file
+
+#### Scenario: A wording check that reads nothing fails CI
+
+- **WHEN** the glossary gives no word to avoid, or the test finds no file to read
+- **THEN** a test fails
+
+### Requirement: Each term is defined once
+
+Tests SHALL fail when a glossary row gives no meaning, when two rows give the same term or the same word to avoid, and when a word that the glossary says to avoid is found in one of its terms or is the plural of one.
+
+#### Scenario: A glossary row without a meaning fails CI
+
+- **WHEN** a glossary row gives a term and no meaning
+- **THEN** a test fails and names the term
+
+#### Scenario: A term defined twice fails CI
+
+- **WHEN** two glossary rows give the same term or the same word to avoid, or a word to avoid is found in a term or is a term's plural
+- **THEN** a test fails and names the word
+
+### Requirement: Every version reproduces the golden set
+
+The repository SHALL hold a golden set of synthetic sessions, each with the pull request it is reported for, a price table of its own, each call of its transcripts with its entry or the scenario that leaves it out, and the figures as the comment shows them, worked out by hand from the specs with the working beside each. Tests SHALL run each session in a repository of its own, and fail when capture or the report gives another entry or figure, or a figure does not follow from its working.
+
+#### Scenario: A result that differs from the golden set fails CI
+
+- **WHEN** the capture step writes an entry, or the comment that the report writes shows a figure, for a session in the golden set other than the one worked out by hand
+- **THEN** a test fails and names the session and the entry or the figure
+
+#### Scenario: A golden figure that its working does not give fails CI
+
+- **WHEN** a hand-worked figure in the golden set does not follow from the working beside it
+- **THEN** a test fails and names the session and the figure
+
+#### Scenario: A golden call that no entry or cited scenario accounts for fails CI
+
+- **WHEN** a golden session leaves a call of its transcripts unlisted, lists one with neither a hand-worked entry nor a scenario that leaves it out, or cites a scenario that does not exist
+- **THEN** a test fails and names the session and the call
+
+#### Scenario: A golden pull request can hold ledger lines that no capture step wrote
+
+- **WHEN** a golden session's pull request adds, removes, changes or restores ledger files, some of them holding lines that the capture step does not write
+- **THEN** the test runs the report on it without the capture step, and fails when a figure, or a count that the comment gives of what the report did not count, differs from the hand-worked one
+
+#### Scenario: The golden set leaves the clone that runs it alone
+
+- **WHEN** the golden tests run from inside a clone of this repository whose tool is on, with the person running them opted in and a Claude Code session's calls waiting in its store
+- **THEN** that clone's store, the entries of its index and its working tree are as they were before
+
+#### Scenario: A version that does not reproduce the golden set is not released
+
+- **WHEN** a release tag is pushed and a test of the golden set fails or is still marked as an expected failure
+- **THEN** no release is published
+
+### Requirement: A golden figure changes only with the spec that gives it
+
+A pull request that changes an entry, a figure or a working that the golden set at its base holds SHALL either change a spec or change nothing outside the golden set, and when the latest release's tag holds that session, SHALL name the session in the changelog's unreleased section. Tests SHALL fail otherwise.
+
+#### Scenario: A golden session changed beside other files without its spec fails CI
+
+- **WHEN** a pull request changes an entry, a figure or a working of a session that the golden set at its base holds, and changes files outside the golden set but no spec
+- **THEN** a test fails, names the session, and says that a golden figure changes with the spec that gives it or in a pull request of its own
+
+#### Scenario: A golden session changed alone or with a spec passes
+
+- **WHEN** a pull request changes a golden session and nothing else, or changes it together with a spec
+- **THEN** no test fails for the change to the golden set
+
+#### Scenario: A released golden figure changed without a changelog line fails CI
+
+- **WHEN** a pull request changes or removes an entry or a figure of a golden session that the latest release's tag holds, and the changelog's unreleased section does not name the session
+- **THEN** a test fails and names the session
+
+### Requirement: The documentation says what stays published after an opt-out and what a hash does not hide
+
+The README, the opt-in's feature page and the ledger's SHALL say that an opt-out, a removed ledger file or a removed store leaves each pushed ledger file in its branch's history, clones, forks and posted comments, and each one in a commit not yet pushed for its push to publish, that a force-push does not remove what GitHub keeps for the pull requests that referenced a commit, and that a hashed id does not hide whose record it is. The glossary SHALL list `anonymous` as a word to avoid.
+
+#### Scenario: A page that calls an entry `anonymous` fails the wording test
+
+- **WHEN** a spec or a page, in its prose, calls the ledger, a ledger file or an entry `anonymous`
+- **THEN** the wording test fails, naming the file and the line
+
+#### Scenario: The opt-in's pages say what stays published
+
+- **WHEN** the README's section on the opt-in, the opt-in's feature page and the ledger's feature page are read
+- **THEN** each says that an opt-out, a removed ledger file or a removed store leaves pushed ledger files in their branch's history, in clones, forks and posted comments, that a later push publishes those in commits not yet pushed, that a force-push does not remove what GitHub keeps for the pull requests that referenced them, and that a hashed id does not hide whose record it is
+
+### Requirement: The documentation says where an opt-in applies
+
+The README and the opt-in's feature page SHALL say that one opt-in covers every repository that turns the tool on, those that adopt it later among them, with no notice in any of them; that a repository's own setting that turns capture off holds only in that clone; and how a person turns capture off for a folder with git's own conditional includes, and where that stops.
+
+#### Scenario: The opt-in's pages say where an opt-in applies
+
+- **WHEN** the README's section on the opt-in and the opt-in's feature page are read
+- **THEN** each says that one opt-in covers every repository that turns the tool on, later ones too, with no notice, that a repository's own setting that turns capture off holds only in that clone, and how to turn capture off for a folder and where that stops: in a linked worktree there whose repository lies elsewhere, for a folder named through a symbolic link, and when the file that the include names is missing
+
+### Requirement: Each ledger format that a release wrote keeps its golden figures
+
+For each ledger format that a release's capture step wrote, the golden set SHALL keep sessions whose entries are as that release wrote them, with the figures that the report must give for them, for as long as the report reads that format. Tests SHALL fail when the report gives another figure for them.
+
+#### Scenario: An earlier release's entries give their hand-worked figures
+
+- **WHEN** the report reads a golden session's entries in a ledger format that an earlier release's capture step wrote
+- **THEN** it gives the figures worked out by hand for them, or a test fails and names the session, the format and the figure
+
+#### Scenario: A format that the report reads keeps a golden session
+
+- **WHEN** a pull request removes the last golden session of a ledger format that a release wrote and the report still reads
+- **THEN** a test fails and names the format
