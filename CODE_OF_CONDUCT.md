@@ -4,7 +4,7 @@ This project follows the [Contributor Covenant, version 2.1](https://www.contrib
 
 ## Reporting
 
-Report behaviour that breaks the code of conduct privately to the project's maintainer, [@niko-kotiniemi-personal](https://github.com/niko-kotiniemi-personal), through the contact on their GitHub profile. Reports are read by the maintainer only, and the reporter's identity is kept private.
+Report behaviour that breaks the code of conduct privately to the project's maintainer, [@niko-kotiniemi-oss](https://github.com/niko-kotiniemi-oss), through the contact on their GitHub profile. Reports are read by the maintainer only, and the reporter's identity is kept private.
 
 ## Enforcement
 
