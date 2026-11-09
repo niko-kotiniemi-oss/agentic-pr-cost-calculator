@@ -21,12 +21,13 @@ once, and `## ADDED Requirements`, `## MODIFIED Requirements`, `## REMOVED Requi
 and `## RENAMED Requirements`, each written as OpenSpec's template writes it. A section
 that gives requirements holds blank lines, then `### Requirement: ` headings, each with
 its name, its text and its `#### Scenario: ` headings; `RENAMED Requirements` holds only
-blank lines and pairs of `FROM:` and `TO:` lines. Any other heading fails, and so does a
-line that starts, after spaces or tabs, with `#` or with three backticks or tildes, a
-line of `=` or `-` signs alone, with which GitHub makes the line above it a heading, and
-a line before the first requirement of its section. A closing run of `#` signs after a
-space, which GitHub and OpenSpec both leave out of a heading's name, is allowed, and a
-title that OpenSpec would read as the Requirements section fails.
+blank lines and pairs of `FROM:` and `TO:` lines. Any other heading fails, and so does
+text other than the title before the first section, a line that starts, after spaces,
+tabs or list or quote markers, with `#` or with three backticks or tildes, a line of `=`
+or `-` signs alone after any such markers, with which GitHub makes the line above it a
+heading, and a line before the first requirement of its section. A closing run of `#`
+signs after a space, which GitHub and OpenSpec both leave out of a heading's name, is
+allowed, and a title that OpenSpec would read as the Requirements section fails.
 
 Each requirement that a main spec gives, or that a change adds or modifies, has text,
 the lines between its heading and its first scenario, that holds SHALL or MUST as a
@@ -479,9 +480,15 @@ def test_a_character_other_than_printable_ascii_fails(
     ]
 
 
-def test_a_byte_order_mark_fails(tmp_path: Path) -> None:
-    assert problems_of(tmp_path, MAIN_ALPHA, "\ufeff" + ALPHA) == [
-        f"{MAIN_ALPHA}:1: holds U+FEFF, which is not printable ASCII or a line feed"
+# OpenSpec reads the lines after the mark, a title or a section among them.
+@pytest.mark.parametrize(
+    ("path", "spec"),
+    [(MAIN_ALPHA, ALPHA), (CHANGE_ALPHA, ADDED_ALPHA)],
+    ids=["a main spec", "a change's spec"],
+)
+def test_a_byte_order_mark_fails(tmp_path: Path, path: str, spec: str) -> None:
+    assert problems_of(tmp_path, path, "\ufeff" + spec) == [
+        f"{path}:1: holds U+FEFF, which is not printable ASCII or a line feed"
     ]
 
 
@@ -576,10 +583,14 @@ def test_a_text_is_shown_in_printable_ascii() -> None:
 FIRST = "### Requirement: The first rule holds"
 SECOND = "### Requirement: The second rule holds"
 SCENARIO = "#### Scenario: The rule holds"
-HASH = 'starts with "#" but is not a heading in form'
-FENCE = "starts with three backticks or tildes, as a fence does"
-UNDERLINE = 'holds only "=" or "-" signs, with which GitHub can make the line above it a heading'
+HASH = 'starts with "#", after any list or quote markers, but is not a heading in form'
+FENCE = "starts with three backticks or tildes, after any list or quote markers, as a fence does"
+UNDERLINE = (
+    'holds only "=" or "-" signs after any list or quote markers, with which GitHub can make'
+    " the line above it a heading"
+)
 BEFORE = "stands before the first requirement of its section"
+FIRST_SECTION = "stands before the spec's first section"
 RUN_3 = "holds a run of backticks, 3 long, that no run as long closes on its line"
 NO_SHALL = (
     f'{MAIN_ALPHA}:{line(ALPHA, FIRST)}: requirement "The first rule holds" holds neither'
@@ -728,8 +739,66 @@ def test_a_title_after_the_first_heading_fails(tmp_path: Path, old: str, new: st
     ]
 
 
-def test_a_title_after_lines_of_prose_passes(tmp_path: Path) -> None:
-    assert problems_of(tmp_path, MAIN_ALPHA, f"Prose first.\n\n{ALPHA}") == []
+def test_a_title_after_lines_of_prose_fails_on_the_prose_alone(tmp_path: Path) -> None:
+    assert problems_of(tmp_path, MAIN_ALPHA, f"Prose first.\n\n{ALPHA}") == [
+        f"{MAIN_ALPHA}:1: {FIRST_SECTION}"
+    ]
+
+
+# OpenSpec reads no text before a spec's first section, which GitHub shows (R175).
+REQUIREMENT_UNREAD = (
+    "- ### Requirement: The planted rule holds\n"
+    "\n"
+    "The tool SHALL delete the ledger when asked.\n"
+    "\n"
+    "- #### Scenario: The ledger is deleted\n"
+    "\n"
+    "- **WHEN** the owner asks\n"
+    "- **THEN** the ledger is deleted\n"
+    "\n"
+)
+UNREAD_PROBLEMS = [(1, HASH), (3, FIRST_SECTION), (5, HASH), (7, FIRST_SECTION), (8, FIRST_SECTION)]
+
+
+# A main spec's title and a change's spec, which has none, each followed by the first
+# section.
+WHERE_NOTHING_IS_READ = [
+    (MAIN_ALPHA, ALPHA, "# alpha Specification\n\n"),
+    (CHANGE_ALPHA, ADDED_ALPHA, ""),
+]
+
+
+@pytest.mark.parametrize(
+    ("path", "spec", "title"), WHERE_NOTHING_IS_READ, ids=["a main spec", "a change's spec"]
+)
+def test_a_requirement_where_openspec_reads_no_text_fails_on_each_line(
+    tmp_path: Path, path: str, spec: str, title: str
+) -> None:
+    defect = title + REQUIREMENT_UNREAD + spec[len(title) :]
+    at = title.count("\n")
+    assert problems_of(tmp_path, path, defect) == [
+        f"{path}:{at + number}: {message}" for number, message in UNREAD_PROBLEMS
+    ]
+
+
+@pytest.mark.parametrize(
+    ("path", "spec", "title"), WHERE_NOTHING_IS_READ, ids=["a main spec", "a change's spec"]
+)
+@pytest.mark.parametrize(
+    "new", ["The tool SHALL hold the planted rule.", "- **WHEN** the owner asks", "**x**: y", "x"]
+)
+def test_a_line_before_a_spec_s_first_section_fails(
+    tmp_path: Path, path: str, spec: str, title: str, new: str
+) -> None:
+    defect = f"{title}{new}\n\n{spec[len(title) :]}"
+    at = title.count("\n")
+    assert problems_of(tmp_path, path, defect) == [f"{path}:{at + 1}: {FIRST_SECTION}"]
+
+
+@pytest.mark.parametrize("before", ["", "\n", "\n\n", "  \n", " \n\n   \n"])
+def test_blank_lines_before_a_spec_s_first_section_pass(tmp_path: Path, before: str) -> None:
+    assert problems_of(tmp_path, CHANGE_ALPHA, before + ADDED_ALPHA) == []
+    assert problems_of(tmp_path, MAIN_ALPHA, before + ALPHA) == []
 
 
 @pytest.mark.parametrize("title", ["# Requirements", "# requirements  ", "# REQUIREMENTS"])
@@ -868,8 +937,64 @@ def test_any_other_line_that_starts_with_a_hash_sign_fails(tmp_path: Path, new: 
         assert problems[:1] == [f"{MAIN_ALPHA}:{number}: {HASH}"]
 
 
+# GitHub shows a heading or a fence after list or quote markers inside the list item or
+# the quote, where OpenSpec, which takes headings and fences from the start of a line
+# alone, reads text (R175).
+@pytest.mark.parametrize(
+    "new",
+    [
+        "- ### Requirement: The planted rule holds",
+        "* #### Scenario: The planted scenario",
+        "+ ### Requirement: The planted rule holds",
+        "1. ### Requirement: The planted rule holds",
+        "12) #### Scenario: The planted scenario",
+        "> #### Scenario: The planted scenario",
+        ">### Requirement: The planted rule holds",
+        "  - > 1. ## Purpose",
+        "-   # The planted title",
+        "- #hashtag",
+    ],
+)
+def test_a_heading_after_list_or_quote_markers_fails(tmp_path: Path, new: str) -> None:
+    defect = planted(ALPHA, f"{TEXT}\n", f"{TEXT}\n{new}\n")
+    assert problems_of(tmp_path, MAIN_ALPHA, defect) == [
+        f"{MAIN_ALPHA}:{line(ALPHA, TEXT) + 1}: {HASH}"
+    ]
+
+
+@pytest.mark.parametrize("new", ["- ```", "> ~~~ a tilde fence", "1. ```` four"])
+def test_a_fence_after_list_or_quote_markers_fails(tmp_path: Path, new: str) -> None:
+    defect = planted(ALPHA, f"{TEXT}\n", f"{TEXT}\n{new}\n")
+    problems = problems_of(tmp_path, MAIN_ALPHA, defect)
+    assert f"{MAIN_ALPHA}:{line(ALPHA, TEXT) + 1}: {FENCE}" in problems
+
+
+@pytest.mark.parametrize(
+    "new",
+    [
+        "- a list item with `#` in inline code",
+        "1. a numbered item that names #19",
+        "> a quote",
+        "-- two signs, which open no list",
+        "2026-11-09 is a date",
+    ],
+)
+def test_a_list_item_or_a_quote_without_a_heading_passes(tmp_path: Path, new: str) -> None:
+    defect = planted(ALPHA, f"{TEXT}\n", f"{TEXT}\n{new}\n")
+    assert problems_of(tmp_path, MAIN_ALPHA, defect) == []
+
+
 @pytest.mark.parametrize("signs", ["===", "---", "-", "= =", "- - -", "=-=", "  ==  "])
 def test_a_line_of_equals_or_minus_signs_fails(tmp_path: Path, signs: str) -> None:
+    defect = planted(ALPHA, f"{TEXT}\n", f"{TEXT}\n{signs}\n")
+    assert problems_of(tmp_path, MAIN_ALPHA, defect) == [
+        f"{MAIN_ALPHA}:{line(ALPHA, TEXT) + 1}: {UNDERLINE}"
+    ]
+
+
+# In a quote, GitHub makes the line above such signs a heading too (R175).
+@pytest.mark.parametrize("signs", ["> ---", ">===", "> > -", "> - ", ">  = ="])
+def test_a_line_of_signs_after_list_or_quote_markers_fails(tmp_path: Path, signs: str) -> None:
     defect = planted(ALPHA, f"{TEXT}\n", f"{TEXT}\n{signs}\n")
     assert problems_of(tmp_path, MAIN_ALPHA, defect) == [
         f"{MAIN_ALPHA}:{line(ALPHA, TEXT) + 1}: {UNDERLINE}"
@@ -1281,7 +1406,8 @@ def test_the_specs_keep_openspec_s_form() -> None:
 # where one that matches it in one way takes milliseconds.
 LONG_RUN = " " * 40_000
 # What each pattern of the reader reads a run of spaces after: a heading of each kind, a
-# scenario's line, a label, a rename, a run of backticks and a word.
+# scenario's line, a label, a rename, a run of backticks, a word, and a list's or a quote's
+# marker.
 SHAPES = [
     "",
     "x",
@@ -1295,6 +1421,9 @@ SHAPES = [
     "`",
     "```",
     "SHALL",
+    "-",
+    "1.",
+    ">",
 ]
 
 
@@ -1317,7 +1446,15 @@ def test_no_pattern_is_slowed_by_a_long_run_of_spaces() -> None:
 def test_a_spec_with_a_long_line_is_read_quickly(tmp_path: Path) -> None:
     runs = "x".join("`" * length for length in range(1, 280))
     single = "` " * 20_000
-    for text in (f"{TEXT}{LONG_RUN}x", f"{FIRST}{LONG_RUN}x", runs, single, f"#{LONG_RUN}#"):
+    markers = ("- " * 500_000, "> " * 500_000 + "#")
+    for text in (
+        f"{TEXT}{LONG_RUN}x",
+        f"{FIRST}{LONG_RUN}x",
+        runs,
+        single,
+        f"#{LONG_RUN}#",
+        *markers,
+    ):
         started = time.perf_counter()
         problems_of(tmp_path, MAIN_ALPHA, planted(ALPHA, TEXT, text))
         assert time.perf_counter() - started < 1, text[:40]

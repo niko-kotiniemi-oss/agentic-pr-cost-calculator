@@ -209,7 +209,7 @@ Tests SHALL fail when a scenario in a spec that they read holds other than one `
 
 ### Requirement: Each heading and line of the specs is read as GitHub shows it
 
-Tests SHALL fail when a spec that they read gives a heading other than a title before its sections, the sections that OpenSpec reads, and `### Requirement:` and `#### Scenario:` headings with a name, the second under a requirement; another line that starts, after any spaces or tabs, with `#` or with three backticks or tildes, or that holds, but for spaces and tabs, only `=` or `-` signs; or a line before the first requirement of a section that gives their text.
+Tests SHALL fail when a spec that they read gives text other than a title before its sections; a heading other than that title, the sections that OpenSpec reads, and `### Requirement:` and `#### Scenario:` headings with a name, the second under a requirement; another line that, after any spaces, tabs or list or quote markers, starts with `#` or three backticks or tildes, or holds only `=` or `-` signs and spaces or tabs; or a line before the first requirement of a section that gives their text.
 
 #### Scenario: A heading out of form or out of place fails CI
 
@@ -218,12 +218,17 @@ Tests SHALL fail when a spec that they read gives a heading other than a title b
 
 #### Scenario: A line that OpenSpec or GitHub alone reads as a fence or a heading fails CI
 
-- **WHEN** a line starts, after any spaces or tabs, with three backticks or three tildes, as a fence's opening line or a code span does, inside an HTML comment or not, or with `#` and is not a heading in form, such as `###Requirement:` with no space, or holds, but for spaces and tabs, only `=` or `-` signs, with which GitHub makes the line above it a heading
+- **WHEN** a line, after any spaces, tabs or list or quote markers, starts with three backticks or three tildes, as a fence's opening line or a code span does, inside an HTML comment or not, starts with `#` and is not a heading in form, such as `###Requirement:` with no space or `- ### Requirement:` in a list item, or holds only `=` or `-` signs and spaces or tabs, with which GitHub makes the line above it a heading
 - **THEN** a test fails and names the spec and the line
 
 #### Scenario: A line before a section's first requirement fails CI
 
 - **WHEN** a line stands before the first requirement of a section that gives their text, as when that requirement's heading is made plain text
+- **THEN** a test fails and names the spec and the line
+
+#### Scenario: A line before a spec's first section fails CI
+
+- **WHEN** a line of text other than a title stands before a spec's first section, where GitHub shows it and OpenSpec reads no text
 - **THEN** a test fails and names the spec and the line
 
 #### Scenario: A spec in OpenSpec's own form passes

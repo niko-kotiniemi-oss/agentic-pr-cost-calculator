@@ -40,6 +40,9 @@ SHALL_OR_MUST = re.compile(r"\b(?:SHALL|MUST)\b", re.ASCII)
 # A line that starts with a bold label and a colon, as OpenSpec's METADATA_LINE matches a
 # trimmed line. A label holds no `*`, so it is matched in one way only.
 LABEL = re.compile(r"\*\*[^*]+\*\*:")
+# A list's or a quote's marker and the spaces and tabs after it. GitHub starts a block,
+# a heading or a fence among them, after each, where OpenSpec reads text (R175).
+MARKER = re.compile(r"(?:[-*+][ \t]|\d{1,9}[.)][ \t]|>)[ \t]*")
 # The marks with which GitHub would show a spec otherwise than its text: an HTML tag or
 # comment, a character reference, an escaped character, a table's row, a link, a link
 # reference definition or a footnote, a mathematical expression, and struck-through text.
@@ -78,10 +81,14 @@ LINK = "is a symbolic link, which the test does not follow"
 NO_SPEC = "openspec/: holds no spec that OpenSpec reads"
 NO_REQUIREMENT = "openspec/: the specs give no requirement for the test to read"
 NO_SCENARIO = "openspec/: the specs give no scenario for the test to read"
-HASH = 'starts with "#" but is not a heading in form'
-FENCE = "starts with three backticks or tildes, as a fence does"
-UNDERLINE = 'holds only "=" or "-" signs, with which GitHub can make the line above it a heading'
+HASH = 'starts with "#", after any list or quote markers, but is not a heading in form'
+FENCE = "starts with three backticks or tildes, after any list or quote markers, as a fence does"
+UNDERLINE = (
+    'holds only "=" or "-" signs after any list or quote markers, with which GitHub can make'
+    " the line above it a heading"
+)
 BEFORE = "stands before the first requirement of its section"
+FIRST_SECTION = "stands before the spec's first section"
 NOT_RENAME = "is neither a FROM: nor a TO: line, which alone a RENAMED Requirements section holds"
 
 
@@ -263,10 +270,22 @@ class Line(NamedTuple):
     named: bool = True
 
 
+def starts(content: str) -> list[int]:
+    """Where GitHub can start a block on a line: after its leading spaces and tabs, and
+    after each list or quote marker that follows them."""
+    at = len(content) - len(content.lstrip(" \t"))
+    found = [at]
+    while marker := MARKER.match(content, at):
+        at = marker.end()
+        found.append(at)
+    return found
+
+
 def classify(content: str) -> Line:
     """The kind of a line: a title, a section, a requirement's or a scenario's heading, each
     as OpenSpec's template writes it; another line that starts with `#`, a fence's line, a
-    line of `=` or `-` signs; or a line of text."""
+    line of `=` or `-` signs, each after any spaces, tabs or list or quote markers; or a
+    line of text."""
     if content.startswith("# ") and js_trim(content[2:]):
         return Line("title", js_trim(content[2:]))
     if content.startswith("## ") and content[3:].rstrip(" \t")[:1] not in ("", " ", "\t"):
@@ -282,13 +301,14 @@ def classify(content: str) -> Line:
         heading = js_trim(content[5:])
         name = js_trim(without_closing_run(heading)[len("Scenario:") :])
         return Line("scenario", name, heading, bool(name))
-    stripped = content.lstrip(" \t")
-    if stripped.startswith("#"):
+    found = starts(content)
+    if content.startswith("#", found[-1]):
         return Line("hash")
-    if stripped.startswith(("```", "~~~")):
+    if content.startswith(("```", "~~~"), found[-1]):
         return Line("fence")
-    signs = content.replace(" ", "").replace("\t", "")
-    if signs and not signs.strip("=-"):
+    # Where the signs, spaces and tabs that end the line begin.
+    signs = len(content.rstrip("=- \t"))
+    if any(signs <= at < len(content) for at in found):
         return Line("underline")
     return Line("text")
 
@@ -421,6 +441,8 @@ class Reader:
                 self.problem(number, BEFORE)
         elif self.section == RENAMED and unchecked and not blank:
             self.rename(number, content)
+        elif self.section is None and unchecked and not blank:
+            self.problem(number, FIRST_SECTION)
 
     def rename(self, number: int, content: str) -> None:
         side, name = rename_of(content)
@@ -558,7 +580,8 @@ def read_spec(root: Path, spec: Spec) -> tuple[list[Requirement], list[str]]:
         requirements: list[Requirement] = []
     else:
         reader = Reader(main=not spec.change)
-        for number, content in enumerate(text.split("\n"), 1):
+        # OpenSpec reads a spec's lines after a byte-order mark, which plain_text reports.
+        for number, content in enumerate(text.removeprefix("\ufeff").split("\n"), 1):
             reader.read(number, content)
         reader.close()
         problems += reader.problems
