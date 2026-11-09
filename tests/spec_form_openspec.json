@@ -135,7 +135,6 @@
                 "name": "demo",
                 "completedTasks": 0,
                 "totalTasks": 0,
-                "lastModified": "2026-11-09T05:45:04.309Z",
                 "status": "no-tasks"
               }
             ]
@@ -395,7 +394,6 @@
                 "name": "demo",
                 "completedTasks": 0,
                 "totalTasks": 0,
-                "lastModified": "2026-11-09T05:45:05.231Z",
                 "status": "no-tasks"
               }
             ]
@@ -693,14 +691,12 @@
                 "name": "demo",
                 "completedTasks": 0,
                 "totalTasks": 0,
-                "lastModified": "2026-11-09T05:45:06.376Z",
                 "status": "no-tasks"
               },
               {
                 "name": "draft",
                 "completedTasks": 0,
                 "totalTasks": 0,
-                "lastModified": "2026-11-09T05:45:06.376Z",
                 "status": "no-tasks"
               }
             ]

@@ -233,16 +233,16 @@ Tests SHALL fail when a spec that they read gives a heading other than a title b
 
 ### Requirement: The specs hold only text that GitHub shows as it is
 
-Tests SHALL fail when a spec that they read holds a character other than printable ASCII and line breaks, a run of backticks that no run as long closes on its line, or, outside inline code, a `<`, an `&`, a backslash, a `|`, a `](` or a `]:`, with which GitHub would show the spec otherwise than OpenSpec and agents read it.
+Tests SHALL fail when a spec that they read holds a character other than printable ASCII and line breaks, a run of backticks that no run as long closes on its line, or, outside inline code, a `<`, an `&`, a backslash, a `|`, a `](`, a `]:`, a `$` or a `~`, with which GitHub would show the spec otherwise than OpenSpec and agents read it.
 
 #### Scenario: Text that GitHub would hide or show otherwise fails CI
 
-- **WHEN** a spec holds a character other than printable ASCII and line breaks, such as a carriage return, a byte-order mark or a line separator, bytes that are not UTF-8, inline code that does not close on its line, or, outside inline code, an HTML comment, a character reference, an escaped character, a table, a link or a link reference definition
+- **WHEN** a spec holds a character other than printable ASCII and line breaks, such as a carriage return, a byte-order mark or a line separator, bytes that are not UTF-8, inline code that does not close on its line, or, outside inline code, an HTML comment, a character reference, an escaped character, a table, a link, a link reference definition, a mathematical expression or struck-through text
 - **THEN** a test fails and names the spec, the line and what it holds
 
 #### Scenario: Inline code may hold those marks
 
-- **WHEN** a spec gives `<`, `&`, `|`, `](`, `]:` or a backslash inside inline code that closes on its line
+- **WHEN** a spec gives `<`, `&`, `|`, `](`, `]:`, `$`, `~` or a backslash inside inline code that closes on its line
 - **THEN** the test passes it
 
 ### Requirement: CI checks that the tests read each spec as OpenSpec does

@@ -70,6 +70,9 @@ The assumptions about GitHub: this repository's settings there, and its workflow
 - **Fact:** GitHub hides an HTML comment when it shows a file.
   - **Relied on:** R128, R176, T73, T125, DR-152, DR-195
   - **Checked:** not yet: none will, since no test may reach GitHub
+- **Fact:** GitHub shows text between dollar signs as a mathematical expression, and text between one or two tildes struck through, in a Markdown file as in a pull request.
+  - **Relied on:** R176, T125, DR-195
+  - **Checked:** documented: <https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/writing-mathematical-expressions>, <https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax>, read 2026-11-09
 - **Fact:** A record kept to the plain-text subset shows on GitHub every word that an agent reads in the raw file.
   - **Relied on:** R128, T73, T79, DR-152
   - **Checked:** not yet: none will, since no test may reach GitHub

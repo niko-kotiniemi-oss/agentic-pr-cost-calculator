@@ -201,4 +201,4 @@ A record that the default branch holds is accepted, and from then on it changes 
 | [DR-193](DR-193-test-holds-spec-form.md) | A test of the repository's own holds the specs' form | process | accepted | the change `add-pr-cost-calculator`, as the owner asked on 2026-11-09 | R173, R174, R175, R177 | T124, T126 |
 | [DR-194](DR-194-requirements-500-characters.md) | Each requirement is 500 characters or fewer | process | accepted | the owner, 2026-10-26 | R173 | none |
 | [DR-195](DR-195-specs-are-plain-text.md) | The specs hold only text that GitHub shows as it is | security and privacy | accepted | the change `add-pr-cost-calculator`, as the owner asked on 2026-11-09 | R176 | T125 |
-| [DR-196](DR-196-ci-compares-spec-reading-with-openspec.md) | CI compares the test's reading of the specs with OpenSpec's | process | accepted | the change `add-pr-cost-calculator`, as the owner asked on 2026-11-09 | R178 | T124 |
+| [DR-196](DR-196-ci-compares-spec-reading-with-openspec.md) | CI compares the test's reading of the specs with OpenSpec's | process | accepted | the change `add-pr-cost-calculator`, as the owner asked on 2026-11-09 | R178 | T124, T127 |

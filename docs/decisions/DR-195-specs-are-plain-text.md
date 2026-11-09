@@ -10,18 +10,19 @@
 
 ## Context
 
-Agents build to the specs, and the owner and the reviews read them as GitHub shows them. GitHub hides an HTML comment, a link reference definition, a link's target and the cells of a table's row beyond its header's, and shows a character reference or an escaped character as something other than its text, while OpenSpec and an agent read the raw text, so a spec could hold a requirement, or words of one, that its reviewers never see (T125). The decision records are held to plain text for the same reason (DR-152), and the specs were not.
+Agents build to the specs, and the owner and the reviews read them as GitHub shows them. GitHub hides an HTML comment, a link reference definition, a link's target and the cells of a table's row beyond its header's, shows a character reference or an escaped character as something other than its text, and shows text between dollar signs as a mathematical expression and text between tildes struck through, while OpenSpec and an agent read the raw text, so a spec could hold a requirement, or words of one, that its reviewers never see (T125). The decision records are held to plain text for the same reason (DR-152), and the specs were not.
 
-On 2026-11-09, the specs of `add-pr-cost-calculator`, as the default branch held them, held only printable ASCII characters and line feeds. A less-than sign stood on 9 of their lines and an ampersand on 14, all inside inline code, and an at sign on 4, 2 of them outside inline code, where it names a mention. They held no backslash and no tab, every run of backticks was closed on its own line, and outside inline code they held no vertical bar, no closing square bracket followed at once by an opening parenthesis or by a colon, no web address and no HTML comment.
+On 2026-11-09, the specs of `add-pr-cost-calculator`, as the default branch held them, held only printable ASCII characters and line feeds. A less-than sign stood on 9 of their lines and an ampersand on 14, all inside inline code, and an at sign on 4, 2 of them outside inline code, where it names a mention. A dollar sign stood on 8 of their lines and a tilde on 29, all inside inline code, in example commands, paths such as the user's git configuration and revisions such as the commit before the last. They held no backslash and no tab, every run of backticks was closed on its own line, and outside inline code they held no vertical bar, no closing square bracket followed at once by an opening parenthesis or by a colon, no web address and no HTML comment. The review of the test at implementation found that GitHub shows the dollar sign and the tilde otherwise, and on 2026-11-09 the owner chose to refuse them too, since the rule holds only this repository's specs and so limits no one who uses the tool.
 
 ## Decision
 
-A spec that `tests/test_spec_form.py` reads holds printable ASCII characters and line breaks, which are line feeds alone, and nothing else. Each of its runs of backticks is closed on its own line by a run as long. Outside inline code, it holds no less-than sign, with which Markdown starts HTML, an HTML comment among it; no ampersand, with which it starts a character reference; no backslash, with which it escapes a character; no vertical bar, with which it makes a table; and no closing square bracket followed at once by an opening parenthesis, with which a link hides its target, or by a colon, with which a link's target is defined out of sight. The test names the spec, the line and what the line holds.
+A spec that `tests/test_spec_form.py` reads holds printable ASCII characters and line breaks, which are line feeds alone, and nothing else. Each of its runs of backticks is closed on its own line by a run as long. Outside inline code, it holds no less-than sign, with which Markdown starts HTML, an HTML comment among it; no ampersand, with which it starts a character reference; no backslash, with which it escapes a character; no vertical bar, with which it makes a table; no closing square bracket followed at once by an opening parenthesis, with which a link hides its target, or by a colon, with which a link's target is defined out of sight; no dollar sign, with which GitHub starts a mathematical expression; and no tilde, with which it strikes text through. The test names the spec, the line and what the line holds.
 
 ## Alternatives
 
 - Holding the specs to the whole of DR-152's rule, which also fails an ampersand, a backslash and an at sign inside inline code, where the specs name them, and a web address, which GitHub shows as its text.
 - Failing only a less-than sign, which leaves a table's hidden cells, a link's target and a definition out of sight.
+- Allowing a dollar sign and a tilde, whose words GitHub still shows, though as a formula or struck through, where a reviewer could take a requirement's words for a formula or a deletion.
 - Leaving hidden text to the reviews, which read the specs as GitHub shows them and so cannot see it.
 
 ## Consequences
@@ -30,7 +31,7 @@ A spec that `tests/test_spec_form.py` reads holds printable ASCII characters and
 - The specs already hold no such text, so the rule refuses nothing that is written in them.
 - A spec's line ends only at a line feed, so a carriage return or a line separator, which another reader may take for the end of a line, fails as a character that is not printable ASCII, and a spec that is not UTF-8 fails naming the spec.
 - Inline code that runs onto the next line fails, though GitHub shows it as code, so that the test never takes for code what GitHub shows as text, nor the other way round.
-- An at sign and a web address stay allowed outside inline code, since GitHub shows each with its text. A note or an example that needs another mark goes in the change's proposal or design.
+- An at sign and a web address stay allowed outside inline code, since GitHub shows each with its text. A price, a path or a command that needs a dollar sign or a tilde goes in inline code, which GitHub shows as it is written, and a note or an example that needs another mark goes in the change's proposal or design.
 
 ## Scope
 

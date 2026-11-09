@@ -11,8 +11,8 @@ repository.
 Each spec is checked as plain text before it is split into lines at line feeds alone
 (R176, DR-195): bytes that are not UTF-8, a character other than printable ASCII and
 the line feed, a run of backticks that no run as long closes on its line, and, outside
-inline code, a `<`, an `&`, a backslash, a `|`, a `](` or a `]:`, with which GitHub
-would hide or show text otherwise than OpenSpec and agents read it.
+inline code, a `<`, an `&`, a backslash, a `|`, a `](`, a `]:`, a `$` or a `~`, with
+which GitHub would hide or show text otherwise than OpenSpec and agents read it.
 
 A spec's lines are then read in one pass as OpenSpec reads them (R175, DR-193): an
 optional title before any heading, then the sections that OpenSpec reads, `## Purpose`
@@ -48,12 +48,15 @@ long run of spaces after each shape of line that it reads. The rules are in
 reading with the pinned OpenSpec CLI's (R178, DR-196).
 
 That comparison is tested here on what the pinned CLI printed for four trees, recorded in
-`tests/spec_form_openspec.json` with the folder that it ran in left out, and through a
-stand-in CLI that prints it, so that no test runs Node. It fails on a spec or a change
-that only one reading gives, on the first difference in each spec's requirements, naming
-the field, on a call of the CLI that fails or prints JSON in another form, naming the
-call, and when it compares no requirement. A test fails when a tree changes and its
-recording does not; this file, run with the CLI's path, rewrites the recording.
+`tests/spec_form_openspec.json` with the folder that it ran in and the times at which
+each change was last changed left out, and through a stand-in CLI that prints it, so
+that no test runs Node. It fails on a spec or a change that only one reading gives,
+among them a change's spec from which the test reads no requirement, on the first
+difference in each spec's requirements, naming the field, on a call of the CLI that
+fails or prints JSON in another form, naming the call, and when it compares no
+requirement. A test fails when a tree changes and its recording does not, when the
+recording is of another release than the one that `package-lock.json` pins, and when it
+holds a time of day; this file, run with the CLI's path, rewrites the recording.
 """
 
 from __future__ import annotations
@@ -376,6 +379,30 @@ def test_the_archive_is_not_read(tmp_path: Path) -> None:
     assert problems_in(root) == []
 
 
+def test_each_folder_in_the_changes_but_the_archive_and_a_dot_folder_is_a_change(
+    tmp_path: Path,
+) -> None:
+    root = passing(
+        tmp_path,
+        {
+            "openspec/changes/archive/2026-01-01-old/proposal.md": PROPOSAL,
+            "openspec/changes/.draft/proposal.md": PROPOSAL,
+            "openspec/changes/notes.md": "",
+        },
+    )
+    (root / "openspec/changes/linked").symlink_to(root / "openspec/changes/demo")
+    assert spec_form.changes_in(root) == {"demo", "draft"}
+
+
+@pytest.mark.parametrize("link", ["openspec", "openspec/changes"])
+def test_no_change_is_read_through_a_symbolic_link(tmp_path: Path, link: str) -> None:
+    real = passing(tmp_path / "real")
+    root = tmp_path / "root"
+    (root / link).parent.mkdir(parents=True)
+    (root / link).symlink_to(real / link)
+    assert spec_form.changes_in(root) == frozenset()
+
+
 DEFECTIVE = planted(ALPHA, "- **THEN** it holds\n- **AND** it holds again\n", "")
 
 
@@ -481,6 +508,11 @@ def test_bytes_that_are_not_utf_8_fail_naming_the_line(tmp_path: Path) -> None:
         ("- [rule]: https://example.com The tool SHALL hold the first rule.", "]:"),
         ("The tool SHALL hold the first rule.[^1]", None),
         ("[^1]: The tool SHALL hold the first rule.", "]:"),
+        ("The tool SHALL hold the first rule $n$ times.", "$"),
+        ("The tool SHALL hold the first rule for $5.", "$"),
+        ("The tool SHALL hold the ~~first~~ rule.", "~"),
+        ("The tool SHALL hold the first rule ~once~.", "~"),
+        ("The tool SHALL hold the first rule for ~5 days.", "~"),
     ],
 )
 def test_a_mark_that_github_reads_outside_inline_code_fails(
@@ -495,15 +527,15 @@ def test_a_mark_that_github_reads_outside_inline_code_fails(
 
 def test_each_mark_on_a_line_is_named_once(tmp_path: Path) -> None:
     number = line(ALPHA, TEXT)
-    new = "The tool SHALL hold | the first | rule <here> & <there>, \\o/ [a](b) [c]: d."
+    new = "The tool SHALL hold | the first | rule <here> & <there>, \\o/ [a](b) [c]: d, $e$ ~f~."
     assert problems_of(tmp_path, MAIN_ALPHA, planted(ALPHA, TEXT, new)) == [
         f'{MAIN_ALPHA}:{number}: holds "{mark}" outside inline code'
-        for mark in ("<", "&", "\\", "|", "](", "]:")
+        for mark in ("<", "&", "\\", "|", "](", "]:", "$", "~")
     ]
 
 
 def test_those_marks_pass_inside_inline_code(tmp_path: Path) -> None:
-    new = "The tool SHALL hold `<` `&` `\\` `|` `](` `]:` and ``a ` b``, in `<!-- x -->`."
+    new = "The tool SHALL hold `<` `&` `\\` `|` `](` `]:` `$` `~` and ``a ` b``, in `<!-- x -->`."
     assert problems_of(tmp_path, MAIN_ALPHA, planted(ALPHA, TEXT, new)) == []
 
 
@@ -1305,7 +1337,8 @@ def test_no_line_of_a_spec_starts_a_line_of_the_output(tmp_path: Path) -> None:
 # The comparison with the pinned OpenSpec CLI (R178, DR-196).
 
 # What the pinned CLI printed for each tree below, call by call, with the folder that it
-# ran in left out, and a digest of the tree. `record` writes it.
+# ran in and the times at which each change was last changed left out, and a digest of
+# the tree. `record` writes it.
 RECORDING = ROOT / "tests" / "spec_form_openspec.json"
 # The passing tree but its change with no proposal, which OpenSpec does not show.
 AGREEING = {name: text for name, text in PASSING.items() if name != DRAFT_GAMMA}
@@ -1326,6 +1359,10 @@ SHOW_ALPHA = ["show", "--type", "spec", "--json", "--", "alpha"]
 SHOW_BETA = ["show", "--type", "spec", "--json", "--", "area/beta"]
 SHOW_DEMO = ["show", "--type", "change", "--json", "--deltas-only", "--", "demo"]
 FORM = "prints JSON in another form than the comparison reads"
+RERECORD = (
+    "run `PYTHONPATH=scripts .venv/bin/python tests/test_spec_form.py node_modules/.bin/openspec`"
+    " at the repository's root"
+)
 
 
 def a_call(args: list[str], stdout: Any, status: int = 0, stderr: str = "") -> dict[str, Any]:
@@ -1338,7 +1375,8 @@ def digest(files: Mapping[str, str]) -> str:
 
 def recorded_calls(program: str, root: Path, env: dict[str, str]) -> list[dict[str, Any]]:
     """Each call that the comparison makes of the CLI in the tree at root, with what it
-    printed, as `spec_form.cli_reading` makes them."""
+    printed, as `spec_form.cli_reading` makes them, but the folder that it ran in and the
+    time at which each change was last changed, which the comparison does not read."""
     calls: list[dict[str, Any]] = []
 
     def call(*args: str) -> Any:
@@ -1347,6 +1385,8 @@ def recorded_calls(program: str, root: Path, env: dict[str, str]) -> list[dict[s
         )
         output = json.loads(done.stdout)
         output.pop("root", None)
+        for change in output.get("changes", []):
+            change.pop("lastModified", None)
         calls.append(a_call(list(args), output, done.returncode, done.stderr))
         return output
 
@@ -1432,10 +1472,22 @@ def test_the_recording_is_of_the_trees_that_the_tests_read() -> None:
     assert sorted(recorded()["trees"]) == sorted(TREES)
     for name, files in TREES.items():
         assert recorded()["trees"][name]["tree"] == digest(files), (
-            f"the tree {name!r} changed after its recording: run"
-            " `PYTHONPATH=scripts .venv/bin/python tests/test_spec_form.py"
-            " node_modules/.bin/openspec` at the repository's root"
+            f"the tree {name!r} changed after its recording: {RERECORD}"
         )
+
+
+def test_the_recording_is_of_the_release_that_package_lock_json_pins() -> None:
+    lock = json.loads((ROOT / "package-lock.json").read_text(encoding="utf-8"))
+    pinned = lock["packages"]["node_modules/@fission-ai/openspec"]["version"]
+    assert recorded()["openspec"] == pinned, (
+        f"the recording is of OpenSpec {recorded()['openspec']}, and package-lock.json pins"
+        f" {pinned}: {RERECORD}"
+    )
+
+
+def test_the_recording_holds_no_time_of_day() -> None:
+    times = re.findall(r"\d\d:\d\d", RECORDING.read_text(encoding="utf-8"))
+    assert times == [], "the recording holds the time of day at which it was made"
 
 
 def test_the_readings_of_a_tree_that_openspec_reads_as_the_test_does_agree(
@@ -1620,6 +1672,19 @@ def test_a_difference_in_the_test_s_own_reading_fails(tmp_path: Path) -> None:
     files = {name: text for name, text in AGREEING.items() if name != MAIN_BETA}
     assert comparison(tree(tmp_path, files), calls_of("agreeing")) == [
         f"{MAIN_BETA}: OpenSpec reads it, and the test does not"
+    ]
+
+
+@pytest.mark.parametrize(
+    "text", ["## Purpose\n\nWhat the delta capability does.\n", "## ADDED Requirements\n"]
+)
+def test_a_change_s_spec_from_which_the_test_reads_no_requirement_fails(
+    tmp_path: Path, text: str
+) -> None:
+    path = "openspec/changes/demo/specs/delta/spec.md"
+    files = {**AGREEING, path: text}
+    assert comparison(tree(tmp_path, files), calls_of("agreeing")) == [
+        f"{path}: the test reads it, and OpenSpec does not"
     ]
 
 

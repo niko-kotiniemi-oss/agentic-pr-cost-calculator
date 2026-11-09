@@ -40,9 +40,9 @@ SHALL_OR_MUST = re.compile(r"\b(?:SHALL|MUST)\b", re.ASCII)
 # trimmed line. A label holds no `*`, so it is matched in one way only.
 LABEL = re.compile(r"\*\*[^*]+\*\*:")
 # The marks with which GitHub would show a spec otherwise than its text: an HTML tag or
-# comment, a character reference, an escaped character, a table's row, a link, and a link
-# reference definition or a footnote.
-MARKS = ("<", "&", "\\", "|", "](", "]:")
+# comment, a character reference, an escaped character, a table's row, a link, a link
+# reference definition or a footnote, a mathematical expression, and struck-through text.
+MARKS = ("<", "&", "\\", "|", "](", "]:", "$", "~")
 WHEN = "- **WHEN**"
 THEN = "- **THEN**"
 AND = "- **AND**"
@@ -758,8 +758,8 @@ def first_difference(ours: tuple[Requirement, ...], theirs: tuple[Requirement, .
 def differences(ours: Reading, theirs: Reading) -> list[str]:
     """Each change or spec that only one reading gives, and the first difference in the
     requirements of each spec that both give, with one when no requirement was compared.
-    A change's spec that gives no requirement is left out, since the CLI shows the
-    requirements of a change and not its specs."""
+    The CLI shows a change's specs only by their requirements, so a change's spec from
+    which the test reads no requirement is one that only the test's reading gives."""
     found = [
         f"{CHANGES}/{shown(change)}: the test reads it as a change, and OpenSpec does not"
         for change in sorted(ours.changes - theirs.changes)
@@ -767,10 +767,7 @@ def differences(ours: Reading, theirs: Reading) -> list[str]:
         f"{CHANGES}/{shown(change)}: OpenSpec reads it as a change, and the test does not"
         for change in sorted(theirs.changes - ours.changes)
     ]
-    mine, its = (
-        {key: value for key, value in reading.specs.items() if value or not key[0]}
-        for reading in (ours, theirs)
-    )
+    mine, its = ours.specs, theirs.specs
     compared = 0
     for key in sorted(mine.keys() | its.keys()):
         path = spec_path(*key)
