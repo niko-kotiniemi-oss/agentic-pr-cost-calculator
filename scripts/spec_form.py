@@ -663,9 +663,15 @@ def shown_spec(value: Any) -> list[Requirement]:
 
 
 def shown_change(value: Any) -> list[tuple[str, Requirement]]:
-    """Each requirement that a change gives, with the id of its spec, in the CLI's order."""
+    """Each requirement that a change gives, with the id of its spec, in the CLI's order.
+    When no spec of a change gives a delta section, the CLI gives instead each bullet of
+    its proposal's What Changes that starts with a name in bold as a delta with neither a
+    requirement nor a rename, which reads no spec, so the change gives no requirement."""
+    given = objects(value["deltas"])
+    if not any("requirement" in delta or "rename" in delta for delta in given):
+        return []
     deltas = []
-    for delta in objects(value["deltas"]):
+    for delta in given:
         operation = delta["operation"]
         if operation == "RENAMED":
             rename = delta["rename"]

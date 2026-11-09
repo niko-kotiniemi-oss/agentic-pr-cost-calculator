@@ -48,18 +48,21 @@ long run of spaces after each shape of line that it reads. The rules are in
 `scripts/spec_form.py`, which `scripts/verify-openspec.sh` also runs to compare this
 reading with the pinned OpenSpec CLI's (R178, DR-196).
 
-That comparison is tested here on what the pinned CLI printed for four trees, recorded in
+That comparison is tested here on what the pinned CLI printed for six trees, recorded in
 `tests/spec_form_openspec.json` with the folder that it ran in and the times at which
 each change was last changed left out, and through a stand-in CLI that prints it, so
 that no test runs Node. It fails on a spec or a change that only one reading gives,
 among them a change's spec from which the test reads no requirement, on the first
 difference in each spec's requirements, naming the field, on a call of the CLI that
 fails or prints JSON in another form, naming the call, and when it compares no
-requirement. A test fails when a tree changes and its recording does not, when the
-recording is of another release than the one that `package-lock.json` pins, when it
-holds a time of day, and when it lists a tree's changes otherwise than by their names, as
-the comparison asks the CLI to list them; this file, run with the CLI's path, rewrites
-the recording.
+requirement. It passes a change whose specs give no delta section, whose proposal's
+bullets the CLI shows as deltas that give no requirement, and a change's spec that gives
+its sections in another order than the template's, whose requirements the CLI shows
+added, then modified, then removed. A test fails when a tree changes and its recording
+does not, when the recording is of another release than the one that `package-lock.json`
+pins, when it holds a time of day, and when it lists a tree's changes otherwise than by
+their names, as the comparison asks the CLI to list them; this file, run with the CLI's
+path, rewrites the recording.
 """
 
 from __future__ import annotations
@@ -1484,11 +1487,68 @@ AGREEING = {name: text for name, text in PASSING.items() if name != DRAFT_GAMMA}
 COMMENTED_FENCE = "<!--\n```\n-->\n"
 FENCED = {**AGREEING, MAIN_ALPHA: planted(ALPHA, SECOND, f"{COMMENTED_FENCE}\n{SECOND}")}
 FENCED[MAIN_ALPHA] += COMMENTED_FENCE
+# A change that declares that it changes no spec, and has none: the CLI reads the bullets
+# of its proposal's What Changes as its deltas, which give no requirement and no rename.
+NO_DELTA_SECTION = {
+    **AGREEING,
+    "openspec/changes/tooling/.openspec.yaml": (
+        "schema: spec-driven\ncreated: 2026-11-09\nskip_specs: true\n"
+    ),
+    "openspec/changes/tooling/proposal.md": (
+        "## Why\n"
+        "\n"
+        "A change of the tooling alone, which changes no spec, for the tests.\n"
+        "\n"
+        "## What Changes\n"
+        "\n"
+        "- **alpha:** Add a check of the first rule.\n"
+        "- **area/beta:** Rename the step that checks the beta rule.\n"
+    ),
+}
+# The beta change's spec with its sections in the reverse of the template's order, which
+# the CLI shows added, then modified, then removed, and a removed requirement with no
+# reason or migration, which it shows with its heading's text.
+OUT_OF_ORDER = {
+    **AGREEING,
+    CHANGE_BETA: (
+        "## Purpose\n"
+        "\n"
+        "What the beta capability does.\n"
+        "\n"
+        "## REMOVED Requirements\n"
+        "\n"
+        "### Requirement: The spent rule holds\n"
+        "\n"
+        "## MODIFIED Requirements\n"
+        "\n"
+        "### Requirement: The beta rule holds\n"
+        "\n"
+        "The tool SHALL hold the beta rule, and say so.\n"
+        "\n"
+        "#### Scenario: The beta rule holds\n"
+        "\n"
+        "- **WHEN** the beta rule is tested\n"
+        "- **THEN** it holds and says so\n"
+        "\n"
+        "## ADDED Requirements\n"
+        "\n"
+        "### Requirement: The new beta rule holds\n"
+        "\n"
+        "The tool SHALL hold the new beta rule.\n"
+        "\n"
+        "#### Scenario: The new beta rule holds\n"
+        "\n"
+        "- **WHEN** the new beta rule is tested\n"
+        "- **THEN** it holds\n"
+    ),
+}
 TREES = {
     "agreeing": AGREEING,
     "fenced": FENCED,
     "no spec": {"openspec/config.yaml": PASSING["openspec/config.yaml"]},
     "no proposal": PASSING,
+    "no delta section": NO_DELTA_SECTION,
+    "out of order": OUT_OF_ORDER,
 }
 LIST_SPECS = ["list", "--specs", "--json"]
 LIST_CHANGES = ["list", "--json", "--sort", "name"]
@@ -1659,6 +1719,42 @@ def test_a_requirement_that_a_fence_hides_from_openspec_fails(tmp_path: Path) ->
     ]
 
 
+def test_a_change_whose_specs_give_no_delta_section_passes(tmp_path: Path) -> None:
+    root = tree(tmp_path, NO_DELTA_SECTION)
+    deltas = printed(calls_of("no delta section"), [*SHOW_CHANGE, "tooling"])["deltas"]
+    assert [(delta["spec"], delta["operation"]) for delta in deltas] == [
+        ("alpha", "ADDED"),
+        ("area/beta", "RENAMED"),
+    ]
+    assert not any("requirement" in delta or "rename" in delta for delta in deltas)
+    assert problems_in(root) == []
+    assert comparison(root, calls_of("no delta section")) == []
+
+
+def test_a_change_s_requirements_are_compared_in_the_order_that_openspec_shows_them(
+    tmp_path: Path,
+) -> None:
+    root = tree(tmp_path, OUT_OF_ORDER)
+    theirs, problems = spec_form.cli_reading(Replay(calls_of("out of order")))
+    shown_beta = [requirement.operation for requirement in theirs.specs[("demo", "area/beta")]]
+    assert problems_in(root) == []
+    assert problems == []
+    assert shown_beta == ["ADDED", "MODIFIED", "REMOVED"]
+    assert spec_form.read_all(root)[0] == theirs
+
+
+def test_a_requirement_with_no_text_of_its_own_is_read_with_its_heading_s_text(
+    tmp_path: Path,
+) -> None:
+    removed = Requirement(
+        "REMOVED", "The spent rule holds", "Requirement: The spent rule holds", ()
+    )
+    ours = spec_form.read_all(tree(tmp_path, OUT_OF_ORDER))[0]
+    theirs = spec_form.cli_reading(Replay(calls_of("out of order")))[0]
+    for reading in (ours, theirs):
+        assert removed in reading.specs[("demo", "area/beta")]
+
+
 def operation(calls: list[dict[str, Any]]) -> None:
     printed(calls, SHOW_DEMO)["deltas"][0]["operation"] = "MODIFIED"
 
@@ -1712,10 +1808,20 @@ def change_of_the_test_alone(calls: list[dict[str, Any]]) -> None:
 
 def change_of_openspec_alone(calls: list[dict[str, Any]]) -> None:
     # The CLI lists a folder in `openspec/changes/` whose name starts with a dot, as it lists
-    # any other but `archive`, though no reader of the specs reads it.
-    for change in ("other", ".draft"):
+    # any other but `archive`, and shows the specs in it, though its validation of every
+    # change and the test leave that folder out.
+    third = printed(calls, SHOW_DEMO)["deltas"][0]
+    for change, deltas in (("other", []), (".draft", [third])):
         printed(calls, LIST_CHANGES)["changes"].append({"name": change})
-        calls.append(a_call([*SHOW_CHANGE, change], {"deltas": []}))
+        calls.append(a_call([*SHOW_CHANGE, change], {"deltas": deltas}))
+
+
+def deltas_that_give_no_requirement(calls: list[dict[str, Any]]) -> None:
+    # As the CLI shows a change whose specs give no delta section, or as a release could
+    # show every change if it gave a delta's requirement under another key.
+    for delta in printed(calls, SHOW_DEMO)["deltas"]:
+        for key in ("requirement", "requirements", "rename"):
+            delta.pop(key, None)
 
 
 DIFFERS = "differs in its {}: the test reads {}, and OpenSpec shows {}"
@@ -1801,6 +1907,15 @@ DIFFERS = "differs in its {}: the test reads {}, and OpenSpec shows {}"
             [
                 "openspec/changes/.draft: OpenSpec reads it as a change, and the test does not",
                 "openspec/changes/other: OpenSpec reads it as a change, and the test does not",
+                "openspec/changes/.draft/specs/alpha/spec.md: OpenSpec reads it, and the test"
+                " does not",
+            ],
+        ),
+        (
+            deltas_that_give_no_requirement,
+            [
+                f"{CHANGE_ALPHA}: the test reads it, and OpenSpec does not",
+                f"{CHANGE_BETA}: the test reads it, and OpenSpec does not",
             ],
         ),
     ],
@@ -1930,6 +2045,11 @@ def a_requirement_not_an_object(calls: list[dict[str, Any]]) -> list[str]:
     return SHOW_DEMO
 
 
+def a_delta_without_its_requirement(calls: list[dict[str, Any]]) -> list[str]:
+    del printed(calls, SHOW_DEMO)["deltas"][0]["requirement"]
+    return SHOW_DEMO
+
+
 @pytest.mark.parametrize(
     "plant",
     [
@@ -1946,6 +2066,7 @@ def a_requirement_not_an_object(calls: list[dict[str, Any]]) -> list[str]:
         a_new_name_not_text,
         a_delta_without_its_spec,
         a_requirement_not_an_object,
+        a_delta_without_its_requirement,
     ],
 )
 def test_a_call_that_prints_json_in_another_form_fails_naming_it(
