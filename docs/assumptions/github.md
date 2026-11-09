@@ -59,19 +59,22 @@ The assumptions about GitHub: this repository's settings there, and its workflow
 
 ## A9. GitHub shows text as the checks expect, and text posted on GitHub is public at once.
 
-- **Rests on it:** R21, R33, R97, R98, R128, R134, T26, T52, T61, T65, T73, T79, T81, DR-044, DR-108, DR-114, DR-115, DR-152
-- **If it is wrong:** Text shown as code could still render as a link, an image or a mention, and a log line could be read as a workflow command (T26, T52). A decision record could read one way to a reviewer and another way to an agent, or be collapsed and merged unread (T73, T79, T81), and a bug report opened without the form would never meet its privacy checkbox (T61, T65).
+- **Rests on it:** R21, R33, R97, R98, R128, R134, R176, T26, T52, T61, T65, T73, T79, T81, T125, T126, DR-044, DR-108, DR-114, DR-115, DR-152, DR-195
+- **If it is wrong:** Text shown as code could still render as a link, an image or a mention, and a log line could be read as a workflow command (T26, T52). A decision record could read one way to a reviewer and another way to an agent, or be collapsed and merged unread (T73, T79, T81), and a bug report opened without the form would never meet its privacy checkbox (T61, T65). A spec could read one way to its reviewers and another to an agent (T125), and the check of the specs' form could print a line that CI reads as a command (T126).
 - **Fact:** GitHub shows text inside inline code in a comment or a job summary as code, never as a link, an image or a mention.
   - **Relied on:** R21, T26, T52, DR-044
   - **Checked:** not yet: none will, since no test may reach GitHub
 - **Fact:** GitHub reads a line of a job's log that has the form of a workflow command, such as `::error::`, as a command.
-  - **Relied on:** R97, R98, T52, DR-044
+  - **Relied on:** R97, R98, T52, T126, DR-044
   - **Checked:** not yet: none will, since no test may reach GitHub; `add-pr-cost-calculator` task 4.1 tests only what this repository does with it
 - **Fact:** GitHub hides an HTML comment when it shows a file.
-  - **Relied on:** R128, T73, DR-152
+  - **Relied on:** R128, R176, T73, T125, DR-152, DR-195
   - **Checked:** not yet: none will, since no test may reach GitHub
 - **Fact:** A record kept to the plain-text subset shows on GitHub every word that an agent reads in the raw file.
   - **Relied on:** R128, T73, T79, DR-152
+  - **Checked:** not yet: none will, since no test may reach GitHub
+- **Fact:** A spec kept to the text that DR-195 allows shows on GitHub every word that OpenSpec and an agent read in the raw file.
+  - **Relied on:** R176, T125, DR-195
   - **Checked:** not yet: none will, since no test may reach GitHub
 - **Fact:** Only the `binary`, `diff` and `linguist-generated` attributes, set in the repository's own attribute files, make git show a record's diff as binary or GitHub hide it.
   - **Relied on:** R134, T81, DR-108

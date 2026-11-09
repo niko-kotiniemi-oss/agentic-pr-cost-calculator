@@ -26,6 +26,7 @@ None were recorded when this was decided.
 
 - The 27 were reworded, and most were split (DR-105).
 - `tests/test_spec_form.py` fails on a longer requirement in `openspec/specs/` and in each change that is not archived, one that a change modifies among them (R173, DR-193).
+- OpenSpec also leaves out of a requirement's text the lines of a fence, and a line that starts with a bold label and a colon when other lines remain, which the test fails (DR-193), so for every spec that the test passes, the measure is the one that OpenSpec makes.
 - OpenSpec's guidance keeps a requirement under MODIFIED whole, never split, trimmed or rewritten only to meet the length.
 - If OpenSpec changes or drops its limit, this record may be replaced, but need not be, as the owner said on 2026-10-27.
 
