@@ -55,7 +55,7 @@ The oldest supported Python SHALL rise only when its version nears its end of li
 
 ### Requirement: Releases are made from a tag that matches the version and the changelog
 
-A release SHALL be made only by pushing a tag `vMAJOR.MINOR.PATCH` that names a commit in the default branch's first-parent history, and the release workflow SHALL check the tag's form before any other step, and SHALL refuse a tag whose version differs from the version in `pyproject.toml` or that has no entry in `CHANGELOG.md`. The release's own text SHALL name the tag and the commit in the workflow's fixed words, and SHALL carry the changelog entry after them.
+A release SHALL be made only by pushing a tag `vMAJOR.MINOR.PATCH` that names a commit in the default branch's first-parent history, and the release workflow SHALL check the tag's form before any other step, and SHALL refuse a tag whose version differs from the version in `pyproject.toml` or in the plugin's manifest, or that has no entry in `CHANGELOG.md`. The release's own text SHALL name the tag and the commit in the workflow's fixed words, and SHALL carry the changelog entry after them.
 
 #### Scenario: A tag that matches the version and the changelog is released
 
@@ -64,8 +64,8 @@ A release SHALL be made only by pushing a tag `vMAJOR.MINOR.PATCH` that names a 
 
 #### Scenario: A tag that does not match the version is refused
 
-- **WHEN** a tag `v1.2.0` is pushed for a commit whose `pyproject.toml` says another version, or whose changelog has no entry for `1.2.0`
-- **THEN** no release is published and the workflow says which of the two disagrees
+- **WHEN** a tag `v1.2.0` is pushed for a commit whose `pyproject.toml` or plugin manifest says another version, or whose changelog has no entry for `1.2.0`
+- **THEN** no release is published and the workflow says which of them disagrees
 
 #### Scenario: A tag on a commit outside the default branch's first-parent history is refused
 
@@ -88,7 +88,7 @@ The version SHALL raise its major number for a change that existing adopters mus
 
 ### Requirement: The public surface is kept in a manifest
 
-The public surface SHALL be the hook file's path and registration, and the plugin's name and hooks, each by the events and matchers it names and its command's form, not the hook file's checksum, and the marketplace's name, the opt-in key, the ledger path and format, the store's format, the configuration file and the keys and values that its format documents, the reusable workflow's path, inputs and permissions, and the Python and git floors. A manifest of it SHALL be kept in the repository.
+The public surface SHALL be the hook file's path and registration and the plugin's name and hooks, each by its events, matchers and command's form, not the checksum it carries; the marketplace's name, the opt-in key, the ledger path and format, the store's format and fingerprint, the configuration file and the keys and values that its format documents, the reusable workflow's path, inputs and permissions, and the Python and git floors. A manifest of it SHALL be kept in the repository.
 
 #### Scenario: The surface manifest names the whole public surface
 
@@ -130,11 +130,11 @@ Each release SHALL carry a CycloneDX JSON software bill of materials, written by
 
 ### Requirement: A release is not published when its bill of materials is missing or fails a check
 
-A release SHALL NOT be published when its bill of materials cannot be written, when its reusable workflow uses an action that the bill of materials does not list, when the hook checksum in it differs from the hook file's or the README's, or when the private-reference check (see "Pull request text carries no private reference" in `project-standards`) finds a match in it or in the release's text.
+A release SHALL NOT be published when its bill of materials cannot be written, when its reusable workflow uses an action that the bill of materials does not list, when the hook file's or the plugin zip's checksum in it differs from the file's or the README's, or when the private-reference check (see "Pull request text carries no private reference" in `project-standards`) finds a match in it or in the release's text.
 
 #### Scenario: An action missing from the bill of materials stops the release
 
-- **WHEN** the reusable workflow uses an action that the bill of materials does not list, or the hook checksum in it differs from the hook file's or the README's
+- **WHEN** the reusable workflow uses an action that the bill of materials does not list, or the hook file's or the plugin zip's checksum in it differs from the file's or the README's
 - **THEN** no release is published
 
 #### Scenario: A release without a bill of materials is not published
@@ -149,12 +149,17 @@ A release SHALL NOT be published when its bill of materials cannot be written, w
 
 ### Requirement: Each release carries the plugin as a zip that its tag rebuilds
 
-Each release SHALL carry the plugin as a zip built from its tag's files alone, holding only the plugin's manifest, its hooks, the capture step and the licence, the same bytes on every build, whose SHA-256 the README at the tag's commit gives, and SHALL NOT be published when the zip built from the tag has another SHA-256.
+Each release SHALL carry the plugin as a zip built from its tag's files alone, holding only the plugin's manifest, its hooks, the capture step and the licence, stored uncompressed with every header field fixed, so that every build on any system gives the same bytes. CI SHALL fail when the zip built from a pull request's tree has another SHA-256 than the README there gives, and the release workflow SHALL publish no release whose zip does.
 
 #### Scenario: The plugin's zip is the same on every build
 
-- **WHEN** the plugin's zip is built twice from one tag, at different times, on different machines and with different umasks
+- **WHEN** the plugin's zip is built twice from one tag, at different times, once on Linux and once on Windows, with different umasks
 - **THEN** the two zips are the same, byte for byte
+
+#### Scenario: A pull request that leaves the zip's checksum behind fails CI
+
+- **WHEN** a pull request changes a file that the plugin's zip holds and leaves the SHA-256 that the README gives for the zip as it was
+- **THEN** CI fails, and says that the zip built from the pull request's tree has another SHA-256 than the README gives
 
 #### Scenario: A zip whose checksum differs from the README's stops the release
 
@@ -164,26 +169,83 @@ Each release SHALL carry the plugin as a zip built from its tag's files alone, h
 #### Scenario: The zip holds only the plugin
 
 - **WHEN** a release's zip is read
-- **THEN** it holds the plugin's manifest, its hooks, the capture step and the licence, and nothing else
+- **THEN** it holds the plugin's manifest, its hooks, the capture step and the licence, each stored uncompressed, and nothing else
+
+### Requirement: The plugin declares nothing but its hooks
+
+The plugin's manifest SHALL hold no key but its name, version, description, author, licence and repository, its hooks SHALL all be command hooks, and the capture step in its folder SHALL be the hook file, byte for byte. CI SHALL fail on a pull request after which any of these does not hold, and the release workflow SHALL publish no release where any does not.
+
+#### Scenario: A plugin that declares anything but its hooks fails CI and stops the release
+
+- **WHEN** the plugin's manifest holds another key, such as `hooks`, `mcpServers`, `monitors` or `dependencies`, or its hooks file holds a hook of another type than a command, such as an HTTP hook
+- **THEN** CI fails and names the key or the hook, and no release is published from a tag where it holds
+
+#### Scenario: A capture step in the plugin that differs from the hook file fails CI
+
+- **WHEN** the capture step in the plugin's folder differs from the hook file by any byte
+- **THEN** CI fails, and no release is published from a tag where it differs
+
+### Requirement: A release is published only once its files are attached and checked
+
+The release workflow SHALL create each release as a draft, attach its plugin's zip and its bill of materials, download each attached file again and check its size and SHA-256 against the file that it built, and only then publish the release. It SHALL publish nothing when an attachment fails or differs.
+
+#### Scenario: A release is published only after its files are checked
+
+- **WHEN** the release workflow runs for a tag that passes every check
+- **THEN** the release is created as a draft, takes the zip and the bill of materials, and is published only once each attached file, downloaded again, has the size and SHA-256 of the file that the workflow built
+
+#### Scenario: A release whose attached file differs stays a draft
+
+- **WHEN** attaching a file fails, or a file downloaded again from the draft has another size or SHA-256 than the file that the workflow built
+- **THEN** the release stays a draft, the workflow fails and names the file, and nothing is published
 
 ### Requirement: The marketplace serves only a release's plugin
 
-The repository's root marketplace file SHALL list only the tool's plugin, from a folder that holds the plugin as a release's tag builds it, with that release's version in its manifest, and CI SHALL fail when that folder differs from the plugin built from that release's tag, or when no release tag gives that version.
+The folder that the root marketplace file names SHALL hold the plugin as a published release's tag builds it, with that release's version in its manifest. CI SHALL fail when, compared by path, mode and content, the folder differs from what that tag's own build script builds, holds anything but regular files, or gives a version that no published release, found by its tag's full name in the default branch's first-parent history, has, or a lower one than at the base.
 
 #### Scenario: A marketplace folder that differs from its release fails CI
 
-- **WHEN** the marketplace's plugin folder holds a file that the plugin built from its release's tag does not hold, lacks one that it holds, or holds one otherwise
+- **WHEN** the marketplace's plugin folder holds a file that the plugin built from its release's tag does not hold, lacks one that it holds, or holds one with other content or another mode
 - **THEN** CI fails and names the file
 
-#### Scenario: A marketplace folder whose version no release has fails CI
+#### Scenario: A marketplace folder is compared with what its tag's own build script builds
 
-- **WHEN** the plugin's manifest in the marketplace's folder gives a version that no release tag gives
-- **THEN** CI fails
+- **WHEN** a pull request changes the script that builds the plugin and the marketplace's plugin folder together, so that the changed script builds what the folder holds
+- **THEN** CI builds the plugin with the build script at the release's tag, run with `python3 -I`, and fails because the folder differs from what that script builds
+
+#### Scenario: A submodule or a link in the marketplace folder fails CI
+
+- **WHEN** the marketplace's plugin folder holds a submodule, a symbolic link or anything else that is not a regular file
+- **THEN** CI fails and names it
+
+#### Scenario: A marketplace folder whose version no published release has fails CI
+
+- **WHEN** the plugin's manifest in the marketplace's folder gives a version whose tag names no published release, as the tag of a release that the workflow refused does not, or that only a branch named like that tag gives
+- **THEN** CI fails, and reads no ref by the version's short name
+
+#### Scenario: A marketplace folder that moves back to an earlier release fails CI
+
+- **WHEN** a pull request changes the marketplace's plugin folder to an earlier published release's plugin than the one at its base
+- **THEN** CI fails, and says that the version is lower than the base's
+
+### Requirement: The root marketplace file names only the tool's plugin, and changes alone
+
+The root marketplace file SHALL hold only the marketplace's name, its owner and one entry that gives the tool's plugin's name and its folder. CI SHALL fail when the file, parsed, holds any other key, value or entry, or when a pull request that changes a root marketplace file that its base holds, or the folder that it names, changes anything else.
 
 #### Scenario: The root marketplace file lists only the tool's plugin
 
 - **WHEN** the root marketplace file lists a plugin other than the tool's, or lists the tool's from another folder than the marketplace's plugin folder
 - **THEN** CI fails
+
+#### Scenario: A root marketplace entry that declares anything else fails CI
+
+- **WHEN** the root marketplace file's entry gives the plugin hooks, commands, agents, skills, MCP servers, `strict` or `defaultEnabled`, or the file holds any key or value that the expected file does not
+- **THEN** CI fails and names the key
+
+#### Scenario: A pull request that changes the marketplace and anything else fails CI
+
+- **WHEN** a pull request changes a root marketplace file that its base holds, or the plugin folder that it names, and also any other file, such as the script that builds the plugin, the check that compares the folder or a workflow
+- **THEN** CI fails, and names the files beside the marketplace's that the pull request changes
 
 ### Requirement: The capture step does nothing below its floors
 

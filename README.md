@@ -16,7 +16,7 @@ For each pull request, the tool will:
 - post a short report comment when the pull request merges, and keep the ledger in the repository as the record;
 - record a project's cloud threads too, through a Claude Code plugin that a person adds from a release's zip or from this repository as a marketplace.
 
-A repository turns it on or off with one file, its configuration file, and each person decides, for themselves or by the cloud environment that they choose to use, whether their own sessions are recorded.
+A repository turns it on or off with one file, its configuration file, and each person's own opt-in, which they set themselves or which the cloud environment that they use sets, decides whether their own sessions are recorded. An organization can also set it for its members.
 
 Usage is recorded by the directory that Claude is in when it makes each call, not by which files it touches. A call made from the repository is recorded there even when it works on another repository, so work on other repositories, private ones above all, belongs in sessions of its own.
 

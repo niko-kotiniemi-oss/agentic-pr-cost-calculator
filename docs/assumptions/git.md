@@ -50,8 +50,8 @@ The assumptions about git: what its commands, options, attributes, locks and con
 
 ## A12. History, refs and tags behave as the checks expect.
 
-- **Rests on it:** R10, R22, R27, R34, R59, R68, R119, R129, R130, T2, T13, T20, T23, T28, T47, T58, T67, T68, T70, T77, DR-015, DR-022, DR-061, DR-068, DR-121, DR-122, DR-127, DR-131, DR-148, DR-153, DR-156
-- **If it is wrong:** A removed ledger file could vanish from the history that the report reads (T20, T77), a tag named like the default branch could take its place (T23, T70), and the README's check of a pin could pass a commit that only a fork holds (T58, T28).
+- **Rests on it:** R10, R22, R27, R34, R59, R68, R119, R129, R130, R184, T2, T13, T20, T23, T28, T47, T58, T67, T68, T70, T77, T138, DR-015, DR-022, DR-061, DR-068, DR-121, DR-122, DR-127, DR-131, DR-148, DR-153, DR-156, DR-204
+- **If it is wrong:** A removed ledger file could vanish from the history that the report reads (T20, T77), a tag named like the default branch could take its place (T23, T70), a branch named like a release could stand in for its tag in the marketplace's check (T138), and the README's check of a pin could pass a commit that only a fork holds (T58, T28).
 - **Fact:** A file or text that a later commit removes stays in git history, and in clones and forks, so a removal hides nothing that was pushed; only rewriting history removes it.
   - **Relied on:** R22, R129, T2, T20, T77, DR-015, DR-121, DR-153
   - **Checked:** not yet: none will, since it is how git keeps history, which the design takes as given
@@ -66,6 +66,9 @@ The assumptions about git: what its commands, options, attributes, locks and con
 - **Fact:** git resolves a short name to a tag before a branch of the same name, with only a warning, so a tag named like the default branch takes its place unless refs are named in full.
   - **Relied on:** R68, R129, T23, T70, DR-061, DR-121
   - **Checked:** not yet: `add-pr-cost-calculator` task 4.3 checks it
+- **Fact:** Given a short name, `git fetch` takes a branch of that name where no tag of it exists, so only a ref named in full, as `refs/tags/v1.3.0`, is certain to be a tag.
+  - **Relied on:** R184, T138, DR-204
+  - **Checked:** not yet: `add-pr-cost-calculator` task 6.7 checks it
 - **Fact:** git allows shell characters in tag names.
   - **Relied on:** R27, T68, DR-148
   - **Checked:** not yet: `add-pr-cost-calculator` task 6.3 and `add-pr-cost-calculator` task 6.1 check it

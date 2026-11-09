@@ -120,6 +120,11 @@ The step SHALL read only the transcript lines that end in a line break, leaving 
 - **WHEN** a run of the step reads again lines that an earlier run read, then begins the first line that no earlier run read whole, and cannot finish reading it within its time budget
 - **THEN** the next run skips that line, the ledger counts it as one refused call, and the lines after it are read
 
+#### Scenario: A line too long for a plugin run's budget is counted in each repository it works on
+
+- **WHEN** the step runs as the plugin and works on two repositories, and a run cannot finish reading a transcript line within its time budget
+- **THEN** the next run skips that line, and the next ledger file in each of the two repositories counts it as one refused call
+
 ### Requirement: A call is placed by the line it answers, whichever run read that line
 
 A run SHALL read again, from the earliest line that a call not yet recorded may answer, the lines that earlier runs read, so that a call is placed by the line it answers even when an earlier run read that line. A call whose answered line comes before that point, or was skipped as too long, SHALL NOT be recorded, and the next ledger file staged for its worktree and branch SHALL say that calls were left out for consent.
@@ -245,7 +250,7 @@ For a run of the hook file's registration, this repository SHALL be the one that
 
 ### Requirement: A plugin run works on each repository that it meets
 
-A run of the plugin SHALL work on the repository that holds the project directory or, when none does, on each repository whose top level is directly inside it; on the one that holds the hook input's working directory; and, before or after a commit, on the one where the commit runs; finding each by reading the git files on the way itself, before it starts any program. In each, it SHALL record only the calls made from that repository.
+A plugin run SHALL work first on the repository where each git command of its input that the hook's condition matches runs, then on the one that holds the hook input's working directory, then on the one that holds the project directory or, when none does, on each whose top level is directly inside it, in their paths' order. It SHALL find each by reading the git files on the way before it starts any program, leave out one that it cannot read, and record in each only the calls made from it.
 
 #### Scenario: A project thread's clones are each recorded from its first turn
 
@@ -266,6 +271,16 @@ A run of the plugin SHALL work on the repository that holds the project director
 
 - **WHEN** the step runs as the plugin and works on two repositories, and the session has made calls from each
 - **THEN** each call is recorded in the repository that its line's working directory is in, and in no other
+
+#### Scenario: The run before a git command in another repository records that repository's calls first
+
+- **WHEN** the step runs as the plugin, the agent makes calls in a separate repository that turns the tool on and lies deeper inside the project directory, moves back to the project directory's repository, and then runs `git -C` with that repository's path and `switch -c other`
+- **THEN** the run before that command records the calls made in that repository on the branch that was checked out there before it, and the next commit on that branch there carries them
+
+#### Scenario: A clone that a run cannot read is left out, and the others are served
+
+- **WHEN** the step runs as the plugin, the project directory is in no repository and holds three clones directly inside it that turn the tool on, and one clone's `.git` is a named pipe, while the agent makes calls in each clone and then commits in each
+- **THEN** the run records nothing and starts no program for that clone, and the commits in the other two each add a ledger file that holds the calls made in their own clone
 
 ### Requirement: Counts are whole numbers
 
@@ -745,17 +760,35 @@ Two runs of the capture step at the same time, such as the main agent's and a su
 
 ### Requirement: Where two copies of the capture step run in one session, each call is recorded once
 
-Where two copies of the capture step run in one session, such as the plugin and the hook file's registration, they SHALL share each repository's store, record each call once and stage at most one ledger file for each commit, and a copy that finds the store at a version that it does not know SHALL leave the store, and the calls, to the other.
+Where two copies of the capture step run in one session, as the plugin and the hook file's registration can, they SHALL share each repository's store, record each call once and stage at most one ledger file for each commit, and a copy that finds the store at a version that it does not know SHALL leave the store, and the calls, to the other.
 
 #### Scenario: A session that runs the plugin and the hook file's registration commits one ledger file
 
-- **WHEN** the repository's settings register the hook file, the person also has the plugin of the same release, and the agent makes calls and then commits
+- **WHEN** the repository's settings register the hook file, the person also has the plugin of the same release, the two copies' runs come in parallel at each event, and the agent makes calls and then commits
 - **THEN** the commit adds one ledger file, which holds each of those calls once
 
 #### Scenario: An earlier release leaves a later release's store to it
 
 - **WHEN** the plugin is of a later release, whose store format the hook file's release does not know, both run in a session, and the agent makes calls and then commits
 - **THEN** the hook file's runs leave the store as they found it, and the commit adds one ledger file, which holds the calls that the plugin's runs recorded
+
+### Requirement: An earlier release leaves a session to a later one
+
+Each run SHALL note in the store, for its session, the latest release whose copy of the capture step has run in it, and a run of an earlier release than the one noted SHALL record, stage, take back, put back and end nothing for that session there, and exit with success, leaving the session to the later release's copy.
+
+#### Scenario: An earlier copy whose release does not know a key leaves the session to the later copy
+
+- **WHEN** the plugin is of a later release than the hook file, both write the same store version, the configuration file holds a key that only the later release documents, the two copies' runs come in parallel at each event, and the agent makes calls and then commits
+- **THEN** the commit adds one ledger file, written by the later release, which holds each of those calls once, and no run of the earlier release ends the session's interval
+
+### Requirement: Every release that writes a store version writes it the same way
+
+Every release whose capture step writes a version of the store SHALL keep it at the same path, under the same lock, with the same fields, and make its fingerprint in the same way, so that copies of two releases that share a store version read each other's notes as their own, and a test SHALL fail when a release makes another fingerprint of a fixed set of files than the one recorded for that version.
+
+#### Scenario: A store version's fingerprint does not change
+
+- **WHEN** the capture step makes the fingerprint of a fixed set of configuration files, with fixed device and inode numbers, sizes and modification times, for a version of the store that a release wrote
+- **THEN** its hash is the one recorded for that store version, or a test fails and names the version
 
 ### Requirement: The capture step is one self-contained file
 
@@ -777,7 +810,7 @@ The capture step's first line SHALL name the release that it comes from.
 
 ### Requirement: The capture step starts only git, from an absolute path
 
-The step SHALL start no program but git, which it SHALL find at an absolute path, looking only in the folders that the absolute entries of `PATH` name, and in none of them that lies inside the working trees or the git common directory of a repository that the run works on. Before it starts git, it SHALL change its own current directory to a folder that only the system's administrator can write, such as Windows' system folder, and it SHALL name the folder that each git command works in.
+The step SHALL start no program but git, found at an absolute path, only in the folders that the absolute entries of `PATH` name, and in none inside the working trees or the git common directory of a repository that the run works on, or the folder of one it leaves out as unreadable. Before it starts git, it SHALL move its own current directory to a folder that only the system's administrator can write, such as Windows' system folder, and SHALL name the folder that each git command works in.
 
 #### Scenario: A program planted in the current directory is not run
 
@@ -793,6 +826,11 @@ The step SHALL start no program but git, which it SHALL find at an absolute path
 
 - **WHEN** the step runs as the plugin and works on two clones directly inside the project directory, and an absolute entry of `PATH` names a folder inside one of them that holds a program named `git`
 - **THEN** the run does not start it, and records and stages with the git that another absolute entry of `PATH` names
+
+#### Scenario: A plugin run does not start a git inside a clone that it leaves out
+
+- **WHEN** the step runs as the plugin and works on two clones directly inside the project directory, a third clone there has a `.git` that is a named pipe, and an absolute entry of `PATH` names a folder inside that third clone that holds a program named `git`
+- **THEN** the run does not start it, records and stages in the other two clones with the git that another absolute entry of `PATH` names, and says on standard error, in its own words, that it left a repository out
 
 #### Scenario: A git in a worktree outside the repository's folder is not run
 
@@ -887,7 +925,7 @@ The registered command SHALL carry the SHA-256 of the hook file that the adopter
 
 ### Requirement: The capture step also comes as a Claude Code plugin
 
-The tool SHALL also ship the capture step as a Claude Code plugin, whose hooks SHALL run the same file, from the plugin's own folder, for the same events and with the same condition as the hook file's registration, through a command that names the plugin form, exits with success and prints nothing on standard output in each shell that Claude Code runs a hook's command in.
+The tool SHALL also ship the capture step as a Claude Code plugin, whose hooks SHALL run the same file, from the plugin's own folder, for the same events and with the same condition as the hook file's registration, through a command that names the plugin form, carries the file's SHA-256 and runs it only when it matches, exits with success and prints nothing on standard output in each shell that Claude Code runs a hook's command in.
 
 #### Scenario: The plugin records a session in a repository that registers no hook
 
@@ -896,8 +934,8 @@ The tool SHALL also ship the capture step as a Claude Code plugin, whose hooks S
 
 #### Scenario: The plugin's hooks match the hook file's registration
 
-- **WHEN** the plugin's hooks and the hook file's registration that the README gives are read
-- **THEN** they name the same events, matchers and conditions, and the plugin's command runs the step from the plugin's own folder with the argument that names the plugin form
+- **WHEN** the plugin's hooks, read from each file that can declare them, and the hook file's registration that the README gives are read
+- **THEN** they name the same events, matchers, conditions and timeouts, and the plugin's command runs the step from the plugin's own folder with the argument that names the plugin form and the SHA-256 of the plugin's capture step
 
 #### Scenario: The plugin's command succeeds when its step cannot run
 
@@ -908,6 +946,11 @@ The tool SHALL also ship the capture step as a Claude Code plugin, whose hooks S
 
 - **WHEN** the step runs as the plugin, and a branch checked out during the session changes the hook file in the working tree
 - **THEN** the plugin's runs run the file in the plugin's own folder, and none of the working tree's
+
+#### Scenario: A plugin loaded in place runs none of a changed capture step
+
+- **WHEN** the plugin is loaded in place from a folder, as with `--plugin-dir`, and the capture step in that folder changes during the session, as when a branch is checked out there
+- **THEN** the plugin's runs run none of the changed file's code, print nothing on standard output and exit with success
 
 ### Requirement: The capture step writes only its own words and numbers to standard error
 
@@ -930,7 +973,7 @@ The capture step SHALL write to standard error only its own words and numbers, n
 
 ### Requirement: The capture step finishes within a time budget
 
-The capture step SHALL finish within a time budget, leaving what it has not read for a later run, and a run of the plugin when a session ends SHALL finish within the budget that Claude Code gives a plugin's `SessionEnd` hooks.
+The capture step SHALL finish within a time budget, leaving what it has not read for a later run, and a run of the plugin when a session ends SHALL finish within the budget that Claude Code gives a plugin's `SessionEnd` hooks, starting no git command that the rest of that budget cannot finish.
 
 #### Scenario: A long transcript does not hold up the session
 
@@ -941,6 +984,11 @@ The capture step SHALL finish within a time budget, leaving what it has not read
 
 - **WHEN** the step runs as the plugin when a session ends, finds a ledger file staged for a command that is over, and reading the transcript would take longer than the budget that Claude Code gives a plugin's `SessionEnd` hooks
 - **THEN** it takes the file back before it reads any transcript, stops within that budget, and exits with success
+
+#### Scenario: A run at a session's end starts no take-back that its budget cannot finish
+
+- **WHEN** the step runs as the plugin when a session ends and finds a ledger file staged for a command that is over, with less of its budget left than it sets for a take-back's git command
+- **THEN** it starts no git command, leaves the file staged for a later run and the index lock free, and exits with success within that budget
 
 ### Requirement: The store is versioned: an earlier version is upgraded, an unknown one left alone
 
@@ -963,7 +1011,7 @@ The store SHALL carry the version of its format from the first release on, in a 
 
 ### Requirement: The store keeps only what attribution, deduplication and take-backs need
 
-The store SHALL hold only its format's version and the last fingerprint's hash; for each session, hashes of its id and transcripts' paths, where runs read each, its intervals, its flag for calls whose repository could not be told, its last run's time and the latest time its runs saw; each waiting call's entry and each flag due with its day, with hashes of its session, worktree and branch; each taken call's hash and day; and the notes of ledger files that a take-back or put-back needs.
+The store SHALL hold only its format's version and the last fingerprint's hash; for each session, hashes of its id and transcripts' paths, where runs read each, its intervals, its flag for calls whose repository could not be told, its last run's time, the latest time it saw and the latest release run in it; each waiting call's entry and each flag due with its day, with hashes of its session, worktree and branch; each taken call's hash and day; and the notes that take-backs and put-backs need.
 
 #### Scenario: The store holds ids and paths only as hashes while no file is staged
 
@@ -1100,6 +1148,11 @@ When the store is removed, by the person or otherwise, or does not parse, which 
 - **WHEN** the store's file does not parse, as after a power loss or a sync that cut it short, or as when it gives a version that the run knows and a field of another form than that version's, and a run finds both switches on
 - **THEN** the run records no call that answers a line written before it, leaves to git any ledger file staged before, and writes a new store in its place
 
+#### Scenario: A thread that continues from a fresh clone records from its first run there
+
+- **WHEN** the step runs as the plugin, a project's thread has calls that wait for a commit in a clone, and the thread then continues on another machine from a fresh clone of that branch, which holds no store, where the agent makes more calls and commits
+- **THEN** the first run there begins a new interval, none of the calls that answer a line written before it is recorded, and the commit's ledger file says that calls were left out for consent
+
 ### Requirement: Capture keeps no copy of a transcript
 
 The capture step SHALL write no line of a transcript, and no value from one beyond the fields that an entry or the store's notes name, to any file, the store, a ledger file and a temporary file included, or to standard error, so that no transcript is kept for reprocessing.
@@ -1142,6 +1195,11 @@ When a run leaves out a call made here as made outside every interval when both 
 
 - **WHEN** a session makes calls while Claude's current directory is a folder that holds this repository's folder and names no repository that git can tell, as a project's cloud thread's folder holds its clones, and then commits here
 - **THEN** none of those calls is recorded, and the commit's ledger file says that calls whose repository could not be told were left out, and holds no count, time or other fact about them
+
+#### Scenario: A plugin run flags in each clone the calls made from the folder that holds them
+
+- **WHEN** the step runs as the plugin, the project directory is in no repository and holds two clones directly inside it that turn the tool on, and the session makes calls from that folder and then commits in each clone
+- **THEN** none of those calls is recorded in either clone, and each commit's ledger file says that calls whose repository could not be told were left out
 
 #### Scenario: A call made outside this repository's folder in a directory that is gone raises no flag
 

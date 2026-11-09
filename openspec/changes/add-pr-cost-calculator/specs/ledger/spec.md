@@ -32,12 +32,12 @@ A ledger file SHALL contain no prompt text, response text, code, file contents, 
 
 ### Requirement: Each ledger file states its format's version, and each version is published with a schema
 
-Each ledger file SHALL state on its first line the version of the ledger format that it is written in, and the ledger format SHALL be published for every version that a release's capture step wrote, with a JSON Schema for each kind of its lines, so that anyone can check a ledger file without the tool. A ledger file SHALL hold nothing that the schema of its version does not allow.
+Each ledger file SHALL state on its first line the version of the ledger format that it is written in and the release of the capture step that wrote it, and the ledger format SHALL be published for every version that a release's capture step wrote, with a JSON Schema for each kind of its lines, so that anyone can check a ledger file without the tool. A ledger file SHALL hold nothing that the schema of its version does not allow.
 
 #### Scenario: A ledger file names its format's version
 
 - **WHEN** a run of the capture step writes a ledger file
-- **THEN** its first line states the ledger format's version, and every line of the file validates against that version's published schema
+- **THEN** its first line states the ledger format's version and the release of the capture step that wrote it, and every line of the file validates against that version's published schema
 
 #### Scenario: The published schema refuses what the report refuses
 

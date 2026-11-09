@@ -200,6 +200,55 @@ The assumptions about Claude Code: what its transcripts hold, when its hooks run
   - **Relied on:** R79, R80, T8, T10, DR-128
   - **Checked:** not yet: `add-pr-cost-calculator` task 2.2 checks it
 
+## A69. Claude Code loads the plugin into a project's cloud threads and a person's terminal sessions, runs its hooks there, and registers the hooks of one plugin of a given name.
+
+- **Rests on it:** R179, R182, R188, T8, T59, T130, T135, T141, DR-197, DR-203, DR-206
+- **If it is wrong:** If the plugin did not load into a project's cloud threads, or its hooks did not run there, those threads would record nothing, as before the plugin, with nothing to say why (T8). If another copy of the same name loaded in place of the person's with no sign, or the two loaded together, the person could not tell what runs (T135), and if two copies of one name both ran their hooks, each event would run the step twice, which the shared store records once (T130, DR-206). If a plugin loaded in place ran from a copy, or a copied one from its source folder, the checksum that the plugin's command carries would guard another file than the one that runs (T59). If a plugin could run what a key, a file at a default path or a handler beyond those that the checks read declares, it could run what its zip's list of files and its checksum do not show (R188, T141).
+- **Fact:** Claude Code loads into each new cloud thread of a project the plugins that the person adds in the project's settings, and a change there reaches new threads only.
+  - **Relied on:** R179, T8, DR-197, DR-203
+  - **Checked:** documented: <https://code.claude.com/docs/en/claude-projects>, read 2026-11-09
+- **Fact:** A plugin turned on for a person's claude.ai account, among them those that their organization turns on for its members, loads in their terminal sessions signed in with that account, hooks included, and one that the organization marks as required loads even if the person turned it off.
+  - **Relied on:** R179, R182, T8, DR-197
+  - **Checked:** documented: <https://code.claude.com/docs/en/plugins/loading>, read 2026-11-09
+- **Fact:** The plugin's hooks run in a project's cloud thread, from the copy synced from the person's account, at the same events as a repository's hooks run elsewhere, with the condition `Bash(git *)` holding as it does there.
+  - **Relied on:** R179, T8, DR-197
+  - **Checked:** not yet: `add-pr-cost-calculator` task 7.2 checks it
+- **Fact:** Claude Code registers the hooks of one enabled plugin of a given name, the copy that managed settings turn on or else the one that it loads first, and `/plugin` names that copy in a terminal session, while a cloud session offers no `/plugin` command.
+  - **Relied on:** T130, T135, DR-197, DR-206
+  - **Checked:** documented: <https://code.claude.com/docs/en/plugins/loading>, <https://code.claude.com/docs/en/claude-code-on-the-web>, read 2026-11-09
+- **Fact:** A plugin loaded in place, as with `--plugin-dir`, from a skills folder or from a marketplace added by a local path, runs from its source folder, whose changes reach the session at its next start or at `/reload-plugins`, while every other marketplace plugin is copied into Claude Code's cache and loads from the copy.
+  - **Relied on:** T59, DR-197
+  - **Checked:** documented: <https://code.claude.com/docs/en/plugins/loading>, read 2026-11-09
+- **Fact:** A plugin's manifest can declare MCP servers, which can come from an address, monitors and the plugins that it depends on, Claude Code also reads MCP servers from `.mcp.json` and monitors from `monitors/monitors.json` in the plugin's folder, and a hooks file can hold handlers that are not commands, among them HTTP hooks, which send an event's input to an address.
+  - **Relied on:** R188, T141, DR-197
+  - **Checked:** documented: <https://code.claude.com/docs/en/plugins/manifest-reference>, <https://code.claude.com/docs/en/plugins/components>, <https://code.claude.com/docs/en/hooks>, read 2026-11-09
+- **Fact:** A plugin's hooks get `CLAUDE_PLUGIN_ROOT`, the folder that Claude Code loaded the plugin from, and `CLAUDE_PROJECT_DIR`, so that the plugin's command can name the step's file in the plugin's own folder.
+  - **Relied on:** R179, DR-197
+  - **Checked:** documented: <https://code.claude.com/docs/en/plugins/components>, read 2026-11-09
+
+## A72. A person adds the plugin on claude.ai by uploading a zip or by adding a GitHub repository as a marketplace, whose plugins then update from its default branch when the person checks for updates or turns on syncing, with nothing to accept.
+
+- **Rests on it:** R183, R184, R187, R190, T132, T133, T136, T138, T140, DR-203, DR-204, DR-205
+- **If it is wrong:** If claude.ai read a marketplace from another file or another branch than the one that CI checks, the check would hold one folder while the marketplace served another (T132, DR-204, DR-205). If the marketplace's updates waited for the person to accept them, the README's account of the two ways to install the plugin would be wrong (R187), and if an uploaded zip were not what runs, the checksum that the person checked would not be of what runs (T133). If a pinned ref, or an entry's fields, acted otherwise than the documentation says, the README's pin and the check of the root file would hold less than they claim (R190, T138, T140), and if a person's plugin did not update as described, the release that writes their ledger files would not be the one that the README describes (T136).
+- **Fact:** On claude.ai a person adds a plugin to their account by uploading a `.zip` that holds one `.claude-plugin/plugin.json`, or by adding a GitHub repository as a marketplace by its address.
+  - **Relied on:** R183, R187, T133, DR-203
+  - **Checked:** not yet: `add-pr-cost-calculator` task 7.2 checks it, since the pages that say so are claude.ai's own, on a host that the assumptions' test does not list
+- **Fact:** A marketplace's file is `.claude-plugin/marketplace.json` at its repository's root, unless a settings entry names another path.
+  - **Relied on:** R184, T132, DR-205
+  - **Checked:** documented: <https://code.claude.com/docs/en/plugins/marketplace-reference>, read 2026-11-09
+- **Fact:** A marketplace that a person adds on claude.ai by its repository's address is read from the repository's default branch, and a new version of its plugin reaches the person's account when they check for updates, or by itself once they turn on syncing, with nothing to accept once it has synced.
+  - **Relied on:** R184, R187, T132, T136, DR-203, DR-204
+  - **Checked:** not yet: `add-pr-cost-calculator` task 7.2 checks it, since the page that says so is claude.com's own, on a host that the assumptions' test does not list
+- **Fact:** `/plugin marketplace add owner/repo#ref` pins a marketplace to a branch or a tag, and the documentation does not say which it takes when a branch and a tag share the name.
+  - **Relied on:** R187, T138, T140, DR-205
+  - **Checked:** documented: <https://code.claude.com/docs/en/plugins/install>, read 2026-11-09
+- **Fact:** Claude Code combines a marketplace's entry for a plugin with the plugin's manifest: with `strict` at its default, it appends the entry's commands, agents and skills to the plugin, and the entry's hooks replace the manifest's per event, while `"strict": false` beside any of those stops the plugin loading, and `"defaultEnabled": false` starts it turned off.
+  - **Relied on:** R190, T140, DR-205
+  - **Checked:** documented: <https://code.claude.com/docs/en/plugins/marketplace-reference>, read 2026-11-09
+- **Fact:** Claude Code takes a plugin's version from its manifest, then from its marketplace entry, and, for a plugin that a Git-hosted marketplace lists by a relative path, from the commit of its installed folder, while a plugin from a marketplace that claude.ai hosts takes the version that claude.ai records, and it copies only a plugin's own folder, leaving out the files outside it.
+  - **Relied on:** R183, R184, DR-204
+  - **Checked:** documented: <https://code.claude.com/docs/en/plugins/loading>, read 2026-11-09
+
 ## A25. Claude Code keeps the hook registrations it read at session start.
 
 - **Rests on it:** R88, T59, DR-022, DR-058
@@ -210,23 +259,6 @@ The assumptions about Claude Code: what its transcripts hold, when its hooks run
 - **Fact:** Claude Code normally picks up direct edits to hooks in settings files through its file watcher.
   - **Relied on:** T59
   - **Checked:** documented: <https://code.claude.com/docs/en/hooks>, read 2026-11-01
-
-## A72. A person adds the plugin on claude.ai by uploading a zip or by adding a GitHub repository as a marketplace, whose plugins then update from its default branch with nothing to accept.
-
-- **Rests on it:** R183, R184, R187, T132, T133, DR-203, DR-204, DR-205
-- **If it is wrong:** If claude.ai read a marketplace from another file or another branch than the one that CI checks, the check would hold one folder while the marketplace served another (T132, DR-204, DR-205). If the marketplace's updates waited for the person to accept them, the README's account of the two ways to install the plugin would be wrong (R187), and if an uploaded zip were not what runs, the checksum that the person checked would not be of what runs (T133).
-- **Fact:** On claude.ai a person adds a plugin to their account by uploading a `.zip` that holds one `.claude-plugin/plugin.json`, or by adding a GitHub repository as a marketplace by its address.
-  - **Relied on:** R183, R187, T133, DR-203
-  - **Checked:** not yet: `add-pr-cost-calculator` task 7.2 checks it, since the pages that say so are claude.ai's own, on a host that the assumptions' test does not list
-- **Fact:** A marketplace's file is `.claude-plugin/marketplace.json` at its repository's root, unless a settings entry names another path.
-  - **Relied on:** R184, T132, DR-205
-  - **Checked:** documented: <https://code.claude.com/docs/en/plugins/marketplace-reference>, read 2026-11-09
-- **Fact:** A marketplace that a person adds on claude.ai by its repository's address is read from the repository's default branch, and a new version of its plugin reaches the person's account, once claude.ai syncs it, with nothing to accept.
-  - **Relied on:** R184, R187, T132, DR-203, DR-204
-  - **Checked:** not yet: `add-pr-cost-calculator` task 7.2 checks it
-- **Fact:** Claude Code takes a plugin's version from its manifest, then from its marketplace entry, and, for a plugin that a Git-hosted marketplace lists by a relative path, from the commit of its installed folder, while a plugin from a marketplace that claude.ai hosts takes the version that claude.ai records, and it copies only a plugin's own folder, leaving out the files outside it.
-  - **Relied on:** R183, R184, DR-204
-  - **Checked:** documented: <https://code.claude.com/docs/en/plugins/loading>, read 2026-11-09
 
 ## A36. Claude Code writes a call as lines that share one message id, with the call's final usage on each line that gives its stop reason.
 
@@ -350,30 +382,10 @@ The assumptions about Claude Code: what its transcripts hold, when its hooks run
   - **Relied on:** R113, R116, T10
   - **Checked:** not yet: none will, since no test may reach Claude Code
 
-## A69. Claude Code loads the plugin into a project's cloud threads and a person's terminal sessions, runs its hooks there, and loads one plugin of a given name.
-
-- **Rests on it:** R179, R182, T8, T135, DR-197, DR-203
-- **If it is wrong:** If the plugin did not load into a project's cloud threads, or its hooks did not run there, those threads would record nothing, as before the plugin, with nothing to say why (T8). If another copy of the same name loaded in place of the person's with no sign, or the two loaded together, the person could not tell what runs (T135).
-- **Fact:** Claude Code loads into each new cloud thread of a project the plugins that the person adds in the project's settings, and a change there reaches new threads only.
-  - **Relied on:** R179, T8, DR-197, DR-203
-  - **Checked:** documented: <https://code.claude.com/docs/en/claude-projects>, read 2026-11-09
-- **Fact:** A plugin turned on for a person's claude.ai account, among them those that their organization turns on for its members, loads in their terminal sessions signed in with that account, hooks included, and one that the organization marks as required loads even if the person turned it off.
-  - **Relied on:** R179, R182, T8, DR-197
-  - **Checked:** documented: <https://code.claude.com/docs/en/plugins/loading>, read 2026-11-09
-- **Fact:** The plugin's hooks run in a project's cloud thread, from the copy synced from the person's account, at the same events as a repository's hooks run elsewhere, with the condition `Bash(git *)` holding as it does there.
-  - **Relied on:** R179, T8, DR-197
-  - **Checked:** not yet: `add-pr-cost-calculator` task 7.2 checks it
-- **Fact:** Claude Code loads one plugin of a given name: an enabled plugin of that name from any other origin comes before the copy synced from claude.ai, and one that managed settings turn on comes first.
-  - **Relied on:** T135, DR-197
-  - **Checked:** documented: <https://code.claude.com/docs/en/plugins/loading>, read 2026-11-09
-- **Fact:** A plugin's hooks get `CLAUDE_PLUGIN_ROOT`, the folder that Claude Code loaded the plugin from, and `CLAUDE_PROJECT_DIR`, so that the plugin's command can name the step's file in the plugin's own folder.
-  - **Relied on:** R179, DR-197
-  - **Checked:** documented: <https://code.claude.com/docs/en/plugins/components>, read 2026-11-09
-
 ## A70. A project's cloud thread starts in a folder that holds each of its clones directly inside it, and its machine pauses after a turn and resumes with its files.
 
-- **Rests on it:** R180, T128, T131, DR-197, DR-198, DR-199
-- **If it is wrong:** If a thread's clones lay deeper in its folder, a plugin's start run would meet none of them, so a thread's first calls in a clone would be left out and flagged for consent until a run met that clone (R180, DR-198). If more of a thread's calls named its folder than the design expects, its figure would be lower still (T128). If a pause rebuilt the machine instead of resuming it, every pause would lose the calls that wait for a commit (T131).
+- **Rests on it:** R180, T120, T128, T131, DR-197, DR-198, DR-199
+- **If it is wrong:** If a thread's clones lay deeper in its folder, a plugin's start run would meet none of them, so a thread's first calls in a clone would be left out and flagged for consent until a run met that clone (R180, DR-198). If more of a thread's calls named its folder than the design expects, its figure would be lower still (T128). If a pause rebuilt the machine instead of resuming it, every pause would lose the calls that wait for a commit (T131), and if a resume changed what the fingerprint of the opt-in's files holds, every pause would end the session's interval and drop those calls, with a flag for consent (T120).
 - **Fact:** A cloud session with several repositories starts in a folder above its clones.
   - **Relied on:** R180, DR-198
   - **Checked:** documented: <https://code.claude.com/docs/en/settings>, read 2026-11-09
@@ -392,20 +404,32 @@ The assumptions about Claude Code: what its transcripts hold, when its hooks run
 - **Fact:** A pause runs the session-end hooks and the resume runs the start hooks, with the same session and transcript, and a resumed machine keeps its files.
   - **Relied on:** T131, DR-197
   - **Checked:** not yet: `add-pr-cost-calculator` task 7.2 checks it
+- **Fact:** A resumed machine keeps the device and inode numbers, sizes and modification times of the person's global git configuration files, so that a pause and a resume change nothing that the fingerprint of the opt-in's files holds.
+  - **Relied on:** T120, T131
+  - **Checked:** not yet: `add-pr-cost-calculator` task 7.2 checks it
 
 ## A71. A line in a cloud environment's setup script reaches the global git configuration of each new session in that environment, and an organization can share an environment with its members.
 
-- **Rests on it:** R1, R185, R186, T3, T134, DR-201, DR-202
-- **If it is wrong:** If the line did not reach a session's global git configuration, or Claude Code's own setup of a session wrote over it, a person who added it would record nothing, with nothing to say why (R185, DR-201). If a shared environment's setup script did not run in each member's session there, the organization's option would opt no one in (R186, T134).
+- **Rests on it:** R1, R185, R186, R194, T3, T134, DR-201, DR-202
+- **If it is wrong:** If the line did not reach a session's global git configuration, or Claude Code's own setup of a session wrote over it, a person who added it would record nothing, with nothing to say why (R185, DR-201). If a shared environment's setup script did not run in each member's session there, the organization's option would opt no one in (R186, T134). If an environment's variables did not reach a running session's hooks, the opt-out that the README gives for an environment would not turn capture off there (R194, T3, T134).
 - **Fact:** A cloud environment's setup script runs as root, before Claude Code starts, the first time a session starts in the environment, and the files that it writes are the starting point of the environment's later sessions until the script or the allowed hosts change or that snapshot expires after about seven days, and it does not run again when an idle machine is restored.
   - **Relied on:** R1, R185, DR-201
   - **Checked:** documented: <https://code.claude.com/docs/en/cloud-environments>, read 2026-11-09
 - **Fact:** `git config --global` in the setup script writes the global git configuration of the user who runs the session, and Claude Code's own setup of a session leaves the line there.
   - **Relied on:** R1, R185, T3, DR-201
   - **Checked:** not yet: `add-pr-cost-calculator` task 7.2 checks it
+- **Fact:** An existing session reads an environment's variables again when its machine is restored or rebuilt, so that a change to them reaches it from then on, while a change to the setup script reaches it only when its machine is rebuilt.
+  - **Relied on:** R194, T3, T134
+  - **Checked:** documented: <https://code.claude.com/docs/en/cloud-environments>, read 2026-11-09
+- **Fact:** An environment's variables reach the hooks that its sessions run, so that git reads, in a hook's environment, the `GIT_CONFIG_` variables that the environment sets.
+  - **Relied on:** R194, T3, T134
+  - **Checked:** not yet: `add-pr-cost-calculator` task 7.2 checks it
 - **Fact:** An Owner of a Team or Enterprise organization can create an environment shared with every member, which appears in each member's selector, and an organization's default fills a member's selector until they pick another, while a project's threads use the project's environment.
   - **Relied on:** R186, T134, DR-202
   - **Checked:** documented: <https://code.claude.com/docs/en/cloud-environments>, read 2026-11-09
+- **Fact:** An organization's server-managed settings run their hooks in its members' sessions in Anthropic-hosted environments, as its managed settings run theirs in their terminal sessions, and `/hooks` labels each hook with where it comes from.
+  - **Relied on:** R186, T134, DR-202
+  - **Checked:** documented: <https://code.claude.com/docs/en/cloud-environments>, <https://code.claude.com/docs/en/hooks>, read 2026-11-09
 - **Fact:** Projects are not offered on Team or Enterprise plans yet.
   - **Relied on:** R186, DR-202
   - **Checked:** documented: <https://code.claude.com/docs/en/claude-projects>, read 2026-11-09
