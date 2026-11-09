@@ -24,7 +24,7 @@ The assumptions about the teams that adopt the tool, the people who opt in, and 
 
 ## A14. People who opt in know what it publishes, and keep other work apart.
 
-- **Rests on it:** R1, R2, R3, R4, R37, R52, R108, R146, R155, R159, R164, T2, T3, T4, T5, T31, T38, T106, T111, T114, T116, T117, DR-045, DR-046, DR-050, DR-052, DR-053, DR-055, DR-057, DR-136, DR-138, DR-168, DR-171, DR-180, DR-182, DR-183
+- **Rests on it:** R1, R2, R3, R4, R37, R52, R108, R146, R155, R159, R164, R186, T2, T3, T4, T5, T31, T38, T106, T111, T114, T116, T117, T129, T134, DR-045, DR-050, DR-052, DR-053, DR-055, DR-057, DR-136, DR-138, DR-168, DR-171, DR-182, DR-183, DR-200, DR-201, DR-202
 - **If it is wrong:** Work on another repository, private ones included, would be published here (T2), the ledger would reveal more about a person than they expected (T31, T3, T4, T5), a person who opts in during a session would have its calls up to the next run left out, so that its count is too low (T38), and a person who keeps the store in their backups, or puts back a copy of it after an opt-out, would keep its notes there, or bring back calls to be staged (T117). A person whose opt-in is not where the step reads it, or does not outlive a cloud session, would have nothing recorded.
 - **Fact:** People who opt in start each session in the repository, and keep work on other repositories, private ones above all, in sessions of their own.
   - **Relied on:** R3, T2, DR-057
@@ -33,19 +33,22 @@ The assumptions about the teams that adopt the tool, the people who opt in, and 
   - **Relied on:** R52, T2, DR-055
   - **Checked:** not yet: none will, since no test may reach what adopters and people do
 - **Fact:** People who opt in know what the ledger publishes about them, and accept that a public repository shows, for each call, its UTC day, model, counts, price attributes, activity type, whether the main agent or a subagent made it, and a hash of its message id.
-  - **Relied on:** R1, R4, T3, T4, T5, T31, DR-045, DR-046, DR-052, DR-053, DR-136, DR-138
+  - **Relied on:** R1, R4, T3, T4, T5, T31, DR-045, DR-052, DR-053, DR-136, DR-138, DR-202
   - **Checked:** not yet: none will, since no test may reach what adopters and people do
 - **Fact:** People opt in before they start a session.
   - **Relied on:** R108, T38, DR-168
   - **Checked:** not yet: none will, since no test may reach what adopters and people do
 - **Fact:** People who opt in read what the README says stays published after an opt-out, what a flag for calls left out says, that one opt-in covers every repository that turns the tool on, and where the store is, how to keep it out of backups and syncs, and how to remove it.
-  - **Relied on:** R146, R155, R159, R164, T3, T106, T111, T114, T116, T117, DR-171, DR-180, DR-182
+  - **Relied on:** R146, R155, R159, R164, T3, T106, T111, T114, T116, T117, T129, T134, DR-171, DR-182, DR-200
+  - **Checked:** not yet: none will, since no test may reach what adopters and people do
+- **Fact:** An organization that puts the opt-in's line in a shared environment's setup script tells its members so, and what it publishes, as the README asks.
+  - **Relied on:** R186, T134, DR-202
   - **Checked:** not yet: none will, since no test may reach what adopters and people do
 - **Fact:** People write their opt-in directly in `~/.gitconfig` or in git's file in their XDG configuration folder, not in a file that those include and not through an environment variable.
   - **Relied on:** R37, DR-183
   - **Checked:** not yet: none will, since no test may reach what adopters and people do
-- **Fact:** Each person keeps a global git configuration that outlives the session, also when they work in cloud sessions, whose machines are thrown away.
-  - **Relied on:** R1, DR-046, DR-050, DR-183
+- **Fact:** Each person keeps a global git configuration that outlives the session, or, in a cloud environment, a setup script that writes the opt-in into each new session's.
+  - **Relied on:** R1, DR-050, DR-183, DR-201, DR-202
   - **Checked:** not yet: none will, since no test may reach what adopters and people do
 - **Fact:** Commit times in git already show when someone worked, so a ledger entry's UTC day discloses nothing new.
   - **Relied on:** R2, T5, DR-052
@@ -110,13 +113,16 @@ The assumptions about the teams that adopt the tool, the people who opt in, and 
 
 ## A23. Adopters pin released commits, and update the hook and the pin together.
 
-- **Rests on it:** R17, R24, R27, R28, R65, R71, R77, R88, R93, R98, R122, R123, T24, T28, T29, T53, T54, T58, T60, T64, T67, T69, T123, DR-020, DR-022, DR-040, DR-054, DR-058, DR-062, DR-063, DR-065, DR-072, DR-073, DR-096, DR-097, DR-122, DR-123, DR-124, DR-132, DR-133, DR-139, DR-144, DR-149, DR-154, DR-156, DR-190
-- **If it is wrong:** A commit that no release vouched for, or one that only a fork holds, would run as the tool in the adopter's CI and on their machines (T58, T28, T64), a hook and a report from different commits would disagree on models and prices (T54), and an adopter who gives the report more than it needs, or relies on what the public surface leaves out, could be harmed or broken by an ordinary update (T24, T29, T53). A key that only some versions of the tool document would turn off the hook or the report that does not know it (T123).
+- **Rests on it:** R17, R24, R27, R28, R65, R71, R77, R88, R93, R98, R122, R123, R183, T24, T28, T29, T53, T54, T58, T60, T64, T67, T69, T123, T133, DR-020, DR-022, DR-040, DR-054, DR-058, DR-062, DR-063, DR-065, DR-072, DR-073, DR-096, DR-097, DR-122, DR-123, DR-124, DR-132, DR-133, DR-139, DR-144, DR-149, DR-154, DR-156, DR-190, DR-203
+- **If it is wrong:** A commit that no release vouched for, or one that only a fork holds, would run as the tool in the adopter's CI and on their machines (T58, T28, T64), a hook and a report from different commits would disagree on models and prices (T54), and an adopter who gives the report more than it needs, or relies on what the public surface leaves out, could be harmed or broken by an ordinary update (T24, T29, T53). A key that only some versions of the tool document would turn off the hook or the report that does not know it (T123). A zip that is not a release's would run as the tool's plugin in the sessions of a person who uploaded it unchecked (T133).
 - **Fact:** Adopters pin only a full commit that a release of this repository names, and check it with `git merge-base --is-ancestor`.
   - **Relied on:** R27, T28, T58, T64, T67, DR-022, DR-062, DR-072, DR-073, DR-122, DR-144, DR-156
   - **Checked:** not yet: none will, since no test may reach what adopters and people do
 - **Fact:** Adopters copy the hook file from the commit that their calling workflow pins, keep it at the path the README gives, and check it against the README's checksum.
   - **Relied on:** R65, R88, R93, T28, T60, DR-022, DR-058, DR-065
+  - **Checked:** not yet: none will, since no test may reach what adopters and people do
+- **Fact:** A person who uploads the plugin's zip checks its SHA-256 against the README at the release's commit first, as the README asks.
+  - **Relied on:** R183, T133, DR-203
   - **Checked:** not yet: none will, since no test may reach what adopters and people do
 - **Fact:** Adopters update the hook file, its checksum and the workflow's pin together, in one pull request, so the hook's model names and the report's prices stay in step.
   - **Relied on:** R17, R65, R77, R98, T54, T123, DR-022, DR-054, DR-139, DR-190
@@ -142,10 +148,10 @@ The assumptions about the teams that adopt the tool, the people who opt in, and 
 
 ## A24. The machine running a session, and the programs that a hook starts on it, are the person's own.
 
-- **Rests on it:** R1, R12, R13, R32, R54, R152, T3, T15, T46, T56, T107, T109, T112, DR-027, DR-031, DR-046, DR-125, DR-176, DR-183, DR-188
+- **Rests on it:** R1, R12, R13, R32, R54, R152, T3, T15, T46, T56, T107, T109, T112, DR-027, DR-031, DR-125, DR-176, DR-183, DR-188, DR-202
 - **If it is wrong:** On a shared machine one person's opt-in would record everyone who uses it (T3), and a program planted where the step or git looks for one would run as part of it with the person's rights (T46, T15). A machine without a working `python3` or `git` would record nothing and say nothing (T56). The capture step does not defend against a compromised machine.
 - **Fact:** The machine running a session belongs to the person running it.
-  - **Relied on:** R1, R54, R152, T3, T46, T107, T109, T112, DR-046, DR-176, DR-183, DR-188
+  - **Relied on:** R1, R54, R152, T3, T46, T107, T109, T112, DR-176, DR-183, DR-188, DR-202
   - **Checked:** not yet: none will, since no test may reach what adopters and people do
 - **Fact:** On Windows, a program started by a bare name, such as `git`, is looked for first in the starting program's folder and in the current directory, and only then in the system's folders and the folders that `PATH` names.
   - **Relied on:** R54, T46, DR-188

@@ -4,7 +4,7 @@ The assumptions about GitHub: this repository's settings there, and its workflow
 
 ## A7. The repository's settings on GitHub are applied, and stay applied, as the threat model's section on the settings the owner keeps lists them.
 
-- **Rests on it:** R27, T28, T33, T35, T37, T61, T62, T64, T67, T68, T76, T100, DR-072, DR-073, DR-074, DR-075, DR-076, DR-077, DR-078, DR-084, DR-089, DR-114, DR-115, DR-119, DR-122, DR-140, DR-141, DR-144, DR-161
+- **Rests on it:** R27, T28, T33, T35, T37, T61, T62, T64, T67, T68, T76, T100, T132, DR-072, DR-073, DR-074, DR-075, DR-076, DR-077, DR-078, DR-084, DR-089, DR-114, DR-115, DR-119, DR-122, DR-140, DR-141, DR-144, DR-161
 - **If it is wrong:** Each answer that rests on a setting would fail without any sign: a change could reach `main` without a pull request or `ci`, also from an agent session acting as the owner's account (T62, T64), a release or its tag could change after adopters took it (T67), a workflow that declares no permissions could get a write token (T68), a fork's pull request could run CI before the owner looked at it (T37), two pull requests could take one record's number (T76), and a reporter could find no private route (T61). No test reads a setting on GitHub, so nothing would show that one changed (T100).
 - **Fact:** A ruleset that requires branches to be up to date before merging makes a pull request's CI run on what the default branch holds before the pull request merges.
   - **Relied on:** T76, DR-119
@@ -13,13 +13,13 @@ The assumptions about GitHub: this repository's settings there, and its workflow
   - **Relied on:** T37, T100, DR-078, DR-115, `docs/threat-model.md`
   - **Checked:** not yet: none will, since no test may read a setting on GitHub
 - **Fact:** **The ruleset on `main`** is set as the threat model's section on the settings the owner keeps says, and stays so.
-  - **Relied on:** T28, T33, T35, T62, T64, T100, DR-072, DR-084, DR-089, DR-140, `docs/threat-model.md`
+  - **Relied on:** T28, T33, T35, T62, T64, T100, T132, DR-072, DR-084, DR-089, DR-140, `docs/threat-model.md`
   - **Checked:** not yet: none will, since no test may read a setting on GitHub
 - **Fact:** **Branches up to date before merging** is set as the threat model's section on the settings the owner keeps says, and stays so.
   - **Relied on:** T76, T100, DR-119, `docs/threat-model.md`
   - **Checked:** not yet: none will, since no test may read a setting on GitHub
 - **Fact:** **A tag ruleset on every tag** is set as the threat model's section on the settings the owner keeps says, and stays so.
-  - **Relied on:** R27, T28, T64, T67, T100, DR-073, DR-122, DR-144, DR-161, `docs/threat-model.md`
+  - **Relied on:** R27, T28, T64, T67, T100, T132, DR-073, DR-122, DR-144, DR-161, `docs/threat-model.md`
   - **Checked:** not yet: none will, since no test may read a setting on GitHub
 - **Fact:** **Immutable releases** is set as the threat model's section on the settings the owner keeps says, and stays so.
   - **Relied on:** T67, T100, DR-074, `docs/threat-model.md`
@@ -168,7 +168,7 @@ The assumptions about GitHub: this repository's settings there, and its workflow
 
 ## A27. Tags and releases can be protected from change.
 
-- **Rests on it:** R27, R28, R68, R72, T23, T28, T29, T64, T67, T69, DR-061, DR-073, DR-074, DR-097, DR-144, DR-161
+- **Rests on it:** R27, R28, R68, R72, T23, T28, T29, T64, T67, T69, T132, DR-061, DR-073, DR-074, DR-097, DR-144, DR-161
 - **If it is wrong:** An identity with `contents: write`, such as an agent session acting as the owner's account, could publish a release on an unreviewed commit, or change one after adopters took it (T67, T64, T28). A tag named like the default branch could pass the report's check of the event (T23, T29), and the bill of materials could list parts that a release's archive does not hold (T69).
 - **Fact:** A push of a tag has a `github.ref` that begins `refs/tags/`, while its `github.ref_name` is the tag's name alone, so a tag named like the default branch shares the branch's `github.ref_name` but not its `github.ref`.
   - **Relied on:** R68, T23, T29, DR-061
@@ -177,7 +177,7 @@ The assumptions about GitHub: this repository's settings there, and its workflow
   - **Relied on:** T64, T67, DR-073, DR-144, DR-161
   - **Checked:** not yet: none will, since no test may reach GitHub
 - **Fact:** A tag ruleset that covers every tag also governs a tag that GitHub's releases API creates, so an identity with `contents: write` cannot create a release with a new tag without the ruleset's bypass.
-  - **Relied on:** R27, T28, T64, T67, DR-073, DR-144, DR-161
+  - **Relied on:** R27, T28, T64, T67, T132, DR-073, DR-144, DR-161
   - **Checked:** not yet: none will, since no test may reach GitHub
 - **Fact:** GitHub's immutable releases stop a published release from changing and its tag from moving.
   - **Relied on:** T67, DR-074

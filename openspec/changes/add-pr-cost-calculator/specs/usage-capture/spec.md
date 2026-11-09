@@ -2,7 +2,7 @@
 
 Record what an agent session spends on model calls in this repository, as it works, and carry it to the pull request with the agent's own commits, in a form the pull request's CI can read at merge without any external service.
 
-In the scenarios below, a commit that is expected to carry a ledger file is made where git's attributes give the ledger path no filter and no working-tree encoding, git does not refuse to add the file, and no git hook of the repository refuses it, and a commit that a scenario does not spell out, such as the agent's next commit, is one that the step stages for, unless the scenario says otherwise. In them, each run of the step reads the transcripts to their end within its time budget, and no other session commits in the repository, unless the scenario says otherwise. In them, too, every run of the step finds the tool on in the repository and the person opted in, a run of the step that found both on came before every line that a scenario's calls answer, as a start run does, and the hook file in the working tree is the one whose checksum the registered command carries, unless the scenario says otherwise.
+In the scenarios below, a commit that is expected to carry a ledger file is made where git's attributes give the ledger path no filter and no working-tree encoding, git does not refuse to add the file, and no git hook of the repository refuses it, and a commit that a scenario does not spell out, such as the agent's next commit, is one that the step stages for, unless the scenario says otherwise. In them, each run of the step reads the transcripts to their end within its time budget, and no other session commits in the repository, unless the scenario says otherwise. In them, the step runs as the hook file's registration, not as the plugin, unless the scenario says otherwise. In them, too, every run of the step finds the tool on in the repository and the person opted in, a run of the step that found both on came before every line that a scenario's calls answer, as a start run does, and the hook file in the working tree is the one whose checksum the registered command carries, unless the scenario says otherwise.
 
 ## ADDED Requirements
 
@@ -236,12 +236,36 @@ The capture step SHALL tell a call's repository and worktree by its line's worki
 
 ### Requirement: Capture works on the repository that holds the project directory
 
-This repository SHALL be the one that holds the project directory that Claude Code gives the hook, whatever directory the hook runs in, and the registered command SHALL name the capture step's file through that project directory.
+For a run of the hook file's registration, this repository SHALL be the one that holds the project directory that Claude Code gives the hook, whatever directory the hook runs in, and the registered command SHALL name the capture step's file through that project directory. A run of the plugin SHALL work on the repositories that "A plugin run works on each repository that it meets" names.
 
 #### Scenario: A run from another directory works on this repository
 
-- **WHEN** the capture step runs while Claude's current directory is in another repository
+- **WHEN** the hook file's registration runs the capture step while Claude's current directory is in another repository that turns the tool on
 - **THEN** it records and stages only in this repository, and only the calls made from this repository
+
+### Requirement: A plugin run works on each repository that it meets
+
+A run of the plugin SHALL work on the repository that holds the project directory or, when none does, on each repository whose top level is directly inside it; on the one that holds the hook input's working directory; and, before or after a commit, on the one where the commit runs; finding each by reading the git files on the way itself, before it starts any program. In each, it SHALL record only the calls made from that repository.
+
+#### Scenario: A project thread's clones are each recorded from its first turn
+
+- **WHEN** the step runs as the plugin, the project directory is in no repository and holds two clones directly inside it that turn the tool on, the person opted in before the session started, its start run came before its first prompt's line, and in its first turn the agent makes calls in each clone and then commits in each
+- **THEN** each commit adds a ledger file that holds the calls made in its own clone, and none of those made in the other
+
+#### Scenario: A repository that a session moves into is recorded from the first run that meets it
+
+- **WHEN** the step runs as the plugin, the project directory is in one repository, a separate repository that turns the tool on is nested inside its folder, and the agent moves into the nested one, makes calls there, runs `git status` there, makes more calls there and then commits there
+- **THEN** that commit's ledger file holds the calls made there that answer a line written at or after the run before `git status`, and none made before, and says that calls were left out for consent
+
+#### Scenario: A repository deeper inside the project directory is not met at the start
+
+- **WHEN** the step runs as the plugin, the project directory is in no repository, and a repository that turns the tool on lies two folders below it
+- **THEN** the start run begins no interval in that repository, creates no store there, and stages nothing there
+
+#### Scenario: A plugin run records each call in its own repository only
+
+- **WHEN** the step runs as the plugin and works on two repositories, and the session has made calls from each
+- **THEN** each call is recorded in the repository that its line's working directory is in, and in no other
 
 ### Requirement: Counts are whole numbers
 
@@ -719,6 +743,20 @@ Two runs of the capture step at the same time, such as the main agent's and a su
 - **WHEN** a run of the step is killed while it writes its store
 - **THEN** the store is whole, as it was before that write or as that write left it, and the next run takes the lock and goes on
 
+### Requirement: Where two copies of the capture step run in one session, each call is recorded once
+
+Where two copies of the capture step run in one session, such as the plugin and the hook file's registration, they SHALL share each repository's store, record each call once and stage at most one ledger file for each commit, and a copy that finds the store at a version that it does not know SHALL leave the store, and the calls, to the other.
+
+#### Scenario: A session that runs the plugin and the hook file's registration commits one ledger file
+
+- **WHEN** the repository's settings register the hook file, the person also has the plugin of the same release, and the agent makes calls and then commits
+- **THEN** the commit adds one ledger file, which holds each of those calls once
+
+#### Scenario: An earlier release leaves a later release's store to it
+
+- **WHEN** the plugin is of a later release, whose store format the hook file's release does not know, both run in a session, and the agent makes calls and then commits
+- **THEN** the hook file's runs leave the store as they found it, and the commit adds one ledger file, which holds the calls that the plugin's runs recorded
+
 ### Requirement: The capture step is one self-contained file
 
 The capture step SHALL be one Python file that imports nothing but Python's standard library, so that it runs in Python's isolated mode, which imports nothing from the file's own folder, and an adopter can copy it into their repository whole.
@@ -739,7 +777,7 @@ The capture step's first line SHALL name the release that it comes from.
 
 ### Requirement: The capture step starts only git, from an absolute path
 
-The step SHALL start no program but git, which it SHALL find at an absolute path, looking only in the folders that the absolute entries of `PATH` name, and in none of them that lies inside this repository's working trees or its git common directory. Before it starts git, it SHALL change its own current directory to a folder that only the system's administrator can write, such as Windows' system folder, and it SHALL name the folder that each git command works in.
+The step SHALL start no program but git, which it SHALL find at an absolute path, looking only in the folders that the absolute entries of `PATH` name, and in none of them that lies inside the working trees or the git common directory of a repository that the run works on. Before it starts git, it SHALL change its own current directory to a folder that only the system's administrator can write, such as Windows' system folder, and it SHALL name the folder that each git command works in.
 
 #### Scenario: A program planted in the current directory is not run
 
@@ -750,6 +788,11 @@ The step SHALL start no program but git, which it SHALL find at an absolute path
 
 - **WHEN** an absolute entry of `PATH`, such as one that a tool which sets up a folder's environment adds, names a folder inside the repository's working tree that holds a program named `git`
 - **THEN** the step does not start it, and records and stages with the git that another absolute entry of `PATH` names
+
+#### Scenario: A plugin run does not start a git that another clone holds
+
+- **WHEN** the step runs as the plugin and works on two clones directly inside the project directory, and an absolute entry of `PATH` names a folder inside one of them that holds a program named `git`
+- **THEN** the run does not start it, and records and stages with the git that another absolute entry of `PATH` names
 
 #### Scenario: A git in a worktree outside the repository's folder is not run
 
@@ -842,6 +885,30 @@ The registered command SHALL carry the SHA-256 of the hook file that the adopter
 - **WHEN** the hook file in the working tree differs from the one whose checksum the registered command carries, as after a checkout of a branch that changes it
 - **THEN** the registered command runs none of that file's code, prints nothing on standard output and exits with success, in each shell that Claude Code runs a hook's command in
 
+### Requirement: The capture step also comes as a Claude Code plugin
+
+The tool SHALL also ship the capture step as a Claude Code plugin, whose hooks SHALL run the same file, from the plugin's own folder, for the same events and with the same condition as the hook file's registration, through a command that names the plugin form, exits with success and prints nothing on standard output in each shell that Claude Code runs a hook's command in.
+
+#### Scenario: The plugin records a session in a repository that registers no hook
+
+- **WHEN** the step runs as the plugin, the person has opted in, and in a session started in a repository that turns the tool on and whose settings register no hook, the agent makes calls there and then commits there
+- **THEN** that commit adds a ledger file that holds those calls
+
+#### Scenario: The plugin's hooks match the hook file's registration
+
+- **WHEN** the plugin's hooks and the hook file's registration that the README gives are read
+- **THEN** they name the same events, matchers and conditions, and the plugin's command runs the step from the plugin's own folder with the argument that names the plugin form
+
+#### Scenario: The plugin's command succeeds when its step cannot run
+
+- **WHEN** the plugin's command runs in `sh`, in Git Bash or in PowerShell, and its script cannot be found or Python cannot be started
+- **THEN** the command exits with success and prints nothing on standard output
+
+#### Scenario: A branch cannot change what the plugin runs
+
+- **WHEN** the step runs as the plugin, and a branch checked out during the session changes the hook file in the working tree
+- **THEN** the plugin's runs run the file in the plugin's own folder, and none of the working tree's
+
 ### Requirement: The capture step writes only its own words and numbers to standard error
 
 The capture step SHALL write to standard error only its own words and numbers, never text taken from the transcript, the hook's input or the store, from a ledger file or its name, or from what a git command printed, nor a hash of any of them.
@@ -863,12 +930,17 @@ The capture step SHALL write to standard error only its own words and numbers, n
 
 ### Requirement: The capture step finishes within a time budget
 
-The capture step SHALL finish within a time budget, leaving what it has not read for a later run.
+The capture step SHALL finish within a time budget, leaving what it has not read for a later run, and a run of the plugin when a session ends SHALL finish within the budget that Claude Code gives a plugin's `SessionEnd` hooks.
 
 #### Scenario: A long transcript does not hold up the session
 
 - **WHEN** reading the transcript would take longer than the time budget
 - **THEN** the step stops at the budget and exits with success, and a later run records the rest
+
+#### Scenario: The plugin's run at a session's end takes back first
+
+- **WHEN** the step runs as the plugin when a session ends, finds a ledger file staged for a command that is over, and reading the transcript would take longer than the budget that Claude Code gives a plugin's `SessionEnd` hooks
+- **THEN** it takes the file back before it reads any transcript, stops within that budget, and exits with success
 
 ### Requirement: The store is versioned: an earlier version is upgraded, an unknown one left alone
 
@@ -1039,7 +1111,7 @@ The capture step SHALL write no line of a transcript, and no value from one beyo
 
 ### Requirement: A ledger file says when calls of its sessions were left out
 
-When a run leaves out a call made here because it was not made inside an interval when both switches were on, or drops a waiting call at the retention window, the next ledger file staged for that call's worktree and branch SHALL say so; when it leaves out a call whose line gives no working directory, or a directory inside this repository's folder that names no repository that git can tell, the session's next ledger file here SHALL say so; each with no count, time or other fact about those calls.
+When a run leaves out a call made here as made outside every interval when both switches were on, or drops a waiting call at the retention window, the next ledger file staged for that call's worktree and branch SHALL say so; when it leaves out a call whose line gives no working directory, or a directory inside this repository's folder or holding it that names no repository that git can tell, the session's next ledger file here SHALL say so; each with no count, time or other fact about them.
 
 #### Scenario: A ledger file says that calls were left out for consent
 
@@ -1065,6 +1137,11 @@ When a run leaves out a call made here because it was not made inside an interva
 
 - **WHEN** a ledger file that says calls were left out for consent is staged for a `git commit` that is then refused at a permission prompt, and a later run takes it back
 - **THEN** the next ledger file staged for that worktree and branch says that calls were left out for consent
+
+#### Scenario: Calls made from a folder that holds this repository are flagged
+
+- **WHEN** a session makes calls while Claude's current directory is a folder that holds this repository's folder and names no repository that git can tell, as a project's cloud thread's folder holds its clones, and then commits here
+- **THEN** none of those calls is recorded, and the commit's ledger file says that calls whose repository could not be told were left out, and holds no count, time or other fact about them
 
 #### Scenario: A call made outside this repository's folder in a directory that is gone raises no flag
 

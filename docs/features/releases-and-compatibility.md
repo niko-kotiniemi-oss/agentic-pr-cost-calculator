@@ -6,16 +6,18 @@ The tool is meant to be used inside other projects, so it keeps to old enough Py
 
 **Spec:** `releases-and-compatibility`
 
-**Requirements:** R25, R99, R26, R27, R71, R122, R123, R28, R72, R32
+**Requirements:** R25, R99, R26, R27, R71, R122, R123, R28, R72, R183, R184, R32
 
 ## Expected behaviour
 
 - **Python.** The tool runs on Python 3.11 and every later release, with the standard library only. CI tests on the oldest supported version and on the newest. `requires-python` in `pyproject.toml` is the one source of the oldest version, and a test fails when another copy of it disagrees. The oldest rises only when its version nears its end of life, or when a security fix needs a newer one, on the owner's decision.
 - **Floors of the capture step.** Under a Python older than 3.11, or a git older than 2.43, the capture step records nothing, stages nothing, prints nothing and exits with success, so an old machine is never blocked from committing.
 - **Dependency updates.** Minor and patch updates and vulnerability fixes are proposed as usual. A major update waits for the owner's approval on Renovate's dependency dashboard.
-- **Versions.** Semantic: the major number rises for a change that adopters must act on, which is any change to the public surface: the hook's registration, by the events and matchers that it names and its command's form, and the hook file's path (the checksum that the command carries changes with every hook change and is not part of the surface), the opt-in key, the ledger's path and format, the store's format, `.pr-cost.json` and the keys and values that its format documents, the reusable workflow's path, inputs and permissions, and the Python and git floors. A manifest of that surface is kept in the repository, naming each key that `.pr-cost.json` may hold, with its values, and holding each released ledger version's schema by its hash, and a release whose manifest changed needs a raised major number and a `### Breaking` section; the minor number for new behaviour; the patch number for a fix.
+- **Versions.** Semantic: the major number rises for a change that adopters must act on, which is any change to the public surface: the hook's registration, by the events and matchers that it names and its command's form, and the hook file's path (the checksum that the command carries changes with every hook change and is not part of the surface), the plugin's name and hooks, by the events and matchers that they name and their command's form, the marketplace's name, the opt-in key, the ledger's path and format, the store's format, `.pr-cost.json` and the keys and values that its format documents, the reusable workflow's path, inputs and permissions, and the Python and git floors. A manifest of that surface is kept in the repository, naming the plugin's name, each event and matcher that its hooks name and their command's form, the marketplace's name, and each key that `.pr-cost.json` may hold, with its values, and holding each released ledger version's schema by its hash, and a release whose manifest changed needs a raised major number and a `### Breaking` section; the minor number for new behaviour; the patch number for a fix.
 - **Releases.** A release is made by pushing a tag `vMAJOR.MINOR.PATCH` for a commit in the default branch's first-parent history. The release workflow checks the tag's form before any other step, refuses a tag that does not match `pyproject.toml` and `CHANGELOG.md`, and publishes a GitHub release that names the commit to pin.
-- **Bill of materials.** Every release carries a CycloneDX JSON software bill of materials. It is written from the tagged tree, and names the hook file's SHA-256 and each action the reusable workflow uses. A release whose bill of materials cannot be written, or misses an action, is not published.
+- **Bill of materials.** Every release carries a CycloneDX JSON software bill of materials. It is written from the tagged tree, and names the hook file's SHA-256, the plugin's zip's SHA-256 and each action the reusable workflow uses. A release whose bill of materials cannot be written, or misses an action, is not published.
+- **The plugin's zip.** Each release carries the plugin as a zip built from its tag's files alone, holding only the plugin's manifest, its hooks, the capture step and the licence, the same bytes on every build. The README at the tag's commit gives its SHA-256, and the release workflow publishes no release whose zip has another, so a person can check a zip against the README before they upload it (DR-203).
+- **The marketplace.** The repository's root marketplace file lists only the tool's plugin, from a folder that holds the plugin as a release's tag builds it, with that release's version in its manifest. The folder moves only in a pull request made after a release, and CI fails when it differs from the plugin built from that release's tag, when no release tag gives its version, or when the root file lists anything else, so a person who adds the repository as a marketplace gets only a release's plugin, with nothing to accept (DR-204, DR-205). The marketplace that loads the vendored Superpowers into this repository's own sessions moves to a folder under `vendor/`.
 
 ## How it is validated
 
@@ -24,10 +26,12 @@ This feature is validated first by its spec's scenarios: each whose code is stil
 - Tests already in place: every copy of the oldest supported Python agrees with `requires-python`, CI runs on it and on the newest release, and Renovate holds major updates for the owner (task 1.11).
 - The release check's tests, each of its refusals included (task 6.1), the bill of materials validated against the CycloneDX schema (task 6.2), and the release workflow's trigger and permissions (task 6.3).
 - The capture step's floors, under an older Python and an older git (task 6.5).
+- The plugin's zip built twice from one tag, at different times, on different machines and with different umasks, a planted difference in the README's checksum, which stops the release, and a planted extra file, which fails the check of what the zip holds (task 6.6).
+- The marketplace's checks, each shown to fail on a planted defect: a folder that differs from its release's plugin, a version that no release tag gives, and a root file that lists anything else (task 6.7).
 - A CI job with git 2.43, the oldest git that CI tests, which runs the tests of the README's section on adopting the tool against git (task 4.4).
 - By review rather than by a test: when the oldest Python rises, and whether a version's minor or patch number fits its change. The owner decides both.
 
 ## See also
 
-- `releases-and-compatibility` in `openspec/`, and design decisions 10 and 11 of `add-pr-cost-calculator`.
+- `releases-and-compatibility` in `openspec/`, design decisions 10 and 11 of `add-pr-cost-calculator`, and DR-203 to DR-205 for how the plugin reaches people.
 - [`../../CHANGELOG.md`](../../CHANGELOG.md).

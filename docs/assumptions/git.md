@@ -4,10 +4,10 @@ The assumptions about git: what its commands, options, attributes, locks and con
 
 ## A10. A repository's worktrees share one git common directory, which recording can use.
 
-- **Rests on it:** R3, R47, R54, R78, R147, R149, R169, T2, T8, T10, T11, T19, T46, T108, T119, T122, DR-011, DR-012, DR-057, DR-174, DR-179, DR-188
+- **Rests on it:** R3, R47, R54, R78, R147, R149, R169, T2, T8, T10, T11, T19, T46, T108, T119, T122, DR-011, DR-012, DR-057, DR-174, DR-188, DR-199
 - **If it is wrong:** A nested repository's calls, or those of another repository that the session's environment points git at this one for, could be published here (T2), and the environment could move the store or a staged ledger file into another repository (T119), a worktree's calls could be staged in the main worktree's index and carried to its branch (T19, T8), a git command could trip over the store, so that calls are lost or recorded twice (T10, T11), a take-back could not find a worktree that was moved, so that its staged ledger file waits (T10), a git in a linked worktree outside the repository's folder could be the one that runs (T46), or a clone that another user owns would record after all, which the README's section on adopting the tool that task 4.4 writes says it does not (T122).
 - **Fact:** A repository's worktrees share one git common directory, which `git rev-parse --git-common-dir` names, while a repository nested inside its folder has its own.
-  - **Relied on:** R3, R47, R147, T2, T11, T108, DR-011, DR-057, DR-179
+  - **Relied on:** R3, R47, R147, T2, T11, T108, DR-011, DR-057, DR-199
   - **Checked:** not yet: `add-pr-cost-calculator` task 2.1 and `add-pr-cost-calculator` task 1.1 check it
 - **Fact:** git resolves a directory inside a worktree under the repository's folder to that worktree, not to the main worktree around it.
   - **Relied on:** R78, T8, T10, T19, DR-012
@@ -19,7 +19,7 @@ The assumptions about git: what its commands, options, attributes, locks and con
   - **Relied on:** R149, T10, DR-174
   - **Checked:** not yet: `add-pr-cost-calculator` task 2.1 checks it
 - **Fact:** With every variable whose name begins with `GIT_` removed from its environment, among them `GIT_DIR`, `GIT_COMMON_DIR`, `GIT_WORK_TREE`, `GIT_INDEX_FILE` and `GIT_CEILING_DIRECTORIES`, git finds a directory's repository, worktree and index from that directory alone.
-  - **Relied on:** R147, R169, T2, T119, DR-179, DR-188
+  - **Relied on:** R147, R169, T2, T119, DR-188, DR-199
   - **Checked:** not yet: `add-pr-cost-calculator` task 2.1 checks it
 - **Fact:** A linked worktree's `.git` file names its folder in the git common directory, where a `commondir` file names the git common directory, relative to that folder, and a `gitdir` file names the worktree's `.git` file, so that the repository's own files list where each of its worktrees is.
   - **Relied on:** R54, T46, DR-188
@@ -31,7 +31,7 @@ The assumptions about git: what its commands, options, attributes, locks and con
   - **Relied on:** R54, T46, DR-188
   - **Checked:** not yet: `add-pr-cost-calculator` task 2.1 checks it
 - **Fact:** git refuses to name the repository of a folder that another user owns, unless a `safe.directory` setting names it, and `git config` there reads no setting of the repository's own, without an error.
-  - **Relied on:** R147, T122, DR-179
+  - **Relied on:** R147, T122, DR-199
   - **Checked:** not yet: `add-pr-cost-calculator` task 2.1 checks it
 - **Fact:** git takes a `safe.directory` setting only from the system's configuration, the person's global configuration and the command line's, which the variables `GIT_CONFIG_COUNT` and `GIT_CONFIG_PARAMETERS` add to, never from the repository's own, so with every variable whose name begins with `GIT_` removed, only the system's file, `~/.gitconfig` and the XDG file can name a folder.
   - **Relied on:** R147, T122, DR-188

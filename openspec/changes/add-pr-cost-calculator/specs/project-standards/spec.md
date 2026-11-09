@@ -656,12 +656,39 @@ The README, the opt-in's feature page and the ledger's SHALL say that an opt-out
 
 ### Requirement: The documentation says where an opt-in applies
 
-The README and the opt-in's feature page SHALL say that one opt-in covers every repository that turns the tool on, those that adopt it later among them, with no notice in any of them; that a repository's own setting that turns capture off holds only in that clone; and how a person turns capture off for a folder with git's own conditional includes, and where that stops.
+The README and the opt-in's feature page SHALL say that one opt-in covers every repository that turns the tool on, those that adopt it later among them, with no notice in any of them, and with the plugin each one where the person's sessions work or commit, whether or not it registers the hook; that a repository's own setting that turns capture off holds only in that clone; and how a person turns capture off for a folder with git's own conditional includes, and where that stops.
 
 #### Scenario: The opt-in's pages say where an opt-in applies
 
 - **WHEN** the README's section on the opt-in and the opt-in's feature page are read
-- **THEN** each says that one opt-in covers every repository that turns the tool on, later ones too, with no notice, that a repository's own setting that turns capture off holds only in that clone, and how to turn capture off for a folder and where that stops: in a linked worktree there whose repository lies elsewhere, for a folder named through a symbolic link, and when the file that the include names is missing
+- **THEN** each says that one opt-in covers every repository that turns the tool on, later ones too, with no notice, and with the plugin each one where the person's sessions work or commit, whether or not it registers the hook, that a repository's own setting that turns capture off holds only in that clone, and how to turn capture off for a folder and where that stops: in a linked worktree there whose repository lies elsewhere, for a folder named through a symbolic link, and when the file that the include names is missing
+
+### Requirement: The documentation says how capture covers a project's cloud threads
+
+The README and the capture's feature page SHALL say that a project's cloud threads run capture only through the plugin, how a person opts in there with one line in their environment's setup script, that calls made from the folder that holds the clones are left out and flagged, how to keep a session inside a repository, and that a machine that cannot be resumed loses the calls that no commit took.
+
+#### Scenario: The pages say how a cloud thread is covered
+
+- **WHEN** the README's section on cloud threads and the capture's feature page are read
+- **THEN** each says that a project's cloud threads run capture only through the plugin, gives the setup script's line, says that calls made from the folder that holds the clones are left out and flagged, says how to keep a session inside a repository, and says that a machine that cannot be resumed loses the calls that no commit took
+
+### Requirement: The documentation says how an organization turns capture on for its members
+
+The README SHALL say how an organization turns the plugin on for its members and puts the opt-in's line in a shared environment's setup script, which sessions each reaches, that a member's terminal sessions still need the member's own opt-in, that the organization tells its members what is then published, and that a member turns capture off by using another environment.
+
+#### Scenario: The README says what an organization's option does
+
+- **WHEN** the README's section on organizations is read
+- **THEN** it says how an organization turns the plugin on for its members and puts the opt-in's line in a shared environment, which sessions each reaches, that a member's terminal sessions still need the member's own opt-in, that the organization tells its members what is then published, and that a member turns capture off by using another environment
+
+### Requirement: The documentation gives both ways to install the plugin, the zip first
+
+The README SHALL give the release's zip first, with the command that checks its SHA-256 against the README at the release's commit before it is uploaded, and then the repository as a marketplace, saying that the marketplace's updates arrive with nothing to accept, that a repository still copies the hook file for the sessions of everyone who works in it, and how to see which copy of the plugin a session loads.
+
+#### Scenario: The README gives the zip first and the marketplace second
+
+- **WHEN** the README's section on installing the plugin is read
+- **THEN** it gives the release's zip first, with the command that checks its SHA-256, then the repository as a marketplace, says that the marketplace's updates arrive with nothing to accept, says that a repository still copies the hook file, and says how to see which copy of the plugin a session loads
 
 ### Requirement: Each ledger format that a release wrote keeps its golden figures
 

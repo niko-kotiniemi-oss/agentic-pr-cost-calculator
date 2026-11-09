@@ -1,6 +1,6 @@
 ## Purpose
 
-Let a repository turn the tool on or off with one file, and let each person decide for themselves whether their own sessions are recorded, so that no one's usage is published without their consent and a pull request cannot turn off its own report.
+Let a repository turn the tool on or off with one file, and let each person decide, for themselves or by the environment that they choose to use, whether their own sessions are recorded, so that no one's usage is published without their consent and a pull request cannot turn off its own report.
 
 Scenarios below that run the capture step follow the conventions that `usage-capture` states for its own scenarios.
 
@@ -8,7 +8,7 @@ Scenarios below that run the capture step follow the conventions that `usage-cap
 
 ### Requirement: Capture runs only where the tool is on and the person has opted in
 
-The capture step SHALL record nothing unless the repository's configuration turns the tool on and the person running the session has turned capture on for themselves, in their global git configuration, which is not part of the repository.
+The capture step SHALL record nothing unless the repository's configuration turns the tool on and the opt-in is on in the global git configuration where the session runs, which the person sets, or the setup script of the cloud environment that they use, and which is not part of the repository.
 
 #### Scenario: No configuration file means no capture
 
@@ -24,6 +24,20 @@ The capture step SHALL record nothing unless the repository's configuration turn
 
 - **WHEN** only the repository's own git configuration turns capture on
 - **THEN** nothing is recorded
+
+#### Scenario: An environment's setup script can opt a person in
+
+- **WHEN** the setup script of the cloud environment where a session runs has set `pr-cost.capture` to `true` in the global git configuration with `git config --global`, and the session makes calls in a repository that turns the tool on and then commits there
+- **THEN** that commit adds a ledger file that holds those calls
+
+### Requirement: Having the plugin opts no one in
+
+The plugin SHALL record nothing for a session whose opt-in is not on, however the plugin came to that session, such as when an organization turns it on or requires it for its members.
+
+#### Scenario: A plugin that an organization requires records nothing without the opt-in
+
+- **WHEN** the step runs as the plugin in a session whose global git configuration does not turn capture on, as for a member who has not opted in and whose organization requires the plugin, in a repository that turns the tool on
+- **THEN** nothing is recorded, no store is created and no ledger file is staged
 
 ### Requirement: Capture reads the configuration file only as a regular file within its bound
 

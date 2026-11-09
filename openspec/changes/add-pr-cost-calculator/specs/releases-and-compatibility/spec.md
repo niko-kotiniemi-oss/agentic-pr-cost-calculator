@@ -88,7 +88,7 @@ The version SHALL raise its major number for a change that existing adopters mus
 
 ### Requirement: The public surface is kept in a manifest
 
-The public surface SHALL be the hook file's registration, by the events and matchers it names and its command's form, not the checksum that the command carries, and the hook file's path, the opt-in key, the ledger path and format, the store's format, the configuration file and the keys and values that its format documents, the reusable workflow's path, inputs and permissions, and the Python and git floors. A manifest of that surface SHALL be kept in the repository.
+The public surface SHALL be the hook file's path and registration, and the plugin's name and hooks, each by the events and matchers it names and its command's form, not the hook file's checksum, and the marketplace's name, the opt-in key, the ledger path and format, the store's format, the configuration file and the keys and values that its format documents, the reusable workflow's path, inputs and permissions, and the Python and git floors. A manifest of it SHALL be kept in the repository.
 
 #### Scenario: The surface manifest names the whole public surface
 
@@ -99,6 +99,11 @@ The public surface SHALL be the hook file's registration, by the events and matc
 
 - **WHEN** the surface manifest in the repository is read
 - **THEN** it names each hook event and matcher that the hook file's registration names, and its command's form
+
+#### Scenario: The surface manifest names the plugin whole
+
+- **WHEN** the surface manifest in the repository is read
+- **THEN** it names the plugin's name, each hook event and matcher that the plugin's hooks name, and their command's form, and the marketplace's name
 
 #### Scenario: The surface manifest names the configuration's keys
 
@@ -116,12 +121,12 @@ The release workflow SHALL compare the surface manifest (see "The public surface
 
 ### Requirement: Every release carries a software bill of materials
 
-Each release SHALL carry a CycloneDX JSON software bill of materials, written by a standard-library Python script in this repository from the tagged tree, never a working tree. It SHALL name the tool, its version, the commit it was built from, its licence, the oldest supported Python as `requires-python` gives it, the hook file's SHA-256, each action the reusable workflow uses at its pinned commit, and the vendored and generated parts as development-only components with their source and licence.
+Each release SHALL carry a CycloneDX JSON software bill of materials, written by a standard-library Python script in this repository from the tagged tree, never a working tree. It SHALL name the tool, its version, commit and licence, the oldest supported Python from `requires-python`, the SHA-256 of the hook file and of the plugin's zip, each action the reusable workflow uses at its pinned commit, and the vendored and generated parts as development-only components with their source and licence.
 
 #### Scenario: The bill of materials describes the release
 
 - **WHEN** a release is published
-- **THEN** a CycloneDX JSON file is attached that names the tool, the release's version and commit, the MIT licence, the oldest supported Python, the hook file's checksum, each action the reusable workflow uses, and the development-only components
+- **THEN** a CycloneDX JSON file is attached that names the tool, the release's version and commit, the MIT licence, the oldest supported Python, the hook file's checksum, the plugin zip's checksum, each action the reusable workflow uses, and the development-only components
 
 ### Requirement: A release is not published when its bill of materials is missing or fails a check
 
@@ -141,6 +146,44 @@ A release SHALL NOT be published when its bill of materials cannot be written, w
 
 - **WHEN** the private-reference check finds a match in the bill of materials or in the release's text
 - **THEN** no release is published
+
+### Requirement: Each release carries the plugin as a zip that its tag rebuilds
+
+Each release SHALL carry the plugin as a zip built from its tag's files alone, holding only the plugin's manifest, its hooks, the capture step and the licence, the same bytes on every build, whose SHA-256 the README at the tag's commit gives, and SHALL NOT be published when the zip built from the tag has another SHA-256.
+
+#### Scenario: The plugin's zip is the same on every build
+
+- **WHEN** the plugin's zip is built twice from one tag, at different times, on different machines and with different umasks
+- **THEN** the two zips are the same, byte for byte
+
+#### Scenario: A zip whose checksum differs from the README's stops the release
+
+- **WHEN** the zip built from a tag has another SHA-256 than the README at the tag's commit gives
+- **THEN** no release is published, and the workflow says that the two differ
+
+#### Scenario: The zip holds only the plugin
+
+- **WHEN** a release's zip is read
+- **THEN** it holds the plugin's manifest, its hooks, the capture step and the licence, and nothing else
+
+### Requirement: The marketplace serves only a release's plugin
+
+The repository's root marketplace file SHALL list only the tool's plugin, from a folder that holds the plugin as a release's tag builds it, with that release's version in its manifest, and CI SHALL fail when that folder differs from the plugin built from that release's tag, or when no release tag gives that version.
+
+#### Scenario: A marketplace folder that differs from its release fails CI
+
+- **WHEN** the marketplace's plugin folder holds a file that the plugin built from its release's tag does not hold, lacks one that it holds, or holds one otherwise
+- **THEN** CI fails and names the file
+
+#### Scenario: A marketplace folder whose version no release has fails CI
+
+- **WHEN** the plugin's manifest in the marketplace's folder gives a version that no release tag gives
+- **THEN** CI fails
+
+#### Scenario: The root marketplace file lists only the tool's plugin
+
+- **WHEN** the root marketplace file lists a plugin other than the tool's, or lists the tool's from another folder than the marketplace's plugin folder
+- **THEN** CI fails
 
 ### Requirement: The capture step does nothing below its floors
 

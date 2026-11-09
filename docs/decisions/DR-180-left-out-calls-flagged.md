@@ -1,12 +1,12 @@
 # DR-180: A ledger file flags calls left out, with no count
 
 - **Type:** technical
-- **Status:** accepted
+- **Status:** closed
 - **Decided by:** the owner, 2026-11-02
 - **Requirements:** R155, R157
 - **Threats:** T16, T27, T106
 - **Replaces:** none
-- **Closed by:** none
+- **Closed by:** DR-200
 
 ## Context
 

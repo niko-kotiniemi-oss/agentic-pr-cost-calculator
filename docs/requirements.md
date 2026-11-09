@@ -190,6 +190,15 @@ The capability names the spec that holds the requirement. Each capability is one
 | R176 | non-functional | `project-standards` | The specs hold only text that GitHub shows as it is |
 | R177 | non-functional | `project-standards` | The tests of the specs' form read every spec that OpenSpec reads |
 | R178 | non-functional | `project-standards` | CI checks that the tests read each spec as OpenSpec does |
+| R179 | functional | `usage-capture` | The capture step also comes as a Claude Code plugin |
+| R180 | functional | `usage-capture` | A plugin run works on each repository that it meets |
+| R181 | behavioural | `usage-capture` | Where two copies of the capture step run in one session, each call is recorded once |
+| R182 | behavioural | `switch-and-opt-in` | Having the plugin opts no one in |
+| R183 | non-functional | `releases-and-compatibility` | Each release carries the plugin as a zip that its tag rebuilds |
+| R184 | non-functional | `releases-and-compatibility` | The marketplace serves only a release's plugin |
+| R185 | non-functional | `project-standards` | The documentation says how capture covers a project's cloud threads |
+| R186 | non-functional | `project-standards` | The documentation says how an organization turns capture on for its members |
+| R187 | non-functional | `project-standards` | The documentation gives both ways to install the plugin, the zip first |
 
 IDs are stable: a requirement keeps its ID while it exists, and a new one takes the next free number, so the rows follow the order in which requirements were added rather than the order of the specs. A requirement that a later change removes leaves the table, and its ID is listed below with the change that removed it, never to be used again.
 
