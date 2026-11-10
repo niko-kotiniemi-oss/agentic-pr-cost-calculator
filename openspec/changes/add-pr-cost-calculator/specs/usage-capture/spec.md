@@ -282,14 +282,14 @@ A plugin run SHALL work first on the repository where each git command of its in
 - **WHEN** the step runs as the plugin, the project directory is in no repository and holds three clones directly inside it that turn the tool on, and one clone's `.git` is a named pipe, while the agent makes calls in each clone and then commits in each
 - **THEN** the run records nothing and starts no program for that clone, and the commits in the other two each add a ledger file that holds the calls made in their own clone
 
-### Requirement: A plugin run reads a repository's index only where its session runs git, or in the one that holds the project directory
+### Requirement: A plugin run lets git start a repository's configured programs only where its session runs git, or in the one that holds the project directory
 
-A plugin run SHALL start a git command that reads a repository's index or attributes, as staging, a take-back and a put-back do, only in the repository that holds the project directory, in one where a git command of its input runs, or to take back a ledger file that its own session staged there, and SHALL leave any other take-back or put-back to the first run that may make it, whatever another requirement says of a later run.
+A plugin run SHALL start a git command that can start a program that a repository's configuration names, as staging, a take-back and a put-back can, only in the repository that holds the project directory, in one where a git command of its input runs, or to take back a ledger file that its own session staged there, and SHALL leave any other take-back or put-back to the first run that may make it, whatever another requirement says of a later run.
 
 #### Scenario: A clone that a session only meets or moves into has git start none of its programs
 
-- **WHEN** the step runs as the plugin, the project directory is in no repository and holds two clones directly inside it that turn the tool on, each of whose own configuration names a program as `core.fsmonitor` and whose store notes a ledger file that another session staged for a command that is over, the person opted in before the session started, the agent moves into the second clone and makes calls there, and the session ends with no git command run in either
-- **THEN** no run starts either program, both files stay staged, and the calls made in the second clone wait in its store
+- **WHEN** the step runs as the plugin, the project directory is in no repository and holds two clones directly inside it that turn the tool on, each of whose own configuration names a program as `core.fsmonitor` and another as `gpg.program`, with `log.showSignature` on and a signed commit checked out, and whose store notes a ledger file that another session staged for a command that is over, the person opted in before the session started, the agent moves into the second clone and makes calls there, and the session ends with no git command run in either
+- **THEN** no run starts any of those programs, both files stay staged, and the calls made in the second clone wait in its store
 
 #### Scenario: A file left staged in a clone is taken back once the session runs git there
 
@@ -788,12 +788,12 @@ Where two copies of the capture step run in one session, as the plugin and the h
 
 #### Scenario: An earlier release leaves a later release's store to it
 
-- **WHEN** the plugin is of a later release, whose store format the hook file's release does not know, both run in a session, and the agent makes calls and then commits
+- **WHEN** the plugin is of a later release, whose store format the hook file's release does not know, a store that the plugin's release wrote is in the repository when a session starts, both run in that session, and the agent makes calls and then commits
 - **THEN** the hook file's runs leave the store as they found it, and the commit adds one ledger file, which holds the calls that the plugin's runs recorded
 
 ### Requirement: An earlier release leaves a session to a later one
 
-Each run SHALL note in the store, for its session, the latest release whose copy of the capture step has run in it, and a run of an earlier release than the one noted SHALL record, stage, take back, put back and end nothing for that session there, and exit with success, leaving the session to the later release's copy, unless it finds the person's own capture off, when it SHALL act as any run does (see "An opt-out ends every session's interval and empties the store" in `switch-and-opt-in`).
+Each run that finds both switches on SHALL note in the store, for its session, the latest release whose capture step has run in it, and a run of an earlier release than that SHALL record, stage, take back, put back and end nothing for that session there, and exit with success, leaving the session to the later copy, unless it finds the person's own capture off, when it SHALL act as any run does (see "An opt-out ends every session's interval and empties the store" in `switch-and-opt-in`).
 
 #### Scenario: An earlier copy whose release does not know a key leaves the session to the later copy
 

@@ -417,7 +417,7 @@ The assumptions about Claude Code: what its transcripts hold, when its hooks run
 ## A71. A line in a cloud environment's setup script reaches the global git configuration of each new session in that environment, and an organization can share an environment with its members.
 
 - **Rests on it:** R1, R185, R186, R194, T3, T134, DR-201, DR-202
-- **If it is wrong:** If the line did not reach a session's global git configuration, or Claude Code's own setup of a session wrote over it, a person who added it would record nothing, with nothing to say why (R185, DR-201). If a shared environment's setup script did not run in each member's session there, the organization's option would opt no one in (R186, T134). If an environment's variables did not reach a running session's hooks, the opt-out that the README gives for an environment would not turn capture off there (R194, T3, T134).
+- **If it is wrong:** If the line did not reach a session's global git configuration, or Claude Code's own setup of a session wrote over it, a person who added it would record nothing, with nothing to say why (R185, DR-201). If a shared environment's setup script did not run in each member's session there, the organization's option would opt no one in (R186, T134). If an environment's variables did not reach a running session's hooks, or the `GIT_CONFIG_` variables that a cloud session sets for itself replaced them, the opt-out that the README gives for an environment would not turn capture off there (R194, T3, T134). If `/hooks` did not run in a cloud session, a person there could not see the hooks that run, as the README says they can (R186, R194).
 - **Fact:** A cloud environment's setup script runs as root, before Claude Code starts, the first time a session starts in the environment, and the files that it writes are the starting point of the environment's later sessions until the script or the allowed hosts change or that snapshot expires after about seven days, and it does not run again when an idle machine is restored.
   - **Relied on:** R1, R185, DR-201
   - **Checked:** documented: <https://code.claude.com/docs/en/cloud-environments>, read 2026-11-09
@@ -427,15 +427,18 @@ The assumptions about Claude Code: what its transcripts hold, when its hooks run
 - **Fact:** An existing session reads an environment's variables again when its machine is restored or rebuilt, so that a change to them reaches it from then on, while a change to the setup script reaches it only when its machine is rebuilt.
   - **Relied on:** R194, T3, T134
   - **Checked:** documented: <https://code.claude.com/docs/en/cloud-environments>, read 2026-11-09
-- **Fact:** An environment's variables reach the hooks that its sessions run, so that git reads, in a hook's environment, the `GIT_CONFIG_` variables that the environment sets.
+- **Fact:** An environment's variables reach the hooks that its sessions run, and the `GIT_CONFIG_` variables that a cloud session sets for itself leave those that the environment sets in force, in a hook's environment and in the shell of the commands that the agent runs, so that git reads there the `GIT_CONFIG_` variables that the environment sets.
   - **Relied on:** R194, T3, T134
-  - **Checked:** not yet: `add-pr-cost-calculator` task 7.2 checks it
+  - **Checked:** not yet: `add-pr-cost-calculator` task 7.2 checks it; in a project's cloud thread on 2026-11-10, whose environment sets none, Claude Code started the agent's shell with the session's own pairs from the first index, while its own process started with no `GIT_CONFIG_` variable
 - **Fact:** An Owner of a Team or Enterprise organization can create an environment shared with every member, which appears in each member's selector, and an organization's default fills a member's selector until they pick another, while a project's threads use the project's environment.
   - **Relied on:** R186, T134, DR-202
   - **Checked:** documented: <https://code.claude.com/docs/en/cloud-environments>, read 2026-11-09
 - **Fact:** An organization's server-managed settings run their hooks in its members' sessions in Anthropic-hosted environments, as its managed settings run theirs in their terminal sessions, and `/hooks` labels each hook with where it comes from.
   - **Relied on:** R186, T134, DR-202
   - **Checked:** documented: <https://code.claude.com/docs/en/cloud-environments>, <https://code.claude.com/docs/en/hooks>, read 2026-11-09
+- **Fact:** `/hooks` runs in a cloud session and lists the hooks that run there.
+  - **Relied on:** R186, R194
+  - **Checked:** not yet: `add-pr-cost-calculator` task 7.2 checks it
 - **Fact:** Projects are not offered on Team or Enterprise plans yet.
   - **Relied on:** R186, DR-202
   - **Checked:** documented: <https://code.claude.com/docs/en/claude-projects>, read 2026-11-09

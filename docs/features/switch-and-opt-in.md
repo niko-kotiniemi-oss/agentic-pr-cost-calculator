@@ -1,6 +1,6 @@
 # Turning it on, and personal opt-in
 
-Two switches decide whether anything is recorded. The repository decides whether the tool is used there, and each person decides whether their own sessions' usage is published.
+Two switches decide whether anything is recorded. The repository decides whether the tool is used there, and each person's own opt-in, which they set themselves or which the cloud environment that they use or their organization sets, decides whether their own sessions' usage is published.
 
 **Status:** designed, not built yet.
 

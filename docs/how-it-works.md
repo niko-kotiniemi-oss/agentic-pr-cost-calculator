@@ -98,7 +98,7 @@ sequenceDiagram
   participant G as git common directory
   CC->>H: SessionStart, Stop, SubagentStop, StopFailure or SessionEnd, with the session's id, the transcript path and cwd
   Note over H: A run of the plugin does what follows in each repository that it works on, as the next flow shows
-  Note over H: Outside the repository that holds the project directory, a run of the plugin starts a git command that reads the index only before or after a git command of its session there, or to take back a file that its own session staged there
+  Note over H: Outside the repository that holds the project directory, a run of the plugin starts a git command that can start a program that the repository's configuration names only before or after a git command of its session there, or to take back a file that its own session staged there
   H->>H: Read .pr-cost.json and the person's two global configuration files, before starting any program
   H->>H: Read the project directory's .git, the commondir file of the git folder that it names and each worktree's gitdir file, before starting any program, and stop, saying so, when one cannot be read, a worktree has no gitdir file, or this is a linked worktree whose git common directory is not named .git, as a submodule's is not, nor a bare repository's in a folder such as repo.git
   opt both are on
@@ -309,7 +309,7 @@ As designed, the hook reads `CLAUDE_PROJECT_DIR`, `HOME`, `XDG_CONFIG_HOME` and 
 - Record the usage of anyone whose opt-in is not on, as they set it themselves, or as the cloud environment that they use or their organization's managed settings set it for them, or a call that it cannot show was made while both switches were on. The plugin, however it came to a session, opts no one in. A run that finds a switch off creates no store and adds nothing of its session to one, so someone who has never opted in leaves nothing in the git common directory, and an opt-out empties the store of everything but what a take-back or a put-back still needs, at a run of a release that knows the store's version.
 - Keep a copy of a transcript, or of any line of one, in any file.
 - Look for repositories below a session's project directory deeper than directly inside it: a run of the plugin meets a repository only through the project directory, Claude's current directory or a git command run there.
-- Have git read the index of a repository that a run of the plugin only meets or moves into, outside the one that holds the project directory: it starts such a command there only before or after a git command of the session there, or to take back a file that the session staged there, so that git starts none of the programs that the repository's own configuration names, such as `core.fsmonitor`.
+- Start a git command that can start a program that a repository's own configuration names, such as `core.fsmonitor` or `gpg.program`, in a repository that a run of the plugin only meets or moves into, outside the one that holds the project directory: it starts one there only before or after a git command of the session there, or to take back a file that the session staged there.
 - Unpublish what was pushed. An opt-out, a removed ledger file or a removed store leaves each pushed ledger file in its branch's history, in every clone and fork that holds it, and in the comments already posted.
 - Send anything from the session's machine anywhere. The ledger leaves the machine only in the person's own commits, when they push.
 - Run, import or install anything from the pull request it reports on.

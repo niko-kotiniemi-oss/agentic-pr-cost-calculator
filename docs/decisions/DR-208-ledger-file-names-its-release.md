@@ -14,7 +14,7 @@ A repository pins the report's release in its calling workflow and copies the ho
 
 ## Decision
 
-Each ledger file's first line states, beside the ledger format's version, the release of the capture step that wrote it. When a ledger file that a merge adds names a later release than the report's own, the comment says that some ledger files come from a later release than the report, so that lines or files that the report cannot read may be refused, and quotes nothing from them. The README says that the plugin's release, not the repository's pinned report, writes the ledger files of the sessions that run it, and that a repository keeps its pin current and a person keeps their plugin current.
+Each ledger file's first line states, beside the ledger format's version, the release of the capture step that wrote it, and every version of the format states both there in the same place and form, so that a report reads the release of a file whose version it does not read. When a ledger file that a merge adds names a later release than the report's own, the comment says that some ledger files come from a later release than the report, so that lines or files that the report cannot read may be refused, and quotes nothing from them. The README says that the plugin's release, not the repository's pinned report, writes the ledger files of the sessions that run it, and that a repository keeps its pin current and a person keeps their plugin current.
 
 ## Alternatives
 
@@ -26,7 +26,7 @@ Each ledger file's first line states, beside the ledger format's version, the re
 
 - The release that wrote a ledger file is published with it, which tells no more about the person than their commit does.
 - A pull request whose ledger files come from a later plugin gets a comment that says why some lines may be refused, without quoting them (T136).
-- The release is part of the ledger format from its first version, which no release has written yet, so its schema and the report's reader hold the first line's field from the start.
+- The release is part of the ledger format from its first version, which no release has written yet, so its schema and the report's reader hold the first line's field from the start, and every later version keeps it where the first one has it, so that a ledger file of a later format is named too (T136).
 
 ## Scope
 
@@ -34,4 +34,4 @@ This covers what a ledger file says about the release that wrote it, and what th
 
 ## What reversing it would change
 
-R156 in `ledger` and R193 in `report-comment` would change, with their scenarios, and so would R195 in `project-standards`, the ledger format and its schemas, the design's decisions 7 and 16, T136, and the README's section on installing the plugin.
+R156 in `ledger` and R193 in `report-comment` would change, with their scenarios, and so would R195 in `project-standards`, the ledger format and its schemas, the design's decisions 7 and 16, T136, the README's section on installing the plugin, and tasks 1.2, 2.2 and 4.2 of `add-pr-cost-calculator`, which build the field and the comment's sentence.
