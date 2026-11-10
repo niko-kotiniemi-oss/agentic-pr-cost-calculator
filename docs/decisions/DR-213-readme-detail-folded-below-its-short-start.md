@@ -2,7 +2,7 @@
 
 - **Type:** process
 - **Status:** accepted
-- **Decided by:** the change `add-pr-cost-calculator`, as the owner asked on 2026-11-10
+- **Decided by:** the owner, 2026-11-10
 - **Requirements:** R200
 - **Threats:** T145, T151
 - **Replaces:** none
