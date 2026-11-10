@@ -62,8 +62,8 @@ The assumptions about GitHub: this repository's settings there, and its workflow
 
 ## A9. GitHub shows text as the checks expect, and text posted on GitHub is public at once.
 
-- **Rests on it:** R21, R33, R97, R98, R128, R134, R176, R200, T26, T52, T61, T65, T73, T79, T81, T125, T126, T145, DR-044, DR-108, DR-114, DR-115, DR-152, DR-195, DR-213
-- **If it is wrong:** Text shown as code could still render as a link, an image or a mention, and a log line could be read as a workflow command (T26, T52). A decision record could read one way to a reviewer and another way to an agent, or be collapsed and merged unread (T73, T79, T81), and a bug report opened without the form would never meet its privacy checkbox (T61, T65). A spec could read one way to its reviewers and another to an agent (T125), and the check of the specs' form could print a line that CI reads as a command (T126). The README's detail could show in full, so that its short start no longer comes first, or stay out of a reader's reach (T145).
+- **Rests on it:** R21, R33, R97, R98, R128, R134, R176, R200, T26, T52, T61, T65, T73, T79, T81, T125, T126, T145, T151, DR-044, DR-108, DR-114, DR-115, DR-152, DR-195, DR-213
+- **If it is wrong:** Text shown as code could still render as a link, an image or a mention, and a log line could be read as a workflow command (T26, T52). A decision record could read one way to a reviewer and another way to an agent, or be collapsed and merged unread (T73, T79, T81), and a bug report opened without the form would never meet its privacy checkbox (T61, T65). A spec could read one way to its reviewers and another to an agent (T125), and the check of the specs' form could print a line that CI reads as a command (T126). The README's detail could show in full, so that its short start no longer comes first, or stay out of a reader's reach (T145), and if GitHub showed an HTML comment, the README's test that refuses one would refuse more than it needs to (T151).
 - **Fact:** GitHub shows text inside inline code in a comment or a job summary as code, never as a link, an image or a mention.
   - **Relied on:** R21, T26, T52, DR-044
   - **Checked:** not yet: none will, since no test may reach GitHub
@@ -71,7 +71,7 @@ The assumptions about GitHub: this repository's settings there, and its workflow
   - **Relied on:** R97, R98, T52, T126, DR-044
   - **Checked:** not yet: none will, since no test may reach GitHub; `add-pr-cost-calculator` task 4.1 tests only what this repository does with it
 - **Fact:** GitHub hides an HTML comment when it shows a file.
-  - **Relied on:** R128, R176, T73, T125, DR-152, DR-195
+  - **Relied on:** R128, R176, R200, T73, T125, T151, DR-152, DR-195, DR-213
   - **Checked:** not yet: none will, since no test may reach GitHub
 - **Fact:** GitHub shows text between dollar signs as a mathematical expression, and text between one or two tildes struck through, in a Markdown file as in a pull request.
   - **Relied on:** R176, T125, DR-195
@@ -180,8 +180,8 @@ The assumptions about GitHub: this repository's settings there, and its workflow
 
 ## A26. Runs for a pull request from a fork get no secrets, and run the code that its author chose.
 
-- **Rests on it:** R27, R34, R68, T37, T58, T63, T95, DR-018, DR-068, DR-078, DR-115, DR-122, DR-156
-- **If it is wrong:** A secret added later could be read by a fork's pull request (T37), and pull requests from forks would get no report if their merge's push ran elsewhere. If GitHub did not run an action pinned to a commit that only a fork holds, the defences against such commits would be more than needed (T58, T63).
+- **Rests on it:** R27, R34, R68, R201, T37, T58, T63, T95, T147, DR-018, DR-068, DR-078, DR-115, DR-122, DR-156, DR-215
+- **If it is wrong:** A secret added later could be read by a fork's pull request (T37), and pull requests from forks would get no report if their merge's push ran elsewhere. If GitHub did not run an action pinned to a commit that only a fork holds, or serve one under this repository's address, the defences against such commits, the README's refusal of a commit's ID among them, would be more than needed (T58, T63, T147).
 - **Fact:** Apart from `GITHUB_TOKEN`, GitHub passes no secrets to a run that a pull request from a fork triggers.
   - **Relied on:** T37, DR-078
   - **Checked:** documented: <https://github.com/github/docs/blob/33b1f4a6fec2d9b6fd3d374afa56bcd9f0875b57/data/reusables/actions/forked-secrets.md>, read 2026-11-01
@@ -192,13 +192,13 @@ The assumptions about GitHub: this repository's settings there, and its workflow
   - **Relied on:** R68, DR-018
   - **Checked:** not yet: none will, since no test may reach GitHub
 - **Fact:** GitHub serves a commit that only a fork holds under the parent repository's address, and resolves a commit id in `uses:` across the fork network, so it runs an action pinned to such a commit.
-  - **Relied on:** R27, R34, T58, T63, T95, DR-068, DR-122, DR-156
+  - **Relied on:** R27, R34, R201, T58, T63, T95, T147, DR-068, DR-122, DR-156, DR-215
   - **Checked:** not yet: none will, since no test may reach GitHub
 
 ## A28. GitHub, and this repository's place on it, stay as they are.
 
-- **Rests on it:** R24, R34, T63, T142, DR-062, DR-068, DR-090, DR-092, DR-096, DR-114, DR-118, DR-132, DR-147, DR-157, DR-203
-- **If it is wrong:** The check of pins could not tell a tagged commit from one that only a fork holds (T63). A change in GitHub's API would skew the report in adopters' CI while every test passes, and a repository made private or renamed would break the adopters who call its workflow, and would leave the people who added the marketplace on an address that someone else can take (T142).
+- **Rests on it:** R24, R34, T63, T142, T147, T148, DR-062, DR-068, DR-090, DR-092, DR-096, DR-114, DR-118, DR-132, DR-147, DR-157, DR-203
+- **If it is wrong:** The check of pins could not tell a tagged commit from one that only a fork holds (T63). A change in GitHub's API would skew the report in adopters' CI while every test passes, and a repository made private or renamed would break the adopters who call its workflow, and would leave the people who added the marketplace, and the README's addresses, on an address that someone else can take (T142, T147, T148).
 - **Fact:** CI can read the source of each action and container image that a workflow uses, to list the tags that name a pin.
   - **Relied on:** R34, T63, DR-068
   - **Checked:** not yet: none will, since no test may reach GitHub
@@ -212,7 +212,7 @@ The assumptions about GitHub: this repository's settings there, and its workflow
   - **Relied on:** DR-096, DR-118
   - **Checked:** not yet: none will, since no test may reach GitHub
 - **Fact:** When an account or a repository on GitHub is renamed, its old address leads to the new one only until someone takes the old name, and then leads to theirs.
-  - **Relied on:** T142, DR-203
+  - **Relied on:** T142, T147, T148, DR-203
   - **Checked:** not yet: none will, since no test may reach GitHub
 
 ## A35. GitHub enforces the permissions a workflow declares, gives runs from forks a read-only token, and gives a reusable workflow its caller's event, as its documentation says.

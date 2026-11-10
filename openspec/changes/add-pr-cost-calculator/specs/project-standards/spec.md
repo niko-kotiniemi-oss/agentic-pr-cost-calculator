@@ -434,9 +434,9 @@ The threat model SHALL number its threats from T1 in order, and a threat that a 
 - **WHEN** `docs/decisions/` holds a folder, a link, or a file that is neither a record nor the index, or a file elsewhere is named as a record
 - **THEN** a test fails and names the file
 
-### Requirement: No attribute hides the diff of a record or of what the marketplace serves, or changes the plugin's checkout
+### Requirement: No attribute hides the diff of a record, the README or what the marketplace serves, or changes the plugin's checkout
 
-No attribute that the repository sets SHALL make git show as binary, or GitHub hide as generated, the diff of a record, the index, the root marketplace file or a file in the plugin folder that it names, so that whoever merges a pull request reads each change that it makes to them, nor make git's checkout of the hook file or of a file in that folder write more than other line endings.
+No attribute that the repository sets SHALL make git show as binary, or GitHub hide as generated, the diff of a record, the index, the README, the root marketplace file or a file in the plugin folder that it names, so that whoever merges a pull request reads each change that it makes to them, nor make git's checkout of the hook file or of a file in that folder write more than other line endings.
 
 #### Scenario: An attribute that hides a record's diff fails CI
 
@@ -446,6 +446,11 @@ No attribute that the repository sets SHALL make git show as binary, or GitHub h
 #### Scenario: An attribute that hides the marketplace's diff fails CI
 
 - **WHEN** the repository's attributes give the root marketplace file, or a file in the plugin folder that it names, `binary`, `diff` or `linguist-generated`, in any state
+- **THEN** a test fails and names the file and the attribute
+
+#### Scenario: An attribute that hides the README's diff fails CI
+
+- **WHEN** the repository's attributes give `README.md` `binary`, `diff` or `linguist-generated`, in any state
 - **THEN** a test fails and names the file and the attribute
 
 #### Scenario: An attribute that changes the plugin's checkout fails CI
@@ -680,7 +685,7 @@ The README and the capture's feature page SHALL say that a project's cloud threa
 #### Scenario: The pages say how a cloud thread is covered
 
 - **WHEN** the README's section on cloud threads and the capture's feature page are read
-- **THEN** each says that a project's cloud threads run capture only through the plugin, gives the setup script's line and says that it opts in each session in that environment, in every repository that turns the tool on, says that calls made from the folder that holds the clones are left out and flagged, that a call made from one clone counts there whatever clone it works on, so that a project that holds a repository that turns the tool on should hold no repository whose work must stay private, says how to keep a session inside a repository, and says that a machine that cannot be resumed loses the calls that no commit took
+- **THEN** each says that a project's cloud threads run capture only through the plugin, which is added in the project's settings and loads into the threads that start afterwards, gives the setup script's line and says that it opts in each session in that environment, in every repository that turns the tool on, says that calls made from the folder that holds the clones are left out and flagged, that a call made from one clone counts there whatever clone it works on, so that a project that holds a repository that turns the tool on should hold no repository whose work must stay private, says how to keep a session inside a repository, and says that a machine that cannot be resumed loses the calls that no commit took
 
 ### Requirement: The documentation says how to turn capture off in a session that is running, and how to check it
 
@@ -689,16 +694,16 @@ The README SHALL say that removing the setup script's line, or using another env
 #### Scenario: The README says how to turn capture off in a running session
 
 - **WHEN** the README's section on turning capture off is read
-- **THEN** it says that removing the setup script's line, or using another environment, reaches only sessions that start, or whose machines are rebuilt, afterwards, gives `git config --global pr-cost.capture false` for a running session and the three `GIT_CONFIG_` variables for an environment, which each of its sessions reads at its next restore, says that the first holds until something writes the opt-in again, as the setup script does on a machine that is rebuilt and an organization's hook can at a session's start or resume, and the variables unless a settings file that the session loads sets `GIT_CONFIG_COUNT` itself, says that the three are for an environment that sets no other `GIT_CONFIG_` variable and how one that does adds the pair, gives `git config --show-origin --get-all pr-cost.capture` to see each value of a session's opt-in and where it comes from, says that `git config --global --get pr-cost.capture` shows only the global file's value, and gives `/hooks` to see the hooks that run
+- **THEN** it says that removing the setup script's line, or using another environment, reaches only sessions that start, or whose machines are rebuilt, afterwards, gives `git config --global pr-cost.capture false` for a running session and the three `GIT_CONFIG_` variables for an environment, which each of its sessions reads at its next restore, says that the first holds until something writes the opt-in again, as the setup script does on a machine that is rebuilt and an organization's hook can at a session's start or resume, and the variables unless a settings file that the session loads sets `GIT_CONFIG_COUNT` itself, says that the three are for an environment that sets no other `GIT_CONFIG_` variable and how one that does adds the pair, gives `git config --show-origin --get-all pr-cost.capture` to see each value of a session's opt-in and where it comes from, says that `git config --global --get pr-cost.capture` shows only the global file's value, gives `/hooks` to see the hooks that run, and says that a repository whose `.claude/settings.json` sets `remote.defaultEnvironmentId` chooses the environment of the cloud sessions that `claude --cloud` starts from its clone, over the person's own pick, which the person keeps with the same key in the clone's `.claude/settings.local.json`, or with `--environment` for one session
 
 ### Requirement: The documentation says how an organization turns capture on for its members
 
-The README SHALL say how an organization turns the plugin on for its members and puts the opt-in's line in a shared environment, which sessions each reaches, that a member who has picked no environment uses the organization's default, that its managed settings can opt members in, in any session, that it tells its members so and what is then published, how a member sees what turns capture on and turns it off, and that Projects are not offered on Team or Enterprise plans yet.
+The README SHALL say how an organization turns the plugin on for its members, with no `ref`, and puts the opt-in's line in a shared environment, which sessions it reaches, that sharing an environment shares its line, that a member cannot change it, how managed settings opt members in only in cloud sessions and what a hook without that limit leaves, that it tells members first and what is published, how a member sees and stops capture, and that Team and Enterprise plans have no Projects yet.
 
 #### Scenario: The README says what an organization's option does
 
 - **WHEN** the README's section on organizations is read
-- **THEN** it says how an organization turns the plugin on for its members and puts the opt-in's line in a shared environment, which sessions each reaches, that a member who has not picked an environment uses the organization's default, that the organization's managed settings can also opt members in, in terminal and cloud sessions alike, that the organization tells its members so and what is then published, that a person's own line belongs in an environment of their own, how a member sees what turns capture on, with git's `--show-origin` and `/hooks`, and turns it off, and that Projects are not offered on Team or Enterprise plans yet
+- **THEN** it says how an organization turns the plugin on for its members, registering this repository's marketplace with no `ref`, since a release's own tag holds the release before it, and puts the opt-in's line in a shared environment, which sessions each reaches, that a member who has not picked an environment uses the organization's default, that sharing an environment, or making it the default, shares the line in its setup script with every member who uses it and with a Claude Tag channel's sessions, so that an Owner takes their own line out first, that a member sees a shared environment read-only, so that an opt-out in a session there holds only until its machine is rebuilt and a member refuses the line for good only by working in an environment of their own, that the organization's managed settings can also opt members in, with a hook that writes the opt-in only when `CLAUDE_CODE_REMOTE` is `true`, which it is in cloud sessions alone, that a hook without that condition writes the opt-in into a member's own git configuration on their own computer, where it stays after the hook goes and after they leave, so that an organization that stops tells its members to turn capture off on each computer, that the organization tells its members first and what is then published, that a person's own line belongs in an environment of their own, how a member sees what turns capture on, with git's `--show-origin` and `/hooks`, and turns it off, and that Projects are not offered on Team or Enterprise plans yet
 
 ### Requirement: The documentation gives both ways to install the plugin, the zip first
 
@@ -729,50 +734,78 @@ The README SHALL say that a plugin run meets a repository only through the proje
 
 ### Requirement: The README opens with a short start
 
-The README SHALL open, after its first paragraph and its status, with a short start of at most 200 words outside code that says how a repository turns the tool on, pinned to a release, how a person opts in, also with the setup script's line, and adds the plugin for a project's cloud threads, from a release's zip after checking its checksum or from the marketplace, how an organization opts its members in, and how to stop, linking for each step the section that gives its detail.
+The README SHALL open, after its first paragraph and its status, with a short start of at most 200 words outside code, with no HTML, that says how a repository turns the tool on, pinned to a published release, how a person opts in, also in a cloud environment only they use, and adds the plugin for a project's cloud threads, from a release's zip checked against its README or from this repository's marketplace, how an organization opts its members in, and how to stop, linking each step's detail.
 
 #### Scenario: The README opens with its short start
 
 - **WHEN** the README is read from its top
-- **THEN** the first section after its first paragraph and its status is the short start, which holds at most 200 words outside code and says how a repository turns the tool on, pinned to a release, how a person opts in, and that a cloud environment's setup script takes the same line, how a person adds the plugin for a project's cloud threads, from a release's zip after checking its checksum or from the marketplace, how an organization opts its members in, and how to stop, linking for each step the README's section that gives its detail
+- **THEN** the first section after its first paragraph and its status is the short start, which holds no HTML and at most 200 words outside code, counted as the runs of letters or digits, with any apostrophe or hyphen inside them, that are left once its heading, its code and each link's target are taken out, and says how a repository turns the tool on, pinned to a published release, how a person opts in on each machine, that a cloud environment that only they use takes the same line in its setup script, that a project's cloud threads also need the plugin, added in the project's settings, from the latest release's zip after checking its checksum against that release's README, or from this repository's marketplace, named by its address, whose updates need no approval, that an organization tells its members, then turns the plugin on and opts them in, and how to stop, on each machine and in each running session, and in a setup script or with another environment, and that an organization that opted a person in can do so again, linking for each step the README's section that gives its detail
 
-#### Scenario: A short start that grows, moves or links elsewhere fails a test
+#### Scenario: A short start that grows, moves, holds HTML or links elsewhere fails a test
 
-- **WHEN** the short start holds more than 200 words outside code, a section comes before it, or one of its links names neither a heading of the README, a file of this repository nor a page of this repository on GitHub
+- **WHEN** the short start holds more than 200 words outside code, counted as the runs of letters or digits, with any apostrophe or hyphen inside them, that are left once its heading, its code and each link's target are taken out, a section comes before it, it holds HTML, such as a `<details>` element, an HTML comment or any other element, or one of its links names anything but a heading of the README or this repository's latest release
 - **THEN** a test fails and names what it found
 
-#### Scenario: A command of the short start that the detail does not give fails a test
+#### Scenario: A command of the short start that the detail or the specs do not give fails a test
 
-- **WHEN** a command in the short start's code is not given, as written, in the README's section that the short start links for that step
+- **WHEN** a command in the short start's code is not given, as written, in the README's section that the short start links for that step, its opt-in's line in both the section on the opt-in and the section on cloud threads, its opt-in is not `git config --global pr-cost.capture true`, its way to stop is not `git config --global pr-cost.capture false`, or the marketplace's address that it gives is not the one that the section on installing the plugin gives
 - **THEN** a test fails and names the command
 
 ### Requirement: The README's short start says what an opt-in records and publishes
 
-The README's short start SHALL say that turning the tool on in a repository records nobody by itself, that only the sessions of people who are opted in are recorded, that one opt-in covers every repository that turns the tool on, later ones too, that what a session spends is committed with its work under its author's name and published when that work is pushed, and stays published after an opt-out, and that an organization tells its members before it opts them in.
+Before any step that opts anyone in, the README's short start SHALL say that the tool records only opted-in people's sessions, that one opt-in covers every repository that turns the tool on, later ones too, that a call counts in the repository it is made from, whatever it works on, and that what a session spends is committed with its work, traceable to the person, published once pushed, even after an opt-out, and stays published, and SHALL tell an organization to tell its members first.
 
 #### Scenario: The short start says what an opt-in records and publishes
 
-- **WHEN** the README's short start is read
-- **THEN** it says that turning the tool on in a repository records nobody by itself, that only the sessions of people who are opted in are recorded, that one opt-in covers every repository that turns the tool on, later ones too, that what a session spends is committed with its work under its author's name and published when that work is pushed, and that it stays published after an opt-out, and it tells an organization to tell its members before it opts them in
+- **WHEN** the README's short start is read as GitHub shows it
+- **THEN** before any step that opts anyone in, it says that turning the tool on in a repository records only the sessions of people who are opted in, that one opt-in covers every repository that turns the tool on, later ones too, that a call counts in the repository that it is made from, whatever repository it works on, that what a session spends is committed with its work and can be traced to the person, that pushing that work publishes it, even after an opt-out, and that it stays published, and its step for an organization says to tell its members before it opts them in
 
-#### Scenario: A short start that leaves out what an opt-in publishes fails a test
+#### Scenario: A short start that leaves out what an opt-in publishes, or says it late, fails a test
 
-- **WHEN** the README's short start leaves out that only the sessions of people who are opted in are recorded, that one opt-in covers every repository that turns the tool on, or that what a session spends is published and stays published after an opt-out
-- **THEN** a test fails and names what is missing
+- **WHEN** the README's short start, as GitHub shows it, leaves out that turning the tool on records only the sessions of people who are opted in, that one opt-in covers every repository that turns the tool on, that a call counts in the repository that it is made from, that what a session spends can be traced to the person, or that it is published when pushed, even after an opt-out, and stays published, gives one of these only after a step that opts anyone in, or tells an organization to tell its members only after it opts them in
+- **THEN** a test fails and names what is missing or late
 
 ### Requirement: The README folds the detail that follows its short start
 
-The README's sections on adopting the tool, on the opt-in, on installing the plugin, on a project's cloud threads, on organizations and on turning capture off SHALL follow its short start, each with its heading shown and its text folded until a reader opens it, so that the README shows first its short start and a list of what the detail covers.
+The README's sections on adopting the tool, on the opt-in, on installing the plugin, on a project's cloud threads, on organizations and on turning capture off SHALL follow its short start, each with its heading shown and its text folded until a reader opens it, so that the README shows first its short start and a list of what the detail covers, and the README SHALL hold no other text that GitHub hides.
 
 #### Scenario: The detail is folded under headings that show
 
 - **WHEN** the README is read as GitHub shows it
 - **THEN** its sections on adopting the tool, on the opt-in, on installing the plugin, on a project's cloud threads, on organizations and on turning capture off come after the short start, each heading shows, and the text of each section is inside a `<details>` element that stays closed until a reader opens it
 
-#### Scenario: A section of detail that shows its text fails a test
+#### Scenario: A section of detail that shows its text, or text that GitHub hides, fails a test
 
-- **WHEN** one of those sections holds text, other than its heading, outside a `<details>` element, gives that element the `open` attribute, or comes before the short start
-- **THEN** a test fails and names the section
+- **WHEN** one of those sections holds text, other than its heading, outside a `<details>` element, gives that element the `open` attribute, or comes before the short start, or the README holds an HTML comment, a link reference definition, an HTML element other than the `<details>` and `<summary>` elements that fold those sections, or a control or format character other than a line break, such as a zero-width space or a bidirectional control
+- **THEN** a test fails and names the section, or the line and what it holds
+
+### Requirement: The README sends people only to this repository and to addresses that its test lists
+
+Every link, autolink and web address in the README, in its opening, its short start and its folded detail, prose and code alike, and every repository that it names as `owner/repo`, SHALL name a heading of the README, a file of this repository by a relative path, this repository on GitHub, or an address on a list that its test keeps, and none SHALL name a commit of this repository by its ID, since GitHub serves a commit that only a fork holds under this repository's address.
+
+#### Scenario: The README's addresses are this repository's or on the test's list
+
+- **WHEN** every link, autolink, web address and `owner/repo` in the README is read, in its opening, its short start, its folded detail and its code
+- **THEN** each names a heading of the README, a file of this repository by a relative path, this repository on GitHub, at `github.com` or `raw.githubusercontent.com`, or an address on the test's list, and none names a commit of this repository by its ID
+
+#### Scenario: An address elsewhere, or a commit named by its ID, fails a test
+
+- **WHEN** the README gives, anywhere in it, a link, an autolink, a web address or an `owner/repo` that names another repository or site that the test's list does not hold, or names a commit of this repository by its ID
+- **THEN** a test fails and names the address
+
+### Requirement: The README's section on adopting the tool takes the tool from a published release's commit
+
+The README's section on adopting the tool SHALL say to take the hook file, its registration and the calling workflow from the README at the commit that a published release names, SHALL give the calling workflow with its pin left for that commit, and SHALL say that a tag with no published release is not a version to pin, so that a pin, an update bot's included, is taken only once a published release names its commit.
+
+#### Scenario: The section on adopting the tool takes the tool from a published release's commit
+
+- **WHEN** the README's section on adopting the tool is read
+- **THEN** it says to take the hook file, its registration and the calling workflow from the README at the commit that a published release names, gives the calling workflow with a placeholder for its pin and says to fill it with that commit, and says that a tag with no published release is not a version to pin, so that a pin, an update bot's included, is taken only once a published release names its commit
+
+#### Scenario: A calling workflow pinned in the README, or a section that leaves out where the tool comes from, fails a test
+
+- **WHEN** the README's calling workflow gives a commit, a tag or a branch for its pin in place of the placeholder, or the section on adopting the tool leaves out that the hook file, its registration and the calling workflow come from the README at a published release's commit, or that a tag with no published release is not a version to pin
+- **THEN** a test fails and names what it found
 
 ### Requirement: Each ledger format that a release wrote keeps its golden figures
 

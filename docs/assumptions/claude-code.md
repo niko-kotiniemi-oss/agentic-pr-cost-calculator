@@ -135,14 +135,17 @@ The assumptions about Claude Code: what its transcripts hold, when its hooks run
 
 ## A5. What a session loads comes from its settings and the branch it starts on, and a project's settings cannot set the variables that name a person's home folder or the `XDG_*` variables.
 
-- **Rests on it:** R1, R37, R93, R103, R104, R160, R169, R194, T3, T33, T34, T35, T36, T41, T60, T66, T119, T134, DR-022, DR-041, DR-050, DR-071, DR-081, DR-082, DR-093, DR-115, DR-126, DR-142, DR-143, DR-145, DR-183, DR-186, DR-188, DR-201, DR-202
-- **If it is wrong:** If a project's settings could set `HOME`, the `XDG_*` variables, or on Windows `HOMEDRIVE`, `HOMEPATH` or `USERPROFILE`, a repository could point both the step's reading of the opt-in and git's at configuration files of its own, to opt every contributor in or to hide an opt-out, so their usage would be published without their consent (T3, T119), as a hook that its settings register already could by changing the person's own configuration (A62). On Windows, such a folder could lie on a network path, which the step's check that the folder exists would reach. If a session loaded more from its branch than the rules expect, the rules that keep sessions off untrusted branches would not be enough (T34, T35, T66), and if the vendored skills did not load, agents would build without them unless they read their files (T35). If a settings file's `env` could not replace the session's `GIT_CONFIG_` variables, the README would warn of an undoing that cannot happen, and nothing else would change (R194, T134).
+- **Rests on it:** R1, R37, R93, R103, R104, R160, R169, R194, T3, T33, T34, T35, T36, T41, T60, T66, T119, T134, T156, DR-022, DR-041, DR-050, DR-071, DR-081, DR-082, DR-093, DR-115, DR-126, DR-142, DR-143, DR-145, DR-183, DR-186, DR-188, DR-201, DR-202
+- **If it is wrong:** If a person's own pick of an environment took precedence over a repository's, the README's advice to keep it with the clone's local settings would be more than needed, and if neither the local settings nor `--environment` did, a person could not keep a repository's choice of environment from opting them in (T156). If a project's settings could set `HOME`, the `XDG_*` variables, or on Windows `HOMEDRIVE`, `HOMEPATH` or `USERPROFILE`, a repository could point both the step's reading of the opt-in and git's at configuration files of its own, to opt every contributor in or to hide an opt-out, so their usage would be published without their consent (T3, T119), as a hook that its settings register already could by changing the person's own configuration (A62). On Windows, such a folder could lie on a network path, which the step's check that the folder exists would reach. If a session loaded more from its branch than the rules expect, the rules that keep sessions off untrusted branches would not be enough (T34, T35, T66), and if the vendored skills did not load, agents would build without them unless they read their files (T35). If a settings file's `env` could not replace the session's `GIT_CONFIG_` variables, the README would warn of an undoing that cannot happen, and nothing else would change (R194, T134).
 - **Fact:** Environment variables that a repository's `.claude/settings.json` sets reach every process Claude Code starts, hooks included.
   - **Relied on:** R37, R160, R169, T3, T36, T119, DR-071, DR-183, DR-188
   - **Checked:** not yet: none will, since no test may reach Claude Code
 - **Fact:** Claude Code applies a repository's `.claude/settings.local.json` over its `.claude/settings.json`, hooks and environment variables among what it can set, and keeps it out of git only when Claude Code itself writes the file, so a repository can track one, which then needs the folder's trust as the other does.
   - **Relied on:** R93, T60, T119, DR-186, DR-188
   - **Checked:** documented: <https://code.claude.com/docs/en/settings>, read 2026-11-03
+- **Fact:** An Anthropic-hosted environment's ID that a repository's `.claude/settings.json` gives in `remote.defaultEnvironmentId` takes precedence over the environment that a person picks with `/remote-env`, which Claude Code writes to their user settings, for the cloud sessions that `claude --cloud` starts from that clone, while the same key in the clone's `.claude/settings.local.json` takes precedence over the repository's, and `--environment` over the key for the one session that it starts.
+  - **Relied on:** R194, T156
+  - **Checked:** documented: <https://code.claude.com/docs/en/cloud-environments>, <https://code.claude.com/docs/en/settings>, <https://code.claude.com/docs/en/settings-reference>, read 2026-11-10
 - **Fact:** A value that a settings file's `env` sets replaces the same variable exported in the shell that Claude Code starts from, though not one that the Claude Desktop app or a self-hosted environment's runner sets when it starts the session, and the variables that project and local settings cannot set do not include git's `GIT_CONFIG_COUNT`, `GIT_CONFIG_KEY_<n>` or `GIT_CONFIG_VALUE_<n>`.
   - **Relied on:** R194, T3, T134, DR-201
   - **Checked:** documented: <https://code.claude.com/docs/en/settings-reference>, read 2026-11-10
@@ -416,10 +419,10 @@ The assumptions about Claude Code: what its transcripts hold, when its hooks run
 
 ## A71. A line in a cloud environment's setup script reaches the global git configuration of each new session in that environment, and an organization can share an environment with its members.
 
-- **Rests on it:** R1, R185, R186, R194, T3, T134, DR-201, DR-202
-- **If it is wrong:** If the line did not reach a session's global git configuration, or Claude Code's own setup of a session wrote over it, a person who added it would record nothing, with nothing to say why (R185, DR-201). If a shared environment's setup script did not run in each member's session there, the organization's option would opt no one in (R186, T134). If an environment's variables did not reach a running session's hooks, or the `GIT_CONFIG_` variables that a cloud session sets for itself replaced them, the opt-out that the README gives for an environment would not turn capture off there (R194, T3, T134). If `/hooks` did not run in a cloud session, a person there could not see the hooks that run, as the README says they can (R186, R194).
+- **Rests on it:** R1, R185, R186, R194, R199, T3, T4, T134, T145, T154, T155, DR-201, DR-202, DR-212
+- **If it is wrong:** If the line did not reach a session's global git configuration, or Claude Code's own setup of a session wrote over it, a person who added it would record nothing, with nothing to say why (R185, DR-201). If a shared environment's setup script did not run in each member's session there, the organization's option would opt no one in (R186, T134). If an environment's variables did not reach a running session's hooks, or the `GIT_CONFIG_` variables that a cloud session sets for itself replaced them, the opt-out that the README gives for an environment would not turn capture off there (R194, T3, T134). If `/hooks` did not run in a cloud session, a person there could not see the hooks that run, as the README says they can (R186, R194). If a restored machine ran the setup script again, an opt-out made in a running session would last only until its next restore (T154). If a member could change a shared environment, or a shared personal environment changed its ID, the README's section on organizations would say what does not hold (R186, T134), and if `CLAUDE_CODE_REMOTE` were `true` on a person's own computer, the organization's hook that the README gives would write the opt-in there too (T155). If a cloud session's pushes and pull requests were not the person's, what a session spends would be traced to the person by less than the README's short start says (R199, T4, T145, DR-212).
 - **Fact:** A cloud environment's setup script runs as root, before Claude Code starts, the first time a session starts in the environment, and the files that it writes are the starting point of the environment's later sessions until the script or the allowed hosts change or that snapshot expires after about seven days, and it does not run again when an idle machine is restored.
-  - **Relied on:** R1, R185, DR-201
+  - **Relied on:** R1, R185, T154, DR-201
   - **Checked:** documented: <https://code.claude.com/docs/en/cloud-environments>, read 2026-11-09
 - **Fact:** `git config --global` in the setup script writes the global git configuration of the user who runs the session, and Claude Code's own setup of a session leaves the line there.
   - **Relied on:** R1, R185, T3, DR-201
@@ -433,8 +436,14 @@ The assumptions about Claude Code: what its transcripts hold, when its hooks run
 - **Fact:** An Owner of a Team or Enterprise organization can create an environment shared with every member, which appears in each member's selector, and an organization's default fills a member's selector until they pick another, while a project's threads use the project's environment.
   - **Relied on:** R186, T134, DR-202
   - **Checked:** documented: <https://code.claude.com/docs/en/cloud-environments>, read 2026-11-09
+- **Fact:** A member sees a shared environment's configuration read-only, and only an Owner edits it; an Owner can also share an environment of their own, which keeps its ID, so that the sessions that already use it are unaffected, and every member can then start sessions in it; and a Claude Tag channel's sessions use the organization's shared or self-hosted environments, as its default environment can be.
+  - **Relied on:** R186, T134
+  - **Checked:** documented: <https://code.claude.com/docs/en/cloud-environments>, read 2026-11-10
+- **Fact:** A cloud session's environment carries `CLAUDE_CODE_REMOTE` as `true`, and it is never `true` on a person's own computer.
+  - **Relied on:** R186, T155
+  - **Checked:** documented: <https://code.claude.com/docs/en/cloud-environments>, read 2026-11-10
 - **Fact:** An organization's server-managed settings run their hooks in its members' sessions in Anthropic-hosted environments, as its managed settings run theirs in their terminal sessions, and `/hooks` labels each hook with where it comes from.
-  - **Relied on:** R186, T134, DR-202
+  - **Relied on:** R186, T134, T155, DR-202
   - **Checked:** documented: <https://code.claude.com/docs/en/cloud-environments>, <https://code.claude.com/docs/en/hooks>, read 2026-11-09
 - **Fact:** `/hooks` runs in a cloud session and lists the hooks that run there.
   - **Relied on:** R186, R194
@@ -442,6 +451,9 @@ The assumptions about Claude Code: what its transcripts hold, when its hooks run
 - **Fact:** Projects are not offered on Team or Enterprise plans yet.
   - **Relied on:** R186, DR-202
   - **Checked:** documented: <https://code.claude.com/docs/en/claude-projects>, read 2026-11-09
+- **Fact:** A cloud session's commits name the author that git's global configuration there gives, `Claude` with the address `noreply@anthropic.com`, while the pushes and the pull requests that carry them are made with the person's own GitHub account.
+  - **Relied on:** R199, T4, T145, DR-212
+  - **Checked:** not yet: `add-pr-cost-calculator` task 7.2 checks it; in a project's cloud thread on 2026-11-10, git's global configuration gave that name and address
 - **Fact:** A cloud session reads neither the person's own Claude Code settings nor a plugin's options, which Claude Code keeps there.
   - **Relied on:** DR-201
   - **Checked:** documented: <https://code.claude.com/docs/en/settings>, <https://code.claude.com/docs/en/plugins/manifest-reference>, read 2026-11-09

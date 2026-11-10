@@ -235,7 +235,7 @@ The folder that the root marketplace file names SHALL hold the plugin as a publi
 
 ### Requirement: The root marketplace file names only the tool's plugin, and changes alone
 
-The root marketplace file SHALL hold only the marketplace's name, its owner and one entry that gives the tool's plugin's name and its folder. CI SHALL fail when the file, parsed, holds any other key, value or entry, or when a pull request that adds, changes or removes the root marketplace file, or changes the folder that it names, changes anything else.
+The root marketplace file SHALL hold only the marketplace's name, its owner and one entry that gives the tool's plugin's name and its folder. CI SHALL fail when the file, parsed, holds any other key, value or entry, or when a pull request that adds, changes or removes the root marketplace file, or changes the folder that it names, changes anything else, and the release workflow SHALL refuse a tag whose root marketplace file lists any plugin but the tool's.
 
 #### Scenario: The root marketplace file lists only the tool's plugin
 
@@ -251,6 +251,11 @@ The root marketplace file SHALL hold only the marketplace's name, its owner and 
 
 - **WHEN** a pull request adds, changes or removes the root marketplace file, or changes the plugin folder that it names, and also any other file, such as the script that builds the plugin, the check that compares the folder or a workflow
 - **THEN** CI fails, and names the files beside the marketplace's that the pull request changes
+
+#### Scenario: A release tag whose root marketplace file lists another plugin is refused
+
+- **WHEN** a release's tag names a commit whose root marketplace file lists a plugin other than the tool's, as the file that loads the vendored Superpowers does
+- **THEN** the release workflow publishes no release and says why
 
 ### Requirement: The capture step does nothing below its floors
 
