@@ -760,7 +760,7 @@ Two runs of the capture step at the same time, such as the main agent's and a su
 
 ### Requirement: Where two copies of the capture step run in one session, each call is recorded once
 
-Where two copies of the capture step run in one session, as the plugin and the hook file's registration can, they SHALL share each repository's store, record each call once and stage at most one ledger file for each commit, and a copy that finds the store at a version that it does not know SHALL leave the store, and the calls, to the other.
+Where two copies of the capture step run in one session, as the plugin and the hook file's registration can, they SHALL share each repository's store (see "The store is versioned: an earlier version is upgraded, an unknown one left alone"), record each call once and stage at most one ledger file for each commit.
 
 #### Scenario: A session that runs the plugin and the hook file's registration commits one ledger file
 
