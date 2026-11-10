@@ -194,9 +194,9 @@ The assumptions about the teams that adopt the tool, the people who opt in, and 
 - **Fact:** A change that makes or reverses a decision adds its decision record in the same pull request.
   - **Relied on:** R124, T74, DR-108, DR-121
   - **Checked:** not yet: none will, since no check can tell that a change made a decision; `add-pr-cost-calculator` task 5.2 revisits the threat model against what was built
-- **Fact:** The owner turns the tool on here, with their own opt-in, before this change merges, so that its merge exercises the whole tool on real data: the hook records the change's work, and the merge's push runs the report, the only contact with GitHub's real API.
+- **Fact:** The owner turns the tool on here, with their own opt-in, before the pull request that does `add-pr-cost-calculator` task 7.1 merges, so that its merge exercises the whole tool on real data: the hook records that pull request's work, and the merge's push runs the report, the only contact with GitHub's real API.
   - **Relied on:** DR-090, DR-147
-  - **Checked:** not yet: `add-pr-cost-calculator` task 7.1 checks it, at this change's own merge
+  - **Checked:** not yet: `add-pr-cost-calculator` task 7.1 checks it, at the merge of that task's own pull request
 - **Fact:** A check can find every network call and every environment variable that the tool's code reads.
   - **Relied on:** R29, R101, T57, DR-102, DR-117
   - **Checked:** not yet: `add-pr-cost-calculator` task 5.3 checks it in part, against planted cases

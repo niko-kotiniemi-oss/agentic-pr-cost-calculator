@@ -121,13 +121,13 @@ The assumptions about GitHub: this repository's settings there, and its workflow
 - **If it is wrong:** A merge that makes no push, or whose push starts no workflow, would get no report, and nothing would say why (T21, T23). A push that named another commit as the one it replaced would make the report count the wrong ledger files as the merge's own (T19, T20), and a run that a merge starts through another event, created before the merge time, would be counted as the pull request's, so the CI figure would be too high without saying so (T22, T88).
 - **Fact:** Every merge into the default branch, by hand, by auto-merge or through a merge queue, makes a push to that branch, and that push starts the adopter's calling workflow.
   - **Relied on:** R19, R58, R68, R69, T19, T21, T23, DR-005, DR-018, DR-061, DR-092, DR-133, DR-147
-  - **Checked:** not yet: `add-pr-cost-calculator` task 7.1 meets it once, at this change's own merge
+  - **Checked:** not yet: `add-pr-cost-calculator` task 7.1 meets it once, at the merge of that task's own pull request
 - **Fact:** An event that `GITHUB_TOKEN` causes, such as the push of a merge that a workflow makes, creates no new workflow run, apart from `workflow_dispatch`, `repository_dispatch` and some `pull_request` events, so such a merge gets no report.
   - **Relied on:** R68, T50, DR-018
   - **Checked:** documented: <https://github.com/github/docs/blob/33b1f4a6fec2d9b6fd3d374afa56bcd9f0875b57/data/reusables/actions/actions-do-not-trigger-workflows.md>, read 2026-11-01
 - **Fact:** The push that a merge makes names, as the commit it replaced, the default branch just before the merge, and its own commit is the default branch just after it.
   - **Relied on:** R19, R58, R129, T19, T20, T70, DR-017, DR-121
-  - **Checked:** not yet: `add-pr-cost-calculator` task 7.1 meets it once, at this change's own merge
+  - **Checked:** not yet: `add-pr-cost-calculator` task 7.1 meets it once, at the merge of that task's own pull request
 - **Fact:** GitHub creates a workflow run that a merge starts through an event other than its push, such as the pull request's `closed` event, no earlier than the pull request's merge time. Its documentation does not order the two times.
   - **Relied on:** R62, R120, T22, T88, DR-019, DR-147
   - **Checked:** not yet: none will, since none of this repository's own workflows runs on such an event, so its own merges cannot check this
@@ -150,7 +150,7 @@ The assumptions about GitHub: this repository's settings there, and its workflow
   - **Checked:** not yet: none will, since no test may reach GitHub
 - **Fact:** The report's three permissions, `contents: read`, `actions: read` and `pull-requests: write`, are enough for every call it makes: fetching history and `refs/pull/<number>/head`, looking up pull requests, listing runs and job attempts, and posting and updating its comment.
   - **Relied on:** R24, T24, T29, DR-016, DR-063
-  - **Checked:** not yet: `add-pr-cost-calculator` task 7.1 meets it once, at this change's own merge
+  - **Checked:** not yet: `add-pr-cost-calculator` task 7.1 meets it once, at the merge of that task's own pull request
 - **Fact:** `GITHUB_API_URL` names GitHub's API host, and a calling workflow cannot point it elsewhere.
   - **Relied on:** R30, T24, DR-090
   - **Checked:** not yet: none will, since no test may reach GitHub; `add-pr-cost-calculator` task 1.13 tests only what this repository does with it
@@ -170,7 +170,7 @@ The assumptions about GitHub: this repository's settings there, and its workflow
   - **Checked:** not yet: none will, since no test may reach GitHub; `add-pr-cost-calculator` task 4.3 tests only what this repository does with it
 - **Fact:** The runner that runs the report has a `python3` at or above the supported floor, since the report runs with `python3 -I` and no step installs Python for it.
   - **Relied on:** R24, R25, DR-023, DR-062
-  - **Checked:** not yet: `add-pr-cost-calculator` task 7.1 meets it once, at this change's own merge
+  - **Checked:** not yet: `add-pr-cost-calculator` task 7.1 meets it once, at the merge of that task's own pull request
 - **Fact:** GitHub's hosted runners, and the `python3` and `git` installed on them, are trustworthy, though nothing pins the runner image.
   - **Relied on:** R24, R27, T23, T24, T68, DR-067, DR-076
   - **Checked:** not yet: none will, since no test may reach GitHub
@@ -199,9 +199,9 @@ The assumptions about GitHub: this repository's settings there, and its workflow
 - **Fact:** CI can read the source of each action and container image that a workflow uses, to list the tags that name a pin.
   - **Relied on:** R34, T63, DR-068
   - **Checked:** not yet: none will, since no test may reach GitHub
-- **Fact:** GitHub's API keeps the shape that the recorded responses hold, so tests against recordings and one live run at this change's own merge stand for what adopters' CI will meet.
+- **Fact:** GitHub's API keeps the shape that the recorded responses hold, so tests against recordings and one live run, at the merge of the pull request that does `add-pr-cost-calculator` task 7.1, stand for what adopters' CI will meet.
   - **Relied on:** DR-090, DR-092, DR-147
-  - **Checked:** not yet: `add-pr-cost-calculator` task 7.1 meets it once, at this change's own merge
+  - **Checked:** not yet: `add-pr-cost-calculator` task 7.1 meets it once, at the merge of that task's own pull request
 - **Fact:** This repository stays public, so any repository's workflow can call its reusable workflow and check out its code, and its whole history gives CI nothing it could not already read.
   - **Relied on:** R24, DR-062, DR-114, DR-132, DR-157
   - **Checked:** not yet: none will, since no test may reach GitHub
@@ -232,16 +232,16 @@ The assumptions about GitHub: this repository's settings there, and its workflow
 - **If it is wrong:** A head ref that went missing marks the CI cost incomplete, as designed, but one that named other commits, or runs that named the test merge commit, would make the report count the wrong runs or miss them, without saying so (T22).
 - **Fact:** A pull request's head stays fetchable by git as `refs/pull/<number>/head` after the merge, for a pull request from a fork too, and names the pull request's last head.
   - **Relied on:** R23, R62, R64, R120, T22, DR-019, DR-038, DR-110
-  - **Checked:** not yet: `add-pr-cost-calculator` task 7.1 meets it once, at this change's own merge
+  - **Checked:** not yet: `add-pr-cost-calculator` task 7.1 meets it once, at the merge of that task's own pull request
 - **Fact:** Commits that a force-push removed from a pull request are no longer in `refs/pull/<number>/head`, so CI runs on them are not counted.
   - **Relied on:** R62, T22, DR-019
   - **Checked:** not yet: none will, since no test may reach GitHub
 - **Fact:** A squash merge puts one new commit on the default branch and GitHub's rebase merge always makes new commits, so neither brings to the default branch the commits that CI ran on.
   - **Relied on:** R62, R120, T22, DR-019
-  - **Checked:** not yet: `add-pr-cost-calculator` task 7.1 meets it once, at this change's own merge
+  - **Checked:** not yet: `add-pr-cost-calculator` task 7.1 meets it once, at the merge of that task's own pull request
 - **Fact:** A `pull_request` run names the pull request's head commit as its head commit, not the test merge commit, so listing each of the pull request's commits finds its runs.
   - **Relied on:** R62, T22, DR-019, DR-038
-  - **Checked:** not yet: `add-pr-cost-calculator` task 7.1 meets it once, at this change's own merge
+  - **Checked:** not yet: `add-pr-cost-calculator` task 7.1 meets it once, at the merge of that task's own pull request
 
 ## A49. GitHub's lookup of the pull requests associated with a commit behaves as documented: for a commit on the default branch, it gives the merged pull request that introduced the commit.
 
@@ -252,7 +252,7 @@ The assumptions about GitHub: this repository's settings there, and its workflow
   - **Checked:** documented: <https://github.com/github/docs/blob/33b1f4a6fec2d9b6fd3d374afa56bcd9f0875b57/src/rest/data/fpt-2022-11-28/commits.json>, read 2026-11-01
 - **Fact:** GitHub's lookup of the pull requests associated with a commit finds the pull request for the commits that every merge method puts on the default branch: a merge commit, a squash, a rebase merge and a fast-forward.
   - **Relied on:** R69, T19, DR-133
-  - **Checked:** not yet: `add-pr-cost-calculator` task 7.1 meets it once, at this change's own merge
+  - **Checked:** not yet: `add-pr-cost-calculator` task 7.1 meets it once, at the merge of that task's own pull request
 - **Fact:** One push to the default branch can merge several pull requests, as a merge queue can, or add commits that belong to no pull request.
   - **Relied on:** R69, T19, DR-133
   - **Checked:** not yet: none will, since no test may reach GitHub; `add-pr-cost-calculator` task 4.1 tests only what this repository does with it
@@ -263,13 +263,13 @@ The assumptions about GitHub: this repository's settings there, and its workflow
 - **If it is wrong:** Job attempts after the first, unfinished jobs or listings cut short without a sign would make the CI cost too low, or price it as if whole, while the comment shows it as complete (T22, T51). The call budget would be set against the wrong limits (T51), and once runs expire, a report's CI figures could not be recomputed (T27).
 - **Fact:** GitHub lists a repository's runs per commit, or filtered by event and by creation time, and each run names the event and branch that started it, so runs that a push to the default branch started can be told apart.
   - **Relied on:** R62, R120, R121, T22, T51, DR-019, DR-039, DR-110
-  - **Checked:** not yet: `add-pr-cost-calculator` task 7.1 meets it once, at this change's own merge
+  - **Checked:** not yet: `add-pr-cost-calculator` task 7.1 meets it once, at the merge of that task's own pull request
 - **Fact:** GitHub's jobs API gives each job's start and end times with the default `GITHUB_TOKEN` and `actions: read`, whichever way the pull request merged.
   - **Relied on:** R18, R24, R62, T22, DR-038, DR-063, DR-110
-  - **Checked:** not yet: `add-pr-cost-calculator` task 7.1 meets it once, at this change's own merge
+  - **Checked:** not yet: `add-pr-cost-calculator` task 7.1 meets it once, at the merge of that task's own pull request
 - **Fact:** The jobs API lists only the latest attempt of each job unless it is asked for all of them, and lists every attempt when asked.
   - **Relied on:** R62, T22, DR-038, DR-110
-  - **Checked:** not yet: `add-pr-cost-calculator` task 7.1 meets it once, at this change's own merge
+  - **Checked:** not yet: `add-pr-cost-calculator` task 7.1 meets it once, at the merge of that task's own pull request
 - **Fact:** The jobs API gives a job that has not finished no end time.
   - **Relied on:** R64, T22, DR-038
   - **Checked:** not yet: none will, since no test may reach GitHub; `add-pr-cost-calculator` task 3.3 tests only what this repository does with it
@@ -293,7 +293,7 @@ The assumptions about GitHub: this repository's settings there, and its workflow
   - **Checked:** not yet: none will, since no test may reach GitHub
 - **Fact:** GitHub keeps the runs and job timings that a report used listable long enough for the report's CI figures to be recomputed later.
   - **Relied on:** R94, T27, DR-015, DR-020, DR-038
-  - **Checked:** not yet: `add-pr-cost-calculator` task 7.1 meets it once, at this change's own merge
+  - **Checked:** not yet: `add-pr-cost-calculator` task 7.1 meets it once, at the merge of that task's own pull request
 
 ## A64. GitHub bills job minutes from job times.
 
