@@ -783,12 +783,17 @@ Each run SHALL note in the store, for its session, the latest release whose copy
 
 ### Requirement: Every release that writes a store version writes it the same way
 
-Every release whose capture step writes a version of the store SHALL keep it at the same path, under the same lock, with the same fields, and make its fingerprint in the same way, so that copies of two releases that share a store version read each other's notes as their own, and a test SHALL fail when a release makes another fingerprint of a fixed set of files than the one recorded for that version.
+Every release whose capture step writes a version of the store SHALL keep it at the same path, under the same lock, with the same fields, and make its fingerprint in the same way, so that copies of two releases that share a store version read each other's notes as their own, and a test SHALL fail when a release makes another fingerprint of a fixed set of files than the one recorded for that version, and the checks SHALL fail when a change alters a released version's recorded hash.
 
 #### Scenario: A store version's fingerprint does not change
 
 - **WHEN** the capture step makes the fingerprint of a fixed set of configuration files, with fixed device and inode numbers, sizes and modification times, for a version of the store that a release wrote
 - **THEN** its hash is the one recorded for that store version, or a test fails and names the version
+
+#### Scenario: A released store version's recorded fingerprint does not change
+
+- **WHEN** a change alters the hash that the surface manifest records for the fingerprint of a version of the store that a published release wrote, whether or not it raises the major number
+- **THEN** the checks fail, naming that version
 
 ### Requirement: The capture step is one self-contained file
 
@@ -916,16 +921,21 @@ A failure inside the capture step SHALL NOT stop or fail the agent's session, an
 
 ### Requirement: The registered command runs the hook file only when its checksum matches
 
-The registered command SHALL carry the SHA-256 of the hook file that the adopter copied, SHALL read the hook file in the working tree once, and SHALL run what it read only when that matches the checksum, so that a hook file that a checked-out branch changes runs none of its code, and the command then exits with success too.
+The registered command SHALL carry the SHA-256 of the hook file that the adopter copied, SHALL read the hook file in the working tree once, and SHALL run what it read only when that, with each CRLF taken as LF, matches the checksum, so that a hook file that a checked-out branch changes runs none of its code, and the command then exits with success too.
 
 #### Scenario: A changed hook file is not run
 
 - **WHEN** the hook file in the working tree differs from the one whose checksum the registered command carries, as after a checkout of a branch that changes it
 - **THEN** the registered command runs none of that file's code, prints nothing on standard output and exits with success, in each shell that Claude Code runs a hook's command in
 
+#### Scenario: A hook file checked out with Windows line endings still runs
+
+- **WHEN** the hook file in the working tree is the one whose checksum the registered command carries, written with CRLF line endings, as git checks it out where `core.autocrlf` is `true` or an attribute gives it `eol=crlf`
+- **THEN** the registered command runs it, while a hook file that differs from it in any other byte, a lone carriage return among them, runs none of its code
+
 ### Requirement: The capture step also comes as a Claude Code plugin
 
-The tool SHALL also ship the capture step as a Claude Code plugin, whose hooks SHALL run the same file, from the plugin's own folder, for the same events and with the same condition as the hook file's registration, through a command that names the plugin form, carries the file's SHA-256 and runs it only when it matches, exits with success and prints nothing on standard output in each shell that Claude Code runs a hook's command in.
+The tool SHALL also ship the capture step as a Claude Code plugin, whose hooks SHALL run the same file, from the plugin's own folder, for the same events and with the same condition as the hook file's registration, through a command that names the plugin form, carries the file's SHA-256 and runs it only when it matches, with each CRLF taken as LF, exits with success and prints nothing on standard output in each shell that Claude Code runs a hook's command in.
 
 #### Scenario: The plugin records a session in a repository that registers no hook
 
@@ -951,6 +961,11 @@ The tool SHALL also ship the capture step as a Claude Code plugin, whose hooks S
 
 - **WHEN** the plugin is loaded in place from a folder, as with `--plugin-dir`, and the capture step in that folder changes during the session, as when a branch is checked out there
 - **THEN** the plugin's runs run none of the changed file's code, print nothing on standard output and exit with success
+
+#### Scenario: The plugin runs its step from a checkout with Windows line endings
+
+- **WHEN** the plugin comes from a clone of the marketplace that git made with `core.autocrlf` set to `true`, so that the capture step in the plugin's folder has CRLF line endings, and an opted-in person's session works in a repository that turns the tool on and then commits there
+- **THEN** the plugin's command runs the step, and the commit adds a ledger file that holds the session's calls
 
 ### Requirement: The capture step writes only its own words and numbers to standard error
 

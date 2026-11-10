@@ -36,6 +36,8 @@ The list puts first the assumptions behind the threats of highest impact, then, 
 - **A17.** People report bugs and vulnerabilities through the right channel. Impact 3, risk 6. Page: [Adopters and people](adopters-and-people.md).
 - **A54.** The clock of the machine that runs a session agrees with its transcripts and with the runner's day. Impact 3, risk 6. Page: [Python, the development tools and prices](python-tools-and-prices.md).
 - **A69.** Claude Code loads the plugin into a project's cloud threads and a person's terminal sessions, runs its hooks there, and registers the hooks of one plugin of a given name. Impact 3, risk 6. Page: [Claude Code](claude-code.md).
+- **A72.** A person adds the plugin on claude.ai by uploading a zip or by adding a GitHub repository as a marketplace, whose plugins then update from its default branch when the person checks for updates or turns on syncing, with nothing to accept. Impact 3, risk 6. Page: [Claude Code](claude-code.md).
+- **A27.** Tags and releases can be protected from change. Impact 3, risk 6. Page: [GitHub](github.md).
 - **A18.** A merge into the default branch makes one push, and that push starts the adopter's calling workflow. Impact 3, risk 4. Page: [GitHub](github.md).
 - **A19.** A reusable workflow runs with its caller's context, and with only the token and the secrets that its caller gives it. Impact 3, risk 4. Page: [GitHub](github.md).
 - **A20.** Checkouts and GitHub's hosted runners are what the workflows expect. Impact 3, risk 4. Page: [GitHub](github.md).
@@ -45,10 +47,8 @@ The list puts first the assumptions behind the threats of highest impact, then, 
 - **A24.** The machine running a session, and the programs that a hook starts on it, are the person's own. Impact 3, risk 4. Page: [Adopters and people](adopters-and-people.md).
 - **A57.** The reviews and the planned tests get done. Impact 3, risk 4. Page: [Adopters and people](adopters-and-people.md).
 - **A33.** Model names and list prices mean what the report says they mean. Impact 3, risk 4. Page: [Python, the development tools and prices](python-tools-and-prices.md).
-- **A72.** A person adds the plugin on claude.ai by uploading a zip or by adding a GitHub repository as a marketplace, whose plugins then update from its default branch when the person checks for updates or turns on syncing, with nothing to accept. Impact 3, risk 4. Page: [Claude Code](claude-code.md).
 - **A25.** Claude Code keeps the hook registrations it read at session start. Impact 3, risk 3. Page: [Claude Code](claude-code.md).
 - **A26.** Runs for a pull request from a fork get no secrets, and run the code that its author chose. Impact 3, risk 3. Page: [GitHub](github.md).
-- **A27.** Tags and releases can be protected from change. Impact 3, risk 3. Page: [GitHub](github.md).
 - **A28.** GitHub, and this repository's place on it, stay as they are. Impact 3, risk 3. Page: [GitHub](github.md).
 - **A29.** Python's isolated mode and its start-up behave as the hook expects. Impact 3, risk 3. Page: [Python, the development tools and prices](python-tools-and-prices.md).
 - **A30.** Renovate proposes updates as it is configured to, and its wait catches bad releases. Impact 3, risk 3. Page: [Python, the development tools and prices](python-tools-and-prices.md).

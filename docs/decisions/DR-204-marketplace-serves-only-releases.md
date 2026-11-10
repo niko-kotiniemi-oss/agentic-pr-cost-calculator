@@ -25,7 +25,7 @@ The repository's marketplace lists the tool's plugin from a folder in the reposi
 
 ## Consequences
 
-- Someone who can merge into the default branch can still change the folder, and CI then fails unless the folder matches what a published release's tag builds, with that tag's own script, and the pull request changes nothing else (T132, T137).
+- Someone who can merge into the default branch can still change the folder, and CI then fails unless the folder matches what a published release's tag builds, with that tag's own script, and the pull request changes nothing else, while a pull request that changes the check with the folder runs its changed check, so the owner merges one that changes the folder only when its diff changes nothing else (T132, T137).
 - A refused tag, an earlier release, or a branch named like a version does not pass the check (T138), and the README says that a tag with no published release is not a version; the owner deletes a refused tag and the next release takes a later version.
 - A release reaches the marketplace with the pull request that moves the folder, after its zip.
 - The repository holds a copy of each released plugin's files, which the build from the tag reproduces.

@@ -14,7 +14,7 @@ A marketplace that a person adds on claude.ai is read from the file `.claude-plu
 
 ## Decision
 
-The root marketplace file holds only the marketplace's name, its owner and one entry that gives the tool's plugin's name and its folder, and CI fails when the file, parsed, holds any other key, value or entry. The marketplace that loads the vendored Superpowers in this repository's own sessions moves to a folder under `vendor/`, and both places that add it follow: `.claude/settings.json` names its folder, and `.claude/hooks/session-start.sh` adds it, so that a person who adds this repository as a marketplace is offered only the tool.
+The root marketplace file holds only the marketplace's name, its owner and one entry that gives the tool's plugin's name and its folder, and CI fails when the file, parsed, holds any other key, value or entry. The marketplace that loads the vendored Superpowers in this repository's own sessions moves to a folder under `vendor/`, and both places that add it follow: `.claude/settings.json` names its folder, and `.claude/hooks/session-start.sh` adds it, so that a person who adds this repository as a marketplace is offered only the tool. Once Superpowers loads from there, the root file is removed, and it comes back, holding only the tool's plugin, in the pull request after the first release that carries the plugin.
 
 ## Alternatives
 
@@ -26,7 +26,8 @@ The root marketplace file holds only the marketplace's name, its owner and one e
 
 - This repository's own sessions load Superpowers as before, from the marketplace's new path. A test holds the vendored marketplace's file, the settings keys that name it and the folder that the session-start hook adds, and task 6.7 checks in a cloud session, on a branch whose root file no longer lists Superpowers, that Superpowers still loads before the old file changes (T35).
 - The marketplace file under `vendor/` is the repository's own, like `UPSTREAM.lock`, and lies outside the vendored copy, so CI's comparison of that copy with its upstream leaves it out, while a change to it is reviewed as one to `.claude/` would be (T35).
-- The root file is part of what the marketplace serves, so CI holds it whole, a pull request that changes it changes nothing else (DR-204), and the README gives Claude Code's command that pins the marketplace to a release's tag (T132, T140).
+- The root file is part of what the marketplace serves, so CI holds it whole, a pull request that changes it changes nothing else (DR-204), and the README gives no command that pins the marketplace to a tag, since a release's own tag holds an earlier release's plugin (DR-203, T132, T140).
+- Until the root file comes back, a person who adds this repository as a marketplace is offered no plugin, neither Superpowers nor the tool.
 
 ## Scope
 

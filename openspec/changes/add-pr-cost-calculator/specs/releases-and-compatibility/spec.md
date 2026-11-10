@@ -149,11 +149,11 @@ A release SHALL NOT be published when its bill of materials cannot be written, w
 
 ### Requirement: Each release carries the plugin as a zip that its tag rebuilds
 
-Each release SHALL carry the plugin as a zip built from its tag's files alone, holding only the plugin's manifest, its hooks, the capture step and the licence, stored uncompressed with every header field fixed, so that every build on any system gives the same bytes. CI SHALL fail when the zip built from a pull request's tree has another SHA-256 than the README there gives, and the release workflow SHALL publish no release whose zip does.
+Each release SHALL carry the plugin as a zip built from its tag's files alone, as git's objects hold them, holding only the plugin's manifest, its hooks, the capture step and the licence, stored uncompressed with every header field fixed, so that every build on any system gives the same bytes. CI SHALL fail when the zip built from a pull request's tree has another SHA-256 than the README there gives, and the release workflow SHALL publish no release whose zip does.
 
 #### Scenario: The plugin's zip is the same on every build
 
-- **WHEN** the plugin's zip is built twice from one tag, at different times, once on Linux and once on Windows, with different umasks
+- **WHEN** the plugin's zip is built twice from one tag, at different times, once on Linux and once on Windows from a clone that git made with `core.autocrlf` set to `true`, with different umasks
 - **THEN** the two zips are the same, byte for byte
 
 #### Scenario: A pull request that leaves the zip's checksum behind fails CI

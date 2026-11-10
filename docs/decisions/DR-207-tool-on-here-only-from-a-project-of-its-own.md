@@ -23,7 +23,7 @@ Task 7.1 turns the tool on in this repository only from a project that holds thi
 
 ## Consequences
 
-- No call made from this repository's clone on another repository of the owner's can be published here, since no other repository is in that project (T2, T32).
+- In that project's threads, no call made from this repository's clone on another repository of the owner's can be published here, since no other repository is in that project, and DR-210 (The owner's opt-in for this repository is set only in the environment of its own project) keeps the owner's opt-in out of the other sessions that could reach this clone beside another (T2, T32).
 - The calls made from the folder that holds the project's clones are still left out and flagged, as in any project (T128).
 - The move is an open point for task 7.1: until the tool is on here, nothing changes.
 

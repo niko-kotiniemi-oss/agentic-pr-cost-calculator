@@ -135,14 +135,17 @@ The assumptions about Claude Code: what its transcripts hold, when its hooks run
 
 ## A5. What a session loads comes from its settings and the branch it starts on, and a project's settings cannot set the variables that name a person's home folder or the `XDG_*` variables.
 
-- **Rests on it:** R1, R37, R93, R103, R104, R160, R169, T3, T33, T34, T35, T36, T41, T60, T66, T119, DR-022, DR-041, DR-050, DR-071, DR-081, DR-082, DR-093, DR-115, DR-126, DR-142, DR-143, DR-145, DR-183, DR-186, DR-188, DR-202
-- **If it is wrong:** If a project's settings could set `HOME`, the `XDG_*` variables, or on Windows `HOMEDRIVE`, `HOMEPATH` or `USERPROFILE`, a repository could point both the step's reading of the opt-in and git's at configuration files of its own, to opt every contributor in or to hide an opt-out, so their usage would be published without their consent (T3, T119), as a hook that its settings register already could by changing the person's own configuration (A62). On Windows, such a folder could lie on a network path, which the step's check that the folder exists would reach. If a session loaded more from its branch than the rules expect, the rules that keep sessions off untrusted branches would not be enough (T34, T35, T66), and if the vendored skills did not load, agents would build without them unless they read their files (T35).
+- **Rests on it:** R1, R37, R93, R103, R104, R160, R169, R194, T3, T33, T34, T35, T36, T41, T60, T66, T119, T134, DR-022, DR-041, DR-050, DR-071, DR-081, DR-082, DR-093, DR-115, DR-126, DR-142, DR-143, DR-145, DR-183, DR-186, DR-188, DR-201, DR-202
+- **If it is wrong:** If a project's settings could set `HOME`, the `XDG_*` variables, or on Windows `HOMEDRIVE`, `HOMEPATH` or `USERPROFILE`, a repository could point both the step's reading of the opt-in and git's at configuration files of its own, to opt every contributor in or to hide an opt-out, so their usage would be published without their consent (T3, T119), as a hook that its settings register already could by changing the person's own configuration (A62). On Windows, such a folder could lie on a network path, which the step's check that the folder exists would reach. If a session loaded more from its branch than the rules expect, the rules that keep sessions off untrusted branches would not be enough (T34, T35, T66), and if the vendored skills did not load, agents would build without them unless they read their files (T35). If a settings file's `env` could not replace the session's `GIT_CONFIG_` variables, the README would warn of an undoing that cannot happen, and nothing else would change (R194, T134).
 - **Fact:** Environment variables that a repository's `.claude/settings.json` sets reach every process Claude Code starts, hooks included.
   - **Relied on:** R37, R160, R169, T3, T36, T119, DR-071, DR-183, DR-188
   - **Checked:** not yet: none will, since no test may reach Claude Code
 - **Fact:** Claude Code applies a repository's `.claude/settings.local.json` over its `.claude/settings.json`, hooks and environment variables among what it can set, and keeps it out of git only when Claude Code itself writes the file, so a repository can track one, which then needs the folder's trust as the other does.
   - **Relied on:** R93, T60, T119, DR-186, DR-188
   - **Checked:** documented: <https://code.claude.com/docs/en/settings>, read 2026-11-03
+- **Fact:** A value that a settings file's `env` sets replaces the same variable exported in the shell that Claude Code starts from, though not one that the Claude Desktop app or a self-hosted environment's runner sets when it starts the session, and the variables that project and local settings cannot set do not include git's `GIT_CONFIG_COUNT`, `GIT_CONFIG_KEY_<n>` or `GIT_CONFIG_VALUE_<n>`.
+  - **Relied on:** R194, T3, T134, DR-201
+  - **Checked:** documented: <https://code.claude.com/docs/en/settings-reference>, read 2026-11-10
 - **Fact:** Claude Code does not let a project's settings set `HOME` or the `XDG_*` variables, as its documentation says.
   - **Relied on:** R1, R37, R103, R104, T3, T41, T119, DR-050, DR-183, DR-202
   - **Checked:** documented: <https://code.claude.com/docs/en/settings-reference>, read 2026-11-01
@@ -228,8 +231,8 @@ The assumptions about Claude Code: what its transcripts hold, when its hooks run
 
 ## A72. A person adds the plugin on claude.ai by uploading a zip or by adding a GitHub repository as a marketplace, whose plugins then update from its default branch when the person checks for updates or turns on syncing, with nothing to accept.
 
-- **Rests on it:** R183, R184, R187, R190, T132, T133, T136, T138, T140, DR-203, DR-204, DR-205
-- **If it is wrong:** If claude.ai read a marketplace from another file or another branch than the one that CI checks, the check would hold one folder while the marketplace served another (T132, DR-204, DR-205). If the marketplace's updates waited for the person to accept them, the README's account of the two ways to install the plugin would be wrong (R187), and if an uploaded zip were not what runs, the checksum that the person checked would not be of what runs (T133). If a pinned ref, or an entry's fields, acted otherwise than the documentation says, the README's pin and the check of the root file would hold less than they claim (R190, T138, T140), and if a person's plugin did not update as described, the release that writes their ledger files would not be the one that the README describes (T136).
+- **Rests on it:** R183, R184, R187, R190, T132, T133, T136, T138, T140, T143, DR-203, DR-204, DR-205
+- **If it is wrong:** If claude.ai read a marketplace from another file or another branch than the one that CI checks, the check would hold one folder while the marketplace served another (T132, DR-204, DR-205). If the marketplace's updates waited for the person to accept them, the README's account of the two ways to install the plugin would be wrong (R187), and if an uploaded zip were not what runs, the checksum that the person checked would not be of what runs (T133). If an entry's fields acted otherwise than the documentation says, the check of the root file would hold less than it claims (R190, T140), and if a pinned ref did, the README's account of a pin would be wrong (R187, T138), and if a person's plugin did not update as described, the release that writes their ledger files would not be the one that the README describes (T136). If Claude Code cloned a marketplace otherwise than with the person's own git, the line endings that the person's git writes would not reach the plugin's folder, and T143 would have one route fewer.
 - **Fact:** On claude.ai a person adds a plugin to their account by uploading a `.zip` that holds one `.claude-plugin/plugin.json`, or by adding a GitHub repository as a marketplace by its address.
   - **Relied on:** R183, R187, T133, DR-203
   - **Checked:** not yet: `add-pr-cost-calculator` task 7.2 checks it, since the pages that say so are claude.ai's own, on a host that the assumptions' test does not list
@@ -240,7 +243,10 @@ The assumptions about Claude Code: what its transcripts hold, when its hooks run
   - **Relied on:** R184, R187, T132, T136, DR-203, DR-204
   - **Checked:** not yet: `add-pr-cost-calculator` task 7.2 checks it, since the page that says so is claude.com's own, on a host that the assumptions' test does not list
 - **Fact:** `/plugin marketplace add owner/repo#ref` pins a marketplace to a branch or a tag, and the documentation does not say which it takes when a branch and a tag share the name.
-  - **Relied on:** R187, T138, T140, DR-205
+  - **Relied on:** R187, T138, DR-203, DR-205
+  - **Checked:** documented: <https://code.claude.com/docs/en/plugins/install>, read 2026-11-09
+- **Fact:** Claude Code clones a marketplace that a person adds from its command line with the git on their machine and the credentials that its configuration gives, such as their credential helpers and `core.sshCommand`.
+  - **Relied on:** T143
   - **Checked:** documented: <https://code.claude.com/docs/en/plugins/install>, read 2026-11-09
 - **Fact:** Claude Code combines a marketplace's entry for a plugin with the plugin's manifest: with `strict` at its default, it appends the entry's commands, agents and skills to the plugin, and the entry's hooks replace the manifest's per event, while `"strict": false` beside any of those stops the plugin loading, and `"defaultEnabled": false` starts it turned off.
   - **Relied on:** R190, T140, DR-205

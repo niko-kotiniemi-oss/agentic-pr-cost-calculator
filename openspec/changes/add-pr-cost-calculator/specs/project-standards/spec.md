@@ -434,9 +434,9 @@ The threat model SHALL number its threats from T1 in order, and a threat that a 
 - **WHEN** `docs/decisions/` holds a folder, a link, or a file that is neither a record nor the index, or a file elsewhere is named as a record
 - **THEN** a test fails and names the file
 
-### Requirement: No attribute hides the diff of a record or of what the marketplace serves
+### Requirement: No attribute hides the diff of a record or of what the marketplace serves, or changes the plugin's checkout
 
-No attribute that the repository sets SHALL make git show as binary, or GitHub hide as generated, the diff of a record, the index, the root marketplace file or a file in the plugin folder that it names, so that whoever merges a pull request reads each change that it makes to them.
+No attribute that the repository sets SHALL make git show as binary, or GitHub hide as generated, the diff of a record, the index, the root marketplace file or a file in the plugin folder that it names, so that whoever merges a pull request reads each change that it makes to them, nor make git's checkout of the hook file or of a file in that folder write more than other line endings.
 
 #### Scenario: An attribute that hides a record's diff fails CI
 
@@ -446,6 +446,11 @@ No attribute that the repository sets SHALL make git show as binary, or GitHub h
 #### Scenario: An attribute that hides the marketplace's diff fails CI
 
 - **WHEN** the repository's attributes give the root marketplace file, or a file in the plugin folder that it names, `binary`, `diff` or `linguist-generated`, in any state
+- **THEN** a test fails and names the file and the attribute
+
+#### Scenario: An attribute that changes the plugin's checkout fails CI
+
+- **WHEN** the repository's attributes give the hook file, or a file in the plugin folder that the root marketplace file names, `working-tree-encoding`, `ident` or `filter`, in any state
 - **THEN** a test fails and names the file and the attribute
 
 #### Scenario: A person's own attributes are not read
@@ -679,12 +684,12 @@ The README and the capture's feature page SHALL say that a project's cloud threa
 
 ### Requirement: The documentation says how to turn capture off in a session that is running, and how to check it
 
-The README SHALL say that removing the setup script's line, or using another environment, reaches only the sessions that start, or whose machines are rebuilt, afterwards; that `git config --global pr-cost.capture false` in a session turns capture off there, and the variables `GIT_CONFIG_COUNT=1`, `GIT_CONFIG_KEY_0=pr-cost.capture` and `GIT_CONFIG_VALUE_0=false` on an environment from each session's next restore, whatever set the opt-in; and how to see a session's opt-in.
+The README SHALL say that removing the setup script's line, or using another environment, reaches only the sessions that start, or whose machines are rebuilt, afterwards; that `git config --global pr-cost.capture false` in a session turns capture off there, and the variables `GIT_CONFIG_COUNT=1`, `GIT_CONFIG_KEY_0=pr-cost.capture` and `GIT_CONFIG_VALUE_0=false` on an environment from each session's next restore; what can undo each; and how to see a session's opt-in.
 
 #### Scenario: The README says how to turn capture off in a running session
 
 - **WHEN** the README's section on turning capture off is read
-- **THEN** it says that removing the setup script's line, or using another environment, reaches only sessions that start, or whose machines are rebuilt, afterwards, gives `git config --global pr-cost.capture false` for a running session and the three `GIT_CONFIG_` variables for an environment, which each of its sessions reads at its next restore, says that either turns capture off whatever set the opt-in, and gives `git config --global --get pr-cost.capture` and `git config --show-origin --get-all pr-cost.capture` to see a session's opt-in and where it comes from
+- **THEN** it says that removing the setup script's line, or using another environment, reaches only sessions that start, or whose machines are rebuilt, afterwards, gives `git config --global pr-cost.capture false` for a running session and the three `GIT_CONFIG_` variables for an environment, which each of its sessions reads at its next restore, says that the first holds until something writes the opt-in again, as the setup script does on a machine that is rebuilt and an organization's hook can at a session's start or resume, and the variables unless a settings file that the session loads sets `GIT_CONFIG_COUNT` itself, and gives `git config --global --get pr-cost.capture` and `git config --show-origin --get-all pr-cost.capture` to see a session's opt-in and where it comes from, and `/hooks` to see the hooks that run
 
 ### Requirement: The documentation says how an organization turns capture on for its members
 
@@ -697,12 +702,12 @@ The README SHALL say how an organization turns the plugin on for its members and
 
 ### Requirement: The documentation gives both ways to install the plugin, the zip first
 
-The README SHALL give the release's zip first, with the command that checks its SHA-256 against the README at the release's commit, then this repository as a marketplace, with Claude Code's command that pins it to a release's tag, saying when its updates arrive and that nothing needs accepting once one has synced, that a zip follows no address, that a plugin loaded in place runs whatever its folder holds, and that a repository still copies the hook file.
+The README SHALL give the release's zip first, with the command that checks its SHA-256 against the README at the release's commit, then this repository as a marketplace, saying when its updates arrive and that nothing needs accepting once one has synced, that a fixed release comes from its zip, since a release's tag holds an earlier plugin, that a zip follows no address, that a plugin loaded in place runs whatever its folder holds, and that a repository still copies the hook file.
 
 #### Scenario: The README gives the zip first and the marketplace second
 
 - **WHEN** the README's section on installing the plugin, and its section on adopting the tool, are read
-- **THEN** the section on installing the plugin gives the release's zip first, with the command that checks its SHA-256, then the repository as a marketplace, with the command that pins it to a release's tag, says that a marketplace's update arrives when the person checks for updates, or by itself once they turn on syncing, with nothing to accept once it has synced, that a zip follows no address, that the plugin is installed only from a release's zip or from this repository's GitHub address, since one loaded in place runs whatever its folder holds, and that a repository still copies the hook file, and the section on adopting the tool names the plugin and points to that section
+- **THEN** the section on installing the plugin gives the release's zip first, with the command that checks its SHA-256, then the repository as a marketplace, on claude.ai or with Claude Code's command, says that a marketplace's update arrives when the person checks for updates, or by itself once they turn on syncing, with nothing to accept once it has synced, that a fixed release comes from its zip and not from a marketplace pinned to the release's tag, which holds an earlier release's plugin or none, since the marketplace's folder moves only after a release, that a zip follows no address, that the plugin is installed only from a release's zip or from this repository's GitHub address, since one loaded in place runs whatever its folder holds, and that a repository still copies the hook file, and the section on adopting the tool names the plugin and points to that section
 
 ### Requirement: The documentation says which release of the plugin runs, and what that changes
 

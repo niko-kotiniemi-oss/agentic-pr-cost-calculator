@@ -92,6 +92,29 @@ The assumptions about GitHub: this repository's settings there, and its workflow
   - **Relied on:** T61, DR-115
   - **Checked:** not yet: none will, since no test may reach GitHub
 
+## A27. Tags and releases can be protected from change.
+
+- **Rests on it:** R27, R28, R68, R72, R189, T23, T28, T29, T64, T67, T69, T132, T133, T139, DR-061, DR-073, DR-074, DR-097, DR-144, DR-161, DR-209
+- **If it is wrong:** An identity with `contents: write`, such as an agent session acting as the owner's account, could publish a release on an unreviewed commit, or change one after adopters took it (T67, T64, T28). A tag named like the default branch could pass the report's check of the event (T23, T29), and the bill of materials could list parts that a release's archive does not hold (T69). A release could be published before its files are attached, or its zip replaced after people checked it (T139, T133).
+- **Fact:** A push of a tag has a `github.ref` that begins `refs/tags/`, while its `github.ref_name` is the tag's name alone, so a tag named like the default branch shares the branch's `github.ref_name` but not its `github.ref`.
+  - **Relied on:** R68, T23, T29, DR-061
+  - **Checked:** not yet: none will, since no test may reach GitHub; `add-pr-cost-calculator` task 4.3 tests only what this repository does with it
+- **Fact:** Any identity with `contents: write` can create a release and its tag through the API, with no workflow at all and with a tag of any name.
+  - **Relied on:** T64, T67, DR-073, DR-144, DR-161
+  - **Checked:** not yet: none will, since no test may reach GitHub
+- **Fact:** A tag ruleset that covers every tag also governs a tag that GitHub's releases API creates, so an identity with `contents: write` cannot create a release with a new tag without the ruleset's bypass.
+  - **Relied on:** R27, T28, T64, T67, T132, T133, DR-073, DR-144, DR-161
+  - **Checked:** not yet: none will, since no test may reach GitHub
+- **Fact:** GitHub's immutable releases stop a published release from changing and its tag from moving.
+  - **Relied on:** T67, T133, T139, DR-074
+  - **Checked:** not yet: none will, since no test may reach GitHub
+- **Fact:** GitHub publishes a release when it is created, unless it is created as a draft, and attaches a release's files by calls of their own after that.
+  - **Relied on:** R189, T139, DR-209
+  - **Checked:** not yet: none will, since no test may reach GitHub; `add-pr-cost-calculator` task 6.3 tests only the order of the workflow's calls, against recorded responses
+- **Fact:** GitHub's source archive of a release holds the vendored and generated parts.
+  - **Relied on:** R28, R72, T69, DR-097
+  - **Checked:** not yet: none will, since no test may reach GitHub
+
 ## A18. A merge into the default branch makes one push, and that push starts the adopter's calling workflow.
 
 - **Rests on it:** R19, R27, R58, R62, R68, R69, R93, R120, R129, T19, T20, T21, T22, T23, T50, T67, T68, T70, T88, DR-005, DR-017, DR-018, DR-019, DR-051, DR-061, DR-073, DR-092, DR-121, DR-122, DR-133, DR-147, DR-148, DR-186
@@ -167,29 +190,6 @@ The assumptions about GitHub: this repository's settings there, and its workflow
   - **Checked:** not yet: none will, since no test may reach GitHub
 - **Fact:** GitHub serves a commit that only a fork holds under the parent repository's address, and resolves a commit id in `uses:` across the fork network, so it runs an action pinned to such a commit.
   - **Relied on:** R27, R34, T58, T63, T95, DR-068, DR-122, DR-156
-  - **Checked:** not yet: none will, since no test may reach GitHub
-
-## A27. Tags and releases can be protected from change.
-
-- **Rests on it:** R27, R28, R68, R72, R189, T23, T28, T29, T64, T67, T69, T132, T133, T139, DR-061, DR-073, DR-074, DR-097, DR-144, DR-161, DR-209
-- **If it is wrong:** An identity with `contents: write`, such as an agent session acting as the owner's account, could publish a release on an unreviewed commit, or change one after adopters took it (T67, T64, T28). A tag named like the default branch could pass the report's check of the event (T23, T29), and the bill of materials could list parts that a release's archive does not hold (T69). A release could be published before its files are attached, or its zip replaced after people checked it (T139, T133).
-- **Fact:** A push of a tag has a `github.ref` that begins `refs/tags/`, while its `github.ref_name` is the tag's name alone, so a tag named like the default branch shares the branch's `github.ref_name` but not its `github.ref`.
-  - **Relied on:** R68, T23, T29, DR-061
-  - **Checked:** not yet: none will, since no test may reach GitHub; `add-pr-cost-calculator` task 4.3 tests only what this repository does with it
-- **Fact:** Any identity with `contents: write` can create a release and its tag through the API, with no workflow at all and with a tag of any name.
-  - **Relied on:** T64, T67, DR-073, DR-144, DR-161
-  - **Checked:** not yet: none will, since no test may reach GitHub
-- **Fact:** A tag ruleset that covers every tag also governs a tag that GitHub's releases API creates, so an identity with `contents: write` cannot create a release with a new tag without the ruleset's bypass.
-  - **Relied on:** R27, T28, T64, T67, T132, T133, DR-073, DR-144, DR-161
-  - **Checked:** not yet: none will, since no test may reach GitHub
-- **Fact:** GitHub's immutable releases stop a published release from changing and its tag from moving.
-  - **Relied on:** T67, T133, T139, DR-074
-  - **Checked:** not yet: none will, since no test may reach GitHub
-- **Fact:** GitHub publishes a release when it is created, unless it is created as a draft, and attaches a release's files by calls of their own after that.
-  - **Relied on:** R189, T139, DR-209
-  - **Checked:** not yet: none will, since no test may reach GitHub; `add-pr-cost-calculator` task 6.3 tests only the order of the workflow's calls, against recorded responses
-- **Fact:** GitHub's source archive of a release holds the vendored and generated parts.
-  - **Relied on:** R28, R72, T69, DR-097
   - **Checked:** not yet: none will, since no test may reach GitHub
 
 ## A28. GitHub, and this repository's place on it, stay as they are.

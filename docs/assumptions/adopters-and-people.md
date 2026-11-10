@@ -56,8 +56,8 @@ The assumptions about the teams that adopt the tool, the people who opt in, and 
 
 ## A15. The owner merges, reads every diff and keeps the settings.
 
-- **Rests on it:** R26, R27, R59, R124, R129, T20, T28, T33, T35, T37, T47, T53, T61, T62, T64, T66, T67, T68, T71, T72, T76, T77, T79, T81, T93, T94, T95, T102, T103, T137, T140, DR-015, DR-017, DR-072, DR-073, DR-074, DR-075, DR-076, DR-077, DR-078, DR-080, DR-082, DR-093, DR-095, DR-096, DR-108, DR-111, DR-116, DR-119, DR-121, DR-122, DR-131, DR-134, DR-140, DR-141, DR-144, DR-145, DR-151, DR-153, DR-156, DR-161
-- **If it is wrong:** An agent's mistaken or steered merge, a weakened check, a false attribution or private text could reach `main` unnoticed (T64, T72, T71, T77, T33), as could a change to the marketplace together with the check that holds it, or a root marketplace file that adds to the plugin (T137, T140), a setting missing from what the threat model lists would let its answer fail without any sign (T62, T67), and reviews and fixes would queue behind one person (T66).
+- **Rests on it:** R26, R27, R59, R124, R129, T2, T20, T28, T32, T33, T35, T37, T47, T53, T61, T62, T64, T66, T67, T68, T71, T72, T76, T77, T79, T81, T93, T94, T95, T102, T103, T128, T132, T137, T140, DR-015, DR-017, DR-072, DR-073, DR-074, DR-075, DR-076, DR-077, DR-078, DR-080, DR-082, DR-093, DR-095, DR-096, DR-108, DR-111, DR-116, DR-119, DR-121, DR-122, DR-131, DR-134, DR-140, DR-141, DR-144, DR-145, DR-151, DR-153, DR-156, DR-161, DR-210
+- **If it is wrong:** An agent's mistaken or steered merge, a weakened check, a false attribution or private text could reach `main` unnoticed (T64, T72, T71, T77, T33), as could a change to the marketplace together with the check that holds it, or a root marketplace file that adds to the plugin (T132, T137, T140), a setting missing from what the threat model lists would let its answer fail without any sign (T62, T67), the owner's opt-in set where a session reaches this clone beside another repository's would publish counts of that repository's work here (T2, T32, T128), and reviews and fixes would queue behind one person (T66).
 - **Fact:** Only the owner merges pull requests here. Agent sessions, which act on GitHub as the owner's own account, never merge one, although the ruleset on `main` would let any of them merge a pull request that passes `ci`.
   - **Relied on:** R27, T28, T33, T35, T62, T64, T71, T72, DR-080, DR-122, DR-141, DR-156
   - **Checked:** not yet: none will, since no test may reach what adopters and people do
@@ -76,6 +76,12 @@ The assumptions about the teams that adopt the tool, the people who opt in, and 
 - **Fact:** The default branch's history is never rewritten.
   - **Relied on:** R59, R129, T20, T47, T71, T77, DR-015, DR-017, DR-121, DR-131, DR-153
   - **Checked:** not yet: none will, since no test may reach what adopters and people do
+- **Fact:** **A pull request that changes the marketplace merged only alone** is kept as the threat model's section on the settings the owner keeps says.
+  - **Relied on:** T132, T137, T140, `docs/threat-model.md`
+  - **Checked:** not yet: none will, since no test may reach what adopters and people do
+- **Fact:** **The owner's opt-in only in the environment of this repository's own project** is kept as the threat model's section on the settings the owner keeps says.
+  - **Relied on:** T2, T32, T128, DR-210, `docs/threat-model.md`
+  - **Checked:** not yet: `add-pr-cost-calculator` task 7.1 checks it
 
 ## A16. Agents follow the repository's rules.
 

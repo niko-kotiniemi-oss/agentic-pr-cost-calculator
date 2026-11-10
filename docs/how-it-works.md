@@ -134,7 +134,7 @@ flowchart TD
   D -->|yes| E[That repository]
   D -->|no| F[Each repository whose top level is directly inside it, and none deeper]
   B -->|the plugin| G[The repository that holds the hook input's cwd]
-  B -->|the plugin, before or after a commit| H[The repository where the commit runs]
+  B -->|the plugin, before or after a git command| H[The repository where the git command runs]
   C --> I[In each: record only the calls whose line gives a working directory in it]
   E --> I
   F --> I
@@ -286,7 +286,7 @@ Each job of each workflow in this repository, with the permissions it is granted
 | Report | GitHub, by git, through `actions/checkout` and `git fetch` | HTTPS | Fetch the tool's own code at its commit, and the adopter's repository to read as data: the default branch's history up to the push's commit and the pull request's head as `refs/pull/<number>/head` | `GITHUB_TOKEN` |
 | Release workflow | GitHub's REST API | HTTPS | Create the release as a draft, upload the bill of materials and the plugin's zip, download each to check it, and publish the release | `GITHUB_TOKEN` |
 
-Prices are never fetched: the price table is a file at the tool's commit, changed only by a pull request. The plugin opens no connection either: claude.ai reads it from a release's zip that the person uploads, or from this repository's marketplace on its default branch, or at a release's tag where the person pins it there, with the person's own account, when they check for updates or turn on syncing.
+Prices are never fetched: the price table is a file at the tool's commit, changed only by a pull request. The plugin opens no connection either: claude.ai reads it from a release's zip that the person uploads, or from this repository's marketplace on its default branch, with the person's own account, when they check for updates or turn on syncing.
 
 **Developing this repository** also connects to these, none of which ships to adopters:
 
@@ -306,7 +306,7 @@ As designed, the hook reads `CLAUDE_PROJECT_DIR`, `HOME`, `XDG_CONFIG_HOME` and 
 - Put a prompt, a response, code, a file's contents, a tool's name, input or output, a path, a working directory, a branch name, a user name, a session identifier, a transcript's path, a `tool_use_id` or a time of day, or a hash of any of them, in a ledger file or in anything it publishes. For its own use, the person's store in the git common directory of their clone keeps, for no longer than 30 days, the worktree and branch that each waiting call goes to, a session's id, a transcript's path, a `tool_use_id` and the fingerprint of the files that hold the opt-in, each as a hash, and, only until a run resolves a staged or taken-back ledger file, that file's path and its worktree's name, and for a staged one its transcript's path, which carries the session's id, and nothing in the store leaves that directory.
 - Record the usage of anyone whose opt-in is not on, as they set it themselves, or as the cloud environment that they use or their organization's managed settings set it for them, or a call that it cannot show was made while both switches were on. The plugin, however it came to a session, opts no one in. A run that finds a switch off creates no store and adds nothing of its session to one, so someone who has never opted in leaves nothing in the git common directory, and an opt-out empties the store of everything but what a take-back or a put-back still needs, at a run of a release that knows the store's version.
 - Keep a copy of a transcript, or of any line of one, in any file.
-- Look for repositories below a session's project directory deeper than directly inside it: a run of the plugin meets a repository only through the project directory, Claude's current directory or a commit.
+- Look for repositories below a session's project directory deeper than directly inside it: a run of the plugin meets a repository only through the project directory, Claude's current directory or a git command run there.
 - Unpublish what was pushed. An opt-out, a removed ledger file or a removed store leaves each pushed ledger file in its branch's history, in every clone and fork that holds it, and in the comments already posted.
 - Send anything from the session's machine anywhere. The ledger leaves the machine only in the person's own commits, when they push.
 - Run, import or install anything from the pull request it reports on.
