@@ -103,6 +103,20 @@ When the hook file at the path that the README gives is missing from the merged 
 - **WHEN** the hook file in the merged commit differs from the hook file at the tool's commit that the report runs, as when an update moved the workflow's pin and left the hook behind
 - **THEN** the comment says that the repository's hook does not come from the report's commit, and quotes nothing from the file
 
+### Requirement: The comment says when ledger files come from a later release than the report's
+
+When a ledger file that the merge adds names, on its first line, a later release of the capture step than the report's own, whatever version of the ledger format it states, the comment SHALL say that some ledger files come from a later release than the report, so that lines or files that the report cannot read may be refused, and SHALL quote nothing from them.
+
+#### Scenario: Ledger files of a later release are named, not quoted
+
+- **WHEN** a pull request adds a ledger file whose first line names a later release than the report's, as the plugin's can when it follows the person's account while the repository pins an earlier release
+- **THEN** the comment says that some ledger files come from a later release than the report, and quotes nothing from them
+
+#### Scenario: A ledger file of a later format is named too
+
+- **WHEN** a pull request adds a ledger file whose first line states a version of the ledger format that the report does not read and names a later release than the report's
+- **THEN** the comment counts it as a refused file, says that some ledger files come from a later release than the report, and quotes nothing from it
+
 ### Requirement: The comment shows only what the report computed
 
 The comment, the report's job summary and what the report writes to its log SHALL hold only numbers, the report's own fixed text, and model, attribute and runner names that the price table lists, shown as code in the comment and the job summary.

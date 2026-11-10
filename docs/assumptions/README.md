@@ -35,6 +35,9 @@ The list puts first the assumptions behind the threats of highest impact, then, 
 - **A16.** Agents follow the repository's rules. Impact 3, risk 6. Page: [Adopters and people](adopters-and-people.md).
 - **A17.** People report bugs and vulnerabilities through the right channel. Impact 3, risk 6. Page: [Adopters and people](adopters-and-people.md).
 - **A54.** The clock of the machine that runs a session agrees with its transcripts and with the runner's day. Impact 3, risk 6. Page: [Python, the development tools and prices](python-tools-and-prices.md).
+- **A69.** Claude Code loads the plugin into a project's cloud threads and a person's terminal sessions, runs its hooks there, and registers the hooks of one plugin of a given name. Impact 3, risk 6. Page: [Claude Code](claude-code.md).
+- **A72.** A person adds the plugin on claude.ai by uploading a zip or by adding a GitHub repository as a marketplace, whose plugins then update from its default branch when the person checks for updates or turns on syncing, with nothing to accept. Impact 3, risk 6. Page: [Claude Code](claude-code.md).
+- **A27.** Tags and releases can be protected from change. Impact 3, risk 6. Page: [GitHub](github.md).
 - **A18.** A merge into the default branch makes one push, and that push starts the adopter's calling workflow. Impact 3, risk 4. Page: [GitHub](github.md).
 - **A19.** A reusable workflow runs with its caller's context, and with only the token and the secrets that its caller gives it. Impact 3, risk 4. Page: [GitHub](github.md).
 - **A20.** Checkouts and GitHub's hosted runners are what the workflows expect. Impact 3, risk 4. Page: [GitHub](github.md).
@@ -46,7 +49,6 @@ The list puts first the assumptions behind the threats of highest impact, then, 
 - **A33.** Model names and list prices mean what the report says they mean. Impact 3, risk 4. Page: [Python, the development tools and prices](python-tools-and-prices.md).
 - **A25.** Claude Code keeps the hook registrations it read at session start. Impact 3, risk 3. Page: [Claude Code](claude-code.md).
 - **A26.** Runs for a pull request from a fork get no secrets, and run the code that its author chose. Impact 3, risk 3. Page: [GitHub](github.md).
-- **A27.** Tags and releases can be protected from change. Impact 3, risk 3. Page: [GitHub](github.md).
 - **A28.** GitHub, and this repository's place on it, stay as they are. Impact 3, risk 3. Page: [GitHub](github.md).
 - **A29.** Python's isolated mode and its start-up behave as the hook expects. Impact 3, risk 3. Page: [Python, the development tools and prices](python-tools-and-prices.md).
 - **A30.** Renovate proposes updates as it is configured to, and its wait catches bad releases. Impact 3, risk 3. Page: [Python, the development tools and prices](python-tools-and-prices.md).
@@ -66,6 +68,7 @@ The list puts first the assumptions behind the threats of highest impact, then, 
 - **A45.** Adopters merge into the default branch by hand, after CI, having read the diff, and never rewrite that branch's history. Impact 2, risk 6. Page: [Adopters and people](adopters-and-people.md).
 - **A46.** Sessions commit through Bash, and little else changes the branch while a session works. Impact 2, risk 6. Page: [Adopters and people](adopters-and-people.md).
 - **A47.** Ledger files stay small, and their commits are rarely undone. Impact 2, risk 6. Page: [Adopters and people](adopters-and-people.md).
+- **A70.** A project's cloud thread starts in a folder that holds each of its clones directly inside it, and its machine pauses after a turn and resumes with its files. Impact 2, risk 6. Page: [Claude Code](claude-code.md).
 - **A48.** A pull request's commits stay findable after every merge method. Impact 2, risk 4. Page: [GitHub](github.md).
 - **A49.** GitHub's lookup of the pull requests associated with a commit behaves as documented: for a commit on the default branch, it gives the merged pull request that introduced the commit. Impact 2, risk 4. Page: [GitHub](github.md).
 - **A50.** GitHub's runs and jobs API gives complete, timed listings, within known limits. Impact 2, risk 4. Page: [GitHub](github.md).
@@ -76,6 +79,7 @@ The list puts first the assumptions behind the threats of highest impact, then, 
 - **A56.** Only the facts that the ledger records set a call's price, and prices change rarely and from a given day. Impact 2, risk 4. Page: [Python, the development tools and prices](python-tools-and-prices.md).
 - **A58.** Someone reads the report comments and job summaries, and keeps the prices current. Impact 2, risk 4. Page: [Adopters and people](adopters-and-people.md).
 - **A64.** GitHub bills job minutes from job times. Impact 2, risk 4. Page: [GitHub](github.md).
+- **A71.** A line in a cloud environment's setup script reaches the global git configuration of each new session in that environment, and an organization can share an environment with its members. Impact 2, risk 4. Page: [Claude Code](claude-code.md).
 - **A59.** The development tools support Python 3.11, and report code that needs a newer Python. Impact 2, risk 2. Page: [Python, the development tools and prices](python-tools-and-prices.md).
 - **A60.** Adopters' machines and runners meet the floors, and their policies allow the workflow. Impact 2, risk 2. Page: [Adopters and people](adopters-and-people.md).
 - **A61.** A session that starts in a repository's folder runs the hooks that the repository's settings register, once the folder is trusted, unless it is a cloud thread of a project or a cloud session with several repositories. Impact 2, risk 6. Page: [Claude Code](claude-code.md).

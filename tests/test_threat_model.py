@@ -21,6 +21,10 @@ Every threat is also rated for impact and likelihood, from 1 to 3 each, and its
 risk is their product. The risk matrix places each threat in the cell its two
 ratings name, so a reader sees at a glance where the risk sits, and a rating
 changed in one place and not the other is reported.
+
+The model's opening says how many threats it holds and across how many trust
+boundaries. A threat added without that sentence changing makes it wrong, so
+the figures are compared with the threats' headings and the boundaries' headings.
 """
 
 from __future__ import annotations
@@ -63,6 +67,8 @@ RATING = re.compile(r"([1-3]) \(([a-z]+)\)")
 MATRIX_HEADING = re.compile(r"^## Risk matrix$", re.M)
 MATRIX_ROW = re.compile(r"^\| ([1-3]) [a-z]+ \|(.*)\|\s*$", re.M)
 THREAT_ID = re.compile(r"T\d+")
+COUNT = re.compile(r"\bIt holds (\d+) threats across (\d+) trust boundaries\b")
+BOUNDARY = re.compile(r"^## Boundary (\d+)\b", re.M)
 
 
 @dataclass(frozen=True)
@@ -242,6 +248,22 @@ def matrix_problems(text: str, threats: list[Threat]) -> list[str]:
         if placed.pop(threat.ident, []) != expected:
             problems.append(f"{threat.ident} is not in the one risk matrix cell its ratings name")
     problems += [f"the risk matrix names {ident}, which is not a threat" for ident in placed]
+    return problems
+
+
+def count_problems(text: str, threats: list[Threat]) -> list[str]:
+    counts = COUNT.findall(text)
+    if len(counts) != 1:
+        return ['the model does not say once "It holds N threats across M trust boundaries"']
+    held, boundaries = (int(value) for value in counts[0])
+    named = len(set(BOUNDARY.findall(text)))
+    problems = []
+    if held != len(threats):
+        problems.append(f"the model says it holds {held} threats, and it holds {len(threats)}")
+    if boundaries != named:
+        problems.append(
+            f"the model says it has {boundaries} trust boundaries, and its headings name {named}"
+        )
     return problems
 
 
@@ -516,3 +538,54 @@ def test_a_retired_id_outside_its_section_explains_no_gap(tmp_path: Path) -> Non
 def test_a_document_without_threats_is_reported(tmp_path: Path) -> None:
     synthetic_repository(tmp_path)
     assert problems_in("# Threat model\n\nNothing here.\n", tmp_path) == (["no threat found"], 0)
+
+
+def test_the_model_counts_its_threats_and_trust_boundaries() -> None:
+    text = THREAT_MODEL.read_text()
+    assert threats_in(text), "no threat was read, so this test covered nothing"
+    assert count_problems(text, threats_in(text)) == []
+
+
+def counted(sentence: str) -> str:
+    return (
+        f"# Threat model\n\n{sentence}\n\n## Boundary 1: one\n\n"
+        + threat("`docs/note.md`", number=1)
+        + "\n## Boundary 2: two\n\n"
+        + threat("`docs/note.md`", number=2)
+        + "\n## Boundary 2, continued: found later\n\n"
+        + threat("`docs/note.md`", number=3)
+    )
+
+
+def test_a_count_that_matches_the_headings_passes() -> None:
+    text = counted("It holds 3 threats across 2 trust boundaries.")
+    assert count_problems(text, threats_in(text)) == []
+
+
+@pytest.mark.parametrize(
+    ("sentence", "expected"),
+    [
+        (
+            "It holds 2 threats across 2 trust boundaries.",
+            ["the model says it holds 2 threats, and it holds 3"],
+        ),
+        (
+            "It holds 3 threats across 3 trust boundaries.",
+            ["the model says it has 3 trust boundaries, and its headings name 2"],
+        ),
+        (
+            "It holds threats across trust boundaries.",
+            ['the model does not say once "It holds N threats across M trust boundaries"'],
+        ),
+        (
+            "It holds 3 threats across 2 trust boundaries. It holds 3 threats across 2 trust"
+            " boundaries.",
+            ['the model does not say once "It holds N threats across M trust boundaries"'],
+        ),
+    ],
+)
+def test_a_count_that_the_headings_do_not_bear_out_is_reported(
+    sentence: str, expected: list[str]
+) -> None:
+    text = counted(sentence)
+    assert count_problems(text, threats_in(text)) == expected

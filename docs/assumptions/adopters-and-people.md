@@ -24,7 +24,7 @@ The assumptions about the teams that adopt the tool, the people who opt in, and 
 
 ## A14. People who opt in know what it publishes, and keep other work apart.
 
-- **Rests on it:** R1, R2, R3, R4, R37, R52, R108, R146, R155, R159, R164, T2, T3, T4, T5, T31, T38, T106, T111, T114, T116, T117, DR-045, DR-046, DR-050, DR-052, DR-053, DR-055, DR-057, DR-136, DR-138, DR-168, DR-171, DR-180, DR-182, DR-183
+- **Rests on it:** R1, R2, R3, R4, R37, R52, R108, R146, R155, R159, R164, R186, T2, T3, T4, T5, T31, T38, T106, T111, T114, T116, T117, T129, T134, DR-045, DR-050, DR-052, DR-053, DR-055, DR-057, DR-136, DR-138, DR-168, DR-171, DR-182, DR-183, DR-200, DR-201, DR-202
 - **If it is wrong:** Work on another repository, private ones included, would be published here (T2), the ledger would reveal more about a person than they expected (T31, T3, T4, T5), a person who opts in during a session would have its calls up to the next run left out, so that its count is too low (T38), and a person who keeps the store in their backups, or puts back a copy of it after an opt-out, would keep its notes there, or bring back calls to be staged (T117). A person whose opt-in is not where the step reads it, or does not outlive a cloud session, would have nothing recorded.
 - **Fact:** People who opt in start each session in the repository, and keep work on other repositories, private ones above all, in sessions of their own.
   - **Relied on:** R3, T2, DR-057
@@ -33,19 +33,22 @@ The assumptions about the teams that adopt the tool, the people who opt in, and 
   - **Relied on:** R52, T2, DR-055
   - **Checked:** not yet: none will, since no test may reach what adopters and people do
 - **Fact:** People who opt in know what the ledger publishes about them, and accept that a public repository shows, for each call, its UTC day, model, counts, price attributes, activity type, whether the main agent or a subagent made it, and a hash of its message id.
-  - **Relied on:** R1, R4, T3, T4, T5, T31, DR-045, DR-046, DR-052, DR-053, DR-136, DR-138
+  - **Relied on:** R1, R4, T3, T4, T5, T31, DR-045, DR-052, DR-053, DR-136, DR-138, DR-202
   - **Checked:** not yet: none will, since no test may reach what adopters and people do
 - **Fact:** People opt in before they start a session.
   - **Relied on:** R108, T38, DR-168
   - **Checked:** not yet: none will, since no test may reach what adopters and people do
 - **Fact:** People who opt in read what the README says stays published after an opt-out, what a flag for calls left out says, that one opt-in covers every repository that turns the tool on, and where the store is, how to keep it out of backups and syncs, and how to remove it.
-  - **Relied on:** R146, R155, R159, R164, T3, T106, T111, T114, T116, T117, DR-171, DR-180, DR-182
+  - **Relied on:** R146, R155, R159, R164, T3, T106, T111, T114, T116, T117, T129, T134, DR-171, DR-182, DR-200
+  - **Checked:** not yet: none will, since no test may reach what adopters and people do
+- **Fact:** An organization that puts the opt-in's line in a shared environment's setup script tells its members so, and what it publishes, as the README asks.
+  - **Relied on:** R186, T134, DR-202
   - **Checked:** not yet: none will, since no test may reach what adopters and people do
 - **Fact:** People write their opt-in directly in `~/.gitconfig` or in git's file in their XDG configuration folder, not in a file that those include and not through an environment variable.
   - **Relied on:** R37, DR-183
   - **Checked:** not yet: none will, since no test may reach what adopters and people do
-- **Fact:** Each person keeps a global git configuration that outlives the session, also when they work in cloud sessions, whose machines are thrown away.
-  - **Relied on:** R1, DR-046, DR-050, DR-183
+- **Fact:** Each person keeps a global git configuration that outlives the session, or, in a cloud environment, a setup script that writes the opt-in into each new session's.
+  - **Relied on:** R1, DR-050, DR-183, DR-201, DR-202
   - **Checked:** not yet: none will, since no test may reach what adopters and people do
 - **Fact:** Commit times in git already show when someone worked, so a ledger entry's UTC day discloses nothing new.
   - **Relied on:** R2, T5, DR-052
@@ -53,8 +56,8 @@ The assumptions about the teams that adopt the tool, the people who opt in, and 
 
 ## A15. The owner merges, reads every diff and keeps the settings.
 
-- **Rests on it:** R26, R27, R59, R124, R129, T20, T28, T33, T35, T37, T47, T53, T61, T62, T64, T66, T67, T68, T71, T72, T76, T77, T79, T81, T93, T94, T95, T102, T103, DR-015, DR-017, DR-072, DR-073, DR-074, DR-075, DR-076, DR-077, DR-078, DR-080, DR-082, DR-093, DR-095, DR-096, DR-108, DR-111, DR-116, DR-119, DR-121, DR-122, DR-131, DR-134, DR-140, DR-141, DR-144, DR-145, DR-151, DR-153, DR-156, DR-161
-- **If it is wrong:** An agent's mistaken or steered merge, a weakened check, a false attribution or private text could reach `main` unnoticed (T64, T72, T71, T77, T33), a setting missing from what the threat model lists would let its answer fail without any sign (T62, T67), and reviews and fixes would queue behind one person (T66).
+- **Rests on it:** R26, R27, R59, R124, R129, T2, T20, T28, T32, T33, T35, T37, T47, T53, T61, T62, T64, T66, T67, T68, T71, T72, T76, T77, T79, T81, T93, T94, T95, T102, T103, T128, T132, T137, T140, DR-015, DR-017, DR-072, DR-073, DR-074, DR-075, DR-076, DR-077, DR-078, DR-080, DR-082, DR-093, DR-095, DR-096, DR-108, DR-111, DR-116, DR-119, DR-121, DR-122, DR-131, DR-134, DR-140, DR-141, DR-144, DR-145, DR-151, DR-153, DR-156, DR-161, DR-210
+- **If it is wrong:** An agent's mistaken or steered merge, a weakened check, a false attribution or private text could reach `main` unnoticed (T64, T72, T71, T77, T33), as could a change to the marketplace together with the check that holds it, or a root marketplace file that adds to the plugin (T132, T137, T140), a setting missing from what the threat model lists would let its answer fail without any sign (T62, T67), the owner's opt-in set where a session reaches this clone beside another repository's would publish counts of that repository's work here (T2, T32, T128), and reviews and fixes would queue behind one person (T66).
 - **Fact:** Only the owner merges pull requests here. Agent sessions, which act on GitHub as the owner's own account, never merge one, although the ruleset on `main` would let any of them merge a pull request that passes `ci`.
   - **Relied on:** R27, T28, T33, T35, T62, T64, T71, T72, DR-080, DR-122, DR-141, DR-156
   - **Checked:** not yet: none will, since no test may reach what adopters and people do
@@ -65,7 +68,7 @@ The assumptions about the teams that adopt the tool, the people who opt in, and 
   - **Relied on:** T28, T33, T35, T37, T61, T62, T64, T67, T68, T76, DR-072, DR-073, DR-074, DR-075, DR-076, DR-077, DR-078, DR-119, DR-140, DR-141, DR-161
   - **Checked:** not yet: none will, since no test may reach what adopters and people do
 - **Fact:** The owner reads every pull request's diff here before merging, closely enough to catch a changed check or script, a vendored update, a false attribution in a decision record, private text in a title or a file name, a wrongly numbered version, a change to what steers agents, or a rewording that changes what a rule says.
-  - **Relied on:** R124, R129, T33, T35, T53, T71, T72, T77, T79, T81, T93, T94, T95, T102, T103, DR-080, DR-082, DR-096, DR-108, DR-116, DR-121, DR-151, DR-153
+  - **Relied on:** R124, R129, T33, T35, T53, T71, T72, T77, T79, T81, T93, T94, T95, T102, T103, T137, T140, DR-080, DR-082, DR-096, DR-108, DR-116, DR-121, DR-151, DR-153
   - **Checked:** not yet: none will, since no test may reach what adopters and people do
 - **Fact:** The owner has time for every review, approval and report that waits on them: the reviews of each change, approving major updates, reviewing a dependency update's diff before any session uses it, deciding when the oldest Python rises, and acknowledging a security report within a week.
   - **Relied on:** R26, T35, T64, T66, DR-077, DR-093, DR-095, DR-111, DR-134, DR-145
@@ -73,6 +76,12 @@ The assumptions about the teams that adopt the tool, the people who opt in, and 
 - **Fact:** The default branch's history is never rewritten.
   - **Relied on:** R59, R129, T20, T47, T71, T77, DR-015, DR-017, DR-121, DR-131, DR-153
   - **Checked:** not yet: none will, since no test may reach what adopters and people do
+- **Fact:** **A pull request that changes the marketplace merged only alone** is kept as the threat model's section on the settings the owner keeps says.
+  - **Relied on:** T132, T137, T140, `docs/threat-model.md`
+  - **Checked:** not yet: none will, since no test may reach what adopters and people do
+- **Fact:** **The owner's opt-in only in the environment of this repository's own project** is kept as the threat model's section on the settings the owner keeps says.
+  - **Relied on:** T2, T32, T128, DR-210, `docs/threat-model.md`
+  - **Checked:** not yet: `add-pr-cost-calculator` task 7.1 checks it
 
 ## A16. Agents follow the repository's rules.
 
@@ -110,16 +119,22 @@ The assumptions about the teams that adopt the tool, the people who opt in, and 
 
 ## A23. Adopters pin released commits, and update the hook and the pin together.
 
-- **Rests on it:** R17, R24, R27, R28, R65, R71, R77, R88, R93, R98, R122, R123, T24, T28, T29, T53, T54, T58, T60, T64, T67, T69, T123, DR-020, DR-022, DR-040, DR-054, DR-058, DR-062, DR-063, DR-065, DR-072, DR-073, DR-096, DR-097, DR-122, DR-123, DR-124, DR-132, DR-133, DR-139, DR-144, DR-149, DR-154, DR-156, DR-190
-- **If it is wrong:** A commit that no release vouched for, or one that only a fork holds, would run as the tool in the adopter's CI and on their machines (T58, T28, T64), a hook and a report from different commits would disagree on models and prices (T54), and an adopter who gives the report more than it needs, or relies on what the public surface leaves out, could be harmed or broken by an ordinary update (T24, T29, T53). A key that only some versions of the tool document would turn off the hook or the report that does not know it (T123).
+- **Rests on it:** R17, R24, R27, R28, R65, R71, R77, R88, R93, R98, R122, R123, R183, T24, T28, T29, T53, T54, T58, T60, T64, T67, T69, T123, T133, T136, DR-020, DR-022, DR-040, DR-054, DR-062, DR-063, DR-065, DR-072, DR-073, DR-096, DR-097, DR-122, DR-123, DR-124, DR-132, DR-133, DR-139, DR-144, DR-149, DR-154, DR-156, DR-190, DR-203, DR-206, DR-208, DR-211
+- **If it is wrong:** A commit that no release vouched for, or one that only a fork holds, would run as the tool in the adopter's CI and on their machines (T58, T28, T64), a hook and a report from different commits would disagree on models and prices (T54), and an adopter who gives the report more than it needs, or relies on what the public surface leaves out, could be harmed or broken by an ordinary update (T24, T29, T53). A key that only some versions of the tool document would turn off the hook or the report that does not know it (T123). A zip that is not a release's would run as the tool's plugin in the sessions of a person who uploaded it unchecked (T133). A person's plugin far from a repository's pinned report would have more of its ledger lines refused, or would record nothing where the configuration file holds a key newer than it (T136).
 - **Fact:** Adopters pin only a full commit that a release of this repository names, and check it with `git merge-base --is-ancestor`.
   - **Relied on:** R27, T28, T58, T64, T67, DR-022, DR-062, DR-072, DR-073, DR-122, DR-144, DR-156
   - **Checked:** not yet: none will, since no test may reach what adopters and people do
 - **Fact:** Adopters copy the hook file from the commit that their calling workflow pins, keep it at the path the README gives, and check it against the README's checksum.
-  - **Relied on:** R65, R88, R93, T28, T60, DR-022, DR-058, DR-065
+  - **Relied on:** R65, R88, R93, T28, T60, DR-022, DR-065, DR-211
+  - **Checked:** not yet: none will, since no test may reach what adopters and people do
+- **Fact:** A person who uploads the plugin's zip checks its SHA-256 against the README at the release's commit first, as the README asks.
+  - **Relied on:** R183, T133, DR-203
   - **Checked:** not yet: none will, since no test may reach what adopters and people do
 - **Fact:** Adopters update the hook file, its checksum and the workflow's pin together, in one pull request, so the hook's model names and the report's prices stay in step.
   - **Relied on:** R17, R65, R77, R98, T54, T123, DR-022, DR-054, DR-139, DR-190
+  - **Checked:** not yet: none will, since no test may reach what adopters and people do
+- **Fact:** A person keeps their plugin current, and a repository its pin, as the README asks, so that the release of a person's plugin and that of a repository's report seldom differ for long.
+  - **Relied on:** T136, DR-206, DR-208
   - **Checked:** not yet: none will, since no test may reach what adopters and people do
 - **Fact:** When the hook and the pin drift apart, the pin moves first: update bots that follow tags can propose a new pin but cannot change the copied hook file, and adopters update the pin more readily than the hook.
   - **Relied on:** R65, T53, T54, DR-022, DR-040, DR-139
@@ -142,10 +157,10 @@ The assumptions about the teams that adopt the tool, the people who opt in, and 
 
 ## A24. The machine running a session, and the programs that a hook starts on it, are the person's own.
 
-- **Rests on it:** R1, R12, R13, R32, R54, R152, T3, T15, T46, T56, T107, T109, T112, DR-027, DR-031, DR-046, DR-125, DR-176, DR-183, DR-188
+- **Rests on it:** R1, R12, R13, R32, R54, R152, T3, T15, T46, T56, T107, T109, T112, DR-027, DR-031, DR-125, DR-176, DR-183, DR-188, DR-202
 - **If it is wrong:** On a shared machine one person's opt-in would record everyone who uses it (T3), and a program planted where the step or git looks for one would run as part of it with the person's rights (T46, T15). A machine without a working `python3` or `git` would record nothing and say nothing (T56). The capture step does not defend against a compromised machine.
 - **Fact:** The machine running a session belongs to the person running it.
-  - **Relied on:** R1, R54, R152, T3, T46, T107, T109, T112, DR-046, DR-176, DR-183, DR-188
+  - **Relied on:** R1, R54, R152, T3, T46, T107, T109, T112, DR-176, DR-183, DR-188, DR-202
   - **Checked:** not yet: none will, since no test may reach what adopters and people do
 - **Fact:** On Windows, a program started by a bare name, such as `git`, is looked for first in the starting program's folder and in the current directory, and only then in the system's folders and the folders that `PATH` names.
   - **Relied on:** R54, T46, DR-188
@@ -179,9 +194,9 @@ The assumptions about the teams that adopt the tool, the people who opt in, and 
 - **Fact:** A change that makes or reverses a decision adds its decision record in the same pull request.
   - **Relied on:** R124, T74, DR-108, DR-121
   - **Checked:** not yet: none will, since no check can tell that a change made a decision; `add-pr-cost-calculator` task 5.2 revisits the threat model against what was built
-- **Fact:** The owner turns the tool on here, with their own opt-in, before this change merges, so that its merge exercises the whole tool on real data: the hook records the change's work, and the merge's push runs the report, the only contact with GitHub's real API.
+- **Fact:** The owner turns the tool on here, with their own opt-in, before the pull request that does `add-pr-cost-calculator` task 7.1 merges, so that its merge exercises the whole tool on real data: the hook records that pull request's work, and the merge's push runs the report, the only contact with GitHub's real API.
   - **Relied on:** DR-090, DR-147
-  - **Checked:** not yet: `add-pr-cost-calculator` task 7.1 checks it, at this change's own merge
+  - **Checked:** not yet: `add-pr-cost-calculator` task 7.1 checks it, at the merge of that task's own pull request
 - **Fact:** A check can find every network call and every environment variable that the tool's code reads.
   - **Relied on:** R29, R101, T57, DR-102, DR-117
   - **Checked:** not yet: `add-pr-cost-calculator` task 5.3 checks it in part, against planted cases
@@ -191,10 +206,10 @@ The assumptions about the teams that adopt the tool, the people who opt in, and 
 
 ## A34. Maintainers review a pull request without checking out its branch where a session runs.
 
-- **Rests on it:** R88, T59, DR-022, DR-058
+- **Rests on it:** R88, T59, DR-022, DR-211
 - **If it is wrong:** The checksum would keep a changed hook file from running, but capture would stop for the rest of that session, and if Claude Code read its hook registrations again, the branch's code would run with the session's credentials (T59).
 - **Fact:** Maintainers review a pull request from another worktree or from its diff, and never check out its branch in a worktree where a session runs.
-  - **Relied on:** R88, T59, DR-022, DR-058
+  - **Relied on:** R88, T59, DR-022, DR-211
   - **Checked:** not yet: none will, since no test may reach what adopters and people do
 
 ## A44. Teams want each pull request's cost, and read it as an estimate.

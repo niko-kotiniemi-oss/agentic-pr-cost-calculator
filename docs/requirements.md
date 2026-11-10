@@ -145,7 +145,7 @@ The capability names the spec that holds the requirement. Each capability is one
 | R131 | non-functional | `project-standards` | A record and the threats it lists name each other |
 | R132 | non-functional | `project-standards` | A removed threat's ID is retired, never used again |
 | R133 | non-functional | `project-standards` | The records' folder holds only the records and their index |
-| R134 | non-functional | `project-standards` | No attribute hides a record's diff |
+| R134 | non-functional | `project-standards` | No attribute hides the diff of a record or of what the marketplace serves, or changes the plugin's checkout |
 | R135 | non-functional | `project-standards` | The assumptions the design rests on are written down |
 | R136 | non-functional | `project-standards` | The assumptions with the most at stake come first |
 | R137 | non-functional | `project-standards` | The specs and pages use the glossary's words |
@@ -190,6 +190,25 @@ The capability names the spec that holds the requirement. Each capability is one
 | R176 | non-functional | `project-standards` | The specs hold only text that GitHub shows as it is |
 | R177 | non-functional | `project-standards` | The tests of the specs' form read every spec that OpenSpec reads |
 | R178 | non-functional | `project-standards` | CI checks that the tests read each spec as OpenSpec does |
+| R179 | functional | `usage-capture` | The capture step also comes as a Claude Code plugin |
+| R180 | functional | `usage-capture` | A plugin run works on each repository that it meets |
+| R181 | behavioural | `usage-capture` | Where two copies of the capture step run in one session, each call is recorded once |
+| R182 | behavioural | `switch-and-opt-in` | Having the plugin opts no one in |
+| R183 | non-functional | `releases-and-compatibility` | Each release carries the plugin as a zip that its tag rebuilds |
+| R184 | non-functional | `releases-and-compatibility` | The marketplace serves only a release's plugin |
+| R185 | non-functional | `project-standards` | The documentation says how capture covers a project's cloud threads |
+| R186 | non-functional | `project-standards` | The documentation says how an organization turns capture on for its members |
+| R187 | non-functional | `project-standards` | The documentation gives both ways to install the plugin, the zip first |
+| R188 | non-functional | `releases-and-compatibility` | The plugin declares nothing but its hooks |
+| R189 | non-functional | `releases-and-compatibility` | A release is published only once its files are attached and checked |
+| R190 | non-functional | `releases-and-compatibility` | The root marketplace file names only the tool's plugin, and changes alone |
+| R191 | behavioural | `usage-capture` | An earlier release leaves a session to a later one |
+| R192 | non-functional | `usage-capture` | Every release that writes a store version writes it the same way |
+| R193 | functional | `report-comment` | The comment says when ledger files come from a later release than the report's |
+| R194 | non-functional | `project-standards` | The documentation says how to turn capture off in a session that is running, and how to check it |
+| R195 | non-functional | `project-standards` | The documentation says which release of the plugin runs, and what that changes |
+| R196 | non-functional | `project-standards` | The documentation says where the plugin leaves a staged ledger file |
+| R197 | non-functional | `usage-capture` | A plugin run lets git start a repository's configured programs only where its session runs git, or in the one that holds the project directory |
 
 IDs are stable: a requirement keeps its ID while it exists, and a new one takes the next free number, so the rows follow the order in which requirements were added rather than the order of the specs. A requirement that a later change removes leaves the table, and its ID is listed below with the change that removed it, never to be used again.
 

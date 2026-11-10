@@ -4,10 +4,10 @@ The assumptions about git: what its commands, options, attributes, locks and con
 
 ## A10. A repository's worktrees share one git common directory, which recording can use.
 
-- **Rests on it:** R3, R47, R54, R78, R147, R149, R169, T2, T8, T10, T11, T19, T46, T108, T119, T122, DR-011, DR-012, DR-057, DR-174, DR-179, DR-188
+- **Rests on it:** R3, R47, R54, R78, R147, R149, R169, T2, T8, T10, T11, T19, T46, T108, T119, T122, DR-011, DR-012, DR-057, DR-174, DR-188, DR-199
 - **If it is wrong:** A nested repository's calls, or those of another repository that the session's environment points git at this one for, could be published here (T2), and the environment could move the store or a staged ledger file into another repository (T119), a worktree's calls could be staged in the main worktree's index and carried to its branch (T19, T8), a git command could trip over the store, so that calls are lost or recorded twice (T10, T11), a take-back could not find a worktree that was moved, so that its staged ledger file waits (T10), a git in a linked worktree outside the repository's folder could be the one that runs (T46), or a clone that another user owns would record after all, which the README's section on adopting the tool that task 4.4 writes says it does not (T122).
 - **Fact:** A repository's worktrees share one git common directory, which `git rev-parse --git-common-dir` names, while a repository nested inside its folder has its own.
-  - **Relied on:** R3, R47, R147, T2, T11, T108, DR-011, DR-057, DR-179
+  - **Relied on:** R3, R47, R147, T2, T11, T108, DR-011, DR-057, DR-199
   - **Checked:** not yet: `add-pr-cost-calculator` task 2.1 and `add-pr-cost-calculator` task 1.1 check it
 - **Fact:** git resolves a directory inside a worktree under the repository's folder to that worktree, not to the main worktree around it.
   - **Relied on:** R78, T8, T10, T19, DR-012
@@ -19,7 +19,7 @@ The assumptions about git: what its commands, options, attributes, locks and con
   - **Relied on:** R149, T10, DR-174
   - **Checked:** not yet: `add-pr-cost-calculator` task 2.1 checks it
 - **Fact:** With every variable whose name begins with `GIT_` removed from its environment, among them `GIT_DIR`, `GIT_COMMON_DIR`, `GIT_WORK_TREE`, `GIT_INDEX_FILE` and `GIT_CEILING_DIRECTORIES`, git finds a directory's repository, worktree and index from that directory alone.
-  - **Relied on:** R147, R169, T2, T119, DR-179, DR-188
+  - **Relied on:** R147, R169, T2, T119, DR-188, DR-199
   - **Checked:** not yet: `add-pr-cost-calculator` task 2.1 checks it
 - **Fact:** A linked worktree's `.git` file names its folder in the git common directory, where a `commondir` file names the git common directory, relative to that folder, and a `gitdir` file names the worktree's `.git` file, so that the repository's own files list where each of its worktrees is.
   - **Relied on:** R54, T46, DR-188
@@ -31,7 +31,7 @@ The assumptions about git: what its commands, options, attributes, locks and con
   - **Relied on:** R54, T46, DR-188
   - **Checked:** not yet: `add-pr-cost-calculator` task 2.1 checks it
 - **Fact:** git refuses to name the repository of a folder that another user owns, unless a `safe.directory` setting names it, and `git config` there reads no setting of the repository's own, without an error.
-  - **Relied on:** R147, T122, DR-179
+  - **Relied on:** R147, T122, DR-199
   - **Checked:** not yet: `add-pr-cost-calculator` task 2.1 checks it
 - **Fact:** git takes a `safe.directory` setting only from the system's configuration, the person's global configuration and the command line's, which the variables `GIT_CONFIG_COUNT` and `GIT_CONFIG_PARAMETERS` add to, never from the repository's own, so with every variable whose name begins with `GIT_` removed, only the system's file, `~/.gitconfig` and the XDG file can name a folder.
   - **Relied on:** R147, T122, DR-188
@@ -50,8 +50,8 @@ The assumptions about git: what its commands, options, attributes, locks and con
 
 ## A12. History, refs and tags behave as the checks expect.
 
-- **Rests on it:** R10, R22, R27, R34, R59, R68, R119, R129, R130, T2, T13, T20, T23, T28, T47, T58, T67, T68, T70, T77, DR-015, DR-022, DR-061, DR-068, DR-121, DR-122, DR-127, DR-131, DR-148, DR-153, DR-156
-- **If it is wrong:** A removed ledger file could vanish from the history that the report reads (T20, T77), a tag named like the default branch could take its place (T23, T70), and the README's check of a pin could pass a commit that only a fork holds (T58, T28).
+- **Rests on it:** R10, R22, R27, R34, R59, R68, R119, R129, R130, R184, T2, T13, T20, T23, T28, T47, T58, T67, T68, T70, T77, T138, DR-015, DR-022, DR-061, DR-068, DR-121, DR-122, DR-127, DR-131, DR-148, DR-153, DR-156, DR-204
+- **If it is wrong:** A removed ledger file could vanish from the history that the report reads (T20, T77), a tag named like the default branch could take its place (T23, T70), a branch named like a release could stand in for its tag in the marketplace's check (T138), and the README's check of a pin could pass a commit that only a fork holds (T58, T28).
 - **Fact:** A file or text that a later commit removes stays in git history, and in clones and forks, so a removal hides nothing that was pushed; only rewriting history removes it.
   - **Relied on:** R22, R129, T2, T20, T77, DR-015, DR-121, DR-153
   - **Checked:** not yet: none will, since it is how git keeps history, which the design takes as given
@@ -66,6 +66,9 @@ The assumptions about git: what its commands, options, attributes, locks and con
 - **Fact:** git resolves a short name to a tag before a branch of the same name, with only a warning, so a tag named like the default branch takes its place unless refs are named in full.
   - **Relied on:** R68, R129, T23, T70, DR-061, DR-121
   - **Checked:** not yet: `add-pr-cost-calculator` task 4.3 checks it
+- **Fact:** Given a short name, `git fetch` takes a branch of that name where no tag of it exists, so only a ref named in full, as `refs/tags/v1.3.0`, is certain to be a tag.
+  - **Relied on:** R184, T138, DR-204
+  - **Checked:** not yet: `add-pr-cost-calculator` task 6.9 checks it
 - **Fact:** git allows shell characters in tag names.
   - **Relied on:** R27, T68, DR-148
   - **Checked:** not yet: `add-pr-cost-calculator` task 6.3 and `add-pr-cost-calculator` task 6.1 check it
@@ -87,11 +90,11 @@ The assumptions about git: what its commands, options, attributes, locks and con
 
 ## A21. The git commands that the step runs start no program that the step did not choose, apart from those that git's configuration names.
 
-- **Rests on it:** R54, T15, T19, T46, T112, DR-188
-- **If it is wrong:** A program that git starts would run at every capture run, outside the step's own guard (T15, T46), and one that a command's own options start could change the branch before a commit (T19).
-- **Fact:** The git commands that the step itself runs start no other program, except programs that git's configuration names, the person's own or the repository's, such as `core.fsmonitor`, which `git status` and `git add` start, or a clean filter that the repository's `info/attributes` assigns, which `git add` starts, so that whoever can write the git common directory can name one.
-  - **Relied on:** R54, T15, T46, T112, DR-188
-  - **Checked:** not yet: none will, since no task plans a test of it; `add-pr-cost-calculator` task 2.3 checks only how the step finds git
+- **Rests on it:** R54, R197, T15, T19, T46, T112, T144, DR-188, DR-198
+- **If it is wrong:** A program that git starts would run at every capture run, outside the step's own guard (T15, T46), in a clone that a session only meets as well (T144), and one that a command's own options start could change the branch before a commit (T19).
+- **Fact:** The git commands that the step itself runs start no other program, except programs that git's configuration names, the person's own or the repository's, such as `core.fsmonitor`, which `git status`, `git add`, `git rm --cached`, `git ls-files`, `git diff --cached` and `git check-attr` start, each of which reads the index, and `gpg.program`, which `git log` and `git show` start for a signed commit when `log.showSignature` is on, while `git config` and `git rev-parse` start neither, or a clean filter that the repository's `info/attributes` assigns, which `git add` starts, so that whoever can write the git common directory can name one.
+  - **Relied on:** R54, R197, T15, T46, T112, T144, DR-188, DR-198
+  - **Checked:** not yet: `add-pr-cost-calculator` task 2.6 checks it for the git commands that a plugin run starts in a repository where its session runs no git; for the others none will, since no task plans a test of them, and `add-pr-cost-calculator` task 2.3 checks only how the step finds git
 - **Fact:** git's own options and environment variables in a command can make git start another program, such as `git -c diff.external=<program> diff`, `git -c core.hooksPath=<folder> commit` or `GIT_EDITOR=<program> git commit`, and such a program can change the branch before a commit.
   - **Relied on:** T19
   - **Checked:** not yet: none will, since T19's residual accepts the case

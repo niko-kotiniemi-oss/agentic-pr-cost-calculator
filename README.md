@@ -13,9 +13,10 @@ For each pull request, the tool will:
 - price them from a dated price table kept in the tool's own repository, so the estimate uses the price that applied on the day the tokens were spent;
 - add the GitHub Actions minutes the pull request's CI used, priced at GitHub's published rate;
 - where the data allows, split the cost by activity: code generation, file reading, tooling, MCP calls, subagents and conversation, with any tool it does not know counted as other;
-- post a short report comment when the pull request merges, and keep the ledger in the repository as the record.
+- post a short report comment when the pull request merges, and keep the ledger in the repository as the record;
+- record a project's cloud threads too, through a Claude Code plugin that a person adds from a release's zip or from this repository as a marketplace.
 
-A repository turns it on or off with one file, its configuration file, and each person decides for themselves whether their own sessions are recorded.
+A repository turns it on or off with one file, its configuration file, and each person's own opt-in, which they set themselves or which the cloud environment that they use sets, decides whether their own sessions are recorded. An organization can also set it for its members.
 
 Usage is recorded by the directory that Claude is in when it makes each call, not by which files it touches. A call made from the repository is recorded there even when it works on another repository, so work on other repositories, private ones above all, belongs in sessions of its own.
 
@@ -43,7 +44,7 @@ Each line links the decision record that leaves it out. A later version may add 
 
 ## Compatibility and releases
 
-The tool runs on Python 3.11 and every later release, with the standard library only, so it fits into other projects without pulling anything in. The oldest supported version rises only when it nears its end of life, or when a security fix needs a newer one. Versions follow [Semantic Versioning](https://semver.org/), and each release on GitHub carries a CycloneDX software bill of materials and names the commit to pin. No version has been released yet.
+The tool runs on Python 3.11 and every later release, with the standard library only, so it fits into other projects without pulling anything in. The oldest supported version rises only when it nears its end of life, or when a security fix needs a newer one. Versions follow [Semantic Versioning](https://semver.org/), and each release on GitHub carries a CycloneDX software bill of materials and the plugin's zip, and names the commit to pin. No version has been released yet.
 
 ## Working on this repository
 

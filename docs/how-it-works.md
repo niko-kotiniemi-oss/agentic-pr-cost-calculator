@@ -6,19 +6,21 @@ The tool is designed and not built yet, so this page describes the design in `op
 
 ## In one paragraph
 
-A hook in each Claude Code session reads the session's transcript and, for a person who has opted in, keeps the token counts of the model calls made from the repository that holds the session's project directory while both switches were on, in a store of that person's own in the repository's git common directory, for no longer than 30 days. Just before the agent commits, it writes the waiting counts into a new ledger file and stages it, so the agent's own commit carries it. When the pull request merges, a GitHub Actions workflow reads the ledger files that the merge added, prices them from the dated price table at the tool's own commit, adds the CI minutes of the pull request's own commits from GitHub's jobs API, and posts one comment. The ledger stays in the repository as the record.
+A hook in each Claude Code session, from the hook file that a repository registers or from the plugin that a person adds, reads the session's transcript and, for a person who has opted in, keeps the token counts of the model calls made from each repository that it works on while both switches were on, in a store of that person's own in that repository's git common directory, for no longer than 30 days. Just before the agent commits, it writes the waiting counts into a new ledger file and stages it, so the agent's own commit carries it. When the pull request merges, a GitHub Actions workflow reads the ledger files that the merge added, prices them from the dated price table at the tool's own commit, adds the CI minutes of the pull request's own commits from GitHub's jobs API, and posts one comment. The ledger stays in the repository as the record.
 
 ## Parts
 
 | Part | Where it runs | Reads | Writes |
 |---|---|---|---|
 | Capture step, one standard-library Python file | The machine running the Claude Code session | The session's and its subagents' transcripts; the hook's input from Claude Code; `.pr-cost.json` in the working tree; `pr-cost.capture` in the person's two global git configuration files, and each value of it that git reads in the repository; the device and inode numbers, size and modification times of the files that hold it; the system's clock; the repository's git state | Its store in the git common directory, which only a run that finds both switches on creates; one ledger file per commit under `.pr-cost/ledger/`, staged; nothing else |
+| Plugin: a manifest, its hooks and the capture step | The machine running the Claude Code session, from the plugin's own folder, outside every working tree, in each session that loads it from the person's claude.ai account or a project's settings | As the capture step, in each repository that its run works on | As the capture step, in each repository that its run works on |
 | Store | Inside the repository's git common directory (`git rev-parse --git-common-dir`), one file for each user, `pr-cost-<uid>/store.json` where the system numbers users and `pr-cost/store.json` where it does not, outside the working tree and shared by its worktrees | Written and read by the hook only, as its owner, its folder and file readable and writable by that owner alone, except on Windows | Never committed; it keeps nothing past its retention window of 30 days, and is removed once it holds nothing |
-| Ledger files | `.pr-cost/ledger/<YYYY-MM>/<random>.jsonl`, committed with the agent's work | A first line that states the ledger format's version, the count of refused calls and three flags for calls left out, then counts per call, never content | Written once, never changed by the tool |
+| Ledger files | `.pr-cost/ledger/<YYYY-MM>/<random>.jsonl`, committed with the agent's work | A first line that states the ledger format's version, the release of the capture step that wrote it, the count of refused calls and three flags for calls left out, then counts per call, never content | Written once, never changed by the tool |
 | Configuration | `.pr-cost.json` at the repository root | `enabled`, as `true` or `false`, and no other key, since a file that holds a key that its format does not document, gives a key twice or has no `enabled` of `true` or `false` is not valid and leaves the tool off | Changed only by a pull request |
 | Price table | `prices/models.json` and `prices/github-actions.json`, at the tool's commit | Dated rates, modifiers and the source of each | A new row per price change, by pull request |
 | Report, a reusable workflow and its Python code | A GitHub Actions runner, on the push a merge makes to the default branch | The push event; as git blobs: the ledger files and `.pr-cost.json` before and after the merge, the ledger files of the default branch's first-parent history before it, and the hook file at the merged commit and at its own commit; the price table; GitHub's API | One comment on the merged pull request; its job summary |
-| Release workflow | A GitHub Actions runner, on a pushed tag `vMAJOR.MINOR.PATCH` | `pyproject.toml`, `CHANGELOG.md`, the tag's commit | A GitHub release with a CycloneDX bill of materials |
+| Release workflow | A GitHub Actions runner, on a pushed tag `vMAJOR.MINOR.PATCH` | `pyproject.toml`, the plugin's manifest, `CHANGELOG.md`, the tag's commit, and the README's checksum of the plugin's zip | A GitHub release with a CycloneDX bill of materials and the plugin's zip, created as a draft and published only once both are attached and checked |
+| Marketplace | `.claude-plugin/marketplace.json` on this repository's default branch, and the folder of the plugin that it lists | The tool's plugin alone, from a folder that holds it as a published release's tag builds it | Changed only by a pull request after a release that changes nothing else, which CI holds to that release's plugin |
 
 ## Inputs and outputs
 
@@ -26,16 +28,16 @@ A hook in each Claude Code session reads the session's transcript and, for a per
 
 - Claude Code's transcript lines, one JSON object per line: each assistant message's model, `usage` block (input, output, cache-write by lifetime, cache-read tokens), service tier, speed, inference region, server-side tool requests, the tools it called, and the working directory; and each line's time, its kind and the line that it names as its parent, which place a call inside or outside an interval.
 - Claude Code's hook input: the hook event, the session's id, the transcript's path, `cwd`, and for Bash commands the command's text and `tool_use_id`.
-- `.pr-cost.json`; the person's opt-in, `pr-cost.capture`, from their two global configuration files, and each value of it that git reads in the repository, with the file that each comes from; and the device and inode numbers, size and modification times of the files that hold it.
+- `.pr-cost.json`; the person's opt-in, `pr-cost.capture`, from their two global configuration files, which the person writes, or the setup script of the cloud environment that they use, and each value of it that git reads in the repository, with the file that each comes from; and the device and inode numbers, size and modification times of the files that hold it.
 - The system's clock, read in UTC.
 - The price table at the tool's own commit.
 - GitHub: the push event, the pull request that a commit belongs to, the workflow runs and job attempts on the pull request's own commits, and the report's own earlier comment.
 
 **Outputs:**
 
-- Ledger files: a first line that states the ledger format's version, the count of refused calls and three flags for calls left out, for consent, for their age or because their repository could not be told, with no count; then one entry per call: UTC day, model, a SHA-256 hash of the message id in a field whose name ends in `_id`, main agent or subagent, the token counts, the price attributes, the activity type, and marks for a call read without a stop reason or with a usage field that capture does not know.
+- Ledger files: a first line that states the ledger format's version, the release of the capture step that wrote it, the count of refused calls and three flags for calls left out, for consent, for their age or because their repository could not be told, with no count; then one entry per call: UTC day, model, a SHA-256 hash of the message id in a field whose name ends in `_id`, main agent or subagent, the token counts, the price attributes, the activity type, and marks for a call read without a stop reason or with a usage field that capture does not know.
 - One comment per merged pull request, and the report's job summary.
-- A GitHub release per version tag, with its bill of materials.
+- A GitHub release per version tag, with its bill of materials and the plugin's zip.
 
 ## How a cost is computed
 
@@ -95,12 +97,15 @@ sequenceDiagram
   participant H as Capture hook
   participant G as git common directory
   CC->>H: SessionStart, Stop, SubagentStop, StopFailure or SessionEnd, with the session's id, the transcript path and cwd
+  Note over H: A run of the plugin does what follows in each repository that it works on, as the next flow shows
+  Note over H: Outside the repository that holds the project directory, a run of the plugin starts a git command that can start a program that the repository's configuration names only before or after a git command of its session there, or to take back a file that its own session staged there
   H->>H: Read .pr-cost.json and the person's two global configuration files, before starting any program
   H->>H: Read the project directory's .git, the commondir file of the git folder that it names and each worktree's gitdir file, before starting any program, and stop, saying so, when one cannot be read, a worktree has no gitdir file, or this is a linked worktree whose git common directory is not named .git, as a submodule's is not, nor a bare repository's in a folder such as repo.git
   opt both are on
     H->>H: Ask git twice, in the session's environment and without its GIT_ variables, for each value of pr-cost.capture that it reads here, and take capture to be off when either answer does not come within the time budget, or when its last value, or the last value of any file but the two global ones, is not true
   end
   H->>G: Find the store, and stop, leaving it as it was, when this release does not know its version
+  H->>G: Unless the person's capture is off, stop when the store notes that a later release has run in this session, leaving the session to that release's copy
   alt either switch is off
     H->>G: Create no store. Remove one that does not parse. In one that parses, end this session's interval, noting this run's time, empty it if the person's capture is off, take back or put back what is due, drop what is older than the retention window, remove it if it then holds nothing, and record nothing
   else both are on
@@ -119,6 +124,38 @@ sequenceDiagram
     H->>G: Record each new call once, by the hash of its message id, with hashes of its session, worktree and branch, and note a flag for calls left out
   end
   H-->>CC: Exit 0, print nothing
+```
+
+### Which repositories a run works on
+
+```mermaid
+flowchart TD
+  A[A run of the capture step] --> B{Run by the hook file's registration or by the plugin?}
+  B -->|the hook file's registration| C[The repository that holds the project directory]
+  B -->|the plugin| D{Does a repository hold the project directory?}
+  D -->|yes| E[That repository]
+  D -->|no| F[Each repository whose top level is directly inside it, and none deeper]
+  B -->|the plugin| G[The repository that holds the hook input's cwd]
+  B -->|the plugin, before or after a git command| H[The repository where the git command runs]
+  C --> I[In each: record only the calls whose line gives a working directory in it]
+  E --> I
+  F --> I
+  G --> I
+  H --> I
+  I --> J[A call whose directory holds the repository's folder and names no repository: left out, and flagged in the session's next ledger file there]
+```
+
+### How the plugin reaches a session
+
+```mermaid
+flowchart LR
+  T[Release tag] --> Z[Plugin zip, whose SHA-256 the README at the tag's commit gives]
+  T --> F[A pull request after the release moves the marketplace's folder to it, and CI holds the folder to the tag's build]
+  Z -->|the person checks the checksum and uploads it| A[The person's claude.ai account or project]
+  F -->|claude.ai reads the default branch when the person checks for updates or turns on syncing, and the update needs nothing accepted| A
+  A --> S[A project's cloud thread, or a terminal session signed in with the account]
+  E[The environment's setup script: git config --global pr-cost.capture true] -->|opts in each session in that environment| S
+  V[The environment's variables GIT_CONFIG_COUNT, GIT_CONFIG_KEY_0 and GIT_CONFIG_VALUE_0, setting pr-cost.capture to false] -->|turn capture off in each session from its next restore| S
 ```
 
 ### A commit
@@ -201,20 +238,25 @@ flowchart TD
   T -->|no| X
   T -->|yes| B{Is its commit in the default branch's first-parent history?}
   B -->|no| X
-  B -->|yes| C{Tag matches pyproject.toml and CHANGELOG.md?}
+  B -->|yes| C{Tag matches pyproject.toml, the plugin's manifest and CHANGELOG.md?}
   C -->|no| X
   C -->|yes| S{Surface manifest changed, or a breaking change listed, without a raised major number and a Breaking section?}
   S -->|yes| X
-  S -->|no| D[Write the CycloneDX bill of materials from the tagged tree]
+  S -->|no| Z[Build the plugin's zip from the tagged tree]
+  Z -->|its SHA-256 differs from the README's, its manifest holds another key, a hook is not a command, or its capture step differs from the hook file| X
+  Z --> D[Write the CycloneDX bill of materials from the tagged tree]
   D -->|fails, misses an action, or a checksum differs| X
   D --> P{Private-reference check on the bill and the release text}
   P -->|match| X
-  P -->|clean| E[Publish the GitHub release naming the commit, with the changelog entry and the bill of materials]
+  P -->|clean| R[Create the release as a draft, naming the commit, with the changelog entry, and attach the bill of materials and the plugin's zip]
+  R --> V{Does each attached file, downloaded again, have the size and SHA-256 of the file built?}
+  V -->|no| W[Fail, naming the file: the release stays a draft and nothing is published]
+  V -->|yes| E[Publish the release]
 ```
 
 ## Credentials and permissions
 
-**On the session's machine:** none. The hook uses no token, no key and no account. It reads the person's two global git configuration files for `pr-cost.capture`, and asks git for each value of it that git reads in the repository, which can only turn capture off. It writes only its store inside the git common directory, a file of its own, in a folder of its own, that its owner alone can read and write, except on Windows, and the ledger file it stages, and touches the index only to stage, take back or put back that one file.
+**On the session's machine:** none. The hook uses no token, no key and no account, and the plugin runs the same file with the same rights, from its own folder. It reads the person's two global git configuration files for `pr-cost.capture`, and asks git for each value of it that git reads in the repository, which can only turn capture off. It writes only its store inside the git common directory, a file of its own, in a folder of its own, that its owner alone can read and write, except on Windows, and the ledger file it stages, and touches the index only to stage, take back or put back that one file, which a run of the plugin does outside the repository that holds the project directory only before or after a git command of its session there, or to take back a file that its own session staged there.
 
 **The report's workflow**, as an adopter calls it, uses the workflow's own `GITHUB_TOKEN` and no other secret. Its caller grants it exactly:
 
@@ -224,7 +266,7 @@ flowchart TD
 
 It needs no `contents: write`, so a ruleset protecting the default branch needs no exception for it.
 
-**The release workflow**, in this repository only, holds `contents: write` in its release job alone, to create the release and attach the bill of materials, and runs only for a pushed tag.
+**The release workflow**, in this repository only, holds `contents: write` in its release job alone, to create the release as a draft, attach the bill of materials and the plugin's zip, read them back and then publish the release, and runs only for a pushed tag.
 
 **This repository's CI** (`.github/workflows/ci.yml`) grants every job `contents: read` and nothing else. Its checkouts keep no credentials, and no job reads a secret. The job that runs the tests clones the whole history rather than one commit, so that the decision records' check can compare the records with what the default branch held before the change. The workflow names that commit in `BASE_COMMIT`: the pull request's base commit, or the commit that a push to the default branch replaced. The check also compares with where HEAD left the default branch, since a pull request's base is the branch that its author chose, and a pull request's run starts again when its base changes, and so when its title or description is edited, since GitHub reports these as one event. The repository is public, so the whole history gives the job nothing that it could not already read.
 
@@ -244,9 +286,9 @@ Each job of each workflow in this repository, with the permissions it is granted
 | Capture step | Nothing | None | The hook opens no network connection. | None |
 | Report | GitHub's REST API, at the host in `GITHUB_API_URL` (`api.github.com` on github.com) | HTTPS | Find the merged pull request, list its runs and jobs, post or update its comment | `GITHUB_TOKEN` |
 | Report | GitHub, by git, through `actions/checkout` and `git fetch` | HTTPS | Fetch the tool's own code at its commit, and the adopter's repository to read as data: the default branch's history up to the push's commit and the pull request's head as `refs/pull/<number>/head` | `GITHUB_TOKEN` |
-| Release workflow | GitHub's REST API | HTTPS | Create the release and upload the bill of materials | `GITHUB_TOKEN` |
+| Release workflow | GitHub's REST API | HTTPS | Create the release as a draft, upload the bill of materials and the plugin's zip, download each to check it, and publish the release | `GITHUB_TOKEN` |
 
-Prices are never fetched: the price table is a file at the tool's commit, changed only by a pull request.
+Prices are never fetched: the price table is a file at the tool's commit, changed only by a pull request. The plugin opens no connection either: claude.ai reads it from a release's zip that the person uploads, or from this repository's marketplace on its default branch, with the person's own account, when they check for updates or turn on syncing.
 
 **Developing this repository** also connects to these, none of which ships to adopters:
 
@@ -259,13 +301,15 @@ Prices are never fetched: the price table is a file at the tool's commit, change
 
 ## Environment variables
 
-As designed, the hook reads `CLAUDE_PROJECT_DIR`, `HOME`, `XDG_CONFIG_HOME` and `PATH`, and on Windows `HOMEDRIVE`, `HOMEPATH` and `USERPROFILE`. It sets `GIT_NO_LAZY_FETCH=1` and `GIT_TERMINAL_PROMPT=0` for every git command it runs, so that git fetches nothing and asks for no credentials. Its own reading of the opt-in ignores the variables that point git at other configuration files or add settings. Every git command that it starts runs without `PWD`, so that git matches a condition on a repository's folder against its real path, and without the session's variables whose names begin with `GIT_`, but those that it sets itself, so that they choose neither the repository, its index nor the files that git reads its settings from, save for one of the two git commands that ask for each value of the opt-in key, which runs in the session's own environment, its `PWD` included, where those variables and `PWD` can only turn capture off, and which the hook stops at its time budget, taking capture to be off, when a file that they name holds it up. The hook reads each run's time from the system's clock in UTC, which no variable sets. The report reads `GITHUB_API_URL`, `GITHUB_TOKEN` and the event that GitHub passes the workflow. Task 5.3 checks this list against the code once it exists.
+As designed, the hook reads `CLAUDE_PROJECT_DIR`, `HOME`, `XDG_CONFIG_HOME` and `PATH`, and on Windows `HOMEDRIVE`, `HOMEPATH` and `USERPROFILE`, and the plugin's command names the step's file through `CLAUDE_PLUGIN_ROOT`, the folder that Claude Code loaded the plugin from. It sets `GIT_NO_LAZY_FETCH=1` and `GIT_TERMINAL_PROMPT=0` for every git command it runs, so that git fetches nothing and asks for no credentials. Its own reading of the opt-in ignores the variables that point git at other configuration files or add settings. Every git command that it starts runs without `PWD`, so that git matches a condition on a repository's folder against its real path, and without the session's variables whose names begin with `GIT_`, but those that it sets itself, so that they choose neither the repository, its index nor the files that git reads its settings from, save for one of the two git commands that ask for each value of the opt-in key, which runs in the session's own environment, its `PWD` included, where those variables and `PWD` can only turn capture off, and which the hook stops at its time budget, taking capture to be off, when a file that they name holds it up. The hook reads each run's time from the system's clock in UTC, which no variable sets. The report reads `GITHUB_API_URL`, `GITHUB_TOKEN` and the event that GitHub passes the workflow. Task 5.3 checks this list against the code once it exists.
 
 ## What it never does
 
 - Put a prompt, a response, code, a file's contents, a tool's name, input or output, a path, a working directory, a branch name, a user name, a session identifier, a transcript's path, a `tool_use_id` or a time of day, or a hash of any of them, in a ledger file or in anything it publishes. For its own use, the person's store in the git common directory of their clone keeps, for no longer than 30 days, the worktree and branch that each waiting call goes to, a session's id, a transcript's path, a `tool_use_id` and the fingerprint of the files that hold the opt-in, each as a hash, and, only until a run resolves a staged or taken-back ledger file, that file's path and its worktree's name, and for a staged one its transcript's path, which carries the session's id, and nothing in the store leaves that directory.
-- Record the usage of anyone who has not turned capture on for themselves, or a call that it cannot show was made while both switches were on. A run that finds a switch off creates no store and adds nothing of its session to one, so someone who has never opted in leaves nothing in the git common directory, and an opt-out empties the store of everything but what a take-back or a put-back still needs, at a run of a release that knows the store's version.
+- Record the usage of anyone whose opt-in is not on, as they set it themselves, or as the cloud environment that they use or their organization's managed settings set it for them, or a call that it cannot show was made while both switches were on. The plugin, however it came to a session, opts no one in. A run that finds a switch off creates no store and adds nothing of its session to one, so someone who has never opted in leaves nothing in the git common directory, and an opt-out empties the store of everything but what a take-back or a put-back still needs, at a run of a release that knows the store's version.
 - Keep a copy of a transcript, or of any line of one, in any file.
+- Look for repositories below a session's project directory deeper than directly inside it: a run of the plugin meets a repository only through the project directory, Claude's current directory or a git command run there.
+- Start a git command that can start a program that a repository's own configuration names, such as `core.fsmonitor` or `gpg.program`, in a repository that a run of the plugin only meets or moves into, outside the one that holds the project directory: it starts one there only before or after a git command of the session there, or to take back a file that the session staged there.
 - Unpublish what was pushed. An opt-out, a removed ledger file or a removed store leaves each pushed ledger file in its branch's history, in every clone and fork that holds it, and in the comments already posted.
 - Send anything from the session's machine anywhere. The ledger leaves the machine only in the person's own commits, when they push.
 - Run, import or install anything from the pull request it reports on.

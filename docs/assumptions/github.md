@@ -4,8 +4,8 @@ The assumptions about GitHub: this repository's settings there, and its workflow
 
 ## A7. The repository's settings on GitHub are applied, and stay applied, as the threat model's section on the settings the owner keeps lists them.
 
-- **Rests on it:** R27, T28, T33, T35, T37, T61, T62, T64, T67, T68, T76, T100, DR-072, DR-073, DR-074, DR-075, DR-076, DR-077, DR-078, DR-084, DR-089, DR-114, DR-115, DR-119, DR-122, DR-140, DR-141, DR-144, DR-161
-- **If it is wrong:** Each answer that rests on a setting would fail without any sign: a change could reach `main` without a pull request or `ci`, also from an agent session acting as the owner's account (T62, T64), a release or its tag could change after adopters took it (T67), a workflow that declares no permissions could get a write token (T68), a fork's pull request could run CI before the owner looked at it (T37), two pull requests could take one record's number (T76), and a reporter could find no private route (T61). No test reads a setting on GitHub, so nothing would show that one changed (T100).
+- **Rests on it:** R27, T28, T33, T35, T37, T61, T62, T64, T67, T68, T76, T100, T132, T133, T142, DR-072, DR-073, DR-074, DR-075, DR-076, DR-077, DR-078, DR-084, DR-089, DR-114, DR-115, DR-119, DR-122, DR-140, DR-141, DR-144, DR-161, DR-203
+- **If it is wrong:** Each answer that rests on a setting would fail without any sign: a change could reach `main` without a pull request or `ci`, also from an agent session acting as the owner's account (T62, T64), a release or its tag could change after adopters took it (T67), a workflow that declares no permissions could get a write token (T68), a fork's pull request could run CI before the owner looked at it (T37), two pull requests could take one record's number (T76), a reporter could find no private route (T61), a published release's zip could change after people checked it (T133), and someone could serve another plugin from the address that people added the marketplace by (T142). No test reads a setting on GitHub, so nothing would show that one changed (T100).
 - **Fact:** A ruleset that requires branches to be up to date before merging makes a pull request's CI run on what the default branch holds before the pull request merges.
   - **Relied on:** T76, DR-119
   - **Checked:** not yet: none will, since no test may reach GitHub
@@ -13,16 +13,16 @@ The assumptions about GitHub: this repository's settings there, and its workflow
   - **Relied on:** T37, T100, DR-078, DR-115, `docs/threat-model.md`
   - **Checked:** not yet: none will, since no test may read a setting on GitHub
 - **Fact:** **The ruleset on `main`** is set as the threat model's section on the settings the owner keeps says, and stays so.
-  - **Relied on:** T28, T33, T35, T62, T64, T100, DR-072, DR-084, DR-089, DR-140, `docs/threat-model.md`
+  - **Relied on:** T28, T33, T35, T62, T64, T100, T132, DR-072, DR-084, DR-089, DR-140, `docs/threat-model.md`
   - **Checked:** not yet: none will, since no test may read a setting on GitHub
 - **Fact:** **Branches up to date before merging** is set as the threat model's section on the settings the owner keeps says, and stays so.
   - **Relied on:** T76, T100, DR-119, `docs/threat-model.md`
   - **Checked:** not yet: none will, since no test may read a setting on GitHub
 - **Fact:** **A tag ruleset on every tag** is set as the threat model's section on the settings the owner keeps says, and stays so.
-  - **Relied on:** R27, T28, T64, T67, T100, DR-073, DR-122, DR-144, DR-161, `docs/threat-model.md`
+  - **Relied on:** R27, T28, T64, T67, T100, T132, T133, DR-073, DR-122, DR-144, DR-161, `docs/threat-model.md`
   - **Checked:** not yet: none will, since no test may read a setting on GitHub
 - **Fact:** **Immutable releases** is set as the threat model's section on the settings the owner keeps says, and stays so.
-  - **Relied on:** T67, T100, DR-074, `docs/threat-model.md`
+  - **Relied on:** T67, T100, T133, DR-074, `docs/threat-model.md`
   - **Checked:** not yet: none will, since no test may read a setting on GitHub
 - **Fact:** **Code-owner review off** is set as the threat model's section on the settings the owner keeps says, and stays so.
   - **Relied on:** T62, T64, T100, DR-075, DR-141, `docs/threat-model.md`
@@ -32,6 +32,9 @@ The assumptions about GitHub: this repository's settings there, and its workflow
   - **Checked:** not yet: none will, since no test may read a setting on GitHub
 - **Fact:** **Private vulnerability reporting on** is set as the threat model's section on the settings the owner keeps says, and stays so.
   - **Relied on:** T61, T100, DR-077, DR-114, `docs/threat-model.md`
+  - **Checked:** not yet: none will, since no test may read a setting on GitHub
+- **Fact:** **The account's and the repository's names kept** is set as the threat model's section on the settings the owner keeps says, and stays so.
+  - **Relied on:** T100, T142, DR-203, `docs/threat-model.md`
   - **Checked:** not yet: none will, since no test may read a setting on GitHub
 - **Fact:** GitHub does not let a pull request's author approve it.
   - **Relied on:** T62, T64, DR-075, DR-140, DR-141
@@ -89,19 +92,42 @@ The assumptions about GitHub: this repository's settings there, and its workflow
   - **Relied on:** T61, DR-115
   - **Checked:** not yet: none will, since no test may reach GitHub
 
+## A27. Tags and releases can be protected from change.
+
+- **Rests on it:** R27, R28, R68, R72, R189, T23, T28, T29, T64, T67, T69, T132, T133, T139, DR-061, DR-073, DR-074, DR-097, DR-144, DR-161, DR-209
+- **If it is wrong:** An identity with `contents: write`, such as an agent session acting as the owner's account, could publish a release on an unreviewed commit, or change one after adopters took it (T67, T64, T28). A tag named like the default branch could pass the report's check of the event (T23, T29), and the bill of materials could list parts that a release's archive does not hold (T69). A release could be published before its files are attached, or its zip replaced after people checked it (T139, T133).
+- **Fact:** A push of a tag has a `github.ref` that begins `refs/tags/`, while its `github.ref_name` is the tag's name alone, so a tag named like the default branch shares the branch's `github.ref_name` but not its `github.ref`.
+  - **Relied on:** R68, T23, T29, DR-061
+  - **Checked:** not yet: none will, since no test may reach GitHub; `add-pr-cost-calculator` task 4.3 tests only what this repository does with it
+- **Fact:** Any identity with `contents: write` can create a release and its tag through the API, with no workflow at all and with a tag of any name.
+  - **Relied on:** T64, T67, DR-073, DR-144, DR-161
+  - **Checked:** not yet: none will, since no test may reach GitHub
+- **Fact:** A tag ruleset that covers every tag also governs a tag that GitHub's releases API creates, so an identity with `contents: write` cannot create a release with a new tag without the ruleset's bypass.
+  - **Relied on:** R27, T28, T64, T67, T132, T133, DR-073, DR-144, DR-161
+  - **Checked:** not yet: none will, since no test may reach GitHub
+- **Fact:** GitHub's immutable releases stop a published release from changing and its tag from moving.
+  - **Relied on:** T67, T133, T139, DR-074
+  - **Checked:** not yet: none will, since no test may reach GitHub
+- **Fact:** GitHub publishes a release when it is created, unless it is created as a draft, and attaches a release's files by calls of their own after that.
+  - **Relied on:** R189, T139, DR-209
+  - **Checked:** not yet: none will, since no test may reach GitHub; `add-pr-cost-calculator` task 6.3 tests only the order of the workflow's calls, against recorded responses
+- **Fact:** GitHub's source archive of a release holds the vendored and generated parts.
+  - **Relied on:** R28, R72, T69, DR-097
+  - **Checked:** not yet: none will, since no test may reach GitHub
+
 ## A18. A merge into the default branch makes one push, and that push starts the adopter's calling workflow.
 
 - **Rests on it:** R19, R27, R58, R62, R68, R69, R93, R120, R129, T19, T20, T21, T22, T23, T50, T67, T68, T70, T88, DR-005, DR-017, DR-018, DR-019, DR-051, DR-061, DR-073, DR-092, DR-121, DR-122, DR-133, DR-147, DR-148, DR-186
 - **If it is wrong:** A merge that makes no push, or whose push starts no workflow, would get no report, and nothing would say why (T21, T23). A push that named another commit as the one it replaced would make the report count the wrong ledger files as the merge's own (T19, T20), and a run that a merge starts through another event, created before the merge time, would be counted as the pull request's, so the CI figure would be too high without saying so (T22, T88).
 - **Fact:** Every merge into the default branch, by hand, by auto-merge or through a merge queue, makes a push to that branch, and that push starts the adopter's calling workflow.
   - **Relied on:** R19, R58, R68, R69, T19, T21, T23, DR-005, DR-018, DR-061, DR-092, DR-133, DR-147
-  - **Checked:** not yet: `add-pr-cost-calculator` task 7.1 meets it once, at this change's own merge
+  - **Checked:** not yet: `add-pr-cost-calculator` task 7.1 meets it once, at the merge of that task's own pull request
 - **Fact:** An event that `GITHUB_TOKEN` causes, such as the push of a merge that a workflow makes, creates no new workflow run, apart from `workflow_dispatch`, `repository_dispatch` and some `pull_request` events, so such a merge gets no report.
   - **Relied on:** R68, T50, DR-018
   - **Checked:** documented: <https://github.com/github/docs/blob/33b1f4a6fec2d9b6fd3d374afa56bcd9f0875b57/data/reusables/actions/actions-do-not-trigger-workflows.md>, read 2026-11-01
 - **Fact:** The push that a merge makes names, as the commit it replaced, the default branch just before the merge, and its own commit is the default branch just after it.
   - **Relied on:** R19, R58, R129, T19, T20, T70, DR-017, DR-121
-  - **Checked:** not yet: `add-pr-cost-calculator` task 7.1 meets it once, at this change's own merge
+  - **Checked:** not yet: `add-pr-cost-calculator` task 7.1 meets it once, at the merge of that task's own pull request
 - **Fact:** GitHub creates a workflow run that a merge starts through an event other than its push, such as the pull request's `closed` event, no earlier than the pull request's merge time. Its documentation does not order the two times.
   - **Relied on:** R62, R120, T22, T88, DR-019, DR-147
   - **Checked:** not yet: none will, since none of this repository's own workflows runs on such an event, so its own merges cannot check this
@@ -124,7 +150,7 @@ The assumptions about GitHub: this repository's settings there, and its workflow
   - **Checked:** not yet: none will, since no test may reach GitHub
 - **Fact:** The report's three permissions, `contents: read`, `actions: read` and `pull-requests: write`, are enough for every call it makes: fetching history and `refs/pull/<number>/head`, looking up pull requests, listing runs and job attempts, and posting and updating its comment.
   - **Relied on:** R24, T24, T29, DR-016, DR-063
-  - **Checked:** not yet: `add-pr-cost-calculator` task 7.1 meets it once, at this change's own merge
+  - **Checked:** not yet: `add-pr-cost-calculator` task 7.1 meets it once, at the merge of that task's own pull request
 - **Fact:** `GITHUB_API_URL` names GitHub's API host, and a calling workflow cannot point it elsewhere.
   - **Relied on:** R30, T24, DR-090
   - **Checked:** not yet: none will, since no test may reach GitHub; `add-pr-cost-calculator` task 1.13 tests only what this repository does with it
@@ -144,7 +170,7 @@ The assumptions about GitHub: this repository's settings there, and its workflow
   - **Checked:** not yet: none will, since no test may reach GitHub; `add-pr-cost-calculator` task 4.3 tests only what this repository does with it
 - **Fact:** The runner that runs the report has a `python3` at or above the supported floor, since the report runs with `python3 -I` and no step installs Python for it.
   - **Relied on:** R24, R25, DR-023, DR-062
-  - **Checked:** not yet: `add-pr-cost-calculator` task 7.1 meets it once, at this change's own merge
+  - **Checked:** not yet: `add-pr-cost-calculator` task 7.1 meets it once, at the merge of that task's own pull request
 - **Fact:** GitHub's hosted runners, and the `python3` and `git` installed on them, are trustworthy, though nothing pins the runner image.
   - **Relied on:** R24, R27, T23, T24, T68, DR-067, DR-076
   - **Checked:** not yet: none will, since no test may reach GitHub
@@ -166,41 +192,24 @@ The assumptions about GitHub: this repository's settings there, and its workflow
   - **Relied on:** R27, R34, T58, T63, T95, DR-068, DR-122, DR-156
   - **Checked:** not yet: none will, since no test may reach GitHub
 
-## A27. Tags and releases can be protected from change.
-
-- **Rests on it:** R27, R28, R68, R72, T23, T28, T29, T64, T67, T69, DR-061, DR-073, DR-074, DR-097, DR-144, DR-161
-- **If it is wrong:** An identity with `contents: write`, such as an agent session acting as the owner's account, could publish a release on an unreviewed commit, or change one after adopters took it (T67, T64, T28). A tag named like the default branch could pass the report's check of the event (T23, T29), and the bill of materials could list parts that a release's archive does not hold (T69).
-- **Fact:** A push of a tag has a `github.ref` that begins `refs/tags/`, while its `github.ref_name` is the tag's name alone, so a tag named like the default branch shares the branch's `github.ref_name` but not its `github.ref`.
-  - **Relied on:** R68, T23, T29, DR-061
-  - **Checked:** not yet: none will, since no test may reach GitHub; `add-pr-cost-calculator` task 4.3 tests only what this repository does with it
-- **Fact:** Any identity with `contents: write` can create a release and its tag through the API, with no workflow at all and with a tag of any name.
-  - **Relied on:** T64, T67, DR-073, DR-144, DR-161
-  - **Checked:** not yet: none will, since no test may reach GitHub
-- **Fact:** A tag ruleset that covers every tag also governs a tag that GitHub's releases API creates, so an identity with `contents: write` cannot create a release with a new tag without the ruleset's bypass.
-  - **Relied on:** R27, T28, T64, T67, DR-073, DR-144, DR-161
-  - **Checked:** not yet: none will, since no test may reach GitHub
-- **Fact:** GitHub's immutable releases stop a published release from changing and its tag from moving.
-  - **Relied on:** T67, DR-074
-  - **Checked:** not yet: none will, since no test may reach GitHub
-- **Fact:** GitHub's source archive of a release holds the vendored and generated parts.
-  - **Relied on:** R28, R72, T69, DR-097
-  - **Checked:** not yet: none will, since no test may reach GitHub
-
 ## A28. GitHub, and this repository's place on it, stay as they are.
 
-- **Rests on it:** R24, R34, T63, DR-062, DR-068, DR-090, DR-092, DR-096, DR-114, DR-118, DR-132, DR-147, DR-157
-- **If it is wrong:** The check of pins could not tell a tagged commit from one that only a fork holds (T63). A change in GitHub's API would skew the report in adopters' CI while every test passes, and a repository made private or renamed would break the adopters who call its workflow.
+- **Rests on it:** R24, R34, T63, T142, DR-062, DR-068, DR-090, DR-092, DR-096, DR-114, DR-118, DR-132, DR-147, DR-157, DR-203
+- **If it is wrong:** The check of pins could not tell a tagged commit from one that only a fork holds (T63). A change in GitHub's API would skew the report in adopters' CI while every test passes, and a repository made private or renamed would break the adopters who call its workflow, and would leave the people who added the marketplace on an address that someone else can take (T142).
 - **Fact:** CI can read the source of each action and container image that a workflow uses, to list the tags that name a pin.
   - **Relied on:** R34, T63, DR-068
   - **Checked:** not yet: none will, since no test may reach GitHub
-- **Fact:** GitHub's API keeps the shape that the recorded responses hold, so tests against recordings and one live run at this change's own merge stand for what adopters' CI will meet.
+- **Fact:** GitHub's API keeps the shape that the recorded responses hold, so tests against recordings and one live run, at the merge of the pull request that does `add-pr-cost-calculator` task 7.1, stand for what adopters' CI will meet.
   - **Relied on:** DR-090, DR-092, DR-147
-  - **Checked:** not yet: `add-pr-cost-calculator` task 7.1 meets it once, at this change's own merge
+  - **Checked:** not yet: `add-pr-cost-calculator` task 7.1 meets it once, at the merge of that task's own pull request
 - **Fact:** This repository stays public, so any repository's workflow can call its reusable workflow and check out its code, and its whole history gives CI nothing it could not already read.
   - **Relied on:** R24, DR-062, DR-114, DR-132, DR-157
   - **Checked:** not yet: none will, since no test may reach GitHub
 - **Fact:** Renaming this repository would break adopters' references to its reusable workflow, since GitHub's redirect for a renamed repository is taken not to carry `uses:` references.
   - **Relied on:** DR-096, DR-118
+  - **Checked:** not yet: none will, since no test may reach GitHub
+- **Fact:** When an account or a repository on GitHub is renamed, its old address leads to the new one only until someone takes the old name, and then leads to theirs.
+  - **Relied on:** T142, DR-203
   - **Checked:** not yet: none will, since no test may reach GitHub
 
 ## A35. GitHub enforces the permissions a workflow declares, gives runs from forks a read-only token, and gives a reusable workflow its caller's event, as its documentation says.
@@ -223,16 +232,16 @@ The assumptions about GitHub: this repository's settings there, and its workflow
 - **If it is wrong:** A head ref that went missing marks the CI cost incomplete, as designed, but one that named other commits, or runs that named the test merge commit, would make the report count the wrong runs or miss them, without saying so (T22).
 - **Fact:** A pull request's head stays fetchable by git as `refs/pull/<number>/head` after the merge, for a pull request from a fork too, and names the pull request's last head.
   - **Relied on:** R23, R62, R64, R120, T22, DR-019, DR-038, DR-110
-  - **Checked:** not yet: `add-pr-cost-calculator` task 7.1 meets it once, at this change's own merge
+  - **Checked:** not yet: `add-pr-cost-calculator` task 7.1 meets it once, at the merge of that task's own pull request
 - **Fact:** Commits that a force-push removed from a pull request are no longer in `refs/pull/<number>/head`, so CI runs on them are not counted.
   - **Relied on:** R62, T22, DR-019
   - **Checked:** not yet: none will, since no test may reach GitHub
 - **Fact:** A squash merge puts one new commit on the default branch and GitHub's rebase merge always makes new commits, so neither brings to the default branch the commits that CI ran on.
   - **Relied on:** R62, R120, T22, DR-019
-  - **Checked:** not yet: `add-pr-cost-calculator` task 7.1 meets it once, at this change's own merge
+  - **Checked:** not yet: `add-pr-cost-calculator` task 7.1 meets it once, at the merge of that task's own pull request
 - **Fact:** A `pull_request` run names the pull request's head commit as its head commit, not the test merge commit, so listing each of the pull request's commits finds its runs.
   - **Relied on:** R62, T22, DR-019, DR-038
-  - **Checked:** not yet: `add-pr-cost-calculator` task 7.1 meets it once, at this change's own merge
+  - **Checked:** not yet: `add-pr-cost-calculator` task 7.1 meets it once, at the merge of that task's own pull request
 
 ## A49. GitHub's lookup of the pull requests associated with a commit behaves as documented: for a commit on the default branch, it gives the merged pull request that introduced the commit.
 
@@ -243,7 +252,7 @@ The assumptions about GitHub: this repository's settings there, and its workflow
   - **Checked:** documented: <https://github.com/github/docs/blob/33b1f4a6fec2d9b6fd3d374afa56bcd9f0875b57/src/rest/data/fpt-2022-11-28/commits.json>, read 2026-11-01
 - **Fact:** GitHub's lookup of the pull requests associated with a commit finds the pull request for the commits that every merge method puts on the default branch: a merge commit, a squash, a rebase merge and a fast-forward.
   - **Relied on:** R69, T19, DR-133
-  - **Checked:** not yet: `add-pr-cost-calculator` task 7.1 meets it once, at this change's own merge
+  - **Checked:** not yet: `add-pr-cost-calculator` task 7.1 meets it once, at the merge of that task's own pull request
 - **Fact:** One push to the default branch can merge several pull requests, as a merge queue can, or add commits that belong to no pull request.
   - **Relied on:** R69, T19, DR-133
   - **Checked:** not yet: none will, since no test may reach GitHub; `add-pr-cost-calculator` task 4.1 tests only what this repository does with it
@@ -254,13 +263,13 @@ The assumptions about GitHub: this repository's settings there, and its workflow
 - **If it is wrong:** Job attempts after the first, unfinished jobs or listings cut short without a sign would make the CI cost too low, or price it as if whole, while the comment shows it as complete (T22, T51). The call budget would be set against the wrong limits (T51), and once runs expire, a report's CI figures could not be recomputed (T27).
 - **Fact:** GitHub lists a repository's runs per commit, or filtered by event and by creation time, and each run names the event and branch that started it, so runs that a push to the default branch started can be told apart.
   - **Relied on:** R62, R120, R121, T22, T51, DR-019, DR-039, DR-110
-  - **Checked:** not yet: `add-pr-cost-calculator` task 7.1 meets it once, at this change's own merge
+  - **Checked:** not yet: `add-pr-cost-calculator` task 7.1 meets it once, at the merge of that task's own pull request
 - **Fact:** GitHub's jobs API gives each job's start and end times with the default `GITHUB_TOKEN` and `actions: read`, whichever way the pull request merged.
   - **Relied on:** R18, R24, R62, T22, DR-038, DR-063, DR-110
-  - **Checked:** not yet: `add-pr-cost-calculator` task 7.1 meets it once, at this change's own merge
+  - **Checked:** not yet: `add-pr-cost-calculator` task 7.1 meets it once, at the merge of that task's own pull request
 - **Fact:** The jobs API lists only the latest attempt of each job unless it is asked for all of them, and lists every attempt when asked.
   - **Relied on:** R62, T22, DR-038, DR-110
-  - **Checked:** not yet: `add-pr-cost-calculator` task 7.1 meets it once, at this change's own merge
+  - **Checked:** not yet: `add-pr-cost-calculator` task 7.1 meets it once, at the merge of that task's own pull request
 - **Fact:** The jobs API gives a job that has not finished no end time.
   - **Relied on:** R64, T22, DR-038
   - **Checked:** not yet: none will, since no test may reach GitHub; `add-pr-cost-calculator` task 3.3 tests only what this repository does with it
@@ -284,7 +293,7 @@ The assumptions about GitHub: this repository's settings there, and its workflow
   - **Checked:** not yet: none will, since no test may reach GitHub
 - **Fact:** GitHub keeps the runs and job timings that a report used listable long enough for the report's CI figures to be recomputed later.
   - **Relied on:** R94, T27, DR-015, DR-020, DR-038
-  - **Checked:** not yet: `add-pr-cost-calculator` task 7.1 meets it once, at this change's own merge
+  - **Checked:** not yet: `add-pr-cost-calculator` task 7.1 meets it once, at the merge of that task's own pull request
 
 ## A64. GitHub bills job minutes from job times.
 

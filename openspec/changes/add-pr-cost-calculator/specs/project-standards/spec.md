@@ -434,13 +434,23 @@ The threat model SHALL number its threats from T1 in order, and a threat that a 
 - **WHEN** `docs/decisions/` holds a folder, a link, or a file that is neither a record nor the index, or a file elsewhere is named as a record
 - **THEN** a test fails and names the file
 
-### Requirement: No attribute hides a record's diff
+### Requirement: No attribute hides the diff of a record or of what the marketplace serves, or changes the plugin's checkout
 
-No attribute that the repository sets SHALL make git show a record's or the index's diff as binary, or GitHub hide it as generated, so that whoever merges a pull request reads each change that it makes to a record.
+No attribute that the repository sets SHALL make git show as binary, or GitHub hide as generated, the diff of a record, the index, the root marketplace file or a file in the plugin folder that it names, so that whoever merges a pull request reads each change that it makes to them, nor make git's checkout of the hook file or of a file in that folder write more than other line endings.
 
 #### Scenario: An attribute that hides a record's diff fails CI
 
 - **WHEN** the repository's attributes give a record or the index `binary`, `diff` or `linguist-generated`, in any state
+- **THEN** a test fails and names the file and the attribute
+
+#### Scenario: An attribute that hides the marketplace's diff fails CI
+
+- **WHEN** the repository's attributes give the root marketplace file, or a file in the plugin folder that it names, `binary`, `diff` or `linguist-generated`, in any state
+- **THEN** a test fails and names the file and the attribute
+
+#### Scenario: An attribute that changes the plugin's checkout fails CI
+
+- **WHEN** the repository's attributes give the hook file, or a file in the plugin folder that the root marketplace file names, `working-tree-encoding`, `ident` or `filter`, in any state
 - **THEN** a test fails and names the file and the attribute
 
 #### Scenario: A person's own attributes are not read
@@ -656,12 +666,66 @@ The README, the opt-in's feature page and the ledger's SHALL say that an opt-out
 
 ### Requirement: The documentation says where an opt-in applies
 
-The README and the opt-in's feature page SHALL say that one opt-in covers every repository that turns the tool on, those that adopt it later among them, with no notice in any of them; that a repository's own setting that turns capture off holds only in that clone; and how a person turns capture off for a folder with git's own conditional includes, and where that stops.
+The README and the opt-in's feature page SHALL say that one opt-in covers every repository that turns the tool on, those that adopt it later among them, with no notice in any of them, and with the plugin each one where the person's sessions work or commit, whether or not it registers the hook; that a repository's own setting that turns capture off holds only in that clone; and how a person turns capture off for a folder with git's own conditional includes, and where that stops.
 
 #### Scenario: The opt-in's pages say where an opt-in applies
 
 - **WHEN** the README's section on the opt-in and the opt-in's feature page are read
-- **THEN** each says that one opt-in covers every repository that turns the tool on, later ones too, with no notice, that a repository's own setting that turns capture off holds only in that clone, and how to turn capture off for a folder and where that stops: in a linked worktree there whose repository lies elsewhere, for a folder named through a symbolic link, and when the file that the include names is missing
+- **THEN** each says that one opt-in covers every repository that turns the tool on, later ones too, with no notice, and with the plugin each one where the person's sessions work or commit, whether or not it registers the hook, that a repository's own setting that turns capture off holds only in that clone, and how to turn capture off for a folder and where that stops: in a linked worktree there whose repository lies elsewhere, for a folder named through a symbolic link, and when the file that the include names is missing
+
+### Requirement: The documentation says how capture covers a project's cloud threads
+
+The README and the capture's feature page SHALL say that a project's cloud threads run capture only through the plugin, give the setup script's line, which opts in each session in that environment in every repository that turns the tool on, and say that calls from the folder that holds the clones are left out and flagged, that a call from a clone counts there whatever clone it works on, how to keep a session in a repository, and that a machine not resumed loses calls that no commit took.
+
+#### Scenario: The pages say how a cloud thread is covered
+
+- **WHEN** the README's section on cloud threads and the capture's feature page are read
+- **THEN** each says that a project's cloud threads run capture only through the plugin, gives the setup script's line and says that it opts in each session in that environment, in every repository that turns the tool on, says that calls made from the folder that holds the clones are left out and flagged, that a call made from one clone counts there whatever clone it works on, so that a project that holds a repository that turns the tool on should hold no repository whose work must stay private, says how to keep a session inside a repository, and says that a machine that cannot be resumed loses the calls that no commit took
+
+### Requirement: The documentation says how to turn capture off in a session that is running, and how to check it
+
+The README SHALL say that removing the setup script's line, or using another environment, reaches only the sessions that start, or whose machines are rebuilt, afterwards; that `git config --global pr-cost.capture false` in a session turns capture off there, and the variables `GIT_CONFIG_COUNT=1`, `GIT_CONFIG_KEY_0=pr-cost.capture` and `GIT_CONFIG_VALUE_0=false` on an environment from each session's next restore; what can undo each; and how to see a session's opt-in.
+
+#### Scenario: The README says how to turn capture off in a running session
+
+- **WHEN** the README's section on turning capture off is read
+- **THEN** it says that removing the setup script's line, or using another environment, reaches only sessions that start, or whose machines are rebuilt, afterwards, gives `git config --global pr-cost.capture false` for a running session and the three `GIT_CONFIG_` variables for an environment, which each of its sessions reads at its next restore, says that the first holds until something writes the opt-in again, as the setup script does on a machine that is rebuilt and an organization's hook can at a session's start or resume, and the variables unless a settings file that the session loads sets `GIT_CONFIG_COUNT` itself, says that the three are for an environment that sets no other `GIT_CONFIG_` variable and how one that does adds the pair, gives `git config --show-origin --get-all pr-cost.capture` to see each value of a session's opt-in and where it comes from, says that `git config --global --get pr-cost.capture` shows only the global file's value, and gives `/hooks` to see the hooks that run
+
+### Requirement: The documentation says how an organization turns capture on for its members
+
+The README SHALL say how an organization turns the plugin on for its members and puts the opt-in's line in a shared environment, which sessions each reaches, that a member who has picked no environment uses the organization's default, that its managed settings can opt members in, in any session, that it tells its members so and what is then published, how a member sees what turns capture on and turns it off, and that Projects are not offered on Team or Enterprise plans yet.
+
+#### Scenario: The README says what an organization's option does
+
+- **WHEN** the README's section on organizations is read
+- **THEN** it says how an organization turns the plugin on for its members and puts the opt-in's line in a shared environment, which sessions each reaches, that a member who has not picked an environment uses the organization's default, that the organization's managed settings can also opt members in, in terminal and cloud sessions alike, that the organization tells its members so and what is then published, that a person's own line belongs in an environment of their own, how a member sees what turns capture on, with git's `--show-origin` and `/hooks`, and turns it off, and that Projects are not offered on Team or Enterprise plans yet
+
+### Requirement: The documentation gives both ways to install the plugin, the zip first
+
+The README SHALL give the release's zip first, with the command that checks its SHA-256 against the README at the release's commit, then this repository as a marketplace, saying when its updates arrive and that nothing needs accepting once one has synced, that a fixed release comes from its zip, since a release's tag holds an earlier plugin, that a zip follows no address, that a plugin loaded in place runs whatever its folder holds, and that a repository still copies the hook file.
+
+#### Scenario: The README gives the zip first and the marketplace second
+
+- **WHEN** the README's section on installing the plugin, and its section on adopting the tool, are read
+- **THEN** the section on installing the plugin gives the release's zip first, with the command that checks its SHA-256, then the repository as a marketplace, on claude.ai or with Claude Code's command, says that a marketplace's update arrives when the person checks for updates, or by itself once they turn on syncing, with nothing to accept once it has synced, that a fixed release comes from its zip and not from a marketplace pinned to the release's tag, which holds an earlier release's plugin or none, since the marketplace's folder moves only after a release, that a zip follows no address, that the plugin is installed only from a release's zip or from this repository's GitHub address, since one loaded in place runs whatever its folder holds, and that a repository still copies the hook file, and the section on adopting the tool names the plugin and points to that section
+
+### Requirement: The documentation says which release of the plugin runs, and what that changes
+
+The README SHALL say that the release of the plugin that a session runs, not the repository's pinned report, writes that session's ledger files, what a later or an earlier plugin then does, as an earlier copy leaving a session or a store to a later one, that a repository keeps its pin current and a person keeps their plugin current, that one copy of a plugin's name runs its hooks, how to see which, and that a tag with no published release is not a version.
+
+#### Scenario: The README says which release of the plugin runs
+
+- **WHEN** the README's section on installing the plugin is read
+- **THEN** it says that the plugin's release, not the repository's pinned report, writes the ledger files of the sessions that run it, what a later plugin's ledger files do to an earlier report and what an earlier plugin does beside a later copy or store, that a repository keeps its pin current and a person keeps their plugin current, that only one copy of a plugin's name runs its hooks, how to see which one in a terminal session and what a cloud session shows, and that a tag with no published release is not a version to pin or install
+
+### Requirement: The documentation says where the plugin leaves a staged ledger file
+
+The README SHALL say that a plugin run meets a repository only through the project directory, Claude's directory or a git command run there, and outside the repository that holds the project directory takes back another session's file only where its own session runs git, so that a ledger file that a refused commit staged in a repository that the session then leaves stays staged until a later run of that session meets it, or a session runs git there, and how to look for one and take it back.
+
+#### Scenario: The README says how to find a ledger file left staged in a repository that a session left
+
+- **WHEN** the README's section on installing the plugin is read
+- **THEN** it says that a ledger file that a refused commit staged in a repository that the session then left stays staged until a later run of that session meets that repository, or a session runs git there, and how to look for one with `git status` and take it back
 
 ### Requirement: Each ledger format that a release wrote keeps its golden figures
 
