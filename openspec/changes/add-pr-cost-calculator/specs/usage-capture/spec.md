@@ -944,7 +944,7 @@ The tool SHALL also ship the capture step as a Claude Code plugin, whose hooks S
 
 #### Scenario: The plugin's hooks match the hook file's registration
 
-- **WHEN** the plugin's hooks, read from each file that can declare them, and the hook file's registration that the README gives are read
+- **WHEN** the hooks of the plugin that a commit builds, read from each file that can declare them, and the hook file's registration that the README at that commit gives are read
 - **THEN** they name the same events, matchers, conditions and timeouts, and the plugin's command runs the step from the plugin's own folder with the argument that names the plugin form and the SHA-256 of the plugin's capture step
 
 #### Scenario: The plugin's command succeeds when its step cannot run

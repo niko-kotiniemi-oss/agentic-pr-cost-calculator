@@ -68,7 +68,7 @@ The assumptions about git: what its commands, options, attributes, locks and con
   - **Checked:** not yet: `add-pr-cost-calculator` task 4.3 checks it
 - **Fact:** Given a short name, `git fetch` takes a branch of that name where no tag of it exists, so only a ref named in full, as `refs/tags/v1.3.0`, is certain to be a tag.
   - **Relied on:** R184, T138, DR-204
-  - **Checked:** not yet: `add-pr-cost-calculator` task 6.7 checks it
+  - **Checked:** not yet: `add-pr-cost-calculator` task 6.9 checks it
 - **Fact:** git allows shell characters in tag names.
   - **Relied on:** R27, T68, DR-148
   - **Checked:** not yet: `add-pr-cost-calculator` task 6.3 and `add-pr-cost-calculator` task 6.1 check it

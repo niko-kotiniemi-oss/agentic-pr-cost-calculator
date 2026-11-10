@@ -119,13 +119,13 @@ The assumptions about the teams that adopt the tool, the people who opt in, and 
 
 ## A23. Adopters pin released commits, and update the hook and the pin together.
 
-- **Rests on it:** R17, R24, R27, R28, R65, R71, R77, R88, R93, R98, R122, R123, R183, T24, T28, T29, T53, T54, T58, T60, T64, T67, T69, T123, T133, T136, DR-020, DR-022, DR-040, DR-054, DR-058, DR-062, DR-063, DR-065, DR-072, DR-073, DR-096, DR-097, DR-122, DR-123, DR-124, DR-132, DR-133, DR-139, DR-144, DR-149, DR-154, DR-156, DR-190, DR-203, DR-206, DR-208
+- **Rests on it:** R17, R24, R27, R28, R65, R71, R77, R88, R93, R98, R122, R123, R183, T24, T28, T29, T53, T54, T58, T60, T64, T67, T69, T123, T133, T136, DR-020, DR-022, DR-040, DR-054, DR-062, DR-063, DR-065, DR-072, DR-073, DR-096, DR-097, DR-122, DR-123, DR-124, DR-132, DR-133, DR-139, DR-144, DR-149, DR-154, DR-156, DR-190, DR-203, DR-206, DR-208, DR-211
 - **If it is wrong:** A commit that no release vouched for, or one that only a fork holds, would run as the tool in the adopter's CI and on their machines (T58, T28, T64), a hook and a report from different commits would disagree on models and prices (T54), and an adopter who gives the report more than it needs, or relies on what the public surface leaves out, could be harmed or broken by an ordinary update (T24, T29, T53). A key that only some versions of the tool document would turn off the hook or the report that does not know it (T123). A zip that is not a release's would run as the tool's plugin in the sessions of a person who uploaded it unchecked (T133). A person's plugin far from a repository's pinned report would have more of its ledger lines refused, or would record nothing where the configuration file holds a key newer than it (T136).
 - **Fact:** Adopters pin only a full commit that a release of this repository names, and check it with `git merge-base --is-ancestor`.
   - **Relied on:** R27, T28, T58, T64, T67, DR-022, DR-062, DR-072, DR-073, DR-122, DR-144, DR-156
   - **Checked:** not yet: none will, since no test may reach what adopters and people do
 - **Fact:** Adopters copy the hook file from the commit that their calling workflow pins, keep it at the path the README gives, and check it against the README's checksum.
-  - **Relied on:** R65, R88, R93, T28, T60, DR-022, DR-058, DR-065
+  - **Relied on:** R65, R88, R93, T28, T60, DR-022, DR-065, DR-211
   - **Checked:** not yet: none will, since no test may reach what adopters and people do
 - **Fact:** A person who uploads the plugin's zip checks its SHA-256 against the README at the release's commit first, as the README asks.
   - **Relied on:** R183, T133, DR-203
@@ -206,10 +206,10 @@ The assumptions about the teams that adopt the tool, the people who opt in, and 
 
 ## A34. Maintainers review a pull request without checking out its branch where a session runs.
 
-- **Rests on it:** R88, T59, DR-022, DR-058
+- **Rests on it:** R88, T59, DR-022, DR-211
 - **If it is wrong:** The checksum would keep a changed hook file from running, but capture would stop for the rest of that session, and if Claude Code read its hook registrations again, the branch's code would run with the session's credentials (T59).
 - **Fact:** Maintainers review a pull request from another worktree or from its diff, and never check out its branch in a worktree where a session runs.
-  - **Relied on:** R88, T59, DR-022, DR-058
+  - **Relied on:** R88, T59, DR-022, DR-211
   - **Checked:** not yet: none will, since no test may reach what adopters and people do
 
 ## A44. Teams want each pull request's cost, and read it as an estimate.

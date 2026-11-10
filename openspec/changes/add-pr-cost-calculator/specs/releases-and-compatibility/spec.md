@@ -55,7 +55,7 @@ The oldest supported Python SHALL rise only when its version nears its end of li
 
 ### Requirement: Releases are made from a tag that matches the version and the changelog
 
-A release SHALL be made only by pushing a tag `vMAJOR.MINOR.PATCH` that names a commit in the default branch's first-parent history, and the release workflow SHALL check the tag's form before any other step, and SHALL refuse a tag whose version differs from the version in `pyproject.toml` or in the plugin's manifest, or that has no entry in `CHANGELOG.md`. The release's own text SHALL name the tag and the commit in the workflow's fixed words, and SHALL carry the changelog entry after them.
+A release SHALL be made only by pushing a tag `vMAJOR.MINOR.PATCH` that names a commit in the default branch's first-parent history, and the release workflow SHALL check the tag's form before any other step, and SHALL refuse a tag whose version differs from that in `pyproject.toml` or in the plugin that the tag builds, or that has no entry in `CHANGELOG.md`. The release's own text SHALL name the tag and the commit in the workflow's fixed words, and SHALL carry the changelog entry after them.
 
 #### Scenario: A tag that matches the version and the changelog is released
 
@@ -64,7 +64,7 @@ A release SHALL be made only by pushing a tag `vMAJOR.MINOR.PATCH` that names a 
 
 #### Scenario: A tag that does not match the version is refused
 
-- **WHEN** a tag `v1.2.0` is pushed for a commit whose `pyproject.toml` or plugin manifest says another version, or whose changelog has no entry for `1.2.0`
+- **WHEN** a tag `v1.2.0` is pushed for a commit whose `pyproject.toml`, or the plugin that it builds, gives another version, or whose changelog has no entry for `1.2.0`
 - **THEN** no release is published and the workflow says which of them disagrees
 
 #### Scenario: A tag on a commit outside the default branch's first-parent history is refused
@@ -173,17 +173,22 @@ Each release SHALL carry the plugin as a zip built from its tag's files alone, a
 
 ### Requirement: The plugin declares nothing but its hooks
 
-The plugin's manifest SHALL hold no key but its name, version, description, author, licence and repository, its hooks SHALL all be command hooks, and the capture step in its folder SHALL be the hook file, byte for byte. CI SHALL fail on a pull request after which any of these does not hold, and the release workflow SHALL publish no release where any does not.
+The plugin that a commit builds SHALL have a manifest that holds no key but its name, version, description, author, licence and repository, hooks that are all command hooks, and the hook file, byte for byte, as its capture step, whatever the marketplace's plugin folder holds. CI SHALL fail on a pull request whose tree builds a plugin where any of these does not hold, and the release workflow SHALL publish no release where any does not.
 
 #### Scenario: A plugin that declares anything but its hooks fails CI and stops the release
 
-- **WHEN** the plugin's manifest holds another key, such as `hooks`, `mcpServers`, `monitors` or `dependencies`, or its hooks file holds a hook of another type than a command, such as an HTTP hook
+- **WHEN** the plugin that a pull request's tree builds has a manifest that holds another key, such as `hooks`, `mcpServers`, `monitors` or `dependencies`, or a hooks file that holds a hook of another type than a command, such as an HTTP hook
 - **THEN** CI fails and names the key or the hook, and no release is published from a tag where it holds
 
 #### Scenario: A capture step in the plugin that differs from the hook file fails CI
 
-- **WHEN** the capture step in the plugin's folder differs from the hook file by any byte
+- **WHEN** the capture step in the plugin that a pull request's tree builds differs from the hook file by any byte
 - **THEN** CI fails, and no release is published from a tag where it differs
+
+#### Scenario: A changed hook file is not compared with the marketplace's folder
+
+- **WHEN** a pull request changes the hook file, while the marketplace's plugin folder holds an earlier release's plugin, whose capture step is the earlier hook file
+- **THEN** the plugin that the pull request's tree builds, with the changed hook file as its capture step, passes these checks, and the marketplace's folder is compared only with its release
 
 ### Requirement: A release is published only once its files are attached and checked
 
@@ -230,7 +235,7 @@ The folder that the root marketplace file names SHALL hold the plugin as a publi
 
 ### Requirement: The root marketplace file names only the tool's plugin, and changes alone
 
-The root marketplace file SHALL hold only the marketplace's name, its owner and one entry that gives the tool's plugin's name and its folder. CI SHALL fail when the file, parsed, holds any other key, value or entry, or when a pull request that changes a root marketplace file that its base holds, or the folder that it names, changes anything else.
+The root marketplace file SHALL hold only the marketplace's name, its owner and one entry that gives the tool's plugin's name and its folder. CI SHALL fail when the file, parsed, holds any other key, value or entry, or when a pull request that adds, changes or removes the root marketplace file, or changes the folder that it names, changes anything else.
 
 #### Scenario: The root marketplace file lists only the tool's plugin
 
@@ -244,7 +249,7 @@ The root marketplace file SHALL hold only the marketplace's name, its owner and 
 
 #### Scenario: A pull request that changes the marketplace and anything else fails CI
 
-- **WHEN** a pull request changes a root marketplace file that its base holds, or the plugin folder that it names, and also any other file, such as the script that builds the plugin, the check that compares the folder or a workflow
+- **WHEN** a pull request adds, changes or removes the root marketplace file, or changes the plugin folder that it names, and also any other file, such as the script that builds the plugin, the check that compares the folder or a workflow
 - **THEN** CI fails, and names the files beside the marketplace's that the pull request changes
 
 ### Requirement: The capture step does nothing below its floors

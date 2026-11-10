@@ -257,10 +257,10 @@ The assumptions about Claude Code: what its transcripts hold, when its hooks run
 
 ## A25. Claude Code keeps the hook registrations it read at session start.
 
-- **Rests on it:** R88, T59, DR-022, DR-058
+- **Rests on it:** R88, T59, DR-022, DR-211
 - **If it is wrong:** A branch checked out during a session could change the registered command and the checksum that it carries, so that branch's hook file would run with the session's credentials, and T59's answer would not hold (T59). Claude Code's documentation says that it normally picks up direct edits to hooks in settings files, as a checkout that changes `.claude/settings.json` may be taken to be.
 - **Fact:** Claude Code keeps the hook registrations it read at session start, so a hook file that a checkout changes is compared with the checksum the session started with (T59).
-  - **Relied on:** R88, T59, DR-022, DR-058
+  - **Relied on:** R88, T59, DR-022, DR-211
   - **Checked:** not yet: `add-pr-cost-calculator` task 1.1 checks it
 - **Fact:** Claude Code normally picks up direct edits to hooks in settings files through its file watcher.
   - **Relied on:** T59

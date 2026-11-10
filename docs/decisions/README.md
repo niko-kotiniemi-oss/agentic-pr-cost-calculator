@@ -63,7 +63,7 @@ A record that the default branch holds is accepted, and from then on it changes 
 | [DR-055](DR-055-committed-calls-never-restaged.md) | Calls of a ledger file found in a commit are never staged again | security and privacy | accepted | the owner, 2026-10-19 | R52, R81, R110, R113, R117 | T2, T8, T10 |
 | [DR-056](DR-056-no-history-check.md) | Capture does not read the branch's history | security and privacy | closed | the owner, 2026-10-19 | R2, R45, R52, R81 | T2, T19 |
 | [DR-057](DR-057-calls-by-working-directory.md) | Calls are kept by the session's working directory | security and privacy | accepted | the change `add-pr-cost-calculator` | R3 | T2 |
-| [DR-058](DR-058-checksum-before-running.md) | The hook file runs only when its checksum matches | security and privacy | accepted | the change `add-pr-cost-calculator` | R88, R122 | T59 |
+| [DR-058](DR-058-checksum-before-running.md) | The hook file runs only when its checksum matches | security and privacy | closed | the change `add-pr-cost-calculator` | R88, R122 | T59 |
 | [DR-059](DR-059-only-git-from-a-safe-folder.md) | The hook starts only git, by absolute path, from a safe folder | security and privacy | closed | the change `add-pr-cost-calculator` | R54, R118 | T46 |
 | [DR-060](DR-060-hook-offline.md) | The hook opens no network connection | security and privacy | accepted | the change `add-pr-cost-calculator` | R30, R45, R111 | T45 |
 | [DR-061](DR-061-report-only-on-default-branch-push.md) | The report runs only for a push to the default branch | security and privacy | accepted | the change `add-pr-cost-calculator` | R68 | T23, T29 |
@@ -216,3 +216,4 @@ A record that the default branch holds is accepted, and from then on it changes 
 | [DR-208](DR-208-ledger-file-names-its-release.md) | Each ledger file names the release that wrote it, and the comment says when it is later than the report's | technical | accepted | the change `add-pr-cost-calculator` | R156, R193, R195 | T136 |
 | [DR-209](DR-209-release-published-after-its-files.md) | A release is published only once its files are attached and checked | technical | accepted | the change `add-pr-cost-calculator` | R72, R189 | T69, T139 |
 | [DR-210](DR-210-owner-opt-in-only-in-its-project-environment.md) | The owner's opt-in for this repository is set only in the environment of its own project | security and privacy | accepted | the change `add-pr-cost-calculator` | none | T2, T32, T128 |
+| [DR-211](DR-211-checksum-with-crlf-taken-as-lf.md) | The capture step runs only when its checksum matches, with each CRLF taken as LF | security and privacy | accepted | the change `add-pr-cost-calculator` | R88, R122, R179 | T59, T143 |

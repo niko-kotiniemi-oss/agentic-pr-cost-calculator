@@ -18,7 +18,7 @@ The repository's marketplace lists the tool's plugin from a folder in the reposi
 
 ## Alternatives
 
-- Listing the plugin's source folder itself, which would serve each merged change to every person who added the marketplace, before any release and without its checks.
+- Serving the plugin as the default branch builds it, which would serve each merged change to every person who added the marketplace, before any release and without its checks.
 - A source pinned to a release's commit or archive in the marketplace file, which Claude Code's pages describe but which claude.ai's marketplaces were not seen to read, and which a later change can move to once they are.
 - A branch that only releases move, which a marketplace added on claude.ai could follow only if claude.ai's form for adding one takes a branch, which no page read on 2026-11-09 says, and which task 7.2 checks; such a branch would need a ruleset of its own to keep it to releases.
 - Building the plugin with the pull request's own script, or accepting any tag that gives the version, which would let one pull request change the folder together with what it is compared with, or move it to a refused or an earlier release.
