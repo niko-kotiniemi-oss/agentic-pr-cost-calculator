@@ -90,11 +90,11 @@ The assumptions about git: what its commands, options, attributes, locks and con
 
 ## A21. The git commands that the step runs start no program that the step did not choose, apart from those that git's configuration names.
 
-- **Rests on it:** R54, T15, T19, T46, T112, DR-188
-- **If it is wrong:** A program that git starts would run at every capture run, outside the step's own guard (T15, T46), and one that a command's own options start could change the branch before a commit (T19).
-- **Fact:** The git commands that the step itself runs start no other program, except programs that git's configuration names, the person's own or the repository's, such as `core.fsmonitor`, which `git status` and `git add` start, or a clean filter that the repository's `info/attributes` assigns, which `git add` starts, so that whoever can write the git common directory can name one.
-  - **Relied on:** R54, T15, T46, T112, DR-188
-  - **Checked:** not yet: none will, since no task plans a test of it; `add-pr-cost-calculator` task 2.3 checks only how the step finds git
+- **Rests on it:** R54, R197, T15, T19, T46, T112, T144, DR-188, DR-198
+- **If it is wrong:** A program that git starts would run at every capture run, outside the step's own guard (T15, T46), in a clone that a session only meets as well (T144), and one that a command's own options start could change the branch before a commit (T19).
+- **Fact:** The git commands that the step itself runs start no other program, except programs that git's configuration names, the person's own or the repository's, such as `core.fsmonitor`, which `git status`, `git add`, `git rm --cached`, `git ls-files`, `git diff --cached` and `git check-attr` start, each of which reads the index, while `git config`, `git rev-parse` and `git log` start none, or a clean filter that the repository's `info/attributes` assigns, which `git add` starts, so that whoever can write the git common directory can name one.
+  - **Relied on:** R54, R197, T15, T46, T112, T144, DR-188, DR-198
+  - **Checked:** not yet: `add-pr-cost-calculator` task 2.6 checks it for the git commands that a plugin run starts in a repository where its session runs no git; for the others none will, since no task plans a test of them, and `add-pr-cost-calculator` task 2.3 checks only how the step finds git
 - **Fact:** git's own options and environment variables in a command can make git start another program, such as `git -c diff.external=<program> diff`, `git -c core.hooksPath=<folder> commit` or `GIT_EDITOR=<program> git commit`, and such a program can change the branch before a commit.
   - **Relied on:** T19
   - **Checked:** not yet: none will, since T19's residual accepts the case

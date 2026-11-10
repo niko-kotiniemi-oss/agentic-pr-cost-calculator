@@ -720,12 +720,12 @@ The README SHALL say that the release of the plugin that a session runs, not the
 
 ### Requirement: The documentation says where the plugin leaves a staged ledger file
 
-The README SHALL say that a plugin run meets a repository only through the project directory, Claude's directory or a git command run there, so that a ledger file that a refused commit staged in a repository that the session then leaves stays staged until a later run meets it, and how to look for one and take it back.
+The README SHALL say that a plugin run meets a repository only through the project directory, Claude's directory or a git command run there, and outside the repository that holds the project directory takes back another session's file only where its own session runs git, so that a ledger file that a refused commit staged in a repository that the session then leaves stays staged until a later run of that session meets it, or a session runs git there, and how to look for one and take it back.
 
 #### Scenario: The README says how to find a ledger file left staged in a repository that a session left
 
 - **WHEN** the README's section on installing the plugin is read
-- **THEN** it says that a ledger file that a refused commit staged in a repository that the session then left stays staged until a later run meets that repository, and how to look for one with `git status` and take it back
+- **THEN** it says that a ledger file that a refused commit staged in a repository that the session then left stays staged until a later run of that session meets that repository, or a session runs git there, and how to look for one with `git status` and take it back
 
 ### Requirement: Each ledger format that a release wrote keeps its golden figures
 

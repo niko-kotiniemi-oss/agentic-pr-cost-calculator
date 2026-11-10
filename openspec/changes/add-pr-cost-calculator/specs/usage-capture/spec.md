@@ -282,6 +282,25 @@ A plugin run SHALL work first on the repository where each git command of its in
 - **WHEN** the step runs as the plugin, the project directory is in no repository and holds three clones directly inside it that turn the tool on, and one clone's `.git` is a named pipe, while the agent makes calls in each clone and then commits in each
 - **THEN** the run records nothing and starts no program for that clone, and the commits in the other two each add a ledger file that holds the calls made in their own clone
 
+### Requirement: A plugin run reads a repository's index only where its session runs git, or in the one that holds the project directory
+
+A plugin run SHALL start a git command that reads a repository's index or attributes, as staging, a take-back and a put-back do, only in the repository that holds the project directory, in one where a git command of its input runs, or to take back a ledger file that its own session staged there, and SHALL leave any other take-back or put-back to the first run that may make it, whatever another requirement says of a later run.
+
+#### Scenario: A clone that a session only meets or moves into has git start none of its programs
+
+- **WHEN** the step runs as the plugin, the project directory is in no repository and holds two clones directly inside it that turn the tool on, each of whose own configuration names a program as `core.fsmonitor` and whose store notes a ledger file that another session staged for a command that is over, the person opted in before the session started, the agent moves into the second clone and makes calls there, and the session ends with no git command run in either
+- **THEN** no run starts either program, both files stay staged, and the calls made in the second clone wait in its store
+
+#### Scenario: A file left staged in a clone is taken back once the session runs git there
+
+- **WHEN** the step runs as the plugin, the project directory is in no repository and holds a clone directly inside it that turns the tool on, whose store notes a ledger file that another session staged for a command that is over, and the agent runs `git status` in that clone while no other git command holds its index
+- **THEN** the run before `git status` takes the file back, from the index and the working tree
+
+#### Scenario: A session's end takes back in a clone what its own command left staged
+
+- **WHEN** the step runs as the plugin, the project directory is in no repository and holds a clone directly inside it that turns the tool on, and a session whose current directory is the project directory ends while the step has a ledger file staged in that clone for one of its commands that no commit took, such as a commit that the agent ran there with `git -C` and that was interrupted, and no other git command holds that clone's index
+- **THEN** the run when the session ends takes the file back, from the index and the working tree
+
 ### Requirement: Counts are whole numbers
 
 Every token count and request count SHALL be a whole number from zero up to a ceiling that the ledger format documents. A value that is text, a fraction, negative, not a number, infinite, `true` or `false`, or above the ceiling SHALL be refused: no entry is recorded for the call, and the ledger counts it as refused, once, with nothing else about it.
@@ -774,12 +793,17 @@ Where two copies of the capture step run in one session, as the plugin and the h
 
 ### Requirement: An earlier release leaves a session to a later one
 
-Each run SHALL note in the store, for its session, the latest release whose copy of the capture step has run in it, and a run of an earlier release than the one noted SHALL record, stage, take back, put back and end nothing for that session there, and exit with success, leaving the session to the later release's copy.
+Each run SHALL note in the store, for its session, the latest release whose copy of the capture step has run in it, and a run of an earlier release than the one noted SHALL record, stage, take back, put back and end nothing for that session there, and exit with success, leaving the session to the later release's copy, unless it finds the person's own capture off, when it SHALL act as any run does (see "An opt-out ends every session's interval and empties the store" in `switch-and-opt-in`).
 
 #### Scenario: An earlier copy whose release does not know a key leaves the session to the later copy
 
 - **WHEN** the plugin is of a later release than the hook file, both write the same store version, the configuration file holds a key that only the later release documents, the two copies' runs come in parallel at each event, and the agent makes calls and then commits
 - **THEN** the commit adds one ledger file, written by the later release, which holds each of those calls once, and no run of the earlier release ends the session's interval
+
+#### Scenario: An earlier copy acts on an opt-out that the later copy no longer sees
+
+- **WHEN** the plugin is of a later release than the hook file, both write the same store version and have run in a session, the step has staged a ledger file for a `git commit` that was then refused at a permission prompt, no run of the plugin comes in that session after that, and the person turns capture off before the hook file's next run, which finds that command over while no other git command holds the index
+- **THEN** that run takes the file back, from the index and the working tree, and after it no store is left in the git common directory
 
 ### Requirement: Every release that writes a store version writes it the same way
 
@@ -997,12 +1021,12 @@ The capture step SHALL finish within a time budget, leaving what it has not read
 
 #### Scenario: The plugin's run at a session's end takes back first
 
-- **WHEN** the step runs as the plugin when a session ends, finds a ledger file staged for a command that is over, and reading the transcript would take longer than the budget that Claude Code gives a plugin's `SessionEnd` hooks
+- **WHEN** the step runs as the plugin when a session ends, finds a ledger file staged for a command of its session that is over, and reading the transcript would take longer than the budget that Claude Code gives a plugin's `SessionEnd` hooks
 - **THEN** it takes the file back before it reads any transcript, stops within that budget, and exits with success
 
 #### Scenario: A run at a session's end starts no take-back that its budget cannot finish
 
-- **WHEN** the step runs as the plugin when a session ends and finds a ledger file staged for a command that is over, with less of its budget left than it sets for a take-back's git command
+- **WHEN** the step runs as the plugin when a session ends and finds a ledger file staged for a command of its session that is over, with less of its budget left than it sets for a take-back's git command
 - **THEN** it starts no git command, leaves the file staged for a later run and the index lock free, and exits with success within that budget
 
 ### Requirement: The store is versioned: an earlier version is upgraded, an unknown one left alone

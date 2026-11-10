@@ -98,12 +98,14 @@ sequenceDiagram
   participant G as git common directory
   CC->>H: SessionStart, Stop, SubagentStop, StopFailure or SessionEnd, with the session's id, the transcript path and cwd
   Note over H: A run of the plugin does what follows in each repository that it works on, as the next flow shows
+  Note over H: Outside the repository that holds the project directory, a run of the plugin starts a git command that reads the index only before or after a git command of its session there, or to take back a file that its own session staged there
   H->>H: Read .pr-cost.json and the person's two global configuration files, before starting any program
   H->>H: Read the project directory's .git, the commondir file of the git folder that it names and each worktree's gitdir file, before starting any program, and stop, saying so, when one cannot be read, a worktree has no gitdir file, or this is a linked worktree whose git common directory is not named .git, as a submodule's is not, nor a bare repository's in a folder such as repo.git
   opt both are on
     H->>H: Ask git twice, in the session's environment and without its GIT_ variables, for each value of pr-cost.capture that it reads here, and take capture to be off when either answer does not come within the time budget, or when its last value, or the last value of any file but the two global ones, is not true
   end
   H->>G: Find the store, and stop, leaving it as it was, when this release does not know its version
+  H->>G: Unless the person's capture is off, stop when the store notes that a later release has run in this session, leaving the session to that release's copy
   alt either switch is off
     H->>G: Create no store. Remove one that does not parse. In one that parses, end this session's interval, noting this run's time, empty it if the person's capture is off, take back or put back what is due, drop what is older than the retention window, remove it if it then holds nothing, and record nothing
   else both are on
@@ -254,7 +256,7 @@ flowchart TD
 
 ## Credentials and permissions
 
-**On the session's machine:** none. The hook uses no token, no key and no account, and the plugin runs the same file with the same rights, from its own folder. It reads the person's two global git configuration files for `pr-cost.capture`, and asks git for each value of it that git reads in the repository, which can only turn capture off. It writes only its store inside the git common directory, a file of its own, in a folder of its own, that its owner alone can read and write, except on Windows, and the ledger file it stages, and touches the index only to stage, take back or put back that one file.
+**On the session's machine:** none. The hook uses no token, no key and no account, and the plugin runs the same file with the same rights, from its own folder. It reads the person's two global git configuration files for `pr-cost.capture`, and asks git for each value of it that git reads in the repository, which can only turn capture off. It writes only its store inside the git common directory, a file of its own, in a folder of its own, that its owner alone can read and write, except on Windows, and the ledger file it stages, and touches the index only to stage, take back or put back that one file, which a run of the plugin does outside the repository that holds the project directory only before or after a git command of its session there, or to take back a file that its own session staged there.
 
 **The report's workflow**, as an adopter calls it, uses the workflow's own `GITHUB_TOKEN` and no other secret. Its caller grants it exactly:
 
@@ -307,6 +309,7 @@ As designed, the hook reads `CLAUDE_PROJECT_DIR`, `HOME`, `XDG_CONFIG_HOME` and 
 - Record the usage of anyone whose opt-in is not on, as they set it themselves, or as the cloud environment that they use or their organization's managed settings set it for them, or a call that it cannot show was made while both switches were on. The plugin, however it came to a session, opts no one in. A run that finds a switch off creates no store and adds nothing of its session to one, so someone who has never opted in leaves nothing in the git common directory, and an opt-out empties the store of everything but what a take-back or a put-back still needs, at a run of a release that knows the store's version.
 - Keep a copy of a transcript, or of any line of one, in any file.
 - Look for repositories below a session's project directory deeper than directly inside it: a run of the plugin meets a repository only through the project directory, Claude's current directory or a git command run there.
+- Have git read the index of a repository that a run of the plugin only meets or moves into, outside the one that holds the project directory: it starts such a command there only before or after a git command of the session there, or to take back a file that the session staged there, so that git starts none of the programs that the repository's own configuration names, such as `core.fsmonitor`.
 - Unpublish what was pushed. An opt-out, a removed ledger file or a removed store leaves each pushed ledger file in its branch's history, in every clone and fork that holds it, and in the comments already posted.
 - Send anything from the session's machine anywhere. The ledger leaves the machine only in the person's own commits, when they push.
 - Run, import or install anything from the pull request it reports on.
