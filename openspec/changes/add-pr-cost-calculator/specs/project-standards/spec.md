@@ -727,6 +727,53 @@ The README SHALL say that a plugin run meets a repository only through the proje
 - **WHEN** the README's section on installing the plugin is read
 - **THEN** it says that a ledger file that a refused commit staged in a repository that the session then left stays staged until a later run of that session meets that repository, or a session runs git there, and how to look for one with `git status` and take it back
 
+### Requirement: The README opens with a short start
+
+The README SHALL open, after its first paragraph and its status, with a short start of at most 200 words outside code that says how a repository turns the tool on, pinned to a release, how a person opts in, also with the setup script's line, and adds the plugin for a project's cloud threads, from a release's zip after checking its checksum or from the marketplace, how an organization opts its members in, and how to stop, linking for each step the section that gives its detail.
+
+#### Scenario: The README opens with its short start
+
+- **WHEN** the README is read from its top
+- **THEN** the first section after its first paragraph and its status is the short start, which holds at most 200 words outside code and says how a repository turns the tool on, pinned to a release, how a person opts in, and that a cloud environment's setup script takes the same line, how a person adds the plugin for a project's cloud threads, from a release's zip after checking its checksum or from the marketplace, how an organization opts its members in, and how to stop, linking for each step the README's section that gives its detail
+
+#### Scenario: A short start that grows, moves or links elsewhere fails a test
+
+- **WHEN** the short start holds more than 200 words outside code, a section comes before it, or one of its links names neither a heading of the README, a file of this repository nor a page of this repository on GitHub
+- **THEN** a test fails and names what it found
+
+#### Scenario: A command of the short start that the detail does not give fails a test
+
+- **WHEN** a command in the short start's code is not given, as written, in the README's section that the short start links for that step
+- **THEN** a test fails and names the command
+
+### Requirement: The README's short start says what an opt-in records and publishes
+
+The README's short start SHALL say that turning the tool on in a repository records nobody by itself, that only the sessions of people who are opted in are recorded, that one opt-in covers every repository that turns the tool on, later ones too, that what a session spends is committed with its work under its author's name and published when that work is pushed, and stays published after an opt-out, and that an organization tells its members before it opts them in.
+
+#### Scenario: The short start says what an opt-in records and publishes
+
+- **WHEN** the README's short start is read
+- **THEN** it says that turning the tool on in a repository records nobody by itself, that only the sessions of people who are opted in are recorded, that one opt-in covers every repository that turns the tool on, later ones too, that what a session spends is committed with its work under its author's name and published when that work is pushed, and that it stays published after an opt-out, and it tells an organization to tell its members before it opts them in
+
+#### Scenario: A short start that leaves out what an opt-in publishes fails a test
+
+- **WHEN** the README's short start leaves out that only the sessions of people who are opted in are recorded, that one opt-in covers every repository that turns the tool on, or that what a session spends is published and stays published after an opt-out
+- **THEN** a test fails and names what is missing
+
+### Requirement: The README folds the detail that follows its short start
+
+The README's sections on adopting the tool, on the opt-in, on installing the plugin, on a project's cloud threads, on organizations and on turning capture off SHALL follow its short start, each with its heading shown and its text folded until a reader opens it, so that the README shows first its short start and a list of what the detail covers.
+
+#### Scenario: The detail is folded under headings that show
+
+- **WHEN** the README is read as GitHub shows it
+- **THEN** its sections on adopting the tool, on the opt-in, on installing the plugin, on a project's cloud threads, on organizations and on turning capture off come after the short start, each heading shows, and the text of each section is inside a `<details>` element that stays closed until a reader opens it
+
+#### Scenario: A section of detail that shows its text fails a test
+
+- **WHEN** one of those sections holds text, other than its heading, outside a `<details>` element, gives that element the `open` attribute, or comes before the short start
+- **THEN** a test fails and names the section
+
 ### Requirement: Each ledger format that a release wrote keeps its golden figures
 
 For each ledger format that a release's capture step wrote, the golden set SHALL keep sessions whose entries are as that release wrote them, with the figures that the report must give for them, for as long as the report reads that format. Tests SHALL fail when the report gives another figure for them.

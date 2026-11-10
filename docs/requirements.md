@@ -209,6 +209,9 @@ The capability names the spec that holds the requirement. Each capability is one
 | R195 | non-functional | `project-standards` | The documentation says which release of the plugin runs, and what that changes |
 | R196 | non-functional | `project-standards` | The documentation says where the plugin leaves a staged ledger file |
 | R197 | non-functional | `usage-capture` | A plugin run lets git start a repository's configured programs only where its session runs git, or in the one that holds the project directory |
+| R198 | non-functional | `project-standards` | The README opens with a short start |
+| R199 | non-functional | `project-standards` | The README's short start says what an opt-in records and publishes |
+| R200 | non-functional | `project-standards` | The README folds the detail that follows its short start |
 
 IDs are stable: a requirement keeps its ID while it exists, and a new one takes the next free number, so the rows follow the order in which requirements were added rather than the order of the specs. A requirement that a later change removes leaves the table, and its ID is listed below with the change that removed it, never to be used again.
 

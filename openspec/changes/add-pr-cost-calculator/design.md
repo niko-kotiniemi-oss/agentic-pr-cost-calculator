@@ -180,11 +180,33 @@ The marketplace that loads the vendored Superpowers into this repository's own s
 
 ### 12. The documentation names everything the tool does
 
-*Records:* DR-100, DR-101, DR-102, DR-103, DR-104, DR-106, DR-117, DR-150, DR-193, DR-194, DR-195 and DR-196.
+*Records:* DR-100, DR-101, DR-102, DR-103, DR-104, DR-106, DR-117, DR-150, DR-193, DR-194, DR-195, DR-196, DR-212 and DR-213.
 
 `docs/how-it-works.md` gives each workflow's permissions as a table, per workflow and per job, and `tests/test_documentation.py` compares that table with every workflow, `.yml` and `.yaml` alike, in both directions, so that a permission granted and not listed fails it, and so does one listed and not granted. The test compares every action and every container or service image the workflows use with the connections the page names. Task 5.3 adds the check that compares the page with the network calls and environment variables in the tool's own code.
 
 `tests/test_spec_form.py` reads every spec that OpenSpec reads, at any depth below `openspec/specs/` and below the `specs/` folder of each change that is not archived, line by line, as OpenSpec reads it, and fails where a spec would be read otherwise than it is written or shown: on a requirement, a scenario, a heading or a line out of the form that R173 to R175 of `project-standards` give, and on a `spec.md` that it does not read and on a symbolic link, as R177 says (DR-193, DR-194); and on text that GitHub would hide or show otherwise than it is, as R176 lists it, so that what GitHub shows of a spec is all that OpenSpec and agents read (DR-195). OpenSpec's strict validation fails a requirement with no SHALL or MUST, one longer than 500 characters and one with no scenario where a change adds it or the main specs hold it, though not a longer one that a change modifies, and the test holds all three, whatever a later release of OpenSpec checks. Two other checks of that validation are left to it: a requirement whose name another requirement of its spec, or of its section of a change, already has, and a main spec with no Purpose or an empty one. Since the test models how the pinned OpenSpec reads a spec, `scripts/verify-openspec.sh` compares the test's reading of every spec and change with what the pinned OpenSpec CLI shows for it, so that a release that reads specs otherwise, or a defect in the test's reader, fails CI in the pull request that brings it (DR-196). A change that the CLI does not show, such as one with no proposal yet, fails the comparison too, so a change's proposal comes before its specs.
+
+The README opens with a short start, so that setting the tool up does not look harder than it is, as the owner asked on 2026-11-10 (DR-212). After the README's first paragraph and its status, in at most 200 words outside code, it says how a repository turns the tool on, pinned to a release, how a person opts in, with the same line in a cloud environment's setup script, how a person adds the plugin for a project's cloud threads, from a release's zip after checking its checksum or from the marketplace, how an organization opts its members in, and how to stop, each step linking the section that gives its detail (R198). It also says what an opt-in records and publishes, so that a person who reads no further knows it before they opt in (R199, T145). Its commands are those that the sections it links give (T146), and its links stay within this repository (T147). The detail stays in the README, under the headings that the other requirements name, each section's text folded in a `<details>` element, which GitHub shows closed until a reader opens it (A9), so that the README first shows the short start and a list of what the detail covers, while every requirement and record that says the README gives a detail still holds (R200, DR-213). Task 4.4 writes it. The draft below, whose links name the headings that task 4.4 gives those sections, holds 178 words outside code, leaving out its heading and its links' targets:
+
+````markdown
+## Get started
+
+**In a repository:** a maintainer adds the tool's files, pinned to a release ([how](#adopting-the-tool)). That alone records no one's sessions.
+
+**For yourself:** opt in on each machine where you work ([more](#the-opt-in)).
+
+```sh
+git config --global pr-cost.capture true
+```
+
+In a cloud environment, put that line in its setup script ([more](#cloud-threads)). A project's cloud threads also need the plugin: upload the latest release's zip after checking its checksum, or add this repository as a plugin marketplace ([how](#installing-the-plugin)).
+
+**For an organization:** opt your members in from an environment that you share with them or from your managed settings, and turn the plugin on for them ([how](#organizations)). Tell them first.
+
+**To stop:** run `git config --global pr-cost.capture false`, and take the line out of any setup script that has it ([more](#turning-capture-off)).
+
+**Good to know:** only the sessions of people who are opted in are recorded, and one opt-in covers every repository that turns the tool on, now or later. What your sessions spend is committed with their work, under your name, so it is published when that work is pushed, and it stays published after you stop.
+````
 
 ### 13. Each decision has a record of its own
 
