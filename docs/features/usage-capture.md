@@ -75,7 +75,7 @@ The design's risks that concern this feature and are not on the roadmap, each wi
 - **A ledger file that the plugin stages in a repository that the session then leaves stays staged**: the file stays staged until a later run of that session meets that repository.
 - **Two releases of the hook meet one store, as when sessions start in two worktrees that hold different releases, or a session runs the plugin of one release and the hook file of another**: a run of a release that does not know the store's format records nothing, so those calls are not counted.
 - **A backup or a sync puts back an earlier copy of the store, or two users of one clone meet**: a copy put back can bring back waiting calls when the opt-out came only through the environment.
-- **The hook file in the working tree changes during a session, as when the session checks out a branch that updates the hook**: the capture step stops for the rest of the session, so its calls are not recorded.
+- **The hook file in the working tree changes during a session, as when the session checks out a branch that updates the hook**: the capture step stops for the rest of the session, so its calls are not recorded, unless the session is resumed once the registration and the hook file agree again.
 - **A checkout changes the capture step's bytes, as git does to its line endings where `core.autocrlf` is on, so that its checksum stops capture without a flag**: capture stops without a flag where a person's own filter changes those bytes.
 
 The [roadmap](../roadmap.md) gives what is planned next and later, and the limitations that an adopter notices.

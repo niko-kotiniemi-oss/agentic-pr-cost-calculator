@@ -54,7 +54,7 @@ The design's risks that concern this feature and are not on the roadmap, each wi
 - **Capture is turned off and on again between two runs, and the files that hold the person's opt-in keep their device and inode numbers, size and modification times**: the step cannot see such a change, so the calls between those runs are recorded.
 - **The system's clock steps back between a run that finds a switch off and a later call**: a call made while capture was off can be recorded, in narrow cases.
 - **No session runs again in a repository after its person opts out or stops**: the store's notes stay until a run of a release that knows the store comes, or the person removes the store.
-- **With the plugin, one opt-in reaches every repository that turns the tool on where Claude works or commits**: each repository that turns the tool on records the calls made from it, shown in the diff of a commit there.
+- **With the plugin, one opt-in reaches every repository that turns the tool on where Claude works or commits**: each repository that turns the tool on records the calls made from it, shown in the diff of a commit there, though a thread can commit and push with no one reading that diff.
 - **A person removes the opt-in's line from a setup script, or moves to another environment, while threads that use it still run**: threads that already run keep capture on until their machines are rebuilt, unless the person uses an opt-out that reaches them.
 - **An organization's shared environment, its default environment or its managed settings opt in its members**: a member's usage is published wherever they work in that environment, so the organization tells its members first.
 

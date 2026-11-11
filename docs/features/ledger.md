@@ -34,7 +34,7 @@ This feature is validated first by its spec's scenarios: each gets an acceptance
 The design's risks that concern this feature and are not on the roadmap, each with what it means:
 
 - **A ledger edited by hand changes the reported cost**: the reported cost changes with the edit, which shows in the pull request's diff.
-- **Capture and the report read the call ids of every ledger file that their branch holds, and the report those of every ledger file that the default branch's first-parent history held before the merge, which grow with every pull request, and which whoever merged them wrote, while capture's store grows with every call it records until its retention window drops it**: the ledger files that capture and the report read grow with every pull request.
+- **Capture and the report read the call ids of every ledger file that their branch holds, and the report those of every ledger file that the default branch's first-parent history held before the merge, which grow with every pull request, and which whoever merged them wrote, while capture's store grows with every call it records until its retention window drops it**: the report counts none of a pull request's entries once its ledger files together pass the size bound that the ledger format documents, and its comment says they are too large to read.
 - **The published schema and the report disagree about a line**: where the format says that a schema cannot hold a rule, the report's rule decides.
 
 The [roadmap](../roadmap.md) gives what is planned next and later, and the limitations that an adopter notices.

@@ -12,7 +12,7 @@ The tool has no code yet. Its design, the change `add-pr-cost-calculator`, whose
 - **Two new fields on every record.** Each decision record says which way its boundary faces and how hard it is to reverse.
 - **Conventions.** Printable ASCII in everything the project writes, diagrams as code, and naming conventions, each checked in CI.
 - **Scope and visual documentation.** Records on what the project takes from elsewhere, a section of the page on how the tool works that lists everything incoming and outgoing, and diagrams in the README and the feature pages.
-- **The tool's requirements, corrected before the build.** The design's fixes from the pages above, how the comment shows a cost, the prices' rules, and the open points that earlier reviews left.
+- **The tool's requirements, corrected before the build.** The design's fixes from the pages above, how the comment shows a cost, with no dollar sign and no tilde outside inline code in the comment or its job summary, so that GitHub shows no amount as a formula or struck through, as issue 18 asks (R21, R97), the prices' rules, and the open points that earlier reviews left.
 
 Then the build itself, in pull requests of its own, by the sections of the change's tasks: verification first, the capture step, pricing, the report, review, releases and compatibility, and integration, in which the tool reports the cost of its own pull requests.
 
@@ -22,7 +22,6 @@ What follows the first build. Each item says what it rests on.
 
 - **Planned.** A command that lists pull requests' costs and writes each one as a small Markdown file in a folder that the adopter chooses, which reaches the repository through an ordinary pull request, while the report itself still writes nothing (DR-222, DR-016).
 - **Planned.** A report that can be run before a pull request merges and shows it as still in progress, where the first version reports only at the merge (DR-223, DR-005).
-- **Planned.** The report comment and its job summary hold no dollar sign and no tilde outside inline code, so that GitHub shows no amount as a formula or struck through: issue 18 (R21, R97).
 - **Planned.** Every reader of the specs finds them at any depth, as the test of the specs' form does: issue 19 (R177, T124).
 - **Planned.** CI keeps the rewording script's output, so that no one pastes a long output into comments: issue 16 (T94).
 - **Planned.** A check, on Windows, of whether a project's Claude Code settings can set the variables that name the home folder, from which the opt-in is read: issue 15 (DR-183, T119).
@@ -45,7 +44,7 @@ Work on an item here starts with an issue on which the owner agrees, and some it
 This is a short list. It gives the limitations of the design that an adopter notices, each with what it means for the figure or for the person. Each feature page lists the rest of its own: [activity types](features/activity-types.md#known-limitations-and-the-roadmap), [CI minutes](features/ci-minutes.md#known-limitations-and-the-roadmap), [the ledger](features/ledger.md#known-limitations-and-the-roadmap), [pricing](features/pricing.md#known-limitations-and-the-roadmap), [project standards](features/project-standards.md#known-limitations-and-the-roadmap), [releases and compatibility](features/releases-and-compatibility.md#known-limitations-and-the-roadmap), [the report comment](features/report-comment.md#known-limitations-and-the-roadmap), [the switch and the opt-in](features/switch-and-opt-in.md#known-limitations-and-the-roadmap) and [usage capture](features/usage-capture.md#known-limitations-and-the-roadmap).
 
 - **Claude Code makes model calls for its own tools, such as WebFetch, that the session's transcript does not hold**: those calls are not counted, so the figure is lower than what the session used.
-- **Some calls reach no commit**: calls made after the agent's last commit on a branch, such as pushing and opening the pull request, are in no pull request's figure.
+- **Some calls reach no commit**: calls made after the agent's last commit on a branch, such as pushing and opening the pull request, calls on a branch that gets no later commit, and calls made while no branch is checked out, as during a rebase stopped at a conflict, are in no pull request's figure, and so are calls that wait for a commit that capture does not stage for, such as a `git merge`.
 - **A session works from a folder that contains the repository**: its calls are left out, and the comment says that the figure is a lower bound. A project's cloud thread starts in such a folder, so its figure can be far too low.
 - **A session whose current directory is in the repository also works on another one, through paths or with a `cd` inside a command**: those calls are recorded and published in this repository, so work on other repositories, private ones above all, belongs in sessions of its own.
 - **A pull request is based on another one that was merged by squashing or rebasing**: the later pull request counts the earlier one's CI runs again, unless it is rebased first.
