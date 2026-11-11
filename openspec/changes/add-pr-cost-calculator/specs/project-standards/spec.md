@@ -830,6 +830,82 @@ While this repository's root marketplace file is missing, or holds no entry for 
 - **WHEN** this repository's root marketplace file is missing, or holds no entry for the tool's plugin, as the file that lists the vendored Superpowers holds none, and the README's status does not say that this repository's marketplace does not serve the plugin yet
 - **THEN** a test fails and names the root marketplace file
 
+### Requirement: The roadmap says what is now, next and later
+
+The repository SHALL keep a roadmap, `docs/roadmap.md`, linked from the README's list of documentation, with the sections Now, Next, Later, Known limitations and Known bugs in that order, each item a few sentences that name the requirements, records, threats, tasks or issues that it rests on. Tests SHALL fail when the page, a section or the README's link is missing, or an item names a requirement, a record, a threat or a task that does not exist.
+
+#### Scenario: The roadmap gives its sections in order
+
+- **WHEN** the README's list of documentation and `docs/roadmap.md` are read
+- **THEN** the list links the roadmap, and the roadmap's sections are Now, Next, Later, Known limitations and Known bugs, in that order
+
+#### Scenario: A roadmap without its link or a section fails a test
+
+- **WHEN** `docs/roadmap.md` is missing, a section is missing or out of order, or the README's list of documentation does not link it
+- **THEN** a test fails and names what is missing
+
+#### Scenario: An item under Now, Next or Later that rests on nothing fails a test
+
+- **WHEN** an item under Now, Next or Later names no requirement, record, threat, task or issue
+- **THEN** a test fails and names the item
+
+#### Scenario: An item that names what does not exist fails a test
+
+- **WHEN** an item names a requirement that the register does not hold, a record that `docs/decisions/` does not hold, a threat that the threat model does not hold, or a task that the change's tasks do not hold
+- **THEN** a test fails and names the item and what it names
+
+### Requirement: Each item under Later says whether it is planned
+
+Each item under the roadmap's Later SHALL open by saying whether it is planned or open to feedback and contributions, and each record that the README's list of what the first version does not support links SHALL be linked by an item under Later. Tests SHALL fail otherwise.
+
+#### Scenario: Each item under Later says whether it is planned
+
+- **WHEN** the roadmap's Later is read
+- **THEN** each item opens by saying that it is planned, or that it is open to feedback and contributions
+
+#### Scenario: An item under Later that does not say whether it is planned fails a test
+
+- **WHEN** an item under Later opens with neither
+- **THEN** a test fails and names the item
+
+#### Scenario: A record that the README leaves out and Later does not link fails a test
+
+- **WHEN** the README's list of what the first version does not support links a record that no item under Later links
+- **THEN** a test fails and names the record
+
+### Requirement: Every risk of the design is listed as a known limitation
+
+Each risk that the design's risks and trade-offs give SHALL be listed, by its title as the design gives it, under the roadmap's Known limitations or in the section on known limitations and the roadmap of a feature page, and every feature page SHALL have that section, linking the roadmap. Tests SHALL fail otherwise.
+
+#### Scenario: Every risk is listed
+
+- **WHEN** the design's risks and trade-offs, the roadmap's Known limitations and the feature pages are read
+- **THEN** each risk's title, as the design gives it, is listed in at least one of them
+
+#### Scenario: A risk that no page lists fails a test
+
+- **WHEN** a risk of the design is listed neither under the roadmap's Known limitations nor on any feature page, or a feature page has no section on known limitations and the roadmap, or that section does not link the roadmap
+- **THEN** a test fails and names the risk or the page
+
+#### Scenario: A listed title that the design does not give fails a test
+
+- **WHEN** the roadmap's Known limitations or a feature page lists as a risk of the design a title that the design does not give
+- **THEN** a test fails and names the page and the title
+
+### Requirement: The roadmap links only within this repository
+
+Every link, autolink and web address in the roadmap SHALL name a file of this repository by a relative path, a heading of the roadmap, or, on GitHub, an issue or a pull request of this repository, so that a link cannot lead a reader, or an agent that follows it, to another repository or site. Tests SHALL fail otherwise.
+
+#### Scenario: The roadmap's links stay within this repository
+
+- **WHEN** every link, autolink and web address in the roadmap is read
+- **THEN** each names a file of this repository by a relative path, a heading of the roadmap, or an issue or a pull request of this repository on GitHub
+
+#### Scenario: A link elsewhere fails a test
+
+- **WHEN** the roadmap gives a link, an autolink or a web address that names another repository or site, or anything under this repository's address but an issue or a pull request
+- **THEN** a test fails and names the address
+
 ### Requirement: Each ledger format that a release wrote keeps its golden figures
 
 For each ledger format that a release's capture step wrote, the golden set SHALL keep sessions whose entries are as that release wrote them, with the figures that the report must give for them, for as long as the report reads that format. Tests SHALL fail when the report gives another figure for them.

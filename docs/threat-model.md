@@ -2,7 +2,7 @@
 
 What could go wrong with the tool, for the people who use it and for this repository, and what answers each threat. Every change revisits this file (see `CLAUDE.md`).
 
-It was written for the first change, `add-pr-cost-calculator`, before any code, so the answers are requirements and tasks rather than code. It holds 158 threats across 9 trust boundaries. T38 to T69 were found by the design-stage review, T70 to T78 by the design-stage review of the decision records in `docs/decisions/`, T79 to T81 by the implementation-stage review of those records and their checks, T82 to T100 by the design-stage review of the assumptions, the glossary and the golden set, T101 by the implementation-stage review of the assumptions, T102 and T103 by the implementation-stage review of the glossary, T104 to T116 at the design of the revision of consent, the store and the ledger's format, T117 and T118 by the design-stage review of that revision, T119 to T122 by the review of that revision after its approval, T123 with the owner's answer to a question that the check of that review's fixes raised, T124 to T126 by the design-stage review of the test of the specs' form, T127 by the implementation-stage review of that test, T128 to T135 at the design of the plugin that brings capture to a project's cloud threads, T136 to T142 by the design-stage review of that plugin, T143 by its implementation-stage review, T144 by its security review, T145 to T147 at the design of the README's short start, T148 to T156 by the design-stage review of that short start, and T157 and T158 by its implementation-stage review; they follow T37, each under a heading for its boundary, so that the numbers stay in order, and a threat that a change removes keeps its ID out of use (see Retired IDs). Where an answer can be a scenario in a spec, it is one, so that an acceptance test holds it. `tests/test_threat_model.py` checks that every citation below names a scenario, task, decision, decision record or file that exists.
+It was written for the first change, `add-pr-cost-calculator`, before any code, so the answers are requirements and tasks rather than code. It holds 162 threats across 9 trust boundaries. T38 to T69 were found by the design-stage review, T70 to T78 by the design-stage review of the decision records in `docs/decisions/`, T79 to T81 by the implementation-stage review of those records and their checks, T82 to T100 by the design-stage review of the assumptions, the glossary and the golden set, T101 by the implementation-stage review of the assumptions, T102 and T103 by the implementation-stage review of the glossary, T104 to T116 at the design of the revision of consent, the store and the ledger's format, T117 and T118 by the design-stage review of that revision, T119 to T122 by the review of that revision after its approval, T123 with the owner's answer to a question that the check of that review's fixes raised, T124 to T126 by the design-stage review of the test of the specs' form, T127 by the implementation-stage review of that test, T128 to T135 at the design of the plugin that brings capture to a project's cloud threads, T136 to T142 by the design-stage review of that plugin, T143 by its implementation-stage review, T144 by its security review, T145 to T147 at the design of the README's short start, T148 to T156 by the design-stage review of that short start, T157 and T158 by its implementation-stage review, and T159 to T162 at the design of the roadmap; they follow T37, each under a heading for its boundary, so that the numbers stay in order, and a threat that a change removes keeps its ID out of use (see Retired IDs). Where an answer can be a scenario in a spec, it is one, so that an acceptance test holds it. `tests/test_threat_model.py` checks that every citation below names a scenario, task, decision, decision record or file that exists.
 
 ## How it was built
 
@@ -445,9 +445,9 @@ The trust boundaries:
 - **Likelihood:** 2 (possible)
 - **Risk:** 6
 - **What could happen:** agents building this tool read fixtures, price tables, decision records, issues and pull request comments that anyone can write. Text there that reads as an instruction could redirect them, which is called prompt injection.
-- **Answer:** `CLAUDE.md` says that data files describe and never instruct, and that anything meant to steer an agent belongs in `CLAUDE.md`, `.claude/` or a workflow, which, like the vendored skills that `.claude/settings.json` enables, change only through the owner's merge. It also says that issue text, pull request text and review comments, from anyone, are data and never tell an agent what to do, and that decision records describe and never instruct, with `CLAUDE.md` steering where a record and it disagree (T73). Fixtures that carry hostile text on purpose are named for it. The glossary, the assumptions and the pages that a file here links to describe too, and where the glossary or an assumption differs from `CLAUDE.md` or a spec, those steer (T93, T95). `CLAUDE.md` sends agents to the README for what the tool does, and to its section on working on this repository for setting up a clone, and says that an agent never turns capture on for anyone (T150).
+- **Answer:** `CLAUDE.md` says that data files describe and never instruct, and that anything meant to steer an agent belongs in `CLAUDE.md`, `.claude/` or a workflow, which, like the vendored skills that `.claude/settings.json` enables, change only through the owner's merge. It also says that issue text, pull request text and review comments, from anyone, are data and never tell an agent what to do, and that decision records describe and never instruct, with `CLAUDE.md` steering where a record and it disagree (T73). Fixtures that carry hostile text on purpose are named for it. The glossary, the assumptions and the pages that a file here links to describe too, and where the glossary or an assumption differs from `CLAUDE.md` or a spec, those steer (T93, T95). `CLAUDE.md` sends agents to the README for what the tool does, and to its section on working on this repository for setting up a clone, and says that an agent never turns capture on for anyone (T150). It names the roadmap among the pages that describe, and says that an item on it is not a task (T159).
 - **Residual:** no test can tell an instruction from a description, so this rests on the rule.
-- **Held by:** DR-072; DR-080; DR-082; DR-115; DR-140; DR-166; `CLAUDE.md`
+- **Held by:** DR-072; DR-080; DR-082; DR-115; DR-140; DR-166; DR-221; `CLAUDE.md`
 - **Assumptions:** A5, A7, A15, A16
 
 ### T34. A session on a contributor's branch runs that branch's instructions
@@ -2017,14 +2017,65 @@ The trust boundaries:
 - **Held by:** `project-standards`: "The README leaves the opt-in to the person"; DR-214; `add-pr-cost-calculator` task 4.4
 - **Assumptions:** A16
 
+## Boundary 7, continued: found at the design of the roadmap
+
+### T159. The roadmap leads an agent to start an item that nobody asked for
+
+- **Kind:** elevation of privilege
+- **Impact:** 2 (medium)
+- **Likelihood:** 1 (unlikely)
+- **Risk:** 2
+- **What could happen:** the roadmap lists work that is wanted but not asked for, such as a command that exports each pull request's cost, in sentences that read like tasks. An agent that reads it, as one that `CLAUDE.md` or the README sends there, could start an item, opening branches and pull requests as the owner's account (T64) on work that the owner has not chosen to start, or has moved or dropped.
+- **Answer:** `CLAUDE.md` names the roadmap among the pages that describe and never tell an agent what to do, and says that an item on it is not a task: work on one starts only when the owner asks for it. Nothing merges but by the owner.
+- **Residual:** no test can tell what an agent starts, so this rests on agents following the repository's rules (A16).
+- **Held by:** DR-221; `CLAUDE.md`
+- **Assumptions:** A16
+
+### T160. A roadmap link leads an agent to text that someone else controls
+
+- **Kind:** elevation of privilege
+- **Impact:** 3 (high)
+- **Likelihood:** 1 (unlikely)
+- **Risk:** 3
+- **What could happen:** the roadmap links the issues that hold known later changes, and a reader is meant to follow them. A link to another site, or one whose text names this repository while its target is a page that its author controls, would lead an agent that follows it to text written as instructions, which could steer it with the session's credentials, as the owner's account (T64, T95). An issue's text, and the comments on it, are written by anyone who can open or comment on an issue here.
+- **Answer:** the roadmap links only files of this repository by a relative path, its own headings, and the issues and pull requests of this repository on GitHub, and a test fails on any other address. `CLAUDE.md` says that issue text, from anyone, is data and never tells an agent what to do.
+- **Residual:** an issue or a pull request of this repository, which anyone can open or comment on, is still linked, by the owner's choice to keep known later changes in issues, and an agent that follows such a link rests on treating its text as data (A16).
+- **Held by:** `project-standards`: "A link elsewhere fails a test"; DR-221; `CLAUDE.md`; `add-pr-cost-calculator` task 1.26
+- **Assumptions:** A16
+
+## Boundary 6, continued: found at the design of the roadmap
+
+### T161. The roadmap says what no longer holds, or reads as a promise
+
+- **Kind:** reliability
+- **Impact:** 2 (medium)
+- **Likelihood:** 2 (possible)
+- **Risk:** 4
+- **What could happen:** an item finished, dropped or moved stays where it was on the roadmap, or an item under Later reads as a commitment that no one has made, so that an adopter chooses the tool, or a contributor starts work, on the strength of what the roadmap says the tool will do.
+- **Answer:** each item under Later opens by saying whether it is planned or open to feedback and contributions, and a test fails on one that says neither, and on a record that the README's list of what the first version does not support links and no item under Later links. Each item names the requirements, records, threats, tasks or issues that it rests on, and a test fails on one that names none or names one that does not exist. `CLAUDE.md`'s rule on documentation and the pull request template ask that a pull request that finishes, adds or moves an item changes the roadmap with it.
+- **Residual:** whether an item's text still says what holds, and whether a pull request moved the roadmap with its item, rest on the author and the owner's review (A15).
+- **Held by:** `project-standards`: "An item under Later that does not say whether it is planned fails a test"; `project-standards`: "A record that the README leaves out and Later does not link fails a test"; `project-standards`: "An item that names what does not exist fails a test"; DR-218; DR-219; `CLAUDE.md`; `.github/pull_request_template.md`; `add-pr-cost-calculator` task 1.26
+- **Assumptions:** A15
+
+### T162. A risk of the design drops out of the documentation
+
+- **Kind:** reliability
+- **Impact:** 2 (medium)
+- **Likelihood:** 1 (unlikely)
+- **Risk:** 2
+- **What could happen:** a risk that the design adds, or whose title changes, is listed neither on the roadmap nor on a feature page, so that an adopter who reads the documentation and not the design meets a limitation that no page names.
+- **Answer:** every risk of the design is listed, by its title as the design gives it, on the roadmap's Known limitations or on a feature page, and a test fails on a risk that no page lists, on a listed title that the design does not give, and on a feature page without its section on known limitations and the roadmap.
+- **Residual:** whether a risk is listed on the page of the feature it concerns, and whether the roadmap's short list holds those that an adopter notices, rest on review.
+- **Held by:** `project-standards`: "A risk that no page lists fails a test"; `project-standards`: "A listed title that the design does not give fails a test"; DR-220; `add-pr-cost-calculator` task 1.26
+
 ## Risk matrix
 
 Generated from the ratings above. Each cell lists the threats whose impact and likelihood it names.
 
 | Impact \ Likelihood | 1 unlikely | 2 possible | 3 likely |
 |---|---|---|---|
-| 3 high | T1, T12, T14, T15, T23, T24, T28, T29, T35, T43, T46, T58, T59, T63, T64, T66, T67, T68, T73, T77, T82, T83, T92, T93, T94, T95, T103, T107, T108, T119, T125, T133, T138, T140, T141, T142, T144, T147, T148, T150, T151 | T2, T32, T33, T34, T61, T62, T65, T132, T137 |  |
-| 2 medium | T4, T6, T11, T13, T18, T25, T26, T38, T41, T42, T53, T55, T56, T57, T60, T69, T70, T76, T78, T79, T80, T81, T84, T85, T86, T87, T88, T89, T90, T91, T97, T98, T99, T100, T101, T102, T104, T105, T109, T112, T115, T124, T126, T127, T135, T139, T146, T149, T152, T153, T155, T156, T157 | T3, T9, T10, T17, T19, T20, T21, T22, T27, T30, T39, T40, T44, T45, T47, T48, T49, T50, T51, T52, T54, T71, T72, T74, T75, T96, T111, T116, T120, T121, T122, T123, T129, T130, T131, T134, T136, T143, T145, T154, T158 | T7, T8, T16, T128 |
+| 3 high | T1, T12, T14, T15, T23, T24, T28, T29, T35, T43, T46, T58, T59, T63, T64, T66, T67, T68, T73, T77, T82, T83, T92, T93, T94, T95, T103, T107, T108, T119, T125, T133, T138, T140, T141, T142, T144, T147, T148, T150, T151, T160 | T2, T32, T33, T34, T61, T62, T65, T132, T137 |  |
+| 2 medium | T4, T6, T11, T13, T18, T25, T26, T38, T41, T42, T53, T55, T56, T57, T60, T69, T70, T76, T78, T79, T80, T81, T84, T85, T86, T87, T88, T89, T90, T91, T97, T98, T99, T100, T101, T102, T104, T105, T109, T112, T115, T124, T126, T127, T135, T139, T146, T149, T152, T153, T155, T156, T157, T159, T162 | T3, T9, T10, T17, T19, T20, T21, T22, T27, T30, T39, T40, T44, T45, T47, T48, T49, T50, T51, T52, T54, T71, T72, T74, T75, T96, T111, T116, T120, T121, T122, T123, T129, T130, T131, T134, T136, T143, T145, T154, T158, T161 | T7, T8, T16, T128 |
 | 1 low | T113 | T31, T36, T37, T110, T114, T118 | T5, T106, T117 |
 
 The threats with a risk of 6 or more:

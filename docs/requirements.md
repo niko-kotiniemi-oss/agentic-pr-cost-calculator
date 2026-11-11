@@ -217,6 +217,10 @@ The capability names the spec that holds the requirement. Each capability is one
 | R203 | non-functional | `project-standards` | The README's section on adopting the tool takes the tool from a published release's commit |
 | R204 | non-functional | `project-standards` | The README leaves each opt-in to the person, or to their organization |
 | R205 | non-functional | `project-standards` | The README's status says when this repository's marketplace does not serve the plugin yet |
+| R206 | non-functional | `project-standards` | The roadmap says what is now, next and later |
+| R207 | non-functional | `project-standards` | Each item under Later says whether it is planned |
+| R208 | non-functional | `project-standards` | Every risk of the design is listed as a known limitation |
+| R209 | non-functional | `project-standards` | The roadmap links only within this repository |
 
 IDs are stable: a requirement keeps its ID while it exists, and a new one takes the next free number, so the rows follow the order in which requirements were added rather than the order of the specs. A requirement that a later change removes leaves the table, and its ID is listed below with the change that removed it, never to be used again.
 
