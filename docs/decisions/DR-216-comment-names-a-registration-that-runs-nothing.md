@@ -14,7 +14,7 @@ A repository registers the hook in `.claude/settings.json` with a command that c
 
 ## Decision
 
-When `.claude/settings.json` or `.claude/settings.local.json` at the merged commit registers the hook's command with a checksum other than the SHA-256 of the hook file at that commit, with each CRLF taken as LF, the comment says that the hook's registration does not run the repository's hook file, and quotes nothing from either file. The report reads each of the two files as a blob within the configuration's size bound, and leaves out, without stopping, one that is not a regular file, is above that bound, is not JSON that it can read, as when its arrays nest so deep that Python's JSON reader raises an error, or is JSON in which a value on the way to a hook's command is not of the type it has in a registration, saying nothing of a registration there.
+When `.claude/settings.json` or `.claude/settings.local.json` at the merged commit registers the hook's command with a checksum other than the SHA-256 of the hook file at that commit, with each CRLF taken as LF, the comment says that the hook's registration does not run the repository's hook file, and quotes nothing from either file. The report reads each of the two files as a blob within a size bound of their own, and leaves out, without stopping, one that is not a regular file, is above that bound, is not JSON that it can read, as when its arrays nest so deep that Python's JSON reader raises an error, or is JSON in which a value on the way to a hook's command is not of the type it has in a registration, saying nothing of a registration there.
 
 ## Alternatives
 
@@ -24,7 +24,7 @@ When `.claude/settings.json` or `.claude/settings.local.json` at the merged comm
 ## Consequences
 
 - A registration that runs nothing shows in the comment of the first pull request that merges after it, rather than as a figure that is too low (T152).
-- The report reads both settings files as git blobs, within the configuration's size bound, as data, and quotes nothing from them, and a file that it cannot read stops no report (R202, T157).
+- The report reads both settings files as git blobs, within a size bound of their own, as data, and quotes nothing from them, and a file that it cannot read stops no report (R202, T157).
 - A session that runs the plugin still records, whatever the registration says.
 
 ## Scope

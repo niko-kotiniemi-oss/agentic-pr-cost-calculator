@@ -105,7 +105,7 @@ When the hook file at the path that the README gives is missing from the merged 
 
 ### Requirement: The comment says when the hook's registration does not run the hook file
 
-When `.claude/settings.json` or `.claude/settings.local.json` at the merged commit, each read as a blob within the configuration's size bound, registers the hook's command with a checksum other than the SHA-256 of the hook file at that commit, with each CRLF taken as LF, the comment SHALL say that the hook's registration does not run the repository's hook file and SHALL quote nothing from either file, and a settings file that the report cannot read SHALL NOT stop it.
+When `.claude/settings.json` or `.claude/settings.local.json` at the merged commit, each read as a blob within a size bound of their own, registers the hook's command with a checksum other than the SHA-256 of the hook file at that commit, with each CRLF taken as LF, the comment SHALL say that the hook's registration does not run the repository's hook file and SHALL quote nothing from either file, and a settings file that the report cannot read SHALL NOT stop it.
 
 #### Scenario: A registration whose checksum is not the hook file's is named
 
@@ -119,7 +119,7 @@ When `.claude/settings.json` or `.claude/settings.local.json` at the merged comm
 
 #### Scenario: A settings file that the report cannot read does not stop it
 
-- **WHEN** the merged commit's `.claude/settings.json` or `.claude/settings.local.json` is a symbolic link or is not a regular file, is larger than the configuration's size bound, is not JSON that the report can read, as when its arrays nest so deep that Python's JSON reader raises an error on it, or is JSON in which a value on the way to a hook's command is not of the type it has in a registration, such as a list at its top or a number for `hooks`
+- **WHEN** the merged commit's `.claude/settings.json` or `.claude/settings.local.json` is a symbolic link or is not a regular file, is larger than the settings files' size bound, is not JSON that the report can read, as when its arrays nest so deep that Python's JSON reader raises an error on it, or is JSON in which a value on the way to a hook's command is not of the type it has in a registration, such as a list at its top or a number for `hooks`
 - **THEN** the comment is posted, says nothing of a registration in that file and quotes nothing from it
 
 ### Requirement: The comment says when ledger files come from a later release than the report's

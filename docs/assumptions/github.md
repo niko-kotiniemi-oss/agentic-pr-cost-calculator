@@ -62,8 +62,8 @@ The assumptions about GitHub: this repository's settings there, and its workflow
 
 ## A9. GitHub shows text as the checks expect, and text posted on GitHub is public at once.
 
-- **Rests on it:** R21, R33, R97, R98, R128, R134, R176, R200, T26, T52, T61, T65, T73, T79, T81, T125, T126, T145, T151, DR-044, DR-108, DR-114, DR-115, DR-152, DR-195, DR-213
-- **If it is wrong:** Text shown as code could still render as a link, an image or a mention, and a log line could be read as a workflow command (T26, T52). A decision record could read one way to a reviewer and another way to an agent, or be collapsed and merged unread (T73, T79, T81), and a bug report opened without the form would never meet its privacy checkbox (T61, T65). A spec could read one way to its reviewers and another to an agent (T125), and the check of the specs' form could print a line that CI reads as a command (T126). The README's detail could show in full, so that its short start no longer comes first, or stay out of a reader's reach (T145), and if GitHub showed an HTML comment, or a drawn code block's text, as the raw file holds it, the README's test that refuses them would refuse more than it needs to (T151).
+- **Rests on it:** R21, R33, R97, R98, R128, R134, R176, R198, R200, T26, T52, T61, T65, T73, T79, T81, T125, T126, T145, T147, T151, DR-044, DR-108, DR-114, DR-115, DR-152, DR-195, DR-213
+- **If it is wrong:** Text shown as code could still render as a link, an image or a mention, and a log line could be read as a workflow command (T26, T52). A decision record could read one way to a reviewer and another way to an agent, or be collapsed and merged unread (T73, T79, T81), and a bug report opened without the form would never meet its privacy checkbox (T61, T65). A spec could read one way to its reviewers and another to an agent (T125), and the check of the specs' form could print a line that CI reads as a command (T126). The README's detail could show in full, so that its short start no longer comes first, or stay out of a reader's reach (T145), and if GitHub showed an HTML comment, or a drawn code block's text, as the raw file holds it, the README's test that refuses them would refuse more than it needs to (T151). If GitHub showed the root's README on the repository's page where the `.github` folder holds one, the README's test that refuses such a file would refuse more than it needs to (R198, T147).
 - **Fact:** GitHub shows text inside inline code in a comment or a job summary as code, never as a link, an image or a mention.
   - **Relied on:** R21, T26, T52, DR-044
   - **Checked:** not yet: none will, since no test may reach GitHub
@@ -79,9 +79,15 @@ The assumptions about GitHub: this repository's settings there, and its workflow
 - **Fact:** GitHub shows the Markdown inside a `<details>` element collapsed, under its `<summary>`, until a reader clicks to expand it, and open from the start only when the element has the `open` attribute.
   - **Relied on:** R200, T145, DR-213
   - **Checked:** documented: <https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/organizing-information-with-collapsed-sections>, read 2026-11-10
-- **Fact:** GitHub draws a fenced code block whose language is `mermaid`, `geojson`, `topojson` or `stl` as a diagram, a map or a model.
+- **Fact:** GitHub draws a fenced code block whose language is `mermaid`, `geojson`, `topojson` or `stl` as a diagram, a map or a model, and one whose language is `math` as a mathematical expression.
   - **Relied on:** R200, T151
-  - **Checked:** documented: <https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/creating-diagrams>, read 2026-11-11
+  - **Checked:** documented: <https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/creating-diagrams>, <https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/writing-mathematical-expressions>, read 2026-11-11
+- **Fact:** GitHub hides a footnote's definition that nothing refers to, and raw HTML that is not an element, such as a processing instruction, a declaration or a CDATA section, as it hides a comment.
+  - **Relied on:** R200, T151
+  - **Checked:** not yet: none will, since no test may reach GitHub
+- **Fact:** Where a repository holds a README in its `.github` folder, GitHub shows that one on the repository's page in place of the one at its root.
+  - **Relied on:** R198, T147
+  - **Checked:** documented: <https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-readmes>, read 2026-11-11
 - **Fact:** A record kept to the plain-text subset shows on GitHub every word that an agent reads in the raw file.
   - **Relied on:** R128, T73, T79, DR-152
   - **Checked:** not yet: none will, since no test may reach GitHub
@@ -201,7 +207,7 @@ The assumptions about GitHub: this repository's settings there, and its workflow
 ## A26. Runs for a pull request from a fork get no secrets, and run the code that its author chose.
 
 - **Rests on it:** R27, R34, R68, R201, T37, T58, T63, T95, T147, DR-018, DR-068, DR-078, DR-115, DR-122, DR-156, DR-215
-- **If it is wrong:** A secret added later could be read by a fork's pull request (T37), and pull requests from forks would get no report if their merge's push ran elsewhere. If GitHub did not run an action pinned to a commit that only a fork holds, or serve one under this repository's address, the defences against such commits, the README's refusal of a commit's ID among them, would be more than needed (T58, T63, T147).
+- **If it is wrong:** A secret added later could be read by a fork's pull request (T37), and pull requests from forks would get no report if their merge's push ran elsewhere. If GitHub did not run an action pinned to a commit that only a fork holds, or serve one under this repository's address, the defences against such commits, the README's refusal of a commit's ID among them, would be more than needed (T58, T63, T147), and if it served under a repository's address nothing else that others write, the README's test would refuse more addresses there than it needs to (R201, T147).
 - **Fact:** Apart from `GITHUB_TOKEN`, GitHub passes no secrets to a run that a pull request from a fork triggers.
   - **Relied on:** T37, DR-078
   - **Checked:** documented: <https://github.com/github/docs/blob/33b1f4a6fec2d9b6fd3d374afa56bcd9f0875b57/data/reusables/actions/forked-secrets.md>, read 2026-11-01
@@ -214,6 +220,9 @@ The assumptions about GitHub: this repository's settings there, and its workflow
 - **Fact:** GitHub serves a commit that only a fork holds under the parent repository's address, and resolves a commit id in `uses:` across the fork network, so it runs an action pinned to such a commit.
   - **Relied on:** R27, R34, R201, T58, T63, T95, T147, DR-068, DR-122, DR-156, DR-215
   - **Checked:** not yet: none will, since no test may reach GitHub
+- **Fact:** GitHub serves under a repository's address what others write there too: an issue, which anyone who can read the repository can open, a pull request from a fork, which its author opens on the original repository, and a comparison of its branch with a fork's.
+  - **Relied on:** R201, T147, DR-215
+  - **Checked:** documented: <https://docs.github.com/en/issues/tracking-your-work-with-issues/using-issues/creating-an-issue>, <https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request-from-a-fork>, <https://docs.github.com/en/pull-requests/committing-changes-to-your-project/viewing-and-comparing-commits/comparing-commits>, read 2026-11-11
 
 ## A28. GitHub, and this repository's place on it, stay as they are.
 
