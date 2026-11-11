@@ -28,6 +28,14 @@ This feature is validated first by its spec's scenarios: each gets an acceptance
 - Tests that the report refuses every event but the push that a merge makes, and that the token is in none of its outputs (task 4.3).
 - End to end: this repository's own merge posts a report whose figures can be recomputed from its ledger, the price table and the jobs API (task 7.1).
 
+## Known limitations and the roadmap
+
+The design's risks that concern this feature and are not on the roadmap, each with what it means:
+
+- **A workflow runs a script or a local action that a pull request changes**: the comment flags changes to workflow and settings files, but not to the scripts that workflows run, which stay for review in the diff.
+
+The [roadmap](../roadmap.md) gives what is planned next and later, and the limitations that an adopter notices.
+
 ## See also
 
 - `report-comment` in `openspec/`, and design decisions 7 and 16 of `add-pr-cost-calculator`.

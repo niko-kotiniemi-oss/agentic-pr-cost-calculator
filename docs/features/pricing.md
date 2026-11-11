@@ -23,6 +23,16 @@ This feature is validated first by its spec's scenarios: each gets an acceptance
 - A test that every price row has its date and its source, and that a pull request cannot change or remove an existing row or add one dated on or before the newest existing one for the same price (task 3.1).
 - Tests of each modifier and of their combinations, with property tests that a cost is never negative and adds up across any split of the ledger (task 3.2).
 
+## Known limitations and the roadmap
+
+The design's risks that concern this feature and are not on the roadmap, each with what it means:
+
+- **An adopter updates the hook and the workflow pin at different times**: something goes unpriced, and the comment says so instead of guessing.
+- **Cache writes recorded without their lifetime**: the report gives a range for those cache writes.
+- **Prices go stale, or a new model appears**: a model that the price table does not list is named rather than priced until the table is updated.
+
+The [roadmap](../roadmap.md) gives what is planned next and later, and the limitations that an adopter notices.
+
 ## See also
 
 - `pricing` in `openspec/`, and design decision 4 of `add-pr-cost-calculator`.

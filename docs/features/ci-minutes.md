@@ -27,6 +27,15 @@ This feature is validated first by its spec's scenarios: each gets an acceptance
 
 - Tests against recorded API responses for a merge commit, a squash, a rebase merge and a fast-forward, a run on the pull request's `closed` event, and a pull request with more commits than the call budget allows (task 3.3).
 
+## Known limitations and the roadmap
+
+The design's risks that concern this feature and are not on the roadmap, each with what it means:
+
+- **A force-push removes commits that CI ran on**: the removed commits' runs are not counted.
+- **A pull request's commits and runs use up the report's call budget, or the requests per hour that `GITHUB_TOKEN` can make in the repository**: the comment marks the CI cost as incomplete, or no comment is posted and the job summary says why.
+
+The [roadmap](../roadmap.md) gives what is planned next and later, and the limitations that an adopter notices.
+
 ## See also
 
 - `ci-minutes` in `openspec/`, and design decision 7 of `add-pr-cost-calculator`.

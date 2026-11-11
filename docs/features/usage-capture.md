@@ -55,6 +55,31 @@ This feature is validated first by its spec's scenarios: each gets an acceptance
 - The plugin's hooks held to the hook file's registration, read from every file that can declare them, its command run in each shell with its script missing or changed, a plugin run's repositories in a folder that holds two clones, three with one unreadable, and with a repository nested in another that a `git -C` command reaches, the plugin and the hook file's registration run in one session, in parallel, of one release and of two, and a fixed store version's fingerprint held to the one recorded for it (tasks 2.6 and 6.1).
 - The plugin in a project's cloud thread, added from a release's zip and from the marketplace, with the opt-in in the environment's setup script, and calls made before a pause reaching a commit made after it, checked by hand (task 7.2).
 
+## Known limitations and the roadmap
+
+The design's risks that concern this feature and are not on the roadmap, each with what it means:
+
+- **Claude Code changes its transcript format**: a change shows up as refused calls, counted, rather than as a guess, until the parser learns the new shape.
+- **A call read without a stop reason gives the usage of its start, not of its end**: such a call's output tokens are too low, and the comment says that the token cost is a lower bound.
+- **A call is recorded on the branch checked out when it is recorded, which can differ from the one it was made on**: in three narrow cases a call can be counted on another branch than the one it was made on.
+- **A `git add` that stages nothing comes before a commit that would otherwise commit nothing**: the commit holds the ledger file alone, where without the tool it would have failed.
+- **A commit is refused at a permission prompt or by a permission rule, blocked, cancelled or interrupted after its ledger file was staged**: the ledger file stays staged until a later run of the capture step takes it back.
+- **A git command starts while a run stages or takes back a ledger file**: that git command fails at the index lock, as when any two git commands meet.
+- **A person removes a ledger file from their branch, or a commit that holds one is undone**: the calls in that file are not counted again unless the file itself is committed again.
+- **A repository's own git hooks see the staged ledger file**: a hook that refuses the file fails a commit that would pass without the tool.
+- **A repository's settings act on the ledger path**: where an attribute would change the file, capture stages nothing, and the comment says that no agent usage was recorded.
+- **A session is resumed in a fresh clone at the same path**: the calls answered before the fresh clone's first run are left out and flagged.
+- **Capture fails without anyone seeing it, since a hook that succeeds shows nothing**: refused calls are counted, and a pull request whose capture never ran says that no usage was recorded.
+- **A worktree is removed, or another repository put at its path, before a run reads the calls made in it**: a removed worktree's calls are left out, and a path that now holds another repository sends them there.
+- **The store is removed while a ledger file is staged**: the next commit in that worktree takes the file, with calls recorded with consent.
+- **A ledger file that the plugin stages in a repository that the session then leaves stays staged**: the file stays staged until a later run of that session meets that repository.
+- **Two releases of the hook meet one store, as when sessions start in two worktrees that hold different releases, or a session runs the plugin of one release and the hook file of another**: a run of a release that does not know the store's format records nothing, so those calls are not counted.
+- **A backup or a sync puts back an earlier copy of the store, or two users of one clone meet**: a copy put back can bring back waiting calls when the opt-out came only through the environment.
+- **The hook file in the working tree changes during a session, as when the session checks out a branch that updates the hook**: the capture step stops for the rest of the session, so its calls are not recorded.
+- **A checkout changes the capture step's bytes, as git does to its line endings where `core.autocrlf` is on, so that its checksum stops capture without a flag**: capture stops without a flag where a person's own filter changes those bytes.
+
+The [roadmap](../roadmap.md) gives what is planned next and later, and the limitations that an adopter notices.
+
 ## See also
 
 - `usage-capture` in `openspec/` for the full requirements and their scenarios.

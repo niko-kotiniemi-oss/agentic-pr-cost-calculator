@@ -2,7 +2,7 @@
 
 What holds for the whole tool rather than for one feature: documentation that names everything the tool does, connections only where that documentation says, rated threats, pull request text without private references, action pins that their repositories tagged, a record of each decision, the assumptions that the design rests on, a glossary of the words its documents use, specs that OpenSpec reads as they are written, a roadmap, and a golden set of figures that every version reproduces.
 
-**Status:** the documentation, the threat ratings, the workflow checks, the decision records, the assumptions, the glossary, and the test of the specs' form and the comparison of its reading with OpenSpec's are in place; the network guard, the check of pull request text, the check of pins, the golden set, the README's short start and its section on adopting the tool, and the roadmap, are designed, not built yet.
+**Status:** the documentation, the threat ratings, the workflow checks, the decision records, the assumptions, the glossary, the test of the specs' form and the comparison of its reading with OpenSpec's, and the roadmap are in place; the network guard, the check of pull request text, the check of pins, the golden set, and the README's short start and its section on adopting the tool are designed, not built yet.
 
 **Spec:** `project-standards`
 
@@ -42,9 +42,21 @@ What holds for the whole tool rather than for one feature: documentation that na
 
 This feature is validated first by its spec's scenarios: each whose code is still to be written gets an acceptance test before that code, seen to fail for the expected reason, and each that a check already in place holds is named in that check's test (task 1.4). Then come the checks that DR-084 to DR-093 and DR-109 apply to all the tool's code. Beyond those, this feature has its own:
 
-- Already in place: the documentation tests (tasks 1.12 and 1.17), the threat model's tests (task 1.10), the workflow checks (task 1.16), the decision records' tests (task 1.18), the assumptions' tests (task 1.19), the glossary's tests (task 1.20), with the test that a page that calls an entry `anonymous` fails (task 1.22), and the test of the specs' form (task 1.23) and the comparison of its reading with what the pinned OpenSpec reads (task 1.24).
-- To be built: the network guard's two rules and the check of the report's git commands (task 1.13), the check of pull request text (task 1.14), the check that every pin is a tagged commit (task 1.15), the golden set (task 1.21), the release's test job that runs every expected failure as an ordinary test (task 6.3), the README's section on adopting the tool, which says what stays published and where an opt-in applies, how capture covers a project's cloud threads, how to turn capture off in a running session, what an organization's option does, both ways to install the plugin, which release of it runs and where it can leave a ledger file staged, and the short start above them, with their text folded below it, and the tests of the README's addresses, of the text that GitHub hides in it, of the hook that its section on organizations gives and of where its section on adopting the tool takes the tool from (task 4.4), a check that every network call and environment variable the tool's code reads is named in the documentation (task 5.3), and the roadmap with its tests and each feature page's section on known limitations and the roadmap (task 1.26).
+- Already in place: the documentation tests (tasks 1.12 and 1.17), the threat model's tests (task 1.10), the workflow checks (task 1.16), the decision records' tests (task 1.18), the assumptions' tests (task 1.19), the glossary's tests (task 1.20), with the test that a page that calls an entry `anonymous` fails (task 1.22), and the test of the specs' form (task 1.23) and the comparison of its reading with what the pinned OpenSpec reads (task 1.24), and the roadmap's test, `tests/test_roadmap.py`, with each feature page's section on known limitations and the roadmap (task 1.26).
+- To be built: the network guard's two rules and the check of the report's git commands (task 1.13), the check of pull request text (task 1.14), the check that every pin is a tagged commit (task 1.15), the golden set (task 1.21), the release's test job that runs every expected failure as an ordinary test (task 6.3), the README's section on adopting the tool, which says what stays published and where an opt-in applies, how capture covers a project's cloud threads, how to turn capture off in a running session, what an organization's option does, both ways to install the plugin, which release of it runs and where it can leave a ledger file staged, and the short start above them, with their text folded below it, and the tests of the README's addresses, of the text that GitHub hides in it, of the hook that its section on organizations gives and of where its section on adopting the tool takes the tool from (task 4.4), and a check that every network call and environment variable the tool's code reads is named in the documentation (task 5.3).
 - By review rather than by a test: that the threat model is revisited before a design is approved and again against what was built (tasks 1.10 and 5.2).
+
+## Known limitations and the roadmap
+
+The design's risks that concern this feature and are not on the roadmap, each with what it means:
+
+- **Mutation testing takes time in CI**: how long it takes is measured when it is added, and what to do about it is decided then.
+- **A rewording changes what a requirement, a scenario, `CLAUDE.md`, a threat's answer or an instruction to adopters says**: a rewording could change what a rule says, so it changes no text that it must not.
+- **An assumption's check claims more than was checked**: a check could claim more than it showed, so each one names what holds it.
+- **A golden figure is changed to agree with a defect**: a defect could be hidden as an expected figure, so a golden figure changes only beside the spec that changed it.
+- **The glossary, an assumption or a page that one links to reads as an instruction to an agent**: such a page could steer an agent, so they describe and never instruct.
+
+The [roadmap](../roadmap.md) gives what is planned next and later, and the limitations that an adopter notices.
 
 ## See also
 
