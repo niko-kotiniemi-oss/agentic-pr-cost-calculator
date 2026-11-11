@@ -14,7 +14,7 @@ The design's risks and trade-offs list where the tool, as designed, falls short,
 
 ## Decision
 
-The roadmap's Known limitations lists the limitations that an adopter notices, and each feature page has a section on known limitations and the roadmap that lists the rest of the risks that concern its feature and links the roadmap. Each risk is listed by its title as the design gives it, and every risk is listed on the roadmap or on at least one feature page.
+The roadmap's Known limitations lists the limitations that an adopter notices, and each feature page has a section on known limitations and the roadmap that lists the rest of the risks that concern its feature and links the roadmap. Each risk is listed by its title as its design gives it, followed by what it means for the figure or for the person, and every risk of every change's design, active or archived, is listed on the roadmap or on at least one feature page, the features' index aside. Known limitations says that it is a short list and links each feature page's section, and the review checks that no risk that bears on what is published, or on code that runs, is left off the roadmap.
 
 ## Alternatives
 
@@ -23,7 +23,8 @@ The roadmap's Known limitations lists the limitations that an adopter notices, a
 
 ## Consequences
 
-- A test fails when a risk of the design is listed nowhere, when a page lists as a risk a title that the design does not give, and when a feature page has no such section or it does not link the roadmap (R208), so that a risk added to the design, or one whose title changes, fails CI until a page lists it (T162).
+- A test fails when a risk of a design is listed nowhere, when a page lists as a risk a title that no design gives, when a feature page has no such section or it does not link the roadmap, and when Known limitations does not link each section (R208), so that a risk added to a design, or one whose title changes, fails CI until a page lists it, and archiving a change keeps its risks listed (T162).
+- A risk of an archived design stays listed for as long as the repository holds that design, even once a later change no longer has it.
 - Which risks an adopter notices, and which feature a risk concerns, rest on review.
 
 ## Scope

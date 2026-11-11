@@ -14,7 +14,7 @@ The tool is an open-source project that others are to help prioritise. What it w
 
 ## Decision
 
-The repository keeps a roadmap, `docs/roadmap.md`, which the README's list of documentation links, with the sections Now, Next, Later, Known limitations and Known bugs, in that order. Each item is a few sentences that name the requirements, records, threats, tasks or issues that it rests on. Now holds the work under way: the pull requests before the build, in their order, and the build itself. Next holds what follows the first build, such as the command that exports each pull request's cost as a small file and a report that shows a pull request as still in progress. Later holds what the first version leaves out. Known bugs is empty until there is code. A pull request that finishes, adds or moves an item changes the roadmap in the same pull request, as `CLAUDE.md`'s rule on documentation and the pull request template say.
+The repository keeps a roadmap, `docs/roadmap.md`, which the README's list of documentation links, with the sections Now, Next, Later, Known limitations and Known bugs, in that order. Each item is a few sentences. Each item under Next and Later names the requirements, records, threats or tasks that it rests on, a task by its change and number, and an item that names only finished tasks or closed records is stale. Now holds the work under way: the pull requests before the build, in their order, and the build itself, by its tasks. Next holds what follows the first build, such as the command that writes each pull request's cost as a small file (DR-222) and a report that shows a pull request as still in progress (DR-223), and the open issues that hold later changes, each named by its number. Later holds what the first version leaves out. Known bugs is empty until there is code, and then names the issues that the bug form opens by their numbers. A pull request that finishes, adds or moves an item changes the roadmap in the same pull request, as `CLAUDE.md`'s rule on documentation and the pull request template say.
 
 ## Alternatives
 
@@ -24,13 +24,13 @@ The repository keeps a roadmap, `docs/roadmap.md`, which the README's list of do
 
 ## Consequences
 
-- Tests hold the page's sections, the README's link and every requirement, record, threat and task that an item names (R206).
-- Whether an item's text still says what holds, and whether the roadmap moved with the pull request that finished or moved an item, rests on review (T161).
+- Tests hold the page's sections, the README's link, every requirement, record, threat and task that an item names, in active and archived changes alike, and fail on an item whose tasks are all ticked or whose record is closed (R206).
+- No test reads the issues, which no test may reach, so whether an issue that an item names is still open, whether an item under Now is still under way, and whether the roadmap moved with the pull request that finished or moved an item, rest on review (T161).
 - Items can later become issues labelled now, next or later, with the page linking them, once the owner sets those labels.
 
 ## Scope
 
-This covers the roadmap's place, its sections and keeping it current. How Later marks its items is DR-219 (Each item under Later says whether it is planned), which of the design's risks it lists is DR-220 (The roadmap lists a short list of known limitations, and each feature page lists the rest of its own), and how it may steer and link is DR-221 (The roadmap describes, and an item on it is not a task).
+This covers the roadmap's place, its sections and keeping it current. How Next and Later mark their items is DR-219 (Each item under Next and Later says whether it is planned), which of the design's risks it lists is DR-220 (The roadmap lists a short list of known limitations, and each feature page lists the rest of its own), and how it may steer, link and hide is DR-221 (The roadmap describes, and leads only to this repository's own files).
 
 ## What reversing it would change
 
