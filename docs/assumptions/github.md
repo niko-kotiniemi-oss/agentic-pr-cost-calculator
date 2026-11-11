@@ -63,7 +63,7 @@ The assumptions about GitHub: this repository's settings there, and its workflow
 ## A9. GitHub shows text as the checks expect, and text posted on GitHub is public at once.
 
 - **Rests on it:** R21, R33, R97, R98, R128, R134, R176, R200, T26, T52, T61, T65, T73, T79, T81, T125, T126, T145, T151, DR-044, DR-108, DR-114, DR-115, DR-152, DR-195, DR-213
-- **If it is wrong:** Text shown as code could still render as a link, an image or a mention, and a log line could be read as a workflow command (T26, T52). A decision record could read one way to a reviewer and another way to an agent, or be collapsed and merged unread (T73, T79, T81), and a bug report opened without the form would never meet its privacy checkbox (T61, T65). A spec could read one way to its reviewers and another to an agent (T125), and the check of the specs' form could print a line that CI reads as a command (T126). The README's detail could show in full, so that its short start no longer comes first, or stay out of a reader's reach (T145), and if GitHub showed an HTML comment, the README's test that refuses one would refuse more than it needs to (T151).
+- **If it is wrong:** Text shown as code could still render as a link, an image or a mention, and a log line could be read as a workflow command (T26, T52). A decision record could read one way to a reviewer and another way to an agent, or be collapsed and merged unread (T73, T79, T81), and a bug report opened without the form would never meet its privacy checkbox (T61, T65). A spec could read one way to its reviewers and another to an agent (T125), and the check of the specs' form could print a line that CI reads as a command (T126). The README's detail could show in full, so that its short start no longer comes first, or stay out of a reader's reach (T145), and if GitHub showed an HTML comment, or a drawn code block's text, as the raw file holds it, the README's test that refuses them would refuse more than it needs to (T151).
 - **Fact:** GitHub shows text inside inline code in a comment or a job summary as code, never as a link, an image or a mention.
   - **Relied on:** R21, T26, T52, DR-044
   - **Checked:** not yet: none will, since no test may reach GitHub
@@ -74,11 +74,14 @@ The assumptions about GitHub: this repository's settings there, and its workflow
   - **Relied on:** R128, R176, R200, T73, T125, T151, DR-152, DR-195, DR-213
   - **Checked:** not yet: none will, since no test may reach GitHub
 - **Fact:** GitHub shows text between dollar signs as a mathematical expression, and text between one or two tildes struck through, in a Markdown file as in a pull request.
-  - **Relied on:** R176, T125, DR-195
+  - **Relied on:** R176, R200, T125, T151, DR-195
   - **Checked:** documented: <https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/writing-mathematical-expressions>, <https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax>, read 2026-11-09
 - **Fact:** GitHub shows the Markdown inside a `<details>` element collapsed, under its `<summary>`, until a reader clicks to expand it, and open from the start only when the element has the `open` attribute.
   - **Relied on:** R200, T145, DR-213
   - **Checked:** documented: <https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/organizing-information-with-collapsed-sections>, read 2026-11-10
+- **Fact:** GitHub draws a fenced code block whose language is `mermaid`, `geojson`, `topojson` or `stl` as a diagram, a map or a model.
+  - **Relied on:** R200, T151
+  - **Checked:** documented: <https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/creating-diagrams>, read 2026-11-11
 - **Fact:** A record kept to the plain-text subset shows on GitHub every word that an agent reads in the raw file.
   - **Relied on:** R128, T73, T79, DR-152
   - **Checked:** not yet: none will, since no test may reach GitHub

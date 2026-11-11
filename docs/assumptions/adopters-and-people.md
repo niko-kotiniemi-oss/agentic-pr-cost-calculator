@@ -97,8 +97,8 @@ The assumptions about the teams that adopt the tool, the people who opt in, and 
 
 ## A16. Agents follow the repository's rules.
 
-- **Rests on it:** R26, R33, R99, T32, T33, T34, T35, T55, T62, T64, T65, T66, T67, T73, T77, T93, T95, T150, DR-026, DR-069, DR-070, DR-081, DR-082, DR-083, DR-111, DR-114, DR-115, DR-134, DR-144, DR-145, DR-146, DR-214
-- **If it is wrong:** A dashboard approval, a changed setting or a tag made by an agent would count as the owner's decision (T64, T67), text that anyone can write could steer an agent with the owner's credentials (T33, T73), an untrusted branch's hooks could run with credentials that can push here (T34, T66), private references could reach public text (T32, T65), and an agent that followed the README's short start could opt the owner in where their sessions reach another repository beside this one (T150).
+- **Rests on it:** R26, R33, R99, R204, T32, T33, T34, T35, T55, T62, T64, T65, T66, T67, T73, T77, T93, T95, T150, T158, DR-026, DR-069, DR-070, DR-081, DR-082, DR-083, DR-111, DR-114, DR-115, DR-134, DR-144, DR-145, DR-146, DR-214
+- **If it is wrong:** A dashboard approval, a changed setting or a tag made by an agent would count as the owner's decision (T64, T67), text that anyone can write could steer an agent with the owner's credentials (T33, T73), an untrusted branch's hooks could run with credentials that can push here (T34, T66), private references could reach public text (T32, T65), and an agent that followed the README's short start could opt the owner in where their sessions reach another repository beside this one (T150), and an adopter's agent that set the tool up from the README could opt in the person who asked it (T158).
 - **Fact:** Agent sessions never create, move or delete a tag or a release, never approve an item on Renovate's dependency dashboard, and never change a repository setting, a ruleset or a secret; only the owner does these, and only the owner decides when the oldest supported Python rises.
   - **Relied on:** R26, T62, T64, T67, DR-111, DR-134, DR-144
   - **Checked:** not yet: none will, since no test may reach what adopters and people do
@@ -110,6 +110,9 @@ The assumptions about the teams that adopt the tool, the people who opt in, and 
   - **Checked:** not yet: none will, since no test may reach what adopters and people do
 - **Fact:** Agents never turn capture on for anyone, the owner included, and a test that needs the opt-in sets it only in a git configuration of the test's own, as `CLAUDE.md` says.
   - **Relied on:** T150, DR-214
+  - **Checked:** not yet: none will, since no test may reach what adopters and people do
+- **Fact:** An agent that sets the tool up in another repository reads the README's sections on the opt-in, on cloud threads and on organizations, and turns capture on for no one, as they say.
+  - **Relied on:** R204, T158, DR-214
   - **Checked:** not yet: none will, since no test may reach what adopters and people do
 - **Fact:** Everyone who writes text here keeps private references, session links and session identifiers out of it, including the ones that the private-reference check does not know, and removes a link that a tool adds.
   - **Relied on:** R33, T32, T65, T77, DR-069, DR-070, DR-114

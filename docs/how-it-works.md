@@ -209,7 +209,7 @@ sequenceDiagram
     R->>R: Read the ledger files the merge adds, as git blobs, within the size bound, holding each file to the version of the ledger format that its first line states
     R->>R: Read the call ids of the first-parent history's earlier ledger files, by the versions they state, so no call counts twice
     R->>R: Compare the hook file at the merged commit with the one at its own commit
-    R->>R: Compare the hook's registration in the merged commit's settings files with that commit's hook file
+    R->>R: Compare the hook's registration in the merged commit's settings files, read as git blobs within the configuration's size bound, with that commit's hook file, leaving out a file that it cannot read
     R->>GH: List runs and every job attempt on the pull request's own commits
     R->>R: Price tokens and minutes from the price table, and note which reasons the ledger files flag calls left out for
     R->>GH: Post the comment, or update the report's own earlier one

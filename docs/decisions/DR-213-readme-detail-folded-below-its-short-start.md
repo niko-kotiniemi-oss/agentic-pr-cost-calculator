@@ -14,7 +14,7 @@ The README's short start leaves the detail to the sections that it links (DR-212
 
 ## Decision
 
-The README keeps its sections on adopting the tool, on the opt-in, on installing the plugin, on a project's cloud threads, on organizations and on turning capture off, after its short start, each with its heading shown and its text folded in a `<details>` element of its own, so that the README first shows the short start and a list of what the detail covers. The section on the opt-in sits inside the section on adopting the tool, under a heading of its own. The README holds no other text that GitHub hides: no HTML comment, no link reference definition, no HTML element other than the `<details>` and `<summary>` elements that fold those sections, and no control or format character other than a line break.
+The README keeps its sections on adopting the tool, on the opt-in, on installing the plugin, on a project's cloud threads, on organizations and on turning capture off, after its short start, each with its heading shown and its text folded in a `<details>` element of its own, so that the README first shows the short start and a list of what the detail covers. The section on the opt-in sits inside the section on adopting the tool, under a heading of its own. The README holds no other text that GitHub hides, as R200 lists it.
 
 ## Alternatives
 
@@ -25,7 +25,7 @@ The README keeps its sections on adopting the tool, on the opt-in, on installing
 
 - Every requirement, record and threat's answer that says the README gives a detail still holds, the opt-in's detail within the section on adopting the tool among them, and the short start links each section by its heading (R198).
 - A test fails when a section of detail shows its text outside a `<details>` element, gives that element the `open` attribute, or comes before the short start (R200).
-- A test fails when the README holds an HTML comment, a link reference definition, another HTML element, or a control or format character other than a line break, so that an agent that reads the raw file reads nothing that a reader of GitHub's page cannot open (T151).
+- A test fails when the README holds text that GitHub hides, as R200 lists it, so that an agent that reads the raw file reads nothing that a reader of GitHub's page cannot open (T151).
 - Folded text is still in the file, so an agent or a tool that reads the README reads all of it, and the tests of task 4.4 read each section's text whole.
 - A person who opens no section relies on what the short start says (T145).
 

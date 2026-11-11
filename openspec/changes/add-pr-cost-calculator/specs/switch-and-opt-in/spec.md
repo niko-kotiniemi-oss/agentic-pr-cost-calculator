@@ -453,7 +453,7 @@ A configuration file that is missing at a commit, is not a regular file there, i
 
 #### Scenario: A pull request that makes the configuration unreadable still gets its report
 
-- **WHEN** the configuration turns the tool on before the merge, and a pull request replaces the configuration file with one that is not valid, is larger than its size bound, is a symbolic link or is not a regular file
+- **WHEN** the configuration turns the tool on before the merge, and a pull request replaces the configuration file with one that is not valid, as when its arrays nest so deep that Python's JSON reader raises an error on it, is larger than its size bound, is a symbolic link or is not a regular file
 - **THEN** its report comment is posted
 
 ### Requirement: A configuration file with a key that the tool does not know, a key given twice or no `enabled` of `true` or `false` is not valid

@@ -4,7 +4,7 @@
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** R202
-- **Threats:** T152
+- **Threats:** T152, T157
 - **Replaces:** none
 - **Closed by:** none
 
@@ -14,7 +14,7 @@ A repository registers the hook in `.claude/settings.json` with a command that c
 
 ## Decision
 
-When `.claude/settings.json` or `.claude/settings.local.json` at the merged commit registers the hook's command with a checksum other than the SHA-256 of the hook file at that commit, with each CRLF taken as LF, the comment says that the hook's registration does not run the repository's hook file, and quotes nothing from either file.
+When `.claude/settings.json` or `.claude/settings.local.json` at the merged commit registers the hook's command with a checksum other than the SHA-256 of the hook file at that commit, with each CRLF taken as LF, the comment says that the hook's registration does not run the repository's hook file, and quotes nothing from either file. The report reads each of the two files as a blob within the configuration's size bound, and leaves out, without stopping, one that is not a regular file, is above that bound or is not JSON that it can read, as when its arrays nest so deep that Python's JSON reader raises an error, saying nothing of a registration there.
 
 ## Alternatives
 
@@ -24,7 +24,7 @@ When `.claude/settings.json` or `.claude/settings.local.json` at the merged comm
 ## Consequences
 
 - A registration that runs nothing shows in the comment of the first pull request that merges after it, rather than as a figure that is too low (T152).
-- The report reads both settings files as git blobs, within a size bound, as data, and quotes nothing from them (R202).
+- The report reads both settings files as git blobs, within the configuration's size bound, as data, and quotes nothing from them, and a file that it cannot read stops no report (R202, T157).
 - A session that runs the plugin still records, whatever the registration says.
 
 ## Scope
@@ -33,4 +33,4 @@ This covers the registration's checksum. A hook file that does not come from the
 
 ## What reversing it would change
 
-R202 in `report-comment` would change, with its scenarios, and so would design decision 7, task 4.1, `docs/how-it-works.md`, the feature page for `report-comment`, and the answer of T152.
+R202 in `report-comment` would change, with its scenarios, and so would design decision 7, task 4.1, `docs/how-it-works.md`, the feature page for `report-comment`, and the answers of T152 and T157.
