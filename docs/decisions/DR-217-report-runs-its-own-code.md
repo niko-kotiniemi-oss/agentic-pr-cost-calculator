@@ -3,7 +3,7 @@
 - **Type:** security and privacy
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`
-- **Requirements:** R24, R203
+- **Requirements:** R24
 - **Threats:** T23, T28, T30
 - **Replaces:** DR-062
 - **Closed by:** none
