@@ -24,7 +24,7 @@ Agents that work here read the pages that `CLAUDE.md` and the README link, and s
 
 ## Consequences
 
-- A test fails when the roadmap gives a web address, an `owner/repo`, a fenced code block or a relative path that leaves the repository or names no tracked file (R209; T160, T163), and when the roadmap or a feature page's section on it holds text that GitHub hides (R210, T165).
+- A test fails when the roadmap, or a feature page's section on known limitations and the roadmap, gives a web address, an image, an at sign, an `owner/repo`, a fenced or indented code block or a relative path that leaves the repository or names no tracked file (R209; T160, T163), and when the roadmap or a feature page's section on it holds text that GitHub hides (R210, T165).
 - An agent that reads the roadmap starts no item unless the person it works for asks, and a contributor reads that an item starts with an issue on which the owner agrees (T159). Whether an agent keeps to that rests on agents following the repository's rules (A16).
 - `CLAUDE.md` changes in the same pull request, which the owner reviews as a change to what steers agents (A15).
 

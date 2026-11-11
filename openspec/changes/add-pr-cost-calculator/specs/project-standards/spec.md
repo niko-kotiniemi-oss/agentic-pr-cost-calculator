@@ -832,7 +832,7 @@ While this repository's root marketplace file is missing, or holds no entry for 
 
 ### Requirement: The roadmap says what is now, next and later
 
-The repository SHALL keep a roadmap, `docs/roadmap.md`, linked from the README's list of documentation, with the sections Now, Next, Later, Known limitations and Known bugs in that order. Each item under Next or Later SHALL name the requirements, records, threats or tasks that it rests on, a task by its change and number. Tests SHALL fail otherwise, and when an item names one that does not exist, or names only finished tasks or closed records.
+The repository SHALL keep a roadmap, `docs/roadmap.md`, linked from the README's list of documentation, with the sections Now, Next, Later, Known limitations and Known bugs in that order. Each item under Next or Later SHALL name the requirements, records, threats or tasks that it rests on, a task by its change and number. Tests SHALL fail otherwise, and when an item in any section names one that does not exist, names a closed record, or names tasks that are all finished.
 
 #### Scenario: The roadmap gives its sections in order
 
@@ -904,25 +904,25 @@ Each risk that the risks and trade-offs of any change's design give, active or a
 
 ### Requirement: The roadmap links only this repository's own files
 
-Every link, autolink and web address in the roadmap, prose and code alike, and every repository that it names as `owner/repo`, SHALL name a heading of the roadmap or a tracked file of this repository by a relative path that stays inside it, and the roadmap SHALL name issues and pull requests by number alone and give no fenced code, so that it leads a reader, or an agent that follows it, to nothing that someone else writes. Tests SHALL fail otherwise.
+Every link, image, autolink and web address in the roadmap and each feature page's section on known limitations and the roadmap, prose and code alike, and every `owner/repo` they name, SHALL name a heading of its own page or a tracked file of this repository by a relative path that stays inside it. They SHALL name issues and pull requests by number alone and give no `@` and no fenced or indented code, so that they lead no reader or agent to what someone else writes. Tests SHALL fail otherwise.
 
 #### Scenario: The roadmap's links stay within this repository's files
 
-- **WHEN** every link, autolink, web address and `owner/repo` in the roadmap is read, as the README's test reads them
-- **THEN** each names a heading of the roadmap, or a tracked file of this repository by a relative path that, resolved from `docs/`, stays inside the repository
+- **WHEN** every link, autolink, web address and `owner/repo` in the roadmap and in those sections is read, each link from its `](` whatever its text holds, in prose and in inline code alike
+- **THEN** each names a heading of its own page, or a tracked file of this repository by a relative path that, resolved from the page's folder, stays inside the repository
 
 #### Scenario: A link elsewhere fails a test
 
-- **WHEN** the roadmap gives a web address, an `owner/repo`, a fenced code block, or a relative path that leaves the repository or names no tracked file, as `../../../issues/15` does
+- **WHEN** the roadmap or such a section gives a web address, an image, an `@`, an `owner/repo`, a fenced or indented code block, or a relative path that leaves the repository or names no tracked file, as `../../../issues/15` does
 - **THEN** a test fails and names the line
 
 ### Requirement: The roadmap and the feature pages' roadmap sections hold no hidden text
 
-The roadmap, and each feature page's section on known limitations and the roadmap, SHALL hold only printable ASCII and line breaks, and outside inline code no `<`, no `]:`, no character reference and no link with a title, so that what GitHub shows of them is all that an agent reads. Tests SHALL fail otherwise.
+The roadmap, and each feature page's section on known limitations and the roadmap, SHALL hold only printable ASCII and line feeds, and nowhere, inline code included, a `<`, a `&`, a backslash, a `]:` or a link with a title, so that what GitHub shows of them is all that an agent reads. Tests SHALL fail otherwise.
 
 #### Scenario: Text that GitHub hides fails a test
 
-- **WHEN** the roadmap or such a section holds a character other than printable ASCII and a line break, such as a zero-width space or a bidirectional control, or, outside inline code, a `<`, as in an HTML comment, a `]:`, as in a link reference definition, a character reference, or a link with a title
+- **WHEN** the roadmap or such a section holds a character other than printable ASCII and a line feed, such as a carriage return, a zero-width space or a bidirectional control, or, inline code included, a `<`, as in an HTML comment, a `&`, as in a character reference, a backslash, as in an escape, a `]:`, as in a link reference definition, or a link with a title
 - **THEN** a test fails and names the file, the line and what it holds
 
 ### Requirement: Each ledger format that a release wrote keeps its golden figures
