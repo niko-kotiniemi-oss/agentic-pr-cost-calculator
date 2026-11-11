@@ -47,7 +47,7 @@ The assumptions about the teams that adopt the tool, the people who opt in, and 
 - **Fact:** A person who stops runs the opt-out on each machine and in each session that is running, as the README's short start says.
   - **Relied on:** R198, R199, T154
   - **Checked:** not yet: none will, since no test may reach what adopters and people do
-- **Fact:** An organization that puts the opt-in's line in a shared environment's setup script tells its members so, and what it publishes, as the README asks.
+- **Fact:** An organization that puts the opt-in's line in a shared environment's setup script tells its members first, and what it publishes, as the README asks.
   - **Relied on:** R186, T134, DR-202
   - **Checked:** not yet: none will, since no test may reach what adopters and people do
 - **Fact:** An organization that opts its members in through its managed settings uses the hook that the README gives, which writes the opt-in only in cloud sessions, and an Owner takes their own line out of an environment before sharing it or making it the default.
