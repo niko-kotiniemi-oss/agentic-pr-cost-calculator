@@ -145,7 +145,7 @@ The capability names the spec that holds the requirement. Each capability is one
 | R131 | non-functional | `project-standards` | A record and the threats it lists name each other |
 | R132 | non-functional | `project-standards` | A removed threat's ID is retired, never used again |
 | R133 | non-functional | `project-standards` | The records' folder holds only the records and their index |
-| R134 | non-functional | `project-standards` | No attribute hides the diff of a record or of what the marketplace serves, or changes the plugin's checkout |
+| R134 | non-functional | `project-standards` | No attribute hides the diff of a record, the README or what the marketplace serves, or changes the plugin's checkout |
 | R135 | non-functional | `project-standards` | The assumptions the design rests on are written down |
 | R136 | non-functional | `project-standards` | The assumptions with the most at stake come first |
 | R137 | non-functional | `project-standards` | The specs and pages use the glossary's words |
@@ -209,6 +209,14 @@ The capability names the spec that holds the requirement. Each capability is one
 | R195 | non-functional | `project-standards` | The documentation says which release of the plugin runs, and what that changes |
 | R196 | non-functional | `project-standards` | The documentation says where the plugin leaves a staged ledger file |
 | R197 | non-functional | `usage-capture` | A plugin run lets git start a repository's configured programs only where its session runs git, or in the one that holds the project directory |
+| R198 | non-functional | `project-standards` | The README opens with a short start |
+| R199 | non-functional | `project-standards` | The README's short start says what an opt-in records and publishes |
+| R200 | non-functional | `project-standards` | The README folds the detail that follows its short start |
+| R201 | non-functional | `project-standards` | The README sends people only to this repository and to addresses that its test lists |
+| R202 | functional | `report-comment` | The comment says when the hook's registration does not run the hook file |
+| R203 | non-functional | `project-standards` | The README's section on adopting the tool takes the tool from a published release's commit |
+| R204 | non-functional | `project-standards` | The README leaves each opt-in to the person, or to their organization |
+| R205 | non-functional | `project-standards` | The README's status says when this repository's marketplace does not serve the plugin yet |
 
 IDs are stable: a requirement keeps its ID while it exists, and a new one takes the next free number, so the rows follow the order in which requirements were added rather than the order of the specs. A requirement that a later change removes leaves the table, and its ID is listed below with the change that removed it, never to be used again.
 

@@ -14,10 +14,10 @@ The assumptions about Python, about the development tools of this repository, an
 
 ### A29. Python's isolated mode and its start-up behave as the hook expects.
 
-- **Rests on it:** R12, R13, R32, T14, T15, T28, T56, T68, DR-022, DR-023, DR-027, DR-031, DR-062, DR-125, DR-188
+- **Rests on it:** R12, R13, R32, T14, T15, T28, T56, T68, DR-022, DR-023, DR-027, DR-031, DR-125, DR-188, DR-217
 - **If it is wrong:** A module planted beside the hook would run inside it with the person's rights (T15), as it would in the report and the release job (T28, T68). An older Python could print an error where R32 says that it prints nothing (T56), though the command's `; exit 0` would still end it with success (T14).
 - **Fact:** `python3 -I` keeps the script's own folder, the current directory and Python's environment variables out of what decides the hook's imports. Without it, Python puts a script's own folder first on its import path.
-  - **Relied on:** R12, T15, T28, T68, DR-022, DR-023, DR-062, DR-125, DR-188
+  - **Relied on:** R12, T15, T28, T68, DR-022, DR-023, DR-125, DR-188, DR-217
   - **Checked:** not yet: `add-pr-cost-calculator` task 2.3 checks it
 - **Fact:** Python exits with status 2 when it cannot start as asked, such as for an option it does not know or a script it cannot open.
   - **Relied on:** R13, T14, DR-031
@@ -28,8 +28,8 @@ The assumptions about Python, about the development tools of this repository, an
 
 ### A52. Python's JSON reader and digit matching behave at their edges as the step and the checks expect.
 
-- **Rests on it:** R5, R35, R102, R124, T6, T17, T79, DR-108, DR-109
-- **If it is wrong:** A value that is not finite, a boolean read as a count or a line nested too deep could get past the step, or stop the report, where R35 and R102 require a refusal (T17, T6). A decision record numbered in digits from other scripts could pass where only ASCII digits are meant (T79).
+- **Rests on it:** R5, R35, R92, R102, R124, R202, T6, T17, T79, T157, DR-108, DR-109, DR-216
+- **If it is wrong:** A value that is not finite, a boolean read as a count or a line nested too deep could get past the step, or stop the report, where R35 and R102 require a refusal (T17, T6), and a configuration or a settings file nested too deep could stop the report, where R92 and R202 require it to go on (T157, DR-216). A decision record numbered in digits from other scripts could pass where only ASCII digits are meant (T79).
 - **Fact:** Python's JSON reader turns `NaN`, `Infinity`, `-Infinity` and `1e999` into numbers that are not finite, and turns `true` and `false` into values that pass a check for a whole number.
   - **Relied on:** R5, R35, T6, T17, DR-109
   - **Checked:** not yet: `add-pr-cost-calculator` task 2.1 and `add-pr-cost-calculator` task 4.2 check it
@@ -40,8 +40,8 @@ The assumptions about Python, about the development tools of this repository, an
   - **Relied on:** R35, T17
   - **Checked:** not yet: `add-pr-cost-calculator` task 4.2 checks it
 - **Fact:** Python's JSON reader raises a RecursionError on very deep nesting, and a RecursionError is not a ValueError.
-  - **Relied on:** R35, R102, T17
-  - **Checked:** not yet: `add-pr-cost-calculator` task 4.2 checks it
+  - **Relied on:** R35, R92, R102, R202, T17, T157, DR-216
+  - **Checked:** not yet: `add-pr-cost-calculator` task 4.1 and `add-pr-cost-calculator` task 4.2 check it
 - **Fact:** Python's digit matching accepts digits from other scripts as well as ASCII ones: `\d`, `int()` and `str.isdigit()` all do.
   - **Relied on:** R124, T79, DR-108
   - **Checked:** not yet: none will, since were it wrong the check of decision records would only be more careful than it needs to be

@@ -18,8 +18,8 @@ A hook in each Claude Code session, from the hook file that a repository registe
 | Ledger files | `.pr-cost/ledger/<YYYY-MM>/<random>.jsonl`, committed with the agent's work | A first line that states the ledger format's version, the release of the capture step that wrote it, the count of refused calls and three flags for calls left out, then counts per call, never content | Written once, never changed by the tool |
 | Configuration | `.pr-cost.json` at the repository root | `enabled`, as `true` or `false`, and no other key, since a file that holds a key that its format does not document, gives a key twice or has no `enabled` of `true` or `false` is not valid and leaves the tool off | Changed only by a pull request |
 | Price table | `prices/models.json` and `prices/github-actions.json`, at the tool's commit | Dated rates, modifiers and the source of each | A new row per price change, by pull request |
-| Report, a reusable workflow and its Python code | A GitHub Actions runner, on the push a merge makes to the default branch | The push event; as git blobs: the ledger files and `.pr-cost.json` before and after the merge, the ledger files of the default branch's first-parent history before it, and the hook file at the merged commit and at its own commit; the price table; GitHub's API | One comment on the merged pull request; its job summary |
-| Release workflow | A GitHub Actions runner, on a pushed tag `vMAJOR.MINOR.PATCH` | `pyproject.toml`, the plugin's manifest, `CHANGELOG.md`, the tag's commit, and the README's checksum of the plugin's zip | A GitHub release with a CycloneDX bill of materials and the plugin's zip, created as a draft and published only once both are attached and checked |
+| Report, a reusable workflow and its Python code | A GitHub Actions runner, on the push a merge makes to the default branch | The push event; as git blobs: the ledger files and `.pr-cost.json` before and after the merge, the ledger files of the default branch's first-parent history before it, the hook file at the merged commit and at its own commit, and `.claude/settings.json` and `.claude/settings.local.json` at the merged commit; the price table; GitHub's API | One comment on the merged pull request; its job summary |
+| Release workflow | A GitHub Actions runner, on a pushed tag `vMAJOR.MINOR.PATCH` | `pyproject.toml`, the plugin's manifest, `CHANGELOG.md`, the root marketplace file, the tag's commit, and the README's checksum of the plugin's zip | A GitHub release with a CycloneDX bill of materials and the plugin's zip, created as a draft and published only once both are attached and checked |
 | Marketplace | `.claude-plugin/marketplace.json` on this repository's default branch, and the folder of the plugin that it lists | The tool's plugin alone, from a folder that holds it as a published release's tag builds it | Changed only by a pull request after a release that changes nothing else, which CI holds to that release's plugin |
 
 ## Inputs and outputs
@@ -209,6 +209,7 @@ sequenceDiagram
     R->>R: Read the ledger files the merge adds, as git blobs, within the size bound, holding each file to the version of the ledger format that its first line states
     R->>R: Read the call ids of the first-parent history's earlier ledger files, by the versions they state, so no call counts twice
     R->>R: Compare the hook file at the merged commit with the one at its own commit
+    R->>R: Compare the hook's registration in the merged commit's settings files, read as git blobs within a size bound of their own, with that commit's hook file, leaving out a file that it cannot read
     R->>GH: List runs and every job attempt on the pull request's own commits
     R->>R: Price tokens and minutes from the price table, and note which reasons the ledger files flag calls left out for
     R->>GH: Post the comment, or update the report's own earlier one
@@ -240,7 +241,9 @@ flowchart TD
   B -->|no| X
   B -->|yes| C{Tag matches pyproject.toml, the plugin's manifest and CHANGELOG.md?}
   C -->|no| X
-  C -->|yes| S{Surface manifest changed, or a breaking change listed, without a raised major number and a Breaking section?}
+  C -->|yes| M{Does the root marketplace file list any plugin but the tool's?}
+  M -->|yes| X
+  M -->|no| S{Surface manifest changed, or a breaking change listed, without a raised major number and a Breaking section?}
   S -->|yes| X
   S -->|no| Z[Build the plugin's zip from the tagged tree]
   Z -->|its SHA-256 differs from the README's, its manifest holds another key, a hook is not a command, or its capture step differs from the hook file| X

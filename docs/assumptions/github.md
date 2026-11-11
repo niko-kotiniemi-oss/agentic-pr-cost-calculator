@@ -62,8 +62,8 @@ The assumptions about GitHub: this repository's settings there, and its workflow
 
 ## A9. GitHub shows text as the checks expect, and text posted on GitHub is public at once.
 
-- **Rests on it:** R21, R33, R97, R98, R128, R134, R176, T26, T52, T61, T65, T73, T79, T81, T125, T126, DR-044, DR-108, DR-114, DR-115, DR-152, DR-195
-- **If it is wrong:** Text shown as code could still render as a link, an image or a mention, and a log line could be read as a workflow command (T26, T52). A decision record could read one way to a reviewer and another way to an agent, or be collapsed and merged unread (T73, T79, T81), and a bug report opened without the form would never meet its privacy checkbox (T61, T65). A spec could read one way to its reviewers and another to an agent (T125), and the check of the specs' form could print a line that CI reads as a command (T126).
+- **Rests on it:** R21, R33, R97, R98, R128, R134, R176, R198, R200, T26, T52, T61, T65, T73, T79, T81, T125, T126, T145, T147, T151, DR-044, DR-108, DR-114, DR-115, DR-152, DR-195, DR-213
+- **If it is wrong:** Text shown as code could still render as a link, an image or a mention, and a log line could be read as a workflow command (T26, T52). A decision record could read one way to a reviewer and another way to an agent, or be collapsed and merged unread (T73, T79, T81), and a bug report opened without the form would never meet its privacy checkbox (T61, T65). A spec could read one way to its reviewers and another to an agent (T125), and the check of the specs' form could print a line that CI reads as a command (T126). The README's detail could show in full, so that its short start no longer comes first, or stay out of a reader's reach (T145), and if GitHub showed an HTML comment, or a drawn code block's text, as the raw file holds it, the README's test that refuses them would refuse more than it needs to (T151). If GitHub showed the root's README on the repository's page where the `.github` folder holds one, the README's test that refuses such a file would refuse more than it needs to (R198, T147).
 - **Fact:** GitHub shows text inside inline code in a comment or a job summary as code, never as a link, an image or a mention.
   - **Relied on:** R21, T26, T52, DR-044
   - **Checked:** not yet: none will, since no test may reach GitHub
@@ -71,11 +71,23 @@ The assumptions about GitHub: this repository's settings there, and its workflow
   - **Relied on:** R97, R98, T52, T126, DR-044
   - **Checked:** not yet: none will, since no test may reach GitHub; `add-pr-cost-calculator` task 4.1 tests only what this repository does with it
 - **Fact:** GitHub hides an HTML comment when it shows a file.
-  - **Relied on:** R128, R176, T73, T125, DR-152, DR-195
+  - **Relied on:** R128, R176, R200, T73, T125, T151, DR-152, DR-195, DR-213
   - **Checked:** not yet: none will, since no test may reach GitHub
 - **Fact:** GitHub shows text between dollar signs as a mathematical expression, and text between one or two tildes struck through, in a Markdown file as in a pull request.
-  - **Relied on:** R176, T125, DR-195
+  - **Relied on:** R176, R200, T125, T151, DR-195
   - **Checked:** documented: <https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/writing-mathematical-expressions>, <https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax>, read 2026-11-09
+- **Fact:** GitHub shows the Markdown inside a `<details>` element collapsed, under its `<summary>`, until a reader clicks to expand it, and open from the start only when the element has the `open` attribute.
+  - **Relied on:** R200, T145, DR-213
+  - **Checked:** documented: <https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/organizing-information-with-collapsed-sections>, read 2026-11-10
+- **Fact:** GitHub draws a fenced code block whose language is `mermaid`, `geojson`, `topojson` or `stl` as a diagram, a map or a model, and one whose language is `math` as a mathematical expression.
+  - **Relied on:** R200, T151
+  - **Checked:** documented: <https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/creating-diagrams>, <https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/writing-mathematical-expressions>, read 2026-11-11
+- **Fact:** GitHub hides a footnote's definition that nothing refers to, and raw HTML that is not an element, such as a processing instruction, a declaration or a CDATA section, as it hides a comment.
+  - **Relied on:** R200, T151
+  - **Checked:** not yet: none will, since no test may reach GitHub
+- **Fact:** Where a repository holds a README in its `.github` folder, GitHub shows that one on the repository's page in place of the one at its root.
+  - **Relied on:** R198, T147
+  - **Checked:** documented: <https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-readmes>, read 2026-11-11
 - **Fact:** A record kept to the plain-text subset shows on GitHub every word that an agent reads in the raw file.
   - **Relied on:** R128, T73, T79, DR-152
   - **Checked:** not yet: none will, since no test may reach GitHub
@@ -137,13 +149,13 @@ The assumptions about GitHub: this repository's settings there, and its workflow
 
 ## A19. A reusable workflow runs with its caller's context, and with only the token and the secrets that its caller gives it.
 
-- **Rests on it:** R24, R30, R65, R93, R96, R101, T21, T23, T24, T25, T28, T29, T54, T57, T60, DR-006, DR-016, DR-044, DR-062, DR-063, DR-090, DR-102, DR-117, DR-132, DR-139, DR-186
+- **Rests on it:** R24, R30, R65, R93, R96, R101, T21, T23, T24, T25, T28, T29, T54, T57, T60, DR-006, DR-016, DR-044, DR-063, DR-090, DR-102, DR-117, DR-132, DR-139, DR-186, DR-217
 - **If it is wrong:** The report could run the caller's code instead of its own, with a token that can write (T23), or reach a token or secrets beyond those it declares (T24, T29). If its three permissions were not enough, every adopter's report would fail, and if the API's host could be pointed elsewhere, the token could go there (T24).
 - **Fact:** A reusable workflow gets its caller's `GITHUB_TOKEN`, with the permissions that the calling job grants or else the default ones, and the secrets that the caller passes it, all of them with `secrets: inherit`.
   - **Relied on:** R24, T24, T29, DR-063, DR-132
   - **Checked:** documented: <https://github.com/github/docs/blob/33b1f4a6fec2d9b6fd3d374afa56bcd9f0875b57/content/actions/reference/workflows-and-actions/reusing-workflow-configurations.md>, <https://github.com/github/docs/blob/33b1f4a6fec2d9b6fd3d374afa56bcd9f0875b57/content/actions/how-tos/reuse-automations/reuse-workflows.md>, read 2026-11-01
 - **Fact:** In a reusable workflow on GitHub.com, `job.workflow_repository` and `job.workflow_sha` name the reusable workflow's own repository and commit, not the caller's, and the caller cannot set them.
-  - **Relied on:** R24, R65, T23, T28, T54, T60, DR-006, DR-062, DR-132, DR-139
+  - **Relied on:** R24, R65, T23, T28, T54, T60, DR-006, DR-132, DR-139, DR-217
   - **Checked:** not yet: none will, since no test may reach GitHub, and at `add-pr-cost-calculator` task 7.1 this repository calls its own workflow, so that the caller's repository and commit are the workflow's own
 - **Fact:** GitHub Enterprise Server lacks the `job` context values that the report relies on.
   - **Relied on:** DR-006
@@ -163,22 +175,39 @@ The assumptions about GitHub: this repository's settings there, and its workflow
 
 ## A20. Checkouts and GitHub's hosted runners are what the workflows expect.
 
-- **Rests on it:** R23, R24, R25, R27, T22, T23, T24, T68, DR-019, DR-023, DR-062, DR-067, DR-076
+- **Rests on it:** R23, R24, R25, R27, T22, T23, T24, T68, DR-019, DR-023, DR-067, DR-076, DR-217
 - **If it is wrong:** The report would fail on a runner without a suitable `python3`, and the tools on a runner that is not trustworthy would be exposed to the release job's token and the report's (T68, T23, T24).
 - **Fact:** `actions/checkout` fetches one commit unless it is asked for more.
   - **Relied on:** R23, T22, DR-019
   - **Checked:** not yet: none will, since no test may reach GitHub; `add-pr-cost-calculator` task 4.3 tests only what this repository does with it
 - **Fact:** The runner that runs the report has a `python3` at or above the supported floor, since the report runs with `python3 -I` and no step installs Python for it.
-  - **Relied on:** R24, R25, DR-023, DR-062
+  - **Relied on:** R24, R25, DR-023, DR-217
   - **Checked:** not yet: `add-pr-cost-calculator` task 7.1 meets it once, at the merge of that task's own pull request
 - **Fact:** GitHub's hosted runners, and the `python3` and `git` installed on them, are trustworthy, though nothing pins the runner image.
   - **Relied on:** R24, R27, T23, T24, T68, DR-067, DR-076
   - **Checked:** not yet: none will, since no test may reach GitHub
 
+## A48. A pull request's commits stay findable after every merge method.
+
+- **Rests on it:** R23, R62, R64, R120, R201, T22, T147, DR-019, DR-038, DR-110, DR-215
+- **If it is wrong:** A head ref that went missing marks the CI cost incomplete, as designed, but one that named other commits, or runs that named the test merge commit, would make the report count the wrong runs or miss them, without saying so (T22). If git did not fetch a fork's head under this repository's address, the README's test that refuses a pull request's ref would refuse more than it needs to (T147).
+- **Fact:** A pull request's head stays fetchable by git as `refs/pull/<number>/head` after the merge, for a pull request from a fork too, and names the pull request's last head.
+  - **Relied on:** R23, R62, R64, R120, R201, T22, T147, DR-019, DR-038, DR-110, DR-215
+  - **Checked:** not yet: `add-pr-cost-calculator` task 7.1 meets it once, at the merge of that task's own pull request
+- **Fact:** Commits that a force-push removed from a pull request are no longer in `refs/pull/<number>/head`, so CI runs on them are not counted.
+  - **Relied on:** R62, T22, DR-019
+  - **Checked:** not yet: none will, since no test may reach GitHub
+- **Fact:** A squash merge puts one new commit on the default branch and GitHub's rebase merge always makes new commits, so neither brings to the default branch the commits that CI ran on.
+  - **Relied on:** R62, R120, T22, DR-019
+  - **Checked:** not yet: `add-pr-cost-calculator` task 7.1 meets it once, at the merge of that task's own pull request
+- **Fact:** A `pull_request` run names the pull request's head commit as its head commit, not the test merge commit, so listing each of the pull request's commits finds its runs.
+  - **Relied on:** R62, T22, DR-019, DR-038
+  - **Checked:** not yet: `add-pr-cost-calculator` task 7.1 meets it once, at the merge of that task's own pull request
+
 ## A26. Runs for a pull request from a fork get no secrets, and run the code that its author chose.
 
-- **Rests on it:** R27, R34, R68, T37, T58, T63, T95, DR-018, DR-068, DR-078, DR-115, DR-122, DR-156
-- **If it is wrong:** A secret added later could be read by a fork's pull request (T37), and pull requests from forks would get no report if their merge's push ran elsewhere. If GitHub did not run an action pinned to a commit that only a fork holds, the defences against such commits would be more than needed (T58, T63).
+- **Rests on it:** R27, R34, R68, R201, T37, T58, T63, T95, T147, DR-018, DR-068, DR-078, DR-115, DR-122, DR-156, DR-215
+- **If it is wrong:** A secret added later could be read by a fork's pull request (T37), and pull requests from forks would get no report if their merge's push ran elsewhere. If GitHub did not run an action pinned to a commit that only a fork holds, or serve one under this repository's address, the defences against such commits, the README's refusal of a commit's ID among them, would be more than needed (T58, T63, T147), and if it served under a repository's address nothing else that others write, the README's test would refuse more addresses there than it needs to (R201, T147).
 - **Fact:** Apart from `GITHUB_TOKEN`, GitHub passes no secrets to a run that a pull request from a fork triggers.
   - **Relied on:** T37, DR-078
   - **Checked:** documented: <https://github.com/github/docs/blob/33b1f4a6fec2d9b6fd3d374afa56bcd9f0875b57/data/reusables/actions/forked-secrets.md>, read 2026-11-01
@@ -189,13 +218,16 @@ The assumptions about GitHub: this repository's settings there, and its workflow
   - **Relied on:** R68, DR-018
   - **Checked:** not yet: none will, since no test may reach GitHub
 - **Fact:** GitHub serves a commit that only a fork holds under the parent repository's address, and resolves a commit id in `uses:` across the fork network, so it runs an action pinned to such a commit.
-  - **Relied on:** R27, R34, T58, T63, T95, DR-068, DR-122, DR-156
+  - **Relied on:** R27, R34, R201, T58, T63, T95, T147, DR-068, DR-122, DR-156, DR-215
   - **Checked:** not yet: none will, since no test may reach GitHub
+- **Fact:** GitHub serves under a repository's address what others write there too: an issue, which anyone who can read the repository can open, a pull request from a fork, which its author opens on the original repository, and a comparison of its branch with a fork's.
+  - **Relied on:** R201, T147, DR-215
+  - **Checked:** documented: <https://docs.github.com/en/issues/tracking-your-work-with-issues/using-issues/creating-an-issue>, <https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request-from-a-fork>, <https://docs.github.com/en/pull-requests/committing-changes-to-your-project/viewing-and-comparing-commits/comparing-commits>, read 2026-11-11
 
 ## A28. GitHub, and this repository's place on it, stay as they are.
 
-- **Rests on it:** R24, R34, T63, T142, DR-062, DR-068, DR-090, DR-092, DR-096, DR-114, DR-118, DR-132, DR-147, DR-157, DR-203
-- **If it is wrong:** The check of pins could not tell a tagged commit from one that only a fork holds (T63). A change in GitHub's API would skew the report in adopters' CI while every test passes, and a repository made private or renamed would break the adopters who call its workflow, and would leave the people who added the marketplace on an address that someone else can take (T142).
+- **Rests on it:** R24, R34, T63, T142, T147, T148, DR-068, DR-090, DR-092, DR-096, DR-114, DR-118, DR-132, DR-147, DR-157, DR-203, DR-217
+- **If it is wrong:** The check of pins could not tell a tagged commit from one that only a fork holds (T63). A change in GitHub's API would skew the report in adopters' CI while every test passes, and a repository made private or renamed would break the adopters who call its workflow, and would leave the people who added the marketplace, and the README's addresses, on an address that someone else can take (T142, T147, T148).
 - **Fact:** CI can read the source of each action and container image that a workflow uses, to list the tags that name a pin.
   - **Relied on:** R34, T63, DR-068
   - **Checked:** not yet: none will, since no test may reach GitHub
@@ -203,13 +235,13 @@ The assumptions about GitHub: this repository's settings there, and its workflow
   - **Relied on:** DR-090, DR-092, DR-147
   - **Checked:** not yet: `add-pr-cost-calculator` task 7.1 meets it once, at the merge of that task's own pull request
 - **Fact:** This repository stays public, so any repository's workflow can call its reusable workflow and check out its code, and its whole history gives CI nothing it could not already read.
-  - **Relied on:** R24, DR-062, DR-114, DR-132, DR-157
+  - **Relied on:** R24, DR-114, DR-132, DR-157, DR-217
   - **Checked:** not yet: none will, since no test may reach GitHub
 - **Fact:** Renaming this repository would break adopters' references to its reusable workflow, since GitHub's redirect for a renamed repository is taken not to carry `uses:` references.
   - **Relied on:** DR-096, DR-118
   - **Checked:** not yet: none will, since no test may reach GitHub
 - **Fact:** When an account or a repository on GitHub is renamed, its old address leads to the new one only until someone takes the old name, and then leads to theirs.
-  - **Relied on:** T142, DR-203
+  - **Relied on:** T142, T147, T148, DR-203
   - **Checked:** not yet: none will, since no test may reach GitHub
 
 ## A35. GitHub enforces the permissions a workflow declares, gives runs from forks a read-only token, and gives a reusable workflow its caller's event, as its documentation says.
@@ -225,23 +257,6 @@ The assumptions about GitHub: this repository's settings there, and its workflow
 - **Fact:** A reusable workflow's `github` context is always its caller's, so it names the event that triggered the caller.
   - **Relied on:** R68, T23, T29, DR-005, DR-061, DR-132
   - **Checked:** documented: <https://github.com/github/docs/blob/33b1f4a6fec2d9b6fd3d374afa56bcd9f0875b57/content/actions/reference/workflows-and-actions/reusing-workflow-configurations.md>, read 2026-11-01
-
-## A48. A pull request's commits stay findable after every merge method.
-
-- **Rests on it:** R23, R62, R64, R120, T22, DR-019, DR-038, DR-110
-- **If it is wrong:** A head ref that went missing marks the CI cost incomplete, as designed, but one that named other commits, or runs that named the test merge commit, would make the report count the wrong runs or miss them, without saying so (T22).
-- **Fact:** A pull request's head stays fetchable by git as `refs/pull/<number>/head` after the merge, for a pull request from a fork too, and names the pull request's last head.
-  - **Relied on:** R23, R62, R64, R120, T22, DR-019, DR-038, DR-110
-  - **Checked:** not yet: `add-pr-cost-calculator` task 7.1 meets it once, at the merge of that task's own pull request
-- **Fact:** Commits that a force-push removed from a pull request are no longer in `refs/pull/<number>/head`, so CI runs on them are not counted.
-  - **Relied on:** R62, T22, DR-019
-  - **Checked:** not yet: none will, since no test may reach GitHub
-- **Fact:** A squash merge puts one new commit on the default branch and GitHub's rebase merge always makes new commits, so neither brings to the default branch the commits that CI ran on.
-  - **Relied on:** R62, R120, T22, DR-019
-  - **Checked:** not yet: `add-pr-cost-calculator` task 7.1 meets it once, at the merge of that task's own pull request
-- **Fact:** A `pull_request` run names the pull request's head commit as its head commit, not the test merge commit, so listing each of the pull request's commits finds its runs.
-  - **Relied on:** R62, T22, DR-019, DR-038
-  - **Checked:** not yet: `add-pr-cost-calculator` task 7.1 meets it once, at the merge of that task's own pull request
 
 ## A49. GitHub's lookup of the pull requests associated with a commit behaves as documented: for a commit on the default branch, it gives the merged pull request that introduced the commit.
 
