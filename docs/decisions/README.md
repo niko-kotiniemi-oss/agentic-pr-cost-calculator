@@ -67,7 +67,7 @@ A record that the default branch holds is accepted, and from then on it changes 
 | [DR-059](DR-059-only-git-from-a-safe-folder.md) | The hook starts only git, by absolute path, from a safe folder | security and privacy | closed | the change `add-pr-cost-calculator` | R54, R118 | T46 |
 | [DR-060](DR-060-hook-offline.md) | The hook opens no network connection | security and privacy | accepted | the change `add-pr-cost-calculator` | R30, R45, R111 | T45 |
 | [DR-061](DR-061-report-only-on-default-branch-push.md) | The report runs only for a push to the default branch | security and privacy | accepted | the change `add-pr-cost-calculator` | R68 | T23, T29 |
-| [DR-062](DR-062-report-runs-its-own-code.md) | The report runs its own pinned code | security and privacy | accepted | the change `add-pr-cost-calculator` | R24 | T23, T28, T30 |
+| [DR-062](DR-062-report-runs-its-own-code.md) | The report runs its own pinned code | security and privacy | closed | the change `add-pr-cost-calculator` | R24 | T23, T28, T30 |
 | [DR-063](DR-063-least-privilege-caller.md) | The calling workflow grants only what the report needs | security and privacy | accepted | the change `add-pr-cost-calculator` | R24 | T24, T29 |
 | [DR-064](DR-064-report-flags-risky-changes.md) | The report flags changes to the switch, the hook and the workflows | security and privacy | closed | the change `add-pr-cost-calculator` | R93 | T21, T25, T30, T49, T60 |
 | [DR-065](DR-065-fixed-hook-path.md) | The hook's path is fixed, not a setting | security and privacy | accepted | the change `add-pr-cost-calculator` | R65, R93 | T60 |
@@ -222,3 +222,4 @@ A record that the default branch holds is accepted, and from then on it changes 
 | [DR-214](DR-214-agent-never-turns-capture-on.md) | An agent never turns capture on for anyone | security and privacy | accepted | the change `add-pr-cost-calculator` | R204 | T150, T158 |
 | [DR-215](DR-215-readme-addresses-only-this-repository.md) | The README gives no address outside this repository but those that its test lists | security and privacy | accepted | the change `add-pr-cost-calculator` | R134, R201, R203 | T81, T147 |
 | [DR-216](DR-216-comment-names-a-registration-that-runs-nothing.md) | The comment says when the hook's registration does not run the hook file | technical | accepted | the change `add-pr-cost-calculator` | R202 | T152, T157 |
+| [DR-217](DR-217-report-runs-its-own-code.md) | The report runs its own pinned code | security and privacy | accepted | the change `add-pr-cost-calculator` | R24, R203 | T23, T28, T30 |

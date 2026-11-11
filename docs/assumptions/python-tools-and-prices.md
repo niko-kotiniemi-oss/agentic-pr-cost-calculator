@@ -14,10 +14,10 @@ The assumptions about Python, about the development tools of this repository, an
 
 ### A29. Python's isolated mode and its start-up behave as the hook expects.
 
-- **Rests on it:** R12, R13, R32, T14, T15, T28, T56, T68, DR-022, DR-023, DR-027, DR-031, DR-062, DR-125, DR-188
+- **Rests on it:** R12, R13, R32, T14, T15, T28, T56, T68, DR-022, DR-023, DR-027, DR-031, DR-125, DR-188, DR-217
 - **If it is wrong:** A module planted beside the hook would run inside it with the person's rights (T15), as it would in the report and the release job (T28, T68). An older Python could print an error where R32 says that it prints nothing (T56), though the command's `; exit 0` would still end it with success (T14).
 - **Fact:** `python3 -I` keeps the script's own folder, the current directory and Python's environment variables out of what decides the hook's imports. Without it, Python puts a script's own folder first on its import path.
-  - **Relied on:** R12, T15, T28, T68, DR-022, DR-023, DR-062, DR-125, DR-188
+  - **Relied on:** R12, T15, T28, T68, DR-022, DR-023, DR-125, DR-188, DR-217
   - **Checked:** not yet: `add-pr-cost-calculator` task 2.3 checks it
 - **Fact:** Python exits with status 2 when it cannot start as asked, such as for an option it does not know or a script it cannot open.
   - **Relied on:** R13, T14, DR-031

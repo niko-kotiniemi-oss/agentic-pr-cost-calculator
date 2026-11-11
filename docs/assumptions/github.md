@@ -149,13 +149,13 @@ The assumptions about GitHub: this repository's settings there, and its workflow
 
 ## A19. A reusable workflow runs with its caller's context, and with only the token and the secrets that its caller gives it.
 
-- **Rests on it:** R24, R30, R65, R93, R96, R101, T21, T23, T24, T25, T28, T29, T54, T57, T60, DR-006, DR-016, DR-044, DR-062, DR-063, DR-090, DR-102, DR-117, DR-132, DR-139, DR-186
+- **Rests on it:** R24, R30, R65, R93, R96, R101, T21, T23, T24, T25, T28, T29, T54, T57, T60, DR-006, DR-016, DR-044, DR-063, DR-090, DR-102, DR-117, DR-132, DR-139, DR-186, DR-217
 - **If it is wrong:** The report could run the caller's code instead of its own, with a token that can write (T23), or reach a token or secrets beyond those it declares (T24, T29). If its three permissions were not enough, every adopter's report would fail, and if the API's host could be pointed elsewhere, the token could go there (T24).
 - **Fact:** A reusable workflow gets its caller's `GITHUB_TOKEN`, with the permissions that the calling job grants or else the default ones, and the secrets that the caller passes it, all of them with `secrets: inherit`.
   - **Relied on:** R24, T24, T29, DR-063, DR-132
   - **Checked:** documented: <https://github.com/github/docs/blob/33b1f4a6fec2d9b6fd3d374afa56bcd9f0875b57/content/actions/reference/workflows-and-actions/reusing-workflow-configurations.md>, <https://github.com/github/docs/blob/33b1f4a6fec2d9b6fd3d374afa56bcd9f0875b57/content/actions/how-tos/reuse-automations/reuse-workflows.md>, read 2026-11-01
 - **Fact:** In a reusable workflow on GitHub.com, `job.workflow_repository` and `job.workflow_sha` name the reusable workflow's own repository and commit, not the caller's, and the caller cannot set them.
-  - **Relied on:** R24, R65, T23, T28, T54, T60, DR-006, DR-062, DR-132, DR-139
+  - **Relied on:** R24, R65, T23, T28, T54, T60, DR-006, DR-132, DR-139, DR-217
   - **Checked:** not yet: none will, since no test may reach GitHub, and at `add-pr-cost-calculator` task 7.1 this repository calls its own workflow, so that the caller's repository and commit are the workflow's own
 - **Fact:** GitHub Enterprise Server lacks the `job` context values that the report relies on.
   - **Relied on:** DR-006
@@ -175,13 +175,13 @@ The assumptions about GitHub: this repository's settings there, and its workflow
 
 ## A20. Checkouts and GitHub's hosted runners are what the workflows expect.
 
-- **Rests on it:** R23, R24, R25, R27, T22, T23, T24, T68, DR-019, DR-023, DR-062, DR-067, DR-076
+- **Rests on it:** R23, R24, R25, R27, T22, T23, T24, T68, DR-019, DR-023, DR-067, DR-076, DR-217
 - **If it is wrong:** The report would fail on a runner without a suitable `python3`, and the tools on a runner that is not trustworthy would be exposed to the release job's token and the report's (T68, T23, T24).
 - **Fact:** `actions/checkout` fetches one commit unless it is asked for more.
   - **Relied on:** R23, T22, DR-019
   - **Checked:** not yet: none will, since no test may reach GitHub; `add-pr-cost-calculator` task 4.3 tests only what this repository does with it
 - **Fact:** The runner that runs the report has a `python3` at or above the supported floor, since the report runs with `python3 -I` and no step installs Python for it.
-  - **Relied on:** R24, R25, DR-023, DR-062
+  - **Relied on:** R24, R25, DR-023, DR-217
   - **Checked:** not yet: `add-pr-cost-calculator` task 7.1 meets it once, at the merge of that task's own pull request
 - **Fact:** GitHub's hosted runners, and the `python3` and `git` installed on them, are trustworthy, though nothing pins the runner image.
   - **Relied on:** R24, R27, T23, T24, T68, DR-067, DR-076
@@ -226,7 +226,7 @@ The assumptions about GitHub: this repository's settings there, and its workflow
 
 ## A28. GitHub, and this repository's place on it, stay as they are.
 
-- **Rests on it:** R24, R34, T63, T142, T147, T148, DR-062, DR-068, DR-090, DR-092, DR-096, DR-114, DR-118, DR-132, DR-147, DR-157, DR-203
+- **Rests on it:** R24, R34, T63, T142, T147, T148, DR-068, DR-090, DR-092, DR-096, DR-114, DR-118, DR-132, DR-147, DR-157, DR-203, DR-217
 - **If it is wrong:** The check of pins could not tell a tagged commit from one that only a fork holds (T63). A change in GitHub's API would skew the report in adopters' CI while every test passes, and a repository made private or renamed would break the adopters who call its workflow, and would leave the people who added the marketplace, and the README's addresses, on an address that someone else can take (T142, T147, T148).
 - **Fact:** CI can read the source of each action and container image that a workflow uses, to list the tags that name a pin.
   - **Relied on:** R34, T63, DR-068
@@ -235,7 +235,7 @@ The assumptions about GitHub: this repository's settings there, and its workflow
   - **Relied on:** DR-090, DR-092, DR-147
   - **Checked:** not yet: `add-pr-cost-calculator` task 7.1 meets it once, at the merge of that task's own pull request
 - **Fact:** This repository stays public, so any repository's workflow can call its reusable workflow and check out its code, and its whole history gives CI nothing it could not already read.
-  - **Relied on:** R24, DR-062, DR-114, DR-132, DR-157
+  - **Relied on:** R24, DR-114, DR-132, DR-157, DR-217
   - **Checked:** not yet: none will, since no test may reach GitHub
 - **Fact:** Renaming this repository would break adopters' references to its reusable workflow, since GitHub's redirect for a renamed repository is taken not to carry `uses:` references.
   - **Relied on:** DR-096, DR-118

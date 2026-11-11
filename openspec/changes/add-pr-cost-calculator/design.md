@@ -126,7 +126,7 @@ A run that finds either switch off creates no store and adds no note of its sess
 
 ### 7. The report runs on the push that a merge makes to the default branch
 
-*Records:* DR-017, DR-018, DR-019, DR-039, DR-051, DR-061, DR-062, DR-063, DR-065, DR-124, DR-131, DR-132, DR-133, DR-139, DR-156, DR-186, DR-208 and DR-216.
+*Records:* DR-017, DR-018, DR-019, DR-039, DR-051, DR-061, DR-063, DR-065, DR-124, DR-131, DR-132, DR-133, DR-139, DR-156, DR-186, DR-208, DR-216 and DR-217.
 
 The tool provides a reusable workflow. A repository calls it from a workflow of its own, triggered by `push` to its default branch, which grants `contents: read`, `actions: read` and `pull-requests: write` and passes no secrets. The README gives that caller with its pin left for the adopter to fill with the full commit that a published release of this tool names, since a commit cannot name itself, and its section on adopting the tool says to take the hook file and its registration from the README at that commit too (R203).
 
