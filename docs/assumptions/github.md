@@ -181,6 +181,23 @@ The assumptions about GitHub: this repository's settings there, and its workflow
   - **Relied on:** R24, R27, T23, T24, T68, DR-067, DR-076
   - **Checked:** not yet: none will, since no test may reach GitHub
 
+## A48. A pull request's commits stay findable after every merge method.
+
+- **Rests on it:** R23, R62, R64, R120, R201, T22, T147, DR-019, DR-038, DR-110, DR-215
+- **If it is wrong:** A head ref that went missing marks the CI cost incomplete, as designed, but one that named other commits, or runs that named the test merge commit, would make the report count the wrong runs or miss them, without saying so (T22). If git did not fetch a fork's head under this repository's address, the README's test that refuses a pull request's ref would refuse more than it needs to (T147).
+- **Fact:** A pull request's head stays fetchable by git as `refs/pull/<number>/head` after the merge, for a pull request from a fork too, and names the pull request's last head.
+  - **Relied on:** R23, R62, R64, R120, R201, T22, T147, DR-019, DR-038, DR-110, DR-215
+  - **Checked:** not yet: `add-pr-cost-calculator` task 7.1 meets it once, at the merge of that task's own pull request
+- **Fact:** Commits that a force-push removed from a pull request are no longer in `refs/pull/<number>/head`, so CI runs on them are not counted.
+  - **Relied on:** R62, T22, DR-019
+  - **Checked:** not yet: none will, since no test may reach GitHub
+- **Fact:** A squash merge puts one new commit on the default branch and GitHub's rebase merge always makes new commits, so neither brings to the default branch the commits that CI ran on.
+  - **Relied on:** R62, R120, T22, DR-019
+  - **Checked:** not yet: `add-pr-cost-calculator` task 7.1 meets it once, at the merge of that task's own pull request
+- **Fact:** A `pull_request` run names the pull request's head commit as its head commit, not the test merge commit, so listing each of the pull request's commits finds its runs.
+  - **Relied on:** R62, T22, DR-019, DR-038
+  - **Checked:** not yet: `add-pr-cost-calculator` task 7.1 meets it once, at the merge of that task's own pull request
+
 ## A26. Runs for a pull request from a fork get no secrets, and run the code that its author chose.
 
 - **Rests on it:** R27, R34, R68, R201, T37, T58, T63, T95, T147, DR-018, DR-068, DR-078, DR-115, DR-122, DR-156, DR-215
@@ -231,23 +248,6 @@ The assumptions about GitHub: this repository's settings there, and its workflow
 - **Fact:** A reusable workflow's `github` context is always its caller's, so it names the event that triggered the caller.
   - **Relied on:** R68, T23, T29, DR-005, DR-061, DR-132
   - **Checked:** documented: <https://github.com/github/docs/blob/33b1f4a6fec2d9b6fd3d374afa56bcd9f0875b57/content/actions/reference/workflows-and-actions/reusing-workflow-configurations.md>, read 2026-11-01
-
-## A48. A pull request's commits stay findable after every merge method.
-
-- **Rests on it:** R23, R62, R64, R120, T22, DR-019, DR-038, DR-110
-- **If it is wrong:** A head ref that went missing marks the CI cost incomplete, as designed, but one that named other commits, or runs that named the test merge commit, would make the report count the wrong runs or miss them, without saying so (T22).
-- **Fact:** A pull request's head stays fetchable by git as `refs/pull/<number>/head` after the merge, for a pull request from a fork too, and names the pull request's last head.
-  - **Relied on:** R23, R62, R64, R120, T22, DR-019, DR-038, DR-110
-  - **Checked:** not yet: `add-pr-cost-calculator` task 7.1 meets it once, at the merge of that task's own pull request
-- **Fact:** Commits that a force-push removed from a pull request are no longer in `refs/pull/<number>/head`, so CI runs on them are not counted.
-  - **Relied on:** R62, T22, DR-019
-  - **Checked:** not yet: none will, since no test may reach GitHub
-- **Fact:** A squash merge puts one new commit on the default branch and GitHub's rebase merge always makes new commits, so neither brings to the default branch the commits that CI ran on.
-  - **Relied on:** R62, R120, T22, DR-019
-  - **Checked:** not yet: `add-pr-cost-calculator` task 7.1 meets it once, at the merge of that task's own pull request
-- **Fact:** A `pull_request` run names the pull request's head commit as its head commit, not the test merge commit, so listing each of the pull request's commits finds its runs.
-  - **Relied on:** R62, T22, DR-019, DR-038
-  - **Checked:** not yet: `add-pr-cost-calculator` task 7.1 meets it once, at the merge of that task's own pull request
 
 ## A49. GitHub's lookup of the pull requests associated with a commit behaves as documented: for a commit on the default branch, it gives the merged pull request that introduced the commit.
 

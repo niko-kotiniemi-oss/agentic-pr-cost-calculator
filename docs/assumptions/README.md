@@ -47,6 +47,7 @@ The list puts first the assumptions behind the threats of highest impact, then, 
 - **A24.** The machine running a session, and the programs that a hook starts on it, are the person's own. Impact 3, risk 4. Page: [Adopters and people](adopters-and-people.md).
 - **A57.** The reviews and the planned tests get done. Impact 3, risk 4. Page: [Adopters and people](adopters-and-people.md).
 - **A33.** Model names and list prices mean what the report says they mean. Impact 3, risk 4. Page: [Python, the development tools and prices](python-tools-and-prices.md).
+- **A48.** A pull request's commits stay findable after every merge method. Impact 3, risk 4. Page: [GitHub](github.md).
 - **A25.** Claude Code keeps the hook registrations it read at session start. Impact 3, risk 3. Page: [Claude Code](claude-code.md).
 - **A26.** Runs for a pull request from a fork get no secrets, and run the code that its author chose. Impact 3, risk 3. Page: [GitHub](github.md).
 - **A28.** GitHub, and this repository's place on it, stay as they are. Impact 3, risk 3. Page: [GitHub](github.md).
@@ -69,7 +70,6 @@ The list puts first the assumptions behind the threats of highest impact, then, 
 - **A46.** Sessions commit through Bash, and little else changes the branch while a session works. Impact 2, risk 6. Page: [Adopters and people](adopters-and-people.md).
 - **A47.** Ledger files stay small, and their commits are rarely undone. Impact 2, risk 6. Page: [Adopters and people](adopters-and-people.md).
 - **A70.** A project's cloud thread starts in a folder that holds each of its clones directly inside it, and its machine pauses after a turn and resumes with its files. Impact 2, risk 6. Page: [Claude Code](claude-code.md).
-- **A48.** A pull request's commits stay findable after every merge method. Impact 2, risk 4. Page: [GitHub](github.md).
 - **A49.** GitHub's lookup of the pull requests associated with a commit behaves as documented: for a commit on the default branch, it gives the merged pull request that introduced the commit. Impact 2, risk 4. Page: [GitHub](github.md).
 - **A50.** GitHub's runs and jobs API gives complete, timed listings, within known limits. Impact 2, risk 4. Page: [GitHub](github.md).
 - **A51.** git reads a person's configuration from the files that the step reads, by the rules that the step re-implements. Impact 2, risk 4. Page: [git](git.md).

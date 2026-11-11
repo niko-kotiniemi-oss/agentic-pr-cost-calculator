@@ -119,7 +119,7 @@ When `.claude/settings.json` or `.claude/settings.local.json` at the merged comm
 
 #### Scenario: A settings file that the report cannot read does not stop it
 
-- **WHEN** the merged commit's `.claude/settings.json` or `.claude/settings.local.json` is a symbolic link or is not a regular file, is larger than the configuration's size bound, or is not JSON that the report can read, as when its arrays nest so deep that Python's JSON reader raises an error on it
+- **WHEN** the merged commit's `.claude/settings.json` or `.claude/settings.local.json` is a symbolic link or is not a regular file, is larger than the configuration's size bound, is not JSON that the report can read, as when its arrays nest so deep that Python's JSON reader raises an error on it, or is JSON in which a value on the way to a hook's command is not of the type it has in a registration, such as a list at its top or a number for `hooks`
 - **THEN** the comment is posted, says nothing of a registration in that file and quotes nothing from it
 
 ### Requirement: The comment says when ledger files come from a later release than the report's

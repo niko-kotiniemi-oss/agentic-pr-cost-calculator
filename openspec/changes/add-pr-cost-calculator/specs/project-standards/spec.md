@@ -743,7 +743,7 @@ The README SHALL open, after its first paragraph and its status, with a short st
 
 #### Scenario: A short start that grows, moves, holds HTML or links elsewhere fails a test
 
-- **WHEN** the short start holds more than 200 words outside code, counted as the runs of letters or digits, with any apostrophe or hyphen inside them, that are left once its heading, its code blocks, its inline code and each link's brackets and target are taken out, a section comes before it, it holds HTML, such as a `<details>` element, an HTML comment or any other element, or one of its links names anything but a heading of the README or this repository's latest release
+- **WHEN** the short start holds more than 200 words outside code, counted as the runs of letters or digits, with any apostrophe or hyphen inside them, that are left once its heading, its code blocks, its inline code and each link's brackets and target are taken out, a section comes before it, it holds HTML, such as a `<details>` element, an HTML comment or any other element, or one of its links names anything but a heading of the README or this repository's latest release by its full address
 - **THEN** a test fails and names what it found
 
 #### Scenario: A command of the short start that the detail or the specs do not give fails a test
@@ -767,7 +767,7 @@ Before any step that opts anyone in, the README's short start SHALL say that the
 
 ### Requirement: The README folds the detail that follows its short start
 
-The README's sections on adopting the tool, on the opt-in, on installing the plugin, on a project's cloud threads, on organizations and on turning capture off SHALL follow its short start, each with its heading shown and its text folded until a reader opens it, so that the README shows first its short start and a list of what the detail covers, and the README SHALL hold no other text that GitHub hides.
+The README's sections on adopting the tool, on the opt-in, on installing the plugin, on a project's cloud threads, on organizations and on turning capture off SHALL follow its short start, each with its heading shown and its text folded until a reader opens it, so that the README shows first its short start and a list of what the detail covers, and the README SHALL hold only printable ASCII and line breaks, and no other text that GitHub hides.
 
 #### Scenario: The detail is folded under headings that show
 
@@ -776,21 +776,21 @@ The README's sections on adopting the tool, on the opt-in, on installing the plu
 
 #### Scenario: A section of detail that shows its text, or text that GitHub hides, fails a test
 
-- **WHEN** one of those sections holds text, other than its heading, outside a `<details>` element, gives that element the `open` attribute, or comes before the short start, or the README holds an HTML comment, a link reference definition, an HTML element other than the `<details>` and `<summary>` elements that fold those sections, a control or format character other than a line break, such as a zero-width space or a bidirectional control, a code block whose opening fence gives anything but a language on the test's list, which holds none that GitHub draws as a diagram, a map or a model, such as `mermaid`, or, outside code, a character reference, a mathematical expression, an image or a link with a title
+- **WHEN** one of those sections holds text, other than its heading, outside a `<details>` element, gives that element or its `<summary>` element an attribute, such as `open`, or comes before the short start, or the README holds an HTML comment, a link reference definition, an HTML element other than the `<details>` and `<summary>` elements that fold those sections, a character other than printable ASCII and a line break, such as a zero-width space, a bidirectional control or a variation selector, a code block whose opening fence gives anything but a language on the test's list, which holds none that GitHub draws as a diagram, a map or a model, such as `mermaid`, or, outside code, a character reference, a mathematical expression, an image, a link with a title, or a link whose target holds a query or a fragment that names no heading of the README
 - **THEN** a test fails and names the section, or the line and what it holds
 
 ### Requirement: The README sends people only to this repository and to addresses that its test lists
 
-Every link, autolink and web address in the README, in its opening, its short start and its folded detail, prose and code alike, and every repository that it names as `owner/repo`, SHALL name a heading of the README, a file of this repository by a relative path, this repository on GitHub, or an address on a list that its test keeps, and none SHALL name a commit of this repository by its ID, since GitHub serves a commit that only a fork holds under this repository's address.
+Every link, autolink and web address in the README, in its opening, its short start and its folded detail, prose and code alike, and every repository that it names as `owner/repo`, SHALL name a heading of the README, a file of this repository by a relative path, this repository on GitHub, or an address on a list that its test keeps, and none SHALL name a commit of this repository by its ID or a pull request's ref, since GitHub serves a fork's commits under this repository's address.
 
 #### Scenario: The README's addresses are this repository's or on the test's list
 
 - **WHEN** every link, autolink, web address and `owner/repo` in the README is read, in its opening, its short start, its folded detail and its code
-- **THEN** each names a heading of the README, a file of this repository by a relative path, this repository on GitHub, at `github.com` or `raw.githubusercontent.com`, or an address on the test's list, and none names a commit of this repository by its ID
+- **THEN** each names a heading of the README, a file of this repository by a relative path, this repository on GitHub, at `github.com` or `raw.githubusercontent.com`, or an address on the test's list, and none names a commit of this repository by its ID or a pull request's ref
 
 #### Scenario: An address elsewhere, or a commit named by its ID, fails a test
 
-- **WHEN** the README gives, anywhere in it, a link, an autolink, a web address or an `owner/repo` that names another repository or site that the test's list does not hold, or names a commit of this repository by its ID
+- **WHEN** the README gives, anywhere in it, a link, an autolink, a web address or an `owner/repo` that names another repository or site that the test's list does not hold, or names a commit of this repository by its ID or a pull request's ref, such as `refs/pull/1/head`
 - **THEN** a test fails and names the address
 
 ### Requirement: The README's section on adopting the tool takes the tool from a published release's commit
