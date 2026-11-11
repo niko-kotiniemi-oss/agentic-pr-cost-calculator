@@ -51,6 +51,10 @@ This is a short list. It gives the limitations of the design that an adopter not
 - **A workflow merges a pull request with `GITHUB_TOKEN`**: GitHub starts no workflow for that merge, so the pull request gets no report.
 - **A person turns capture on during a session, a session gets no start run, or its first prompt is written before its start run notes its time**: the calls before capture first finds both switches on are left out, such as a session's first turn.
 - **A project's cloud thread continues on a machine that cannot be resumed**: the calls that waited for a commit are lost, so committing as the work goes keeps them.
+- **With the plugin, one opt-in reaches every repository that turns the tool on where Claude works or commits**: each repository that turns the tool on records the calls made from it, shown in the diff of a commit there, though a thread can commit and push with no one reading that diff.
+- **An organization's shared environment, its default environment or its managed settings opt in its members**: a member's usage is published wherever they work in that environment, so the organization tells its members first.
+- **A release reaches everyone who added the marketplace, once their account syncs it, with nothing to accept**: a release reaches those people's sessions without a step of theirs, so the README gives the zip first.
+- **The account or the repository that serves the marketplace is renamed, and someone else takes the old name**: people who added the marketplace by its old address could get another plugin of the same name.
 
 ## Known bugs
 

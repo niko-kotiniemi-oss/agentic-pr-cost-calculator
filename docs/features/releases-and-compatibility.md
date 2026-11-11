@@ -36,8 +36,6 @@ This feature is validated first by its spec's scenarios: each whose code is stil
 
 The design's risks that concern this feature and are not on the roadmap, each with what it means:
 
-- **A release reaches everyone who added the marketplace, once their account syncs it, with nothing to accept**: a release reaches those people's sessions without a step of theirs, so the README gives the zip first.
-- **The account or the repository that serves the marketplace is renamed, and someone else takes the old name**: people who added the marketplace by its old address could get another plugin of the same name.
 - **A person's plugin is of another release than the report that a repository pins**: the report refuses what it does not know, and the comment says that some ledger files come from a later release.
 - **No release can be made while any acceptance test is still expected to fail**: releases wait until the code reaches every scenario and reproduces the golden set.
 
