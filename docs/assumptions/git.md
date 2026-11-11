@@ -187,8 +187,8 @@ The assumptions about git: what its commands, options, attributes, locks and con
 
 ## A51. git reads a person's configuration from the files that the step reads, by the rules that the step re-implements.
 
-- **Rests on it:** R37, R38, R39, R103, R104, R105, R106, R107, R109, R118, R160, R162, R164, R169, T3, T38, T41, T105, T120, T121, DR-049, DR-050, DR-168, DR-169, DR-183, DR-185, DR-188
-- **If it is wrong:** The step and git would disagree about whether a person opted in, so usage would be published without consent, or not at all (T3), and on Windows the step could read another `.gitconfig` than git does (T41). An opt-out written where neither the step nor git's own reading of the key finds it would be ignored, and calls recorded against the person's wish (T3, T38), and a change to a file that git reads the key from, but that the fingerprint does not name, would go unseen between two runs (T105). A folder's opt-out would reach further or less far than the opt-in's pages say (T121), and the README's account of which writes end an interval would be wrong (T120).
+- **Rests on it:** R37, R38, R39, R103, R104, R105, R106, R107, R109, R118, R160, R162, R164, R169, R186, T3, T38, T41, T105, T120, T121, T155, DR-049, DR-050, DR-168, DR-169, DR-183, DR-185, DR-188
+- **If it is wrong:** The step and git would disagree about whether a person opted in, so usage would be published without consent, or not at all (T3), and on Windows the step could read another `.gitconfig` than git does (T41). An opt-out written where neither the step nor git's own reading of the key finds it would be ignored, and calls recorded against the person's wish (T3, T38), and a change to a file that git reads the key from, but that the fingerprint does not name, would go unseen between two runs (T105). A folder's opt-out would reach further or less far than the opt-in's pages say (T121), and the README's account of which writes end an interval would be wrong (T120). If git left the file alone when it sets the value that the file already holds, the second condition of the organization's hook that the README gives would guard against nothing, at no cost (R186, T155).
 - **Fact:** git reads a person's global configuration from `~/.gitconfig` and its file in the XDG configuration folder, reading the XDG file first and `~/.gitconfig` after it, so `~/.gitconfig` decides where both set a key.
   - **Relied on:** R37, R105, T3, T41, DR-183
   - **Checked:** not yet: `add-pr-cost-calculator` task 2.4 checks it
@@ -216,9 +216,9 @@ The assumptions about git: what its commands, options, attributes, locks and con
 - **Fact:** git matches an `includeIf "gitdir:"` condition against the repository's git folder, which for a linked worktree is a folder in its repository's git common directory, so a condition for a folder does not hold in a linked worktree there whose repository lies elsewhere, and a condition that names the folder through a symbolic link holds for a repository there only when `PWD` names, through that link, the top level of the main worktree that git runs in, and does hold when git runs in a repository whose `.git` is a folder and `PWD` names its top level through the link, while one that names the folder's real path holds wherever git runs.
   - **Relied on:** R160, R164, R169, T121, DR-185, DR-188
   - **Checked:** not yet: `add-pr-cost-calculator` task 2.4 checks it
-- **Fact:** `git config --global` writes one of the person's two global configuration files, and git's advice for a repository that another user owns is to add a `safe.directory` line with it.
-  - **Relied on:** T120, DR-169
-  - **Checked:** not yet: `add-pr-cost-calculator` task 2.4 checks it
+- **Fact:** `git config --global` writes one of the person's two global configuration files, as a new file in the old one's place, even when it sets the value that the file already holds, and git's advice for a repository that another user owns is to add a `safe.directory` line with it.
+  - **Relied on:** R186, T120, T155, DR-169
+  - **Checked:** not yet: `add-pr-cost-calculator` task 2.4 and `add-pr-cost-calculator` task 4.4 check it
 
 ## A63. git can be kept offline and from asking for credentials.
 

@@ -36,4 +36,4 @@ This covers the README's opening. Where the README's detail lives, and how it sh
 
 ## What reversing it would change
 
-R198 and R199 in `project-standards` would change, with their scenarios, and so would design decision 12, task 4.4, the answers of T2, T31, T58, T132 to T134, T136, T145 to T149, T152 and T154, the proposal's "What Changes", the glossary's short start and the feature page for `project-standards`. DR-213 and DR-215 would be revisited.
+R198, R199 and R205 in `project-standards` would change, with their scenarios, and so would design decision 12, task 4.4, the answers of T2, T31, T58, T132 to T134, T136, T138, T145 to T149, T152 and T154, the proposal's "What Changes", the glossary's short start and the feature page for `project-standards`. DR-213 and DR-215 would be revisited.

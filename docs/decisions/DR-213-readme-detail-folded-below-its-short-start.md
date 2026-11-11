@@ -14,7 +14,7 @@ The README's short start leaves the detail to the sections that it links (DR-212
 
 ## Decision
 
-The README keeps its sections on adopting the tool, on the opt-in, on installing the plugin, on a project's cloud threads, on organizations and on turning capture off, after its short start, each with its heading shown and its text folded in a `<details>` element of its own, so that the README first shows the short start and a list of what the detail covers. The section on the opt-in sits inside the section on adopting the tool, under a heading of its own. The README holds no other text that GitHub hides, as R200 lists it.
+The README keeps its sections on adopting the tool, on the opt-in, on installing the plugin, on a project's cloud threads, on organizations and on turning capture off, after its short start, each with its heading shown and its text folded in a `<details>` element of its own, so that the README first shows the short start and a list of what the detail covers. The section on the opt-in sits inside the section on adopting the tool, under a heading of its own.
 
 ## Alternatives
 
