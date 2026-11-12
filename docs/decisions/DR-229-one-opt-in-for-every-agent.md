@@ -3,8 +3,8 @@
 - **Type:** security and privacy
 - **Status:** accepted
 - **Decided by:** the owner, 2026-11-12
-- **Requirements:** R216
-- **Threats:** T167
+- **Requirements:** R122, R186, R199, R216
+- **Threats:** T167, T171, T172
 - **Replaces:** none
 - **Closed by:** none
 
@@ -14,7 +14,7 @@ A person opts in with `pr-cost.capture` (DR-202), and one opt-in covers every re
 
 ## Decision
 
-One opt-in, `pr-cost.capture`, records every agent that the tool records: Claude Code alone in the first version, and each agent that a later release adds, with no further step of the person's. The README warns of this before anyone opts in (R216).
+One opt-in, `pr-cost.capture`, records every agent that the tool records: Claude Code alone in the first version, and each agent that a later release adds, with no further step of the person's. The README says so before any step that opts anyone in, and has an organization tell its members so before it opts them in (R199, R216, R186).
 
 ## Alternatives
 
@@ -23,11 +23,10 @@ One opt-in, `pr-cost.capture`, records every agent that the tool records: Claude
 
 ## Consequences
 
-- An opt-in's reach grows with each agent that a release adds, as it grows with each repository that turns the tool on (DR-185), so a person who opted in without reading the warning, or who has forgotten it, has an added agent's calls recorded and published once they use it in a repository that turns the tool on (T167).
-- No opt-in leaves one agent out, so a person who does not want an added agent recorded turns capture off where they use it: in a clone, for a folder (DR-185) or everywhere.
-- An organization's option that turns the opt-in on for its members (DR-202) covers the agents that later releases add too, so the README's section on organizations warns as well.
-- The release that adds an agent changes the public surface with that agent's hooks, and so raises the major number (R71, R122), while the opt-in key stays as it is. Its changelog says that every opt-in now records that agent.
-- Whether an agent gives what capture needs, and so whether it can be recorded at all, is for its own change to check first (DR-228).
+- An opt-in's reach grows with each agent that a release adds, as it grows with each repository that turns the tool on (DR-185), so a person who opted in without reading the warning, who has forgotten it, or whose opt-in someone else set, has an added agent's calls recorded and published once they use it in a repository that turns the tool on (T167, T172).
+- No opt-in leaves one agent out, so a person who does not want an added agent recorded turns capture off where they use it: in a clone, for a folder (DR-185) or everywhere. A member whose organization opts them in from a shared environment keeps it off for good only in an environment of their own (R186).
+- The surface manifest names each agent that the opt-in records (R122), so the release that adds one changes the public surface and raises the major number, with a `### Breaking` section (R71), while the opt-in key stays as it is.
+- The change that adds an agent shows first, in its own threat review, that the answers to T2, T3, T4 and T119 hold for that agent, and that nothing that a repository holds can write the opt-in where it runs, and records that agent only where they hold (T171), besides checking whether the agent gives what capture needs at all (DR-228).
 
 ## Scope
 
@@ -35,4 +34,4 @@ This covers which agents an opt-in records. Whether other agents are planned is 
 
 ## What reversing it would change
 
-R216 in `project-standards` would change, with its scenarios, and so would design decision 6, tasks 1.27 and 4.4, the opt-in's feature page, the README's sections on the opt-in and on organizations that task 4.4 writes, the answer and rating of T167, and the change that adds an agent, which would add an opt-in key of its own.
+R199, R216 and R186 in `project-standards` would change, with their scenarios, and so would R122 in `releases-and-compatibility`, design decisions 6 and 12, tasks 1.27, 4.4 and 6.1, the opt-in's feature page and the README's sections that task 4.4 writes, the answers of T167 and T172, and the change that adds an agent, which would add an opt-in key of its own.

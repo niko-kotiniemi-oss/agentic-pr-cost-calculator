@@ -88,7 +88,7 @@ The version SHALL raise its major number for a change that existing adopters mus
 
 ### Requirement: The public surface is kept in a manifest
 
-The public surface SHALL be the hook file's path and registration and the plugin's name and hooks, each by its events, matchers and command's form, not the checksum it carries; the marketplace's name, the opt-in key, the ledger path and format, the store's format and fingerprint, the configuration file and the keys and values that its format documents, the reusable workflow's path, inputs and permissions, and the Python and git floors. A manifest of it SHALL be kept in the repository.
+The public surface SHALL be the hook file's path and registration and the plugin's name and hooks, each by its events, matchers and command's form, not the checksum it carries; the marketplace's name, the opt-in key and the agents it records, the ledger path and format, the store's format and fingerprint, the configuration file and the keys and values its format documents, the reusable workflow's path, inputs and permissions, and the Python and git floors. The repository SHALL keep its manifest.
 
 #### Scenario: The surface manifest names the whole public surface
 
@@ -109,6 +109,11 @@ The public surface SHALL be the hook file's path and registration and the plugin
 
 - **WHEN** the surface manifest in the repository is read
 - **THEN** it names each key that the configuration's format documents, and the values that each takes, and no other key or value of the configuration
+
+#### Scenario: The surface manifest names each agent that the opt-in records
+
+- **WHEN** the surface manifest in the repository is read
+- **THEN** it names each agent whose calls the release records under the opt-in, so that a release that adds one changes the public surface
 
 ### Requirement: The release workflow compares the surface manifest with the previous release's
 
