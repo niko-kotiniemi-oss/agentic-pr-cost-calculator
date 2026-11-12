@@ -222,6 +222,9 @@ The capability names the spec that holds the requirement. Each capability is one
 | R208 | non-functional | `project-standards` | Every risk of the design is listed as a known limitation |
 | R209 | non-functional | `project-standards` | The roadmap links only this repository's own files |
 | R210 | non-functional | `project-standards` | The roadmap and the feature pages' roadmap sections hold no hidden text |
+| R211 | non-functional | `project-standards` | The patterns page says which patterns the design follows and which anti-patterns it meets |
+| R212 | non-functional | `project-standards` | Each anti-pattern on the patterns page says how the design meets it |
+| R213 | non-functional | `project-standards` | The patterns page links only this repository's own files and holds no hidden text |
 
 IDs are stable: a requirement keeps its ID while it exists, and a new one takes the next free number, so the rows follow the order in which requirements were added rather than the order of the specs. A requirement that a later change removes leaves the table, and its ID is listed below with the change that removed it, never to be used again.
 

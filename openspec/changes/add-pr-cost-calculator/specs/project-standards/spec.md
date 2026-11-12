@@ -925,6 +925,68 @@ The roadmap, and each feature page's section on known limitations and the roadma
 - **WHEN** the roadmap or such a section holds a character other than printable ASCII and a line feed, such as a carriage return, a zero-width space or a bidirectional control, or, inline code included, a `<`, as in an HTML comment, a `&`, as in a character reference, a backslash, as in an escape, a `]:`, as in a link reference definition, or a link with a title
 - **THEN** a test fails and names the file, the line and what it holds
 
+### Requirement: The patterns page says which patterns the design follows and which anti-patterns it meets
+
+The repository SHALL keep a page of patterns, `docs/patterns.md`, linked from the README's list of documentation, with the sections Patterns followed, Anti-patterns and Named practices in that order. Each item SHALL name the requirements, records, threats or tasks that it rests on, a task by its change and number. Tests SHALL fail otherwise, and when an item names one that does not exist or names a closed record.
+
+#### Scenario: The patterns page gives its sections in order
+
+- **WHEN** the README's list of documentation and `docs/patterns.md` are read
+- **THEN** the list links the patterns page, and its sections are Patterns followed, Anti-patterns and Named practices, in that order
+
+#### Scenario: A patterns page without its link or a section fails a test
+
+- **WHEN** `docs/patterns.md` is missing, a section is missing or out of order, or the README's list of documentation does not link it
+- **THEN** a test fails and names what is missing
+
+#### Scenario: An item of the patterns page that rests on nothing fails a test
+
+- **WHEN** an item of the patterns page names no requirement, record, threat or task
+- **THEN** a test fails and names the item
+
+#### Scenario: An item of the patterns page that names what does not exist fails a test
+
+- **WHEN** an item of the patterns page names a requirement that the register does not hold, a record that `docs/decisions/` does not hold or that is closed, a threat that the threat model does not hold, or a task by a change and number that no change's `tasks.md`, active or archived, holds
+- **THEN** a test fails and names the item and what it names
+
+### Requirement: Each anti-pattern on the patterns page says how the design meets it
+
+Each item under the patterns page's Anti-patterns SHALL open with `**Avoided.**`, `**Knowingly accepted.**` or `**To fix before the build.**`. An item knowingly accepted SHALL name a record that gives the reason, and an item to fix SHALL give, in bold, the opening words of the item under the roadmap's Now that fixes it. Tests SHALL fail otherwise.
+
+#### Scenario: Each anti-pattern opens with how the design meets it
+
+- **WHEN** the patterns page's Anti-patterns are read
+- **THEN** each item opens with `**Avoided.**`, `**Knowingly accepted.**` or `**To fix before the build.**`
+
+#### Scenario: An anti-pattern that does not say how the design meets it fails a test
+
+- **WHEN** an item under Anti-patterns opens with none of the three
+- **THEN** a test fails and names the item
+
+#### Scenario: An anti-pattern knowingly accepted with no record fails a test
+
+- **WHEN** an item opens with `**Knowingly accepted.**` and names no record
+- **THEN** a test fails and names the item
+
+#### Scenario: An anti-pattern to fix that no item under Now fixes fails a test
+
+- **WHEN** an item opens with `**To fix before the build.**` and gives in bold no opening words of an item under the roadmap's Now, as when that item has left Now
+- **THEN** a test fails and names the item
+
+### Requirement: The patterns page links only this repository's own files and holds no hidden text
+
+The patterns page SHALL hold to the rules that "The roadmap links only this repository's own files" and "The roadmap and the feature pages' roadmap sections hold no hidden text" give the roadmap, and SHALL name each source by its author or body and its work, with no web address, so that it leads no reader or agent to what someone else writes. Tests SHALL fail otherwise.
+
+#### Scenario: A link elsewhere in the patterns page fails a test
+
+- **WHEN** the patterns page gives a web address, an image, an `@`, an `owner/repo`, a fenced or indented code block, or a relative path that leaves the repository or names no tracked file
+- **THEN** a test fails and names the line
+
+#### Scenario: Text that GitHub hides in the patterns page fails a test
+
+- **WHEN** the patterns page holds a character other than printable ASCII and a line feed, or, inline code included, a `<`, a `&`, a backslash, a `]:` or a link with a title
+- **THEN** a test fails and names the file, the line and what it holds
+
 ### Requirement: Each ledger format that a release wrote keeps its golden figures
 
 For each ledger format that a release's capture step wrote, the golden set SHALL keep sessions whose entries are as that release wrote them, with the figures that the report must give for them, for as long as the report reads that format. Tests SHALL fail when the report gives another figure for them.

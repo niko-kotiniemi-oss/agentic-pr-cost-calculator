@@ -230,3 +230,7 @@ A record that the default branch holds is accepted, and from then on it changes 
 | [DR-222](DR-222-export-command-later.md) | A command that writes each pull request's cost as a file is left to a change after the first build | scope | accepted | the owner, 2026-11-01 | R206, R207 | T161 |
 | [DR-223](DR-223-in-progress-report-later.md) | A report that shows a pull request as still in progress is left to a change after the first build | scope | accepted | the change `add-pr-cost-calculator`, as the owner asked on 2026-11-09 | R206, R207 | T161 |
 | [DR-224](DR-224-roadmap-names-issues-by-number.md) | The roadmap names issues and pull requests by number, with no link | security and privacy | accepted | the owner, 2026-11-11 | R209 | T160, T164 |
+| [DR-225](DR-225-patterns-page.md) | A page says which recognised patterns the design follows and which anti-patterns it meets | process | accepted | the change `add-pr-cost-calculator`, as the owner asked on 2026-10-29 | R211, R212, R213 | T33, T159, T160, T163, T165, T166 |
+| [DR-226](DR-226-specs-single-source.md) | The specs are the single source of what the tool does | process | accepted | the owner, 2026-11-12 | none | none |
+| [DR-227](DR-227-walking-skeleton-first.md) | A walking skeleton comes before the remaining pull requests that prepare the build | process | accepted | the owner, 2026-11-12 | none | none |
+| [DR-228](DR-228-other-agents-planned.md) | Agents other than Claude Code are planned for after the first version | scope | accepted | the owner, 2026-11-12 | none | none |
