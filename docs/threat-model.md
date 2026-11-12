@@ -2129,11 +2129,11 @@ The trust boundaries:
 
 - **Kind:** information disclosure
 - **Impact:** 2 (medium)
-- **Likelihood:** 1 (unlikely)
-- **Risk:** 2
+- **Likelihood:** 2 (possible)
+- **Risk:** 4
 - **What could happen:** a person opts in while the tool records Claude Code alone. A later release adds another agent and reads the same opt-in, so that the person's calls with that agent, in every repository that turns the tool on, are committed with their work, can be traced to them and are published when it is pushed, while nothing tells them, as nothing tells them of a repository that turns the tool on later (DR-185). The release reaches them with no step of theirs, through a maintainer's update of the hook file and the pin, or through a plugin that updates with nothing to accept (T132).
-- **Answer:** R216 in `project-standards`, whose scenarios the field Held by names, and DR-229, by which an agent that a later release adds is recorded only for people who opt in to that agent, so that no one's opt-in comes to cover an agent without a step of theirs, and the release that adds one changes the public surface and raises the major number (R71, R122).
-- **Residual:** that the change that adds an agent keeps to DR-229 rests on its own threat review and on the owner's review of its diff, since no test can read a release that does not exist yet (A15).
+- **Answer:** R216 in `project-standards`, whose scenarios the field Held by names, which has the README and the opt-in's feature page warn, before anyone opts in, that one opt-in also records each agent that a later release adds; and DR-229, by which the owner chose one opt-in for every agent over an opt-in of its own for each, and the release that adds one changes the public surface with its hooks and raises the major number (R71, R122).
+- **Residual:** a person who opted in without reading the warning, or who has forgotten it, has an added agent's calls recorded and published once they use it in a repository that turns the tool on, which the owner accepted in choosing one opt-in for every agent (DR-229). That the release that adds an agent says in its changelog that every opt-in now records it rests on that change's own threat review and on the owner's review of its diff, since no test can read a release that does not exist yet (A15).
 - **Held by:** `project-standards`: "The opt-in's pages say which agents an opt-in records"; `project-standards`: "An opt-in's page that does not say which agents it records fails a test"; DR-228; DR-229; `add-pr-cost-calculator` task 4.4
 - **Assumptions:** A15
 
@@ -2182,7 +2182,7 @@ Generated from the ratings above. Each cell lists the threats whose impact and l
 | Impact \ Likelihood | 1 unlikely | 2 possible | 3 likely |
 |---|---|---|---|
 | 3 high | T1, T12, T14, T15, T23, T24, T28, T29, T35, T43, T46, T58, T59, T63, T64, T66, T67, T68, T73, T77, T82, T83, T92, T93, T94, T95, T103, T107, T108, T119, T125, T133, T138, T140, T141, T142, T144, T147, T148, T150, T151, T160, T163, T164, T165, T170 | T2, T32, T33, T34, T61, T62, T65, T132, T137 |  |
-| 2 medium | T4, T6, T11, T13, T18, T25, T26, T38, T41, T42, T53, T55, T56, T57, T60, T69, T70, T76, T78, T79, T80, T81, T84, T85, T86, T87, T88, T89, T90, T91, T97, T98, T99, T100, T101, T102, T104, T105, T109, T112, T115, T124, T126, T127, T135, T139, T146, T149, T152, T153, T155, T156, T157, T159, T162, T167, T168, T169 | T3, T9, T10, T17, T19, T20, T21, T22, T27, T30, T39, T40, T44, T45, T47, T48, T49, T50, T51, T52, T54, T71, T72, T74, T75, T96, T111, T116, T120, T121, T122, T123, T129, T130, T131, T134, T136, T143, T145, T154, T158, T161, T166 | T7, T8, T16, T128 |
+| 2 medium | T4, T6, T11, T13, T18, T25, T26, T38, T41, T42, T53, T55, T56, T57, T60, T69, T70, T76, T78, T79, T80, T81, T84, T85, T86, T87, T88, T89, T90, T91, T97, T98, T99, T100, T101, T102, T104, T105, T109, T112, T115, T124, T126, T127, T135, T139, T146, T149, T152, T153, T155, T156, T157, T159, T162, T168, T169 | T3, T9, T10, T17, T19, T20, T21, T22, T27, T30, T39, T40, T44, T45, T47, T48, T49, T50, T51, T52, T54, T71, T72, T74, T75, T96, T111, T116, T120, T121, T122, T123, T129, T130, T131, T134, T136, T143, T145, T154, T158, T161, T166, T167 | T7, T8, T16, T128 |
 | 1 low | T113 | T31, T36, T37, T110, T114, T118 | T5, T106, T117 |
 
 The threats with a risk of 6 or more:

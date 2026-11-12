@@ -1032,16 +1032,16 @@ This repository SHALL track no `.pr-cost.json` and no file under `.pr-cost/` whi
 
 ### Requirement: The documentation says which agents an opt-in records
 
-The README's section on the opt-in and the opt-in's feature page SHALL say that an opt-in records Claude Code's sessions alone, and that an agent that a later release adds is recorded only for people who opt in to that agent, so that no one's opt-in comes to cover an agent without a step of theirs. Tests SHALL fail otherwise.
+The README's sections on the opt-in and on organizations, and the opt-in's feature page, SHALL say that one opt-in records every agent that the tool records, each agent that a later release adds among them, with no further step, and that no opt-in leaves one agent out, so that a person who does not want an added agent recorded turns capture off where they use it. Tests SHALL fail otherwise.
 
 #### Scenario: The opt-in's pages say which agents an opt-in records
 
-- **WHEN** the README's section on the opt-in and the opt-in's feature page are read
-- **THEN** each says that an opt-in records Claude Code's sessions alone, and that an agent that a later release adds is recorded only for people who opt in to that agent
+- **WHEN** the README's sections on the opt-in and on organizations, and the opt-in's feature page, are read
+- **THEN** each says that one opt-in records every agent that the tool records, each agent that a later release adds among them, with no further step, and that no opt-in leaves one agent out, so that a person who does not want an added agent recorded turns capture off where they use it
 
 #### Scenario: An opt-in's page that does not say which agents it records fails a test
 
-- **WHEN** the README's section on the opt-in or the opt-in's feature page leaves out that an opt-in records Claude Code's sessions alone, or that a later agent is recorded only for people who opt in to it
+- **WHEN** the README's section on the opt-in or on organizations, or the opt-in's feature page, leaves out that one opt-in also records each agent that a later release adds, with no further step, or that a person who does not want an added agent recorded turns capture off where they use it
 - **THEN** a test fails and names the page and what is missing
 
 ### Requirement: Each ledger format that a release wrote keeps its golden figures

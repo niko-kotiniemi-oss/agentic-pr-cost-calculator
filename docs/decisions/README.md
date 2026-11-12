@@ -234,5 +234,5 @@ A record that the default branch holds is accepted, and from then on it changes 
 | [DR-226](DR-226-specs-single-source.md) | The specs are the single source of what the tool does | process | accepted | the owner, 2026-11-12 | none | T33, T159, T169 |
 | [DR-227](DR-227-walking-skeleton-first.md) | A walking skeleton comes before the remaining pull requests that prepare the build | process | accepted | the owner, 2026-11-12 | none | T168, T170 |
 | [DR-228](DR-228-other-agents-planned.md) | Agents other than Claude Code are planned for after the first version | scope | accepted | the owner, 2026-11-12 | none | T167 |
-| [DR-229](DR-229-opt-in-per-agent.md) | An opt-in records Claude Code alone, and each agent added later has an opt-in of its own | security and privacy | accepted | the change `add-pr-cost-calculator` | R216 | T167 |
+| [DR-229](DR-229-one-opt-in-for-every-agent.md) | One opt-in records every agent, those that later releases add among them | security and privacy | accepted | the owner, 2026-11-12 | R216 | T167 |
 | [DR-230](DR-230-walking-skeleton-apart.md) | The walking skeleton runs apart from this repository and records only with the switch and the opt-in | security and privacy | accepted | the change `add-pr-cost-calculator` | R215 | T168, T170 |

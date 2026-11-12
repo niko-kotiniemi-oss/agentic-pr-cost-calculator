@@ -25,7 +25,7 @@ Agents other than Claude Code are planned, and the roadmap's item for them under
 - The roadmap's item changes its mark, as DR-219 says an item moves.
 - The patterns page lists a ledger format and a price table shaped for one provider among the anti-patterns to fix before the build, so that the change that adds an agent need not also change a ledger format that a release wrote, which the public surface holds (R122). The release that adds an agent still changes that surface with the agent's hooks, and so raises the major number (R71).
 - That anti-pattern comes from the owner's question rather than from the three reviews of 2026-11-12, so its recognised name and its source are the patterns page's own, and the build's review checks them (T166).
-- An agent that a later release adds is recorded only for people who opt in to that agent (DR-229), so that no one's opt-in comes to cover an agent without a step of theirs (T167).
+- One opt-in records every agent that the tool records, those that later releases add among them, as the owner chose (DR-229), so the README warns of it before anyone opts in (T167).
 - Each agent's change starts by checking what that agent gives: its hooks, and where it gives each call's token counts, which is not yet known for any of them (A68), so that a planned agent may turn out not to be one that the tool can record. For an agent that works on this repository, it also checks whether that agent reads `CLAUDE.md`, on which the rules for agents here rest (A16).
 
 ## Scope
