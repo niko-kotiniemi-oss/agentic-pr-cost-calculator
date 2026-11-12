@@ -34,6 +34,12 @@ This feature is validated first by its spec's scenarios: each gets an acceptance
 
 - Synthetic transcripts with each kind of tool call, an MCP call among them, and a call whose tools are of several types (task 1.1), and the tests of the classification itself (task 2.5).
 
+## Known limitations and the roadmap
+
+No risk of the design concerns this feature alone.
+
+The [roadmap](../roadmap.md) gives what is planned next and later, and the limitations that an adopter notices.
+
 ## See also
 
 - `activity-types` in `openspec/`, and design decision 5 of `add-pr-cost-calculator`.

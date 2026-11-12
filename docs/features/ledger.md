@@ -29,6 +29,16 @@ This feature is validated first by its spec's scenarios: each gets an acceptance
 - Property tests that no planted string reaches a ledger file's contents or its path (task 2.1), and a check that a ledger file raises no finding from a common secret scanner (task 1.2).
 - Unit tests at every boundary of the format on the report's side (task 4.2), and one fixture for each released format (task 6.4).
 
+## Known limitations and the roadmap
+
+The design's risks that concern this feature and are not on the roadmap, each with what it means:
+
+- **A ledger edited by hand changes the reported cost**: the reported cost changes with the edit, which shows in the pull request's diff.
+- **Capture and the report read the call ids of every ledger file that their branch holds, and the report those of every ledger file that the default branch's first-parent history held before the merge, which grow with every pull request, and which whoever merged them wrote, while capture's store grows with every call it records until its retention window drops it**: the report counts none of a pull request's entries once its ledger files together pass the size bound that the ledger format documents, and its comment says they are too large to read.
+- **The published schema and the report disagree about a line**: where the format says that a schema cannot hold a rule, the report's rule decides.
+
+The [roadmap](../roadmap.md) gives what is planned next and later, and the limitations that an adopter notices.
+
 ## See also
 
 - `ledger` in `openspec/`, and design decisions 3 and 16 of `add-pr-cost-calculator`.

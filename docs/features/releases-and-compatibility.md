@@ -32,6 +32,15 @@ This feature is validated first by its spec's scenarios: each whose code is stil
 - A CI job with git 2.43, the oldest git that CI tests, which runs the tests of the README's section on adopting the tool against git (task 4.4).
 - By review rather than by a test: when the oldest Python rises, and whether a version's minor or patch number fits its change. The owner decides both.
 
+## Known limitations and the roadmap
+
+The design's risks that concern this feature and are not on the roadmap, each with what it means:
+
+- **A person's plugin is of another release than the report that a repository pins**: the report refuses what it does not know, and the comment says that some ledger files come from a later release.
+- **No release can be made while any acceptance test is still expected to fail**: releases wait until the code reaches every scenario and reproduces the golden set.
+
+The [roadmap](../roadmap.md) gives what is planned next and later, and the limitations that an adopter notices.
+
 ## See also
 
 - `releases-and-compatibility` in `openspec/`, design decisions 10 and 11 of `add-pr-cost-calculator`, DR-203 to DR-205 for how the plugin reaches people, and DR-209 for how a release takes its files.

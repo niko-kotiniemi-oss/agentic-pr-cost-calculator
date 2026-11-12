@@ -47,6 +47,17 @@ This feature is validated first by its spec's scenarios: each gets an acceptance
 - Tests of the intervals: that calls made before an opt-in or while capture was off are not recorded, also when no run came between, that capture turned off and on again between two runs, any other change to the files that hold the opt-in, or a clock set back ends the interval, while a write to the repository's own git configuration that does not set the opt-in key does not, that no interval begins again until the clock has passed the times that the session's runs saw, that a run of another session that finds the fingerprint changed drops the calls waiting to be staged, that a person who has not opted in leaves no store, and that an opt-out empties the store of everything but what a take-back needs (task 2.4).
 - Tests that the report reads `.pr-cost.json` from before and after the merge, including a file that a pull request makes unreadable, also by adding a key that its format does not document or giving a key twice, and what the comment and the job summary then say (task 4.1).
 
+## Known limitations and the roadmap
+
+The design's risks that concern this feature and are not on the roadmap, each with what it means:
+
+- **Capture is turned off and on again between two runs, and the files that hold the person's opt-in keep their device and inode numbers, size and modification times**: the step cannot see such a change, so the calls between those runs are recorded.
+- **The system's clock steps back between a run that finds a switch off and a later call**: a call made while capture was off can be recorded, in narrow cases.
+- **No session runs again in a repository after its person opts out or stops**: the store's notes stay until a run of a release that knows the store comes, or the person removes the store.
+- **A person removes the opt-in's line from a setup script, or moves to another environment, while threads that use it still run**: threads that already run keep capture on until their machines are rebuilt, unless the person uses an opt-out that reaches them.
+
+The [roadmap](../roadmap.md) gives what is planned next and later, and the limitations that an adopter notices.
+
 ## See also
 
 - `switch-and-opt-in` in `openspec/` for the full requirements and their scenarios.
