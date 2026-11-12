@@ -25,7 +25,7 @@ One opt-in, `pr-cost.capture`, records every agent that the tool records: Claude
 
 - An opt-in's reach grows with each agent that a release adds, as it grows with each repository that turns the tool on (DR-185), so a person who opted in without reading the warning, who has forgotten it, or whose opt-in someone else set, has an added agent's calls recorded and published once they use it in a repository that turns the tool on (T167, T172).
 - No opt-in leaves one agent out, so a person who does not want an added agent recorded turns capture off where they use it: in a clone, for a folder (DR-185) or everywhere. A member whose organization opts them in from a shared environment keeps it off for good only in an environment of their own (R186).
-- The surface manifest names each agent that the opt-in records (R122), so the release that adds one changes the public surface and raises the major number, with a `### Breaking` section (R71), while the opt-in key stays as it is.
+- The surface manifest names each agent that the opt-in records (R122), so the release that adds one changes the public surface and raises the major number, with a `### Breaking` section (R71), while the opt-in key stays as it is. That section says that every opt-in now records that agent, which rests on that change's own review, since no test can read a release that does not exist yet.
 - The change that adds an agent shows first, in its own threat review, that the answers to T2, T3, T4 and T119 hold for that agent, and that nothing that a repository holds can write the opt-in where it runs, and records that agent only where they hold (T171), besides checking whether the agent gives what capture needs at all (DR-228).
 
 ## Scope
