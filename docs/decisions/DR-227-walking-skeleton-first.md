@@ -4,7 +4,7 @@
 - **Status:** accepted
 - **Decided by:** the owner, 2026-11-12
 - **Requirements:** none
-- **Threats:** none
+- **Threats:** T168, T170
 - **Replaces:** none
 - **Closed by:** none
 
@@ -25,12 +25,13 @@ The pull request after the one that adds the patterns page builds a walking skel
 
 - The roadmap's Now lists it after the patterns page.
 - Facts about Claude Code's transcripts and hooks can be observed before the requirements are corrected, and the specs and the assumptions take what it shows.
-- What the skeleton builds, how it is tested, and what of it the build keeps, are for its own pull request to propose.
+- What the skeleton builds, how it is tested, and what of it the build keeps, are for its own pull request to propose, within the bounds that DR-230 sets on where its real run happens and what it records (T168, T170).
+- The README's status, which says that none of the tool's code exists yet and that code starts once the design is approved, changes with the skeleton's pull request.
 
 ## Scope
 
-This covers when a walking skeleton comes. What it builds is for its own pull request, and which document states what the tool does is DR-226 (The specs are the single source of what the tool does).
+This covers when a walking skeleton comes. What it builds is for its own pull request, where it runs and what it records is DR-230 (The walking skeleton runs apart from this repository and records only with the switch and the opt-in), and which document states what the tool does is DR-226 (The specs are the single source of what the tool does).
 
 ## What reversing it would change
 
-The roadmap's Now would change, with the order of the pull requests that prepare the build, and so would the anti-pattern on the patterns page that rests on this record.
+The roadmap's Now would change, with the order of the pull requests that prepare the build, and so would the anti-pattern on the patterns page that rests on this record, the README's status once the skeleton's pull request has changed it, and the answers of T168 and T170.

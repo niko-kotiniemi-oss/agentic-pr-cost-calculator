@@ -4,7 +4,7 @@
 - **Status:** accepted
 - **Decided by:** the owner, 2026-11-12
 - **Requirements:** none
-- **Threats:** none
+- **Threats:** T167
 - **Replaces:** none
 - **Closed by:** none
 
@@ -23,8 +23,10 @@ Agents other than Claude Code are planned, and the roadmap's item for them under
 ## Consequences
 
 - The roadmap's item changes its mark, as DR-219 says an item moves.
-- The patterns page lists a ledger format and a price table shaped for one provider among the anti-patterns to fix before the build, so that adding an agent can be a minor release (DR-096), since a change to the ledger format after a release is a breaking one for adopters (DR-003).
-- Each agent's change starts by checking what that agent gives: its hooks, and where it gives each call's token counts.
+- The patterns page lists a ledger format and a price table shaped for one provider among the anti-patterns to fix before the build, so that the change that adds an agent need not also change a ledger format that a release wrote, which the public surface holds (R122). The release that adds an agent still changes that surface with the agent's hooks, and so raises the major number (R71).
+- That anti-pattern comes from the owner's question rather than from the three reviews of 2026-11-12, so its recognised name and its source are the patterns page's own, and the build's review checks them (T166).
+- An agent that a later release adds is recorded only for people who opt in to that agent (DR-229), so that no one's opt-in comes to cover an agent without a step of theirs (T167).
+- Each agent's change starts by checking what that agent gives: its hooks, and where it gives each call's token counts, which is not yet known for any of them (A68), so that a planned agent may turn out not to be one that the tool can record. For an agent that works on this repository, it also checks whether that agent reads `CLAUDE.md`, on which the rules for agents here rest (A16).
 
 ## Scope
 
@@ -32,4 +34,4 @@ This covers whether other agents are planned. Which agent the first version capt
 
 ## What reversing it would change
 
-The roadmap's item under Later would change its mark, and the anti-pattern on the patterns page that rests on this record would be revisited.
+The roadmap's item under Later would change its mark, the anti-pattern on the patterns page that rests on this record would be revisited, and so would DR-229 and the answer of T167.

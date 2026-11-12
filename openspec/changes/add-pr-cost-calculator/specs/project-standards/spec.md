@@ -904,7 +904,7 @@ Each risk that the risks and trade-offs of any change's design give, active or a
 
 ### Requirement: The roadmap links only this repository's own files
 
-Every link, image, autolink and web address in the roadmap and each feature page's section on known limitations and the roadmap, prose and code alike, and every `owner/repo` they name, SHALL name a heading of its own page or a tracked file of this repository by a relative path that stays inside it. They SHALL name issues and pull requests by number alone and give no `@` and no fenced or indented code, so that they lead no reader or agent to what someone else writes. Tests SHALL fail otherwise.
+Every link, image, autolink, web address and host, such as `example.org`, in the roadmap and each feature page's section on known limitations and the roadmap, prose and code alike, and every `owner/repo` they name, SHALL name a heading of its own page or a tracked file of this repository by a relative path that stays inside it. They SHALL name issues and pull requests by number alone and give no `@` and no fenced or indented code. Tests SHALL fail otherwise.
 
 #### Scenario: The roadmap's links stay within this repository's files
 
@@ -913,45 +913,40 @@ Every link, image, autolink and web address in the roadmap and each feature page
 
 #### Scenario: A link elsewhere fails a test
 
-- **WHEN** the roadmap or such a section gives a web address, an image, an `@`, an `owner/repo`, a fenced or indented code block, or a relative path that leaves the repository or names no tracked file, as `../../../issues/15` does
+- **WHEN** the roadmap or such a section gives a web address, a host such as `example.org`, in prose or in inline code, that is not a tracked file's path, an image, an `@`, an `owner/repo`, a fenced or indented code block, or a relative path that leaves the repository or names no tracked file, as `../../../issues/15` does
 - **THEN** a test fails and names the line
 
 ### Requirement: The roadmap and the feature pages' roadmap sections hold no hidden text
 
-The roadmap, and each feature page's section on known limitations and the roadmap, SHALL hold only printable ASCII and line feeds, and nowhere, inline code included, a `<`, a `&`, a backslash, a `]:` or a link with a title, so that what GitHub shows of them is all that an agent reads. Tests SHALL fail otherwise.
+The roadmap, and each feature page's section on known limitations and the roadmap, SHALL hold only printable ASCII and line feeds, and nowhere, inline code included, a `<`, a `&`, a backslash, a `]:`, a `|` or a link with a title, so that what GitHub shows of them is all that an agent reads. Tests SHALL fail otherwise.
 
 #### Scenario: Text that GitHub hides fails a test
 
-- **WHEN** the roadmap or such a section holds a character other than printable ASCII and a line feed, such as a carriage return, a zero-width space or a bidirectional control, or, inline code included, a `<`, as in an HTML comment, a `&`, as in a character reference, a backslash, as in an escape, a `]:`, as in a link reference definition, or a link with a title
+- **WHEN** the roadmap or such a section holds a character other than printable ASCII and a line feed, such as a carriage return, a zero-width space or a bidirectional control, or, inline code included, a `<`, as in an HTML comment, a `&`, as in a character reference, a backslash, as in an escape, a `]:`, as in a link reference definition, a `|`, as in a table whose row holds a cell more than its header, or a link with a title
 - **THEN** a test fails and names the file, the line and what it holds
 
 ### Requirement: The patterns page says which patterns the design follows and which anti-patterns it meets
 
-The repository SHALL keep a page of patterns, `docs/patterns.md`, linked from the README's list of documentation, with the sections Patterns followed, Anti-patterns and Named practices in that order. Each item SHALL name the requirements, records, threats or tasks that it rests on, a task by its change and number. Tests SHALL fail otherwise, and when an item names one that does not exist or names a closed record.
+The repository SHALL keep a page of patterns, `docs/patterns.md`, linked from the README's list of documentation, that opens by saying that it describes the design, that an item on it is not a request to start work, and that an anti-pattern to fix is fixed by the pull request that the roadmap's Now names for it, and then has the sections Patterns followed, Anti-patterns and Named practices, in that order, each holding list items and nothing else. Tests SHALL fail otherwise.
 
 #### Scenario: The patterns page gives its sections in order
 
 - **WHEN** the README's list of documentation and `docs/patterns.md` are read
-- **THEN** the list links the patterns page, and its sections are Patterns followed, Anti-patterns and Named practices, in that order
+- **THEN** the list links the patterns page, the page opens by saying that it describes the design, that an item on it is not a request to start work, and that an anti-pattern to fix is fixed by the pull request that the roadmap's Now names for it, and its sections are Patterns followed, Anti-patterns and Named practices, in that order, each holding one or more list items and nothing else
 
 #### Scenario: A patterns page without its link or a section fails a test
 
-- **WHEN** `docs/patterns.md` is missing, a section is missing or out of order, or the README's list of documentation does not link it
+- **WHEN** `docs/patterns.md` is missing, a section is missing, out of order, holds no list item or holds anything but list items, or the README's list of documentation does not link it
 - **THEN** a test fails and names what is missing
 
-#### Scenario: An item of the patterns page that rests on nothing fails a test
+#### Scenario: A patterns page that does not open with how its anti-patterns are fixed fails a test
 
-- **WHEN** an item of the patterns page names no requirement, record, threat or task
-- **THEN** a test fails and names the item
-
-#### Scenario: An item of the patterns page that names what does not exist fails a test
-
-- **WHEN** an item of the patterns page names a requirement that the register does not hold, a record that `docs/decisions/` does not hold or that is closed, a threat that the threat model does not hold, or a task by a change and number that no change's `tasks.md`, active or archived, holds
-- **THEN** a test fails and names the item and what it names
+- **WHEN** the patterns page, before its first section, does not say that it describes the design, that an item on it is not a request to start work, or that an anti-pattern to fix is fixed by the pull request that the roadmap's Now names for it
+- **THEN** a test fails and names what is missing
 
 ### Requirement: Each anti-pattern on the patterns page says how the design meets it
 
-Each item under the patterns page's Anti-patterns SHALL open with `**Avoided.**`, `**Knowingly accepted.**` or `**To fix before the build.**`. An item knowingly accepted SHALL name a record that gives the reason, and an item to fix SHALL give, in bold, the opening words of the item under the roadmap's Now that fixes it. Tests SHALL fail otherwise.
+Each item under the patterns page's Anti-patterns SHALL open with `**Avoided.**`, `**Knowingly accepted.**` or `**To fix before the build.**`. An item knowingly accepted SHALL name a record that gives the reason, and an item to fix SHALL give, in bold, the whole bold opening of the item under the roadmap's Now that fixes it. Tests SHALL fail otherwise, and no release SHALL be published while its tag's page holds an item to fix.
 
 #### Scenario: Each anti-pattern opens with how the design meets it
 
@@ -970,22 +965,84 @@ Each item under the patterns page's Anti-patterns SHALL open with `**Avoided.**`
 
 #### Scenario: An anti-pattern to fix that no item under Now fixes fails a test
 
-- **WHEN** an item opens with `**To fix before the build.**` and gives in bold no opening words of an item under the roadmap's Now, as when that item has left Now
+- **WHEN** an item opens with `**To fix before the build.**` and gives in bold no whole bold opening of an item under the roadmap's Now, as when that item has left Now or the item gives only its first word
 - **THEN** a test fails and names the item
+
+#### Scenario: A release whose patterns page still has an anti-pattern to fix is not published
+
+- **WHEN** a tag's tree holds a patterns page with an item that opens with `**To fix before the build.**`
+- **THEN** the release check fails, and no release is published
 
 ### Requirement: The patterns page links only this repository's own files and holds no hidden text
 
-The patterns page SHALL hold to the rules that "The roadmap links only this repository's own files" and "The roadmap and the feature pages' roadmap sections hold no hidden text" give the roadmap, and SHALL name each source by its author or body and its work, with no web address, so that it leads no reader or agent to what someone else writes. Tests SHALL fail otherwise.
+The patterns page SHALL hold to the rules that "The roadmap links only this repository's own files" and "The roadmap and the feature pages' roadmap sections hold no hidden text" give the roadmap, so that it leads no reader or agent to what someone else writes or hides. Tests SHALL fail otherwise.
 
 #### Scenario: A link elsewhere in the patterns page fails a test
 
-- **WHEN** the patterns page gives a web address, an image, an `@`, an `owner/repo`, a fenced or indented code block, or a relative path that leaves the repository or names no tracked file
+- **WHEN** the patterns page gives a web address, a host such as `example.org`, in prose or in inline code, that is not a tracked file's path, an image, an `@`, an `owner/repo`, a fenced or indented code block, or a relative path that leaves the repository or names no tracked file
 - **THEN** a test fails and names the line
 
 #### Scenario: Text that GitHub hides in the patterns page fails a test
 
-- **WHEN** the patterns page holds a character other than printable ASCII and a line feed, or, inline code included, a `<`, a `&`, a backslash, a `]:` or a link with a title
+- **WHEN** the patterns page holds a character other than printable ASCII and a line feed, or, inline code included, a `<`, a `&`, a backslash, a `]:`, a `|` or a link with a title
 - **THEN** a test fails and names the file, the line and what it holds
+
+### Requirement: Each item on the patterns page gives its source and what it rests on
+
+Each item on the patterns page SHALL give its recognised name, where it applies, its source after `Source:`, and the requirements, records, threats or tasks that it rests on, a task by its change and number, and Named practices SHALL give Clean Code, PEP 8, OWASP's secure coding practices and OpenSSF's Scorecard. Tests SHALL fail on an item that gives no source or names none of those, or names one that does not exist or a closed record, and on a named practice left out.
+
+#### Scenario: Each item of the patterns page gives its source and what it rests on
+
+- **WHEN** the patterns page's items are read
+- **THEN** each gives text after `Source:` and names a requirement, record, threat or task that exists, and Named practices gives Clean Code, PEP 8, OWASP's secure coding practices and OpenSSF's Scorecard
+
+#### Scenario: An item of the patterns page with no source fails a test
+
+- **WHEN** an item of the patterns page gives no `Source:` or nothing after it
+- **THEN** a test fails and names the item
+
+#### Scenario: An item of the patterns page that rests on nothing fails a test
+
+- **WHEN** an item of the patterns page names no requirement, record, threat or task
+- **THEN** a test fails and names the item
+
+#### Scenario: An item of the patterns page that names what does not exist fails a test
+
+- **WHEN** an item of the patterns page names a requirement that the register does not hold, a record that `docs/decisions/` does not hold or that is closed, a threat that the threat model does not hold, or a task by a change and number that no change's `tasks.md`, active or archived, holds
+- **THEN** a test fails and names the item and what it names
+
+#### Scenario: Named practices that leave one out fail a test
+
+- **WHEN** Named practices gives no item for one of Clean Code, PEP 8, OWASP's secure coding practices and OpenSSF's Scorecard
+- **THEN** a test fails and names the practice
+
+### Requirement: This repository holds no switch and no ledger file before its own capture is turned on
+
+This repository SHALL track no `.pr-cost.json` and no file under `.pr-cost/` while task 7.1 of `add-pr-cost-calculator`, which turns the tool on here, is not ticked in that change's `tasks.md`, active or archived, so that no capture records here before then. A test SHALL fail and name the file otherwise.
+
+#### Scenario: A switch or a ledger file here before task 7.1 fails a test
+
+- **WHEN** task 7.1 of `add-pr-cost-calculator` is not ticked, and this repository tracks `.pr-cost.json` or a file under `.pr-cost/`
+- **THEN** a test fails and names the file
+
+#### Scenario: A switch and ledger files here after task 7.1 pass
+
+- **WHEN** task 7.1 of `add-pr-cost-calculator` is ticked, and this repository tracks `.pr-cost.json` and files under `.pr-cost/`
+- **THEN** that test passes them
+
+### Requirement: The documentation says which agents an opt-in records
+
+The README's section on the opt-in and the opt-in's feature page SHALL say that an opt-in records Claude Code's sessions alone, and that an agent that a later release adds is recorded only for people who opt in to that agent, so that no one's opt-in comes to cover an agent without a step of theirs. Tests SHALL fail otherwise.
+
+#### Scenario: The opt-in's pages say which agents an opt-in records
+
+- **WHEN** the README's section on the opt-in and the opt-in's feature page are read
+- **THEN** each says that an opt-in records Claude Code's sessions alone, and that an agent that a later release adds is recorded only for people who opt in to that agent
+
+#### Scenario: An opt-in's page that does not say which agents it records fails a test
+
+- **WHEN** the README's section on the opt-in or the opt-in's feature page leaves out that an opt-in records Claude Code's sessions alone, or that a later agent is recorded only for people who opt in to it
+- **THEN** a test fails and names the page and what is missing
 
 ### Requirement: Each ledger format that a release wrote keeps its golden figures
 
