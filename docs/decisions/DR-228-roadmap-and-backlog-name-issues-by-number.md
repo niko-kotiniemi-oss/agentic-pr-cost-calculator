@@ -25,6 +25,7 @@ The roadmap and every file in `docs/backlog/` name an issue or a pull request by
 
 - A test fails on any address under this repository on GitHub, in the roadmap and in the items (R209).
 - A reader finds an issue or a pull request by its number among the repository's, and an agent that looks one up reads text that anyone can write, which only agents that work here are told to treat as data (T164).
+- DR-224's last section named R209, design decision 12, task 1.26 and T164, each revised with this record, and no other record.
 - The roadmap's and the items' summaries are the repository's own text, which the owner reviews (A15).
 
 ## Scope

@@ -832,16 +832,16 @@ While this repository's root marketplace file is missing, or holds no entry for 
 
 ### Requirement: The roadmap says what is now, next and later
 
-The repository SHALL keep a roadmap, `docs/roadmap.md`, linked from the README's list of documentation, with the sections Now, Next, Later, Known limitations and Known bugs in that order, and Now SHALL end with one line on the build that links the change's proposal and tasks. Tests SHALL fail otherwise.
+The repository SHALL keep a roadmap, `docs/roadmap.md`, linked from the README's list of documentation, with the sections Now, Next, Later, Known limitations and Known bugs in that order. It SHALL open by saying that it describes, that an item on it is neither a promise nor a date, and that it is not a request to start work, and Now SHALL end with one line on the build that links the change's proposal and tasks. Tests SHALL fail otherwise.
 
 #### Scenario: The roadmap gives its sections in order
 
 - **WHEN** the README's list of documentation and `docs/roadmap.md` are read
-- **THEN** the list links the roadmap, its sections are Now, Next, Later, Known limitations and Known bugs, in that order, and Now ends with the line on the build
+- **THEN** the list links the roadmap, the roadmap opens by saying that it describes, that an item is neither a promise nor a date and that it is not a request to start work, its sections are Now, Next, Later, Known limitations and Known bugs, in that order, and Now ends with the line on the build
 
-#### Scenario: A roadmap without its link, a section or the line on the build fails a test
+#### Scenario: A roadmap without its link, its opening, a section or the line on the build fails a test
 
-- **WHEN** `docs/roadmap.md` is missing, a section is missing or out of order, the README's list of documentation does not link it, or Now does not end with the line on the build
+- **WHEN** `docs/roadmap.md` is missing, it does not open with what it says of its items, a section is missing or out of order, the README's list of documentation does not link it, or Now does not end with the line on the build
 - **THEN** a test fails and names what is missing
 
 ### Requirement: Each backlog item says how far it is from being built
@@ -889,7 +889,7 @@ Each risk that the risks and trade-offs of any change's design give, active or a
 
 ### Requirement: The roadmap and the backlog link only this repository's own files
 
-Every link, image, autolink and web address in the roadmap, in `docs/backlog/` and in each feature page's section on known limitations and the roadmap, prose and code alike, and every `owner/repo` they name, SHALL name a heading of its own page or a tracked file of this repository by a relative path that stays inside it. They SHALL name issues and pull requests by number alone and give no `@` and no fenced or indented code. Tests SHALL fail otherwise.
+Every link, image, autolink and web address in the roadmap, in `docs/backlog/` and in each feature page's section on known limitations and the roadmap, prose and code alike, and every `owner/repo` they name, SHALL name a heading of its own page or a tracked file of this repository by a relative path inside it. They SHALL name issues and pull requests by number alone and give no `@`, no fenced or indented code and no space in inline code. Tests SHALL fail otherwise.
 
 #### Scenario: The roadmap's and the backlog's links stay within this repository's files
 
@@ -898,7 +898,7 @@ Every link, image, autolink and web address in the roadmap, in `docs/backlog/` a
 
 #### Scenario: A link elsewhere fails a test
 
-- **WHEN** the roadmap, a file in `docs/backlog/` or such a section gives a web address, an image, an `@`, an `owner/repo`, a fenced or indented code block, or a relative path that leaves the repository or names no tracked file, as `../../../issues/15` does
+- **WHEN** the roadmap, a file in `docs/backlog/` or such a section gives a web address, an image, an `@`, an `owner/repo`, a fenced or indented code block, inline code that holds a space, as a command such as `git config --global pr-cost.capture true` does, or a relative path that leaves the repository or names no tracked file, as `../../../issues/15` does
 - **THEN** a test fails and names the file and the line
 
 ### Requirement: The roadmap, the backlog and the feature pages' roadmap sections hold no hidden text
@@ -926,12 +926,12 @@ Each backlog item SHALL be a file `docs/backlog/B-NNN-words.md`, numbered from B
 
 ### Requirement: The README briefs developers on how work flows
 
-The README's section on working on this repository SHALL open, before its setup, with a briefing for developers: anyone may open an issue with no approval needed, what an issue proposes is neither planned nor committed to, and a backlog item changes only through a pull request that the owner merges. It SHALL give the stages of the work as one table, which no other Markdown file gives, and `CONTRIBUTING.md` and `docs/backlog/README.md` SHALL link the section. Tests SHALL fail otherwise.
+The README's section on working here SHALL open, before its setup, with a briefing: anyone may open an issue with no approval needed; an issue is public at once and holds nothing private; what it proposes is not planned or committed to; and a backlog item changes only by a pull request that the owner merges. It SHALL give the stages of work in one table, which no other Markdown file gives, and `CONTRIBUTING.md` and `docs/backlog/README.md` SHALL link the section. Tests SHALL fail otherwise.
 
 #### Scenario: The README opens its section on working here with the briefing
 
 - **WHEN** the README's section on working on this repository is read
-- **THEN** before its setup it says that anyone may open an issue with no approval needed, that what an issue proposes is neither planned nor committed to, and that a backlog item changes only through a pull request that the owner merges, and it gives the table of stages, with the columns Step, Where it lives, What it holds and Who writes it, and the rows An idea or a bug, Agreed work, Order, Delivery and Result, in that order, each row linking a page of this repository
+- **THEN** before its setup it says that anyone may open an issue with no approval needed, that an issue is public at once and holds nothing private, a security problem going to `SECURITY.md` instead, that what an issue proposes is neither planned nor committed to, and that a backlog item changes only through a pull request that the owner merges, and it gives the table of stages, with the columns Step, Where it lives, What it holds and Who writes it, and the rows An idea or a bug, Agreed work, Order, Delivery and Result, in that order, each row linking a page of this repository
 
 #### Scenario: A briefing out of form, or a second copy of its table, fails a test
 
@@ -988,31 +988,64 @@ Later SHALL open by saying that work on an item that is open to feedback and con
 
 ### Requirement: A backlog item names only what exists, and is not stale
 
-Each requirement, record, threat and assumption that a backlog item names, and each task that it names by its change and number, SHALL exist, in active and archived changes alike, and an item that is neither `Done` nor `Dropped` SHALL name no closed record and no tasks that are all ticked. Tests SHALL fail otherwise.
+Rests on SHALL hold only `none` or requirements (`R` and digits), records (`DR-` and three digits), threats (`T` and digits), assumptions (`A` and digits), backlog items (`B-` and three digits) and tasks (`task`, its number, `of` and its change's name as code), each of which SHALL exist, in active and archived changes alike. No item SHALL name a closed record, and an open item SHALL name no tasks that are all ticked. Tests SHALL fail otherwise.
 
 #### Scenario: An item that names what does not exist fails a test
 
-- **WHEN** an item names a requirement that the register does not hold, a record that `docs/decisions/` does not hold, a threat that the threat model does not hold, an assumption that `docs/assumptions/` does not hold, or a task by a change and number that no change's `tasks.md`, active or archived, holds
+- **WHEN** an item's Rests on holds anything but `none` and those forms, or names a requirement that the register does not hold, a record that `docs/decisions/` does not hold, a threat that the threat model does not hold, an assumption that `docs/assumptions/` does not hold, a backlog item that `docs/backlog/` does not hold, or a task by a change and number that no change's `tasks.md`, active or archived, holds
 - **THEN** a test fails and names the item and what it names
 
 #### Scenario: A stale item fails a test
 
-- **WHEN** an item that is neither `Done` nor `Dropped` names a closed record, or names tasks that are all ticked in their change's `tasks.md`
+- **WHEN** an item names a closed record, or an item that is neither `Done` nor `Dropped` names tasks that are all ticked in their change's `tasks.md`
 - **THEN** a test fails and names the item
 
 ### Requirement: A backlog item keeps its file, and its date moves with its text
 
-Compared with the base commit that the records' check uses, no backlog item SHALL be removed, renamed or moved, an item whose text a branch changes SHALL give a later date in Last changed than the base's copy gives, and no item SHALL give a date later than the day on which the test runs, in UTC. Tests SHALL fail otherwise.
+Compared with the base commit that the records' check uses, no backlog item SHALL be removed, renamed or moved, an item whose text a branch changes SHALL give a later date in Last changed than the base's copy, or the same date when that is the day on which the test runs, and no item SHALL give a date later than that day, in UTC. Tests SHALL fail otherwise.
 
 #### Scenario: An item changed without a new date fails a test
 
-- **WHEN** a branch changes an item's text and leaves its date at, or before, the date that the base commit's copy gives, or an item gives a date later than the day on which the test runs
+- **WHEN** a branch changes an item's text and leaves its date before the date that the base commit's copy gives, or at that date when it is not the day on which the test runs, or an item gives a date later than that day
 - **THEN** a test fails and names the item
+
+#### Scenario: A second change to an item on the day of the first passes
+
+- **WHEN** the base commit's copy of an item gives the day on which the test runs, and a branch changes the item again and gives the same date
+- **THEN** no test fails for its date
 
 #### Scenario: An item removed or renamed fails a test
 
 - **WHEN** the base commit holds an item that the branch removes, renames or moves
 - **THEN** a test fails and names the item, so that every link to an item still leads to it once it is done or dropped
+
+### Requirement: The backlog's page says what an item is and is not
+
+`docs/backlog/README.md` SHALL give an item's form, link the roadmap, and say that an item describes, that it is neither a promise nor a date, that it is not a request to start work, what each of the five statuses means, and that `Done` means that its pull requests have merged to the default branch, while `CHANGELOG.md` names the release that holds it. Tests SHALL fail otherwise.
+
+#### Scenario: The backlog's page says what an item is and is not
+
+- **WHEN** `docs/backlog/README.md` is read
+- **THEN** it links the roadmap, gives the form, and says that an item describes, is neither a promise nor a date and is not a request to start work, what each status means, and that `Done` means merged, with `CHANGELOG.md` naming the release
+
+#### Scenario: A backlog page that leaves one out fails a test
+
+- **WHEN** `docs/backlog/README.md` is missing, does not link the roadmap, or leaves out one of those statements or a status
+- **THEN** a test fails and names what is missing
+
+### Requirement: An item becomes agreed only by a change to its status
+
+Compared with the base commit that the records' check uses, an item that the base does not hold SHALL be `Open to feedback and contributions` or `Planned`, and an item that the base gives as `Open to feedback and contributions` or `Dropped` SHALL NOT become `In progress` or `Done`, so that an item is agreed by its status line before it is built. The check SHALL be skipped while no base holds `docs/backlog/`. Tests SHALL fail otherwise.
+
+#### Scenario: An item that skips agreement fails a test
+
+- **WHEN** a branch adds an item that is `In progress`, `Done` or `Dropped`, or moves an item that the base gives as `Open to feedback and contributions` or `Dropped` to `In progress` or `Done`
+- **THEN** a test fails and names the item and the two statuses
+
+#### Scenario: The first items pass before any base holds the backlog
+
+- **WHEN** no base commit holds `docs/backlog/`
+- **THEN** the check of status changes examines nothing and passes, and once a base holds it, the check reads every item
 
 ### Requirement: Each ledger format that a release wrote keeps its golden figures
 

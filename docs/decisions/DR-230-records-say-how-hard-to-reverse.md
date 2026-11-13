@@ -14,7 +14,7 @@ Each record holds one choice (DR-108), and a record that the default branch hold
 
 ## Decision
 
-Each record covers one topic. Each record says how hard it is to reverse, as reversible, reversible with work, or a one-way door, irreversible or nearly so, with the reason. A one-way door has its alternatives weighed and the owner's decision before it is accepted. A record that replaces another starts an assessment of what rests on the one it closes: each requirement, record and threat that the closed record's last section names, and each page that names it, is read again, and each record that no longer holds is closed in the same change or given a backlog item. Until records gain a field for it, which the backlog item that adds two new fields to every record brings, with a column in the index and its check, a record says how hard it is to reverse in the first sentence of its section on what reversing it would change, as the records from DR-225 on do.
+Each record says how hard it is to reverse, as reversible, reversible with work, or a one-way door, irreversible or nearly so, with the reason. A one-way door has its alternatives weighed and the owner's decision before it is accepted. A record that replaces another starts an assessment of what rests on the one it closes: each requirement, record and threat that the closed record's last section names, and each page that names it, is read again, and each record that no longer holds is closed in the same change; a backlog item, which names the record in Rests on, is kept for a record whose standing the assessment cannot settle. Until records gain a field for it, which backlog item B-004 (Two new fields on every record) brings, with a column in the index and its check, a record says how hard it is to reverse in the first sentence of its section on what reversing it would change, as the records from DR-225 on do.
 
 ## Alternatives
 
@@ -30,8 +30,8 @@ Each record covers one topic. Each record says how hard it is to reverse, as rev
 
 ## Scope
 
-This covers what a record says about reversing it and what replacing one starts. A record's form is DR-108 (Each decision has a record of its own, in an index), and how a record is closed is DR-121 (A record is never edited once accepted, only closed by a record that replaces it).
+This covers how a record is reversed: what it says about reversing it, and what replacing it starts. That each record covers one topic is DR-108's rule that a record holds one choice, which this record cites and does not decide again. A record's form is DR-108 (Each decision has a record of its own, in an index), and how a record is closed is DR-121 (A record is never edited once accepted, only closed by a record that replaces it).
 
 ## What reversing it would change
 
-How hard it is to reverse: reversible. The statement is a sentence in each record, and a later record could drop the rule, leaving those sentences as history. Design decision 13 would change, and so would the answers of T74 and T168, the backlog item that adds two new fields to every record, and the guide's entry on decisions once it exists.
+How hard it is to reverse: reversible. The statement is a sentence in each record, and a later record could drop the rule, leaving those sentences as history. Design decision 13 would change, and so would the answers of T74 and T168, B-004, and the guide's entry on decisions once it exists.

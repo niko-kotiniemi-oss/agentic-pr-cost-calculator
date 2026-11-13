@@ -126,10 +126,10 @@ The assumptions about the teams that adopt the tool, the people who opt in, and 
 
 ## A17. People report bugs and vulnerabilities through the right channel.
 
-- **Rests on it:** T61, DR-069, DR-077, DR-114, DR-115, DR-116
+- **Rests on it:** T61, T169, DR-069, DR-077, DR-114, DR-115, DR-116, DR-229
 - **If it is wrong:** Private text, or a vulnerability before its fix, would be published in an issue (T61).
 - **Fact:** People who report a bug heed the bug-report form's privacy warning, and file bugs through that form rather than through the feature-request template, which has no privacy checkbox.
-  - **Relied on:** T61, DR-069, DR-114, DR-115, DR-116
+  - **Relied on:** T61, T169, DR-069, DR-114, DR-115, DR-116, DR-229
   - **Checked:** not yet: none will, since no test may reach what adopters and people do
 - **Fact:** People who find a vulnerability report it through the repository's private vulnerability reporting, not in a public issue.
   - **Relied on:** T61, DR-077

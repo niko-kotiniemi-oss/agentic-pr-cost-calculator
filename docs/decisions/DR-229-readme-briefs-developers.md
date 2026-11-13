@@ -4,7 +4,7 @@
 - **Status:** accepted
 - **Decided by:** the owner, 2026-11-13
 - **Requirements:** R212
-- **Threats:** T161, T166
+- **Threats:** T161, T166, T169
 - **Replaces:** none
 - **Closed by:** none
 
@@ -14,7 +14,7 @@ Most people who come to the repository read only its README. How work flows here
 
 ## Decision
 
-The README's section on working on this repository opens, before its setup, with a briefing for developers. It says that anyone may open an issue to propose, ask or report, with no approval needed, and that what an issue proposes is neither planned nor committed to; that planned work is a backlog item, which changes only through a pull request that the owner merges; and it gives the stages of the work as a table, with the steps An idea or a bug, Agreed work, Order, Delivery and Result, each with where it lives, what it holds and who writes it, linking the page that goes deeper. The README is the table's one home: `CONTRIBUTING.md` and the backlog's page link the section rather than repeat it. The briefing names issues without linking any, as DR-215 has the README do.
+The README's section on working on this repository opens, before its setup, with a briefing for developers. It says that anyone may open an issue to propose, ask or report, with no approval needed, that an issue is public at once and so holds nothing private, a security problem going to `SECURITY.md` instead, and that what an issue proposes is neither planned nor committed to; that planned work is a backlog item, which changes only through a pull request that the owner merges; and it gives the stages of the work as a table, with the steps An idea or a bug, Agreed work, Order, Delivery and Result, each with where it lives, what it holds and who writes it, linking the page that goes deeper. The README is the table's one home: `CONTRIBUTING.md` and the backlog's page link the section rather than repeat it. The briefing names issues without linking any, as DR-215 has the README do.
 
 ## Alternatives
 
@@ -24,6 +24,7 @@ The README's section on working on this repository opens, before its setup, with
 ## Consequences
 
 - A test fails when the briefing is missing or follows the setup, leaves out what it must say, its table lacks a column or a row or gives them out of order, a row links no page, another Markdown file gives the table, or `CONTRIBUTING.md` or the backlog's page does not link the section (R212).
+- A person, or an agent that a person asks to open an issue, reads before opening one that it is public at once, which an issue opened outside the bug form would not otherwise say (T169).
 - A contributor reads, on the page that most people see, that an issue is not a commitment and that an item is agreed only by a merged pull request (T161, T166).
 - The README's other rules hold for the briefing: it links no issue and nothing outside this repository but what its test lists (R201), and holds no text that GitHub hides (R203).
 
@@ -33,4 +34,4 @@ This covers the briefing for developers and the home of the table of stages. Whe
 
 ## What reversing it would change
 
-How hard it is to reverse: reversible. The briefing is text in the README, which one pull request can move. R212 in `project-standards` would change, with its scenarios, and so would design decision 12, task 1.27, the README, `CONTRIBUTING.md`, the backlog's page and the answers of T161 and T166.
+How hard it is to reverse: reversible. The briefing is text in the README, which one pull request can move. R212 in `project-standards` would change, with its scenarios, and so would design decision 12, task 1.27, the README, `CONTRIBUTING.md`, the backlog's page and the answers of T161, T166 and T169.
