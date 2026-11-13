@@ -1,25 +1,14 @@
 """The roadmap says what is now, next and later, and leads only to this repository.
 
-`docs/roadmap.md` is linked from the README's list of documentation, and its
-sections are Now, Next, Later, Known limitations and Known bugs, each once and in
-that order (R206, DR-218). A section is a `## ` line at the start of a line, read
-outside fenced code; the roadmap holds no heading indented or underlined. An item is
-a line that starts with `- `, with the lines indented by two spaces that follow it.
-
-Each item under Next and Later opens with `**Planned.**` or `**Open to feedback and
-contributions.**` (R207, DR-219), and names what it rests on: a requirement (`R`
-and digits) that the register holds, a record (`DR-` and three digits) that
-`docs/decisions/` holds, a threat (`T` and digits) that the threat model holds, or
-a task, as `task 1.26 of` and the change's name as code, that a change's
-`tasks.md`, active or archived, holds. Under Next and Later, a list item in any
-other form, or a line that is neither an item nor part of one after the first item,
-fails. An item in any section that names what does not exist fails, and so does
-one whose named tasks are all ticked, or that names a closed record, which is stale
-(R206, T161). No test reads an issue, so whether an issue that an item names is
-still open rests on review. Later opens with the sentence that `LATER_OPENING`
-gives, and each record that the README's list of what the first version does not
-support links is named by an item under Later; a README whose list links no record
-fails (R207).
+`docs/roadmap.md` is linked from the README's list of documentation, opens, before
+its first section, with the sentence that `ROADMAP_OPENING` gives, and its sections
+are Now, Next, Later, Known limitations and Known bugs, each once and in that order;
+Now ends with one line, not an item, that links a change's `proposal.md` and
+`tasks.md`, which are the build's home (R206, DR-225). A section is a `## ` line at
+the start of a line, read outside fenced code; the roadmap holds no heading indented
+or underlined. An item is a line that starts with `- `, with the lines indented by
+two spaces that follow it. What Now, Next and Later list, as the index of the backlog
+items, is `tests/test_backlog.py`'s to check (R213, R214).
 
 Every risk that the risks and trade-offs of a change's design give, active or
 archived, as a line that opens with `- [title]` and an arrow, is listed by its
@@ -31,18 +20,22 @@ that section, once, which links the roadmap, and Known limitations says that it 
 a short list and links each section. A listed title that no design gives fails too
 (R208, DR-220, T162).
 
-Every link in the roadmap, and in each feature page's section, is read from its
-`](` over the whole text, whatever its text holds, and names a heading of its page,
-or a tracked file of this repository by a relative path that stays inside it, with
-a heading of that file when the link names one, and gives no title. The pages give
-no web address, no `@`, no image, no fenced or indented code, and no `owner/repo`
-that is not a tracked file's path from the repository's root, in prose and code
-alike, so that issues and pull requests are named by number alone (R209, DR-221,
-DR-224, T160, T163, T164). They hold printable ASCII and line feeds only, and no
-`<`, `&`, backslash or `]:`, inline code included (R210, T165).
+Every link in the roadmap, in each Markdown file in `docs/backlog/` and in each
+feature page's section, is read from its `](` over the whole text, whatever its text
+holds, and names a heading of its page, or a tracked file of this repository by a
+relative path that stays inside it, with a heading of that file when the link names
+one, and gives no title. The pages give no web address, no `@`, no image, no fenced
+or indented code, no inline code that holds a space or a line break, so that no
+command stands in them, and no `owner/repo` that is not a tracked file's path from
+the repository's root, in prose and code alike, so that issues and pull requests are
+named by number alone (R209, DR-227, DR-228, T160, T163, T164). They hold printable
+ASCII and line feeds only, and no `<`, `&`, backslash or `]:`, inline code included
+(R210, T165).
 
 Each check is shown to fail on a synthetic tree, a git repository so that its
-tracked files can be read, into which the defect is planted.
+tracked files can be read, into which the defect is planted. The tree holds backlog
+items and a roadmap that lists them, so that `tests/test_backlog.py` plants its
+defects into the same tree.
 """
 
 from __future__ import annotations
@@ -62,11 +55,16 @@ ROOT = Path(__file__).resolve().parents[1]
 
 ROADMAP = "docs/roadmap.md"
 SECTIONS = ("Now", "Next", "Later", "Known limitations", "Known bugs")
-MARKED = ("Next", "Later")
-MARKS = ("**Planned.**", "**Open to feedback and contributions.**")
+BACKLOG = "docs/backlog"
+ROADMAP_OPENING = (
+    "The roadmap describes: an item here is neither a promise nor a date, and it is not a "
+    "request to start the work."
+)
 LATER_OPENING = (
-    "Work on an item here starts with an issue on which the owner agrees, and some items "
-    "need a spec, a threat review and the owner's decision first."
+    "Work on an item here that is open to feedback and contributions starts with an issue. "
+    "An item is built only once it is Planned, which only a pull request that the owner "
+    "merges makes it, and some items need a spec, a threat review and the owner's decision "
+    "first."
 )
 SHORT_LIST = "This is a short list."
 FEATURE_SECTION = "Known limitations and the roadmap"
@@ -78,10 +76,12 @@ HEADING = re.compile(r"^(#{1,6}) +(.+?) *$")
 FENCE = re.compile(r"^ *(```|~~~)")
 MISPLACED_HEADING = re.compile(r"^ {1,3}#{1,6}( |$)|^ {0,3}(=+|-+) *$")
 LIST_MARKER = re.compile(r"^ *([-*+]|\d+[.)])( |$)")
-REQUIREMENT_NAME = re.compile(r"\bR\d+\b")
 RECORD_NAME = re.compile(r"\bDR-\d{3}\b")
-THREAT_NAME = re.compile(r"\bT\d+\b")
-TASK_NAME = re.compile(r"\btask (\d+\.\d+) of `([a-z0-9-]+)`")
+# A link to a change's proposal or tasks, from the roadmap's folder.
+BUILD_LINK = re.compile(r"\]\(\.\./openspec/changes/([a-z0-9-]+)/(proposal|tasks)\.md\)")
+# Inline code, over line breaks, as Markdown reads it: a run of backticks to the next
+# run of the same length.
+INLINE_CODE = re.compile(r"(?<!`)(`+)(?!`)(.+?)(?<!`)\1(?!`)", re.S)
 REGISTER_ROW = re.compile(r"^\| (R\d+) \| ", re.M)
 THREAT_HEADING = re.compile(r"^### (T\d+)\. ", re.M)
 RECORD_FILE = re.compile(r"(DR-\d{3})-[a-z0-9-]+\.md")
@@ -250,6 +250,17 @@ def tasks(root: Path) -> dict[tuple[str, str], bool]:
     return found
 
 
+def ends_on_the_build(lines: list[str]) -> bool:
+    """Whether a section's last line, not an item, links one change's proposal and tasks."""
+    last = next((line for line in reversed(lines) if line.strip()), "")
+    if last.startswith("- "):
+        return False
+    linked: dict[str, set[str]] = {}
+    for change, page in BUILD_LINK.findall(last):
+        linked.setdefault(change, set()).add(page)
+    return any(pages == {"proposal", "tasks"} for pages in linked.values())
+
+
 def section_problems(root: Path) -> list[str]:
     roadmap = root / ROADMAP
     problems = []
@@ -271,105 +282,18 @@ def section_problems(root: Path) -> list[str]:
             for number, line in unfenced(text)
             if MISPLACED_HEADING.match(line)
         ]
+        first = next((start for _, start, _ in sections(text)), len(text.split("\n")) + 1)
+        opening = " ".join(line.strip() for line in text.split("\n")[: first - 2])
+        if ROADMAP_OPENING not in opening:
+            problems.append(f"{ROADMAP} does not open with what it says of its items")
+        if "Now" in found and not ends_on_the_build(section_of(text, "Now")[1]):
+            problems.append(
+                f"{ROADMAP}: Now does not end with the line on the build, which links a "
+                "change's proposal and tasks"
+            )
     _, documentation = section_of(read(root / "README.md"), DOCUMENTATION)
     if f"]({ROADMAP})" not in "\n".join(documentation):
         problems.append(f"README.md's list of documentation does not link {ROADMAP}")
-    return problems
-
-
-def form_problems(name: str, start: int, lines: list[str]) -> list[str]:
-    """Under Next and Later: no list item but `- ` at the start of a line, and no line
-    after the first item that is neither an item nor part of one."""
-    problems = []
-    begun = False
-    for offset, line in enumerate(lines):
-        where = f"{ROADMAP}:{start + offset}"
-        if line.startswith("- "):
-            begun = True
-        elif LIST_MARKER.match(line):
-            problems.append(f"{where} gives a list item under {name} in a form other than `- `")
-        elif begun and line.strip() and not line.startswith("  "):
-            problems.append(
-                f"{where} holds a line under {name} that is neither an item nor part of one"
-            )
-    return problems
-
-
-def item_problems(root: Path) -> list[str]:
-    text = read(root / ROADMAP)
-    register = set(REGISTER_ROW.findall(read(root / "docs" / "requirements.md")))
-    threats = set(THREAT_HEADING.findall(read(root / "docs" / "threat-model.md")))
-    held = records(root)
-    listed = tasks(root)
-    problems = []
-    for name in SECTIONS:
-        start, lines = section_of(text, name)
-        if name in MARKED:
-            problems += form_problems(name, start, lines)
-        for item in items(start, lines)[1]:
-            where = f"{ROADMAP}:{item.line}"
-            requirements = REQUIREMENT_NAME.findall(item.text)
-            named = RECORD_NAME.findall(item.text)
-            threat_names = THREAT_NAME.findall(item.text)
-            task_names = [(change, number) for number, change in TASK_NAME.findall(item.text)]
-            if name in MARKED:
-                if not item.text.startswith(tuple(f"- {mark} " for mark in MARKS)):
-                    problems.append(
-                        f"{where} has an item under {name} that opens with neither mark"
-                    )
-                if not (requirements or named or threat_names or task_names):
-                    problems.append(
-                        f"{where} has an item under {name} that names no requirement, record, "
-                        "threat or task"
-                    )
-            problems += [
-                f"{where} names {ident}, which the register does not hold"
-                for ident in requirements
-                if ident not in register
-            ]
-            problems += [
-                f"{where} names {ident}, which docs/decisions/ does not hold"
-                for ident in named
-                if ident not in held
-            ]
-            problems += [
-                f"{where} names {ident}, which the threat model does not hold"
-                for ident in threat_names
-                if ident not in threats
-            ]
-            problems += [
-                f"{where} names task {number} of `{change}`, which no change's tasks.md holds"
-                for change, number in task_names
-                if (change, number) not in listed
-            ]
-            problems += [
-                f"{where} names {ident}, which is closed" for ident in named if held.get(ident)
-            ]
-            if task_names and all(listed.get(task, False) for task in task_names):
-                problems.append(f"{where} names only finished tasks")
-    return problems
-
-
-def later_problems(root: Path) -> list[str]:
-    text = read(root / ROADMAP)
-    start, lines = section_of(text, "Later")
-    opening, found = items(start, lines)
-    problems = []
-    if LATER_OPENING not in " ".join(line.strip() for line in opening):
-        problems.append(f"{ROADMAP}: Later does not open with how work on an item starts")
-    named = {ident for item in found for ident in RECORD_NAME.findall(item.text)}
-    _, unsupported = section_of(read(root / "README.md"), NOT_SUPPORTED)
-    linked = sorted(set(RECORD_NAME.findall("\n".join(unsupported))))
-    if not linked:
-        problems.append(
-            "README.md's list of what the first version does not support links no record"
-        )
-    for ident in linked:
-        if ident not in named:
-            problems.append(
-                f"no item under Later names {ident}, which the README's list of what the "
-                "first version does not support links"
-            )
     return problems
 
 
@@ -446,9 +370,10 @@ def risk_problems(root: Path) -> list[str]:
 
 
 def checked_text(root: Path) -> list[tuple[str, str, int, list[str], str]]:
-    """The text that R209 and R210 hold: the roadmap, and each feature page's section,
-    each with its name, the folder its links resolve from, its first line's number, its
-    lines, and its page's whole text, whose headings its links may name."""
+    """The text that R209 and R210 hold: the roadmap, each feature page's section and
+    each Markdown file in the backlog's folder, each with its name, the folder its links
+    resolve from, its first line's number, its lines, and its page's whole text, whose
+    headings its links may name."""
     found = []
     roadmap = read(root / ROADMAP)
     if roadmap:
@@ -458,6 +383,10 @@ def checked_text(root: Path) -> list[tuple[str, str, int, list[str], str]]:
         start, lines = section_of(text, FEATURE_SECTION)
         if lines:
             found.append((page.relative_to(root).as_posix(), "docs/features", start, lines, text))
+    for page in sorted((root / BACKLOG).glob("*.md")):
+        if page.is_file() and not page.is_symlink():
+            text = read(page)
+            found.append((page.relative_to(root).as_posix(), BACKLOG, 1, text.split("\n"), text))
     return found
 
 
@@ -490,6 +419,12 @@ def link_problems(root: Path) -> list[str]:
                         f"{name}:{start + offset} names {path}, which is not a tracked file of "
                         "this repository"
                     )
+        for code in INLINE_CODE.finditer(text):
+            if " " in code.group(2) or "\n" in code.group(2):
+                number = start + text.count("\n", 0, code.start())
+                problems.append(
+                    f"{name}:{number} holds inline code that holds a space, as a command does"
+                )
         found = list(TARGET.finditer(text))
         if text.count("](") != len(found):
             problems.append(f"{name} holds a link whose target this test cannot read")
@@ -544,8 +479,6 @@ def roadmap_problems(root: Path) -> list[str]:
     return (
         section_problems(root)
         + change_problems(root)
-        + item_problems(root)
-        + later_problems(root)
         + risk_problems(root)
         + link_problems(root)
         + hidden_text_problems(root)
@@ -558,18 +491,75 @@ def test_the_repository_has_no_roadmap_problem() -> None:
 
 def test_the_repository_gives_each_check_something_to_examine() -> None:
     """A check that examined nothing fails."""
-    text = read(ROOT / ROADMAP)
     assert len(risks(ROOT)[0]) > 0
     assert len(feature_pages(ROOT)) > 0
-    assert len(checked_text(ROOT)) == len(feature_pages(ROOT)) + 1
-    _, unsupported = section_of(read(ROOT / "README.md"), NOT_SUPPORTED)
-    assert RECORD_NAME.findall("\n".join(unsupported))
-    for name in MARKED:
-        start, lines = section_of(text, name)
-        assert items(start, lines)[1], f"{name} has no item"
+    backlog = sorted((ROOT / BACKLOG).glob("*.md"))
+    assert len(backlog) > 1
+    assert len(checked_text(ROOT)) == len(feature_pages(ROOT)) + 1 + len(backlog)
 
 
 # A synthetic tree that has no problem. Each test plants one defect into it.
+
+
+def item(
+    number: int,
+    title: str,
+    status: str,
+    brief: str,
+    rests: str = "none",
+    issue: str = "none",
+    pulls: str = "none",
+    changed: str = "2026-01-01",
+    why: str = "",
+) -> str:
+    """A backlog item's text in its form."""
+    text = (
+        f"# B-{number:03d}: {title}\n\n"
+        f"- **Status:** {status}\n"
+        f"- **Last changed:** {changed}\n"
+        f"- **Brief:** {brief}\n"
+        f"- **Rests on:** {rests}\n"
+        f"- **Issue:** {issue}\n"
+        f"- **Pull requests:** {pulls}\n\n"
+        "## Problem\n\nWhy it matters.\n\n"
+        "## What done looks like\n\nWhat holds once it is done.\n\n"
+        "## Postponed points\n\nNone.\n"
+    )
+    return text + (f"\n## Why it was dropped\n\n{why}\n" if why else "")
+
+
+ITEMS = {
+    f"{BACKLOG}/B-001-a-thing.md": item(
+        1, "A thing", "Planned", "A thing to build first.", "R1, task 1.1 of `c`", pulls="7"
+    ),
+    f"{BACKLOG}/B-002-another-thing.md": item(
+        2,
+        "Another thing",
+        "Open to feedback and contributions",
+        "Another thing. It rests on more.",
+        "T1, A1, B-001",
+        issue="3",
+    ),
+    f"{BACKLOG}/B-003-other-agents.md": item(
+        3, "Other agents", "Planned", "Agents other than one.", "DR-003, DR-001"
+    ),
+    f"{BACKLOG}/B-004-a-done-thing.md": item(
+        4, "A done thing", "Done", "It is done.", "task 1.2 of `c`", pulls="5, 6"
+    ),
+    f"{BACKLOG}/B-005-a-dropped-thing.md": item(
+        5, "A dropped thing", "Dropped", "It was dropped.", "R1", why="Nobody needs it."
+    ),
+}
+
+
+def index_line(name: str) -> str:
+    """The roadmap's line for an item of the synthetic tree."""
+    head = ITEMS[name].split("\n")
+    ident, title = head[0][2:].split(": ", 1)
+    status, changed, brief = (line.split(":** ", 1)[1] for line in head[2:5])
+    target = f"backlog/{name.rsplit('/', 1)[1]}"
+    return f"- [{ident}: {title}]({target}) - {status}, last changed {changed}. {brief}"
+
 
 TREE = {
     "README.md": (
@@ -586,6 +576,9 @@ TREE = {
     "docs/threat-model.md": "# Threats\n\n### T1. A threat\n",
     "openspec/specs/thing/spec.md": "# thing\n",
     "openspec/changes/c/tasks.md": "- [ ] 1.1 Do a thing\n- [x] 1.2 Did a thing\n",
+    "openspec/changes/c/proposal.md": "# Proposal\n",
+    "docs/assumptions/README.md": "# Assumptions\n\n- **A1.** An assumption.\n",
+    **ITEMS,
     "openspec/changes/c/design.md": (
         f"# Design\n\n```\n## {RISKS}\n\n- [A fenced risk] \u2192 What.\n```\n\n"
         f"## {RISKS}\n\n- [A risk] \u2192 What.\n- [Another risk] \u2192 What.\n"
@@ -607,15 +600,18 @@ TREE = {
     ),
     ROADMAP: (
         "# Roadmap\n\n"
+        f"{ROADMAP_OPENING} Issues are named by number.\n\n"
         "## Now\n\n"
-        "- The build.\n\n"
+        "What is under way.\n\n"
+        f"{index_line(f'{BACKLOG}/B-001-a-thing.md')}\n\n"
+        "Then the build, by its [proposal](../openspec/changes/c/proposal.md) and "
+        "[tasks](../openspec/changes/c/tasks.md).\n\n"
         "## Next\n\n"
         "What follows.\n\n"
-        "- **Planned.** A thing that rests on R1 and T1, and on task 1.1 of `c`\n"
-        "  and task 2.1 of `old`.\n\n"
+        f"{index_line(f'{BACKLOG}/B-002-another-thing.md')}\n\n"
         "## Later\n\n"
         f"{LATER_OPENING}\n\n"
-        "- **Open to feedback and contributions.** Other agents (DR-003, DR-001).\n\n"
+        f"{index_line(f'{BACKLOG}/B-003-other-agents.md')}\n\n"
         "## Known limitations\n\n"
         f"{SHORT_LIST} Each feature page lists the rest: "
         f"[thing](features/thing.md#{FEATURE_ANCHOR}), and see [Now](#now) and\n"
@@ -668,7 +664,7 @@ def test_a_link_outside_the_list_of_documentation_is_not_counted(tmp_path: Path)
     ("old", "new", "problem"),
     [
         ("## Known bugs\n\nNone yet.\n", "", f"{ROADMAP} has no section Known bugs"),
-        ("## Now\n\n- The build.\n\n", "", f"{ROADMAP} has no section Now"),
+        ("## Now\n\n", "", f"{ROADMAP} has no section Now"),
         (
             "## Known bugs\n",
             "## Questions\n\n## Known bugs\n",
@@ -683,10 +679,10 @@ def test_a_link_outside_the_list_of_documentation_is_not_counted(tmp_path: Path)
         (
             "None yet.\n",
             "None yet.\n\n```\n## Now\n```\n",
-            f"{ROADMAP}:31 holds a fenced code block",
+            f"{ROADMAP}:36 holds a fenced code block",
         ),
-        ("None yet.\n", "None yet.\n\nPromises\n--------\n", f"{ROADMAP}:32 holds a heading"),
-        ("None yet.\n", "None yet.\n\n ## Promises\n", f"{ROADMAP}:31 holds a heading"),
+        ("None yet.\n", "None yet.\n\nPromises\n--------\n", f"{ROADMAP}:37 holds a heading"),
+        ("None yet.\n", "None yet.\n\n ## Promises\n", f"{ROADMAP}:36 holds a heading"),
     ],
 )
 def test_a_section_out_of_form_is_reported(
@@ -696,9 +692,45 @@ def test_a_section_out_of_form_is_reported(
     assert [p for p in found if p.startswith(problem)], found
 
 
+def test_a_roadmap_without_its_opening_is_reported(tmp_path: Path) -> None:
+    root = planted(tmp_path, ROADMAP, f"{ROADMAP_OPENING} ", "")
+    assert section_problems(root) == [f"{ROADMAP} does not open with what it says of its items"]
+
+
+def test_the_opening_must_come_before_the_first_section(tmp_path: Path) -> None:
+    text = TREE[ROADMAP].replace(f"{ROADMAP_OPENING} ", "")
+    text = text.replace("What is under way.", f"What is under way. {ROADMAP_OPENING}")
+    root = make_tree(tmp_path, {ROADMAP: text})
+    assert section_problems(root) == [f"{ROADMAP} does not open with what it says of its items"]
+
+
+NO_BUILD_LINE = (
+    f"{ROADMAP}: Now does not end with the line on the build, which links a change's "
+    "proposal and tasks"
+)
+
+
+@pytest.mark.parametrize(
+    ("old", "new"),
+    [
+        ("Then the build, by its", "- Then the build, by its"),
+        ("[tasks](../openspec/changes/c/tasks.md)", "tasks"),
+        ("[proposal](../openspec/changes/c/proposal.md)", "proposal"),
+        (
+            "[tasks](../openspec/changes/c/tasks.md)",
+            "[tasks](../openspec/changes/old/tasks.md)",
+        ),
+        (".md).\n\n## Next", ".md).\n\nAnd more.\n\n## Next"),
+    ],
+)
+def test_now_without_the_line_on_the_build_is_reported(tmp_path: Path, old: str, new: str) -> None:
+    root = planted(tmp_path, ROADMAP, old, new)
+    assert NO_BUILD_LINE in section_problems(root)
+
+
 def test_sections_out_of_order_are_reported(tmp_path: Path) -> None:
-    text = TREE[ROADMAP].replace("## Now\n\n- The build.\n\n", "")
-    text = text.replace("## Known bugs\n", "## Now\n\n- The build.\n\n## Known bugs\n")
+    now = TREE[ROADMAP][TREE[ROADMAP].index("## Now") : TREE[ROADMAP].index("## Next")]
+    text = TREE[ROADMAP].replace(now, "").replace("## Known bugs\n", f"{now}## Known bugs\n")
     root = make_tree(tmp_path, {ROADMAP: text})
     assert section_problems(root) == [
         f"{ROADMAP} gives its sections out of order: "
@@ -706,153 +738,10 @@ def test_sections_out_of_order_are_reported(tmp_path: Path) -> None:
     ]
 
 
-@pytest.mark.parametrize(
-    ("old", "new", "problem"),
-    [
-        (
-            "- **Planned.** A thing",
-            "- A thing",
-            f"{ROADMAP}:11 has an item under Next that opens with neither mark",
-        ),
-        (
-            "- **Planned.** A thing",
-            "- **Planned** A thing",
-            f"{ROADMAP}:11 has an item under Next that opens with neither mark",
-        ),
-        (
-            "- **Open to feedback and contributions.** Other",
-            "- **Open to contributions.** Other",
-            f"{ROADMAP}:18 has an item under Later that opens with neither mark",
-        ),
-        (
-            "rests on R1 and T1, and on task 1.1 of `c`\n  and task 2.1 of `old`.",
-            "rests on nothing.",
-            f"{ROADMAP}:11 has an item under Next that names no requirement, record, threat "
-            "or task",
-        ),
-        (
-            "rests on R1 and",
-            "rests on R9 and",
-            f"{ROADMAP}:11 names R9, which the register does not hold",
-        ),
-        (
-            "and T1, and",
-            "and T9, and",
-            f"{ROADMAP}:11 names T9, which the threat model does not hold",
-        ),
-        (
-            "(DR-003, DR-001)",
-            "(DR-003, DR-009)",
-            f"{ROADMAP}:18 names DR-009, which docs/decisions/ does not hold",
-        ),
-        (
-            "task 1.1 of `c`",
-            "task 9.9 of `c`",
-            f"{ROADMAP}:11 names task 9.9 of `c`, which no change's tasks.md holds",
-        ),
-        (
-            "task 1.1 of `c`",
-            "task 1.1 of `none`",
-            f"{ROADMAP}:11 names task 1.1 of `none`, which no change's tasks.md holds",
-        ),
-        (
-            "and task 2.1 of `old`.",
-            "and task 2.1 of `old`, as R8 says.",
-            f"{ROADMAP}:11 names R8, which the register does not hold",
-        ),
-        ("(DR-003, DR-001)", "(DR-003, DR-002)", f"{ROADMAP}:18 names DR-002, which is closed"),
-        ("task 1.1 of `c`", "task 1.2 of `c`", f"{ROADMAP}:11 names only finished tasks"),
-        (
-            "- The build.",
-            "- The build, which R99 holds.",
-            f"{ROADMAP}:5 names R99, which the register does not hold",
-        ),
-        (
-            "None yet.",
-            "- A bug that DR-002 records.",
-            f"{ROADMAP}:29 names DR-002, which is closed",
-        ),
-        (
-            "\n\n## Later",
-            "\n* Another thing.\n\n## Later",
-            f"{ROADMAP}:13 gives a list item under Next in a form other than `- `",
-        ),
-        (
-            "\n\n## Later",
-            "\n1. Another thing.\n\n## Later",
-            f"{ROADMAP}:13 gives a list item under Next in a form other than `- `",
-        ),
-        (
-            "\n\n## Later",
-            "\n - Another thing.\n\n## Later",
-            f"{ROADMAP}:13 gives a list item under Next in a form other than `- `",
-        ),
-        (
-            "\n\n## Later",
-            "\n  - Another thing.\n\n## Later",
-            f"{ROADMAP}:13 gives a list item under Next in a form other than `- `",
-        ),
-        (
-            "\n\n## Later",
-            "\nAnother thing, as DR-001 says.\n\n## Later",
-            f"{ROADMAP}:13 holds a line under Next that is neither an item nor part of one",
-        ),
-    ],
-)
-def test_an_item_out_of_form_is_reported(tmp_path: Path, old: str, new: str, problem: str) -> None:
-    assert item_problems(planted(tmp_path, ROADMAP, old, new)) == [problem]
-
-
-def test_an_item_under_now_needs_no_mark_or_anchor(tmp_path: Path) -> None:
-    root = planted(tmp_path, ROADMAP, "- The build.", "- The build, in its own pull requests.")
-    assert item_problems(root) == []
-
-
 def test_two_changes_of_one_name_are_reported(tmp_path: Path) -> None:
     root = make_tree(tmp_path, {"openspec/changes/old/tasks.md": "- [ ] 2.1 Do it again\n"})
     assert change_problems(root) == [
         "two changes are named `old`, so a task cannot be named by its change"
-    ]
-
-
-def test_later_without_its_opening_is_reported(tmp_path: Path) -> None:
-    root = planted(tmp_path, ROADMAP, f"{LATER_OPENING}\n\n", "")
-    assert later_problems(root) == [
-        f"{ROADMAP}: Later does not open with how work on an item starts"
-    ]
-
-
-def test_the_opening_must_come_before_the_first_item(tmp_path: Path) -> None:
-    text = TREE[ROADMAP].replace(f"{LATER_OPENING}\n\n", "")
-    text = text.replace("(DR-003, DR-001).\n", f"(DR-003, DR-001).\n\n{LATER_OPENING}\n")
-    assert later_problems(make_tree(tmp_path, {ROADMAP: text})) == [
-        f"{ROADMAP}: Later does not open with how work on an item starts"
-    ]
-
-
-def test_a_record_the_readme_leaves_out_and_later_does_not_name_is_reported(
-    tmp_path: Path,
-) -> None:
-    root = planted(tmp_path, ROADMAP, "(DR-003, DR-001)", "(DR-001)")
-    assert later_problems(root) == [
-        "no item under Later names DR-003, which the README's list of what the first "
-        "version does not support links"
-    ]
-
-
-def test_a_record_named_only_under_next_does_not_count_for_later(tmp_path: Path) -> None:
-    text = TREE[ROADMAP].replace("(DR-003, DR-001)", "(DR-001)")
-    text = text.replace("rests on R1 and", "rests on DR-003, R1 and")
-    assert later_problems(make_tree(tmp_path, {ROADMAP: text})) == [
-        "no item under Later names DR-003, which the README's list of what the first "
-        "version does not support links"
-    ]
-
-
-def test_a_readme_whose_list_links_no_record_is_reported(tmp_path: Path) -> None:
-    root = planted(tmp_path, "README.md", f"## {NOT_SUPPORTED}", "## Not supported yet")
-    assert later_problems(root) == [
-        "README.md's list of what the first version does not support links no record"
     ]
 
 
@@ -987,6 +876,9 @@ LINKS_ELSEWHERE = [
     ('[Now](#now "a title")', "holds a link with a title"),
     ('[Now](#now\n"a title")', "holds a link with a title"),
     ("[a page](features/thing.md", "holds a link whose target this test cannot read"),
+    ("`git config --global pr-cost.capture true`", "holds inline code that holds a space"),
+    ("``a ` b``", "holds inline code that holds a space"),
+    ("`git\nconfig`", "holds inline code that holds a space"),
     ("    pip install something", "holds indented code"),
     ("```", "holds a fenced code block"),
 ]
@@ -1011,14 +903,35 @@ def test_a_link_elsewhere_in_a_feature_section_is_reported(
     assert [p for p in found if p.startswith(FEATURE) and problem in p], found
 
 
+ITEM = f"{BACKLOG}/B-001-a-thing.md"
+
+
+@pytest.mark.parametrize(("new", "problem"), LINKS_ELSEWHERE)
+def test_a_link_elsewhere_in_a_backlog_item_is_reported(
+    tmp_path: Path, new: str, problem: str
+) -> None:
+    new = new.replace("](features/", "](../features/").replace("](roadmap.md", "](../roadmap.md")
+    new = new.replace("](%2e%2e/%2e%2e/x", "](%2e%2e/%2e%2e/%2e%2e/x")
+    problem = problem.replace("features/", "../features/")
+    problem = problem.replace("%2e%2e/%2e%2e/x", "%2e%2e/%2e%2e/%2e%2e/x")
+    found = link_problems(planted(tmp_path, ITEM, "Why it matters.", new))
+    assert [p for p in found if p.startswith(ITEM) and problem in p], found
+
+
+def test_the_backlog_page_is_held_too(tmp_path: Path) -> None:
+    page = f"{BACKLOG}/README.md"
+    root = make_tree(tmp_path, {page: "# Backlog\n\nSee [the roadmap](../roadmap.md) and a@b.\n"})
+    assert link_problems(root) == [f"{page}:3 holds @, which GitHub turns into a link or a mention"]
+
+
 def test_a_link_reports_the_line_its_target_stands_on(tmp_path: Path) -> None:
     root = planted(tmp_path, ROADMAP, "None yet.", "None\n[yet](../../../issues/15).")
     assert link_problems(root) == [
-        f"{ROADMAP}:30 links to ../../../issues/15, which leaves the repository"
+        f"{ROADMAP}:35 links to ../../../issues/15, which leaves the repository"
     ]
 
 
-HIDDEN = [
+HIDDEN_TEXT = [
     ("A\u200bB", "holds U+200B"),
     ("A\u202eB", "holds U+202E"),
     ("A\rB", "holds U+000D"),
@@ -1031,13 +944,13 @@ HIDDEN = [
 ]
 
 
-@pytest.mark.parametrize(("new", "problem"), HIDDEN)
+@pytest.mark.parametrize(("new", "problem"), HIDDEN_TEXT)
 def test_hidden_text_in_the_roadmap_is_reported(tmp_path: Path, new: str, problem: str) -> None:
     found = hidden_text_problems(planted(tmp_path, ROADMAP, "None yet.", new))
-    assert f"{ROADMAP}:29 {problem}" in [p[: len(ROADMAP) + 4 + len(problem)] for p in found], found
+    assert f"{ROADMAP}:34 {problem}" in [p[: len(ROADMAP) + 4 + len(problem)] for p in found], found
 
 
-@pytest.mark.parametrize(("new", "problem"), HIDDEN)
+@pytest.mark.parametrize(("new", "problem"), HIDDEN_TEXT)
 def test_hidden_text_in_a_feature_section_is_reported(
     tmp_path: Path, new: str, problem: str
 ) -> None:
@@ -1049,3 +962,9 @@ def test_hidden_text_in_a_feature_section_is_reported(
 def test_text_outside_the_feature_section_is_not_held(tmp_path: Path) -> None:
     root = make_tree(tmp_path)
     assert hidden_text_problems(root) == [] and link_problems(root) == []
+
+
+@pytest.mark.parametrize(("new", "problem"), HIDDEN_TEXT)
+def test_hidden_text_in_a_backlog_item_is_reported(tmp_path: Path, new: str, problem: str) -> None:
+    found = hidden_text_problems(planted(tmp_path, ITEM, "Why it matters.", new))
+    assert f"{ITEM}:12 {problem}" in [p[: len(ITEM) + 4 + len(problem)] for p in found], found
