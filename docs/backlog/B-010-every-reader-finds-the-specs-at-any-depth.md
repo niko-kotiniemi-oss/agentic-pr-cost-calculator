@@ -17,4 +17,4 @@ Every test and script that reads the specs finds them as the test of the specs' 
 
 ## Postponed points
 
-- From the threat review at implementation of pull request 17, and the answer to its simplify review, as issue 19 gives them.
+- From the threat review at implementation of pull request 17, and the answer to its simplify review: the documentation test names a spec by the folder that holds it, the threat model's and the assumptions' tests read specs one folder down only, and the glossary's and the records' tests find a commit's specs by a pattern that matches one folder down only.

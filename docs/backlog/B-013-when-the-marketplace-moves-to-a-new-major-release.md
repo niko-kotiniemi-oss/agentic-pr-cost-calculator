@@ -17,4 +17,4 @@ The README and each major release's notes say when the marketplace moves to that
 
 ## Postponed points
 
-- From the threat review at design of pull request 22 (its threat 10), as issue 23 gives it.
+- From the threat review at design of pull request 22 (its threat 10): whether the pull request that moves the marketplace to a new major release comes as soon as that release is published, or only after a time that the release's notes state.

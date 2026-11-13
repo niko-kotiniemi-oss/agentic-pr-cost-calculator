@@ -44,7 +44,6 @@ import os
 import posixpath
 import re
 import subprocess
-from dataclasses import dataclass, replace
 from pathlib import Path
 from urllib.parse import unquote
 
@@ -113,12 +112,6 @@ GIT_ENVIRONMENT = {
 }
 
 
-@dataclass(frozen=True)
-class Item:
-    line: int
-    text: str
-
-
 def session_free_environment() -> dict[str, str]:
     """The environment with no git variable of the session's, such as an index file,
     that would make git read another repository than the one it runs in."""
@@ -180,20 +173,6 @@ def section_of(text: str, name: str) -> tuple[int, list[str]]:
     return 0, []
 
 
-def items(start: int, lines: list[str]) -> tuple[list[str], list[Item]]:
-    """A section's opening lines, before its first item, and its items."""
-    opening: list[str] = []
-    found: list[Item] = []
-    for offset, line in enumerate(lines):
-        if line.startswith("- "):
-            found.append(Item(start + offset, line))
-        elif found and line.startswith("  ") and line.strip():
-            found[-1] = replace(found[-1], text=f"{found[-1].text}\n{line.strip()}")
-        elif not found:
-            opening.append(line)
-    return opening, found
-
-
 def slug(heading: str) -> str:
     text = heading.replace("`", "").lower()
     text = re.sub(r"[^a-z0-9 _-]", "", text)
@@ -251,6 +230,14 @@ def tasks(root: Path) -> dict[tuple[str, str], bool]:
         for tick, number in TASK_LINE.findall(read(path / "tasks.md")):
             found[(name, number)] = tick != " "
     return found
+
+
+def padless(code: str) -> str:
+    """Inline code as Markdown shows it: one space stripped from each end, when both
+    ends have one and the code is not all spaces."""
+    if len(code) > 2 and code[0] == code[-1] == " " and code.strip():
+        return code[1:-1]
+    return code
 
 
 def ends_on_the_build(lines: list[str]) -> bool:
@@ -424,7 +411,7 @@ def link_problems(root: Path) -> list[str]:
                         "this repository"
                     )
         for code in INLINE_CODE.finditer(text):
-            if " " in code.group(2) or "\n" in code.group(2):
+            if " " in padless(code.group(2)) or "\n" in code.group(2):
                 number = start + text.count("\n", 0, code.start())
                 problems.append(
                     f"{name}:{number} holds inline code that holds a space, as a command does"
@@ -930,6 +917,11 @@ def test_the_backlog_page_is_held_too(tmp_path: Path) -> None:
     page = f"{BACKLOG}/README.md"
     root = make_tree(tmp_path, {page: "# Backlog\n\nSee [the roadmap](../roadmap.md) and a@b.\n"})
     assert link_problems(root) == [f"{page}:3 holds @, which GitHub turns into a link or a mention"]
+
+
+def test_padding_that_markdown_strips_from_inline_code_is_no_space(tmp_path: Path) -> None:
+    root = planted(tmp_path, ROADMAP, "None yet.", "A backtick, `` ` ``, and ` x `.")
+    assert link_problems(root) == []
 
 
 def test_a_link_reports_the_line_its_target_stands_on(tmp_path: Path) -> None:

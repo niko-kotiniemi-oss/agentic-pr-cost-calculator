@@ -1,6 +1,6 @@
 # Backlog
 
-Planned work, one item to a file. The [roadmap](../roadmap.md) is their index, in the order of the work, and the README's [briefing on how work flows](../../README.md#working-on-this-repository) says where an item stands among the stages of the work.
+Work that is proposed or planned, one item to a file. The [roadmap](../roadmap.md) is their index, in the order of the work, and the README's [briefing on how work flows](../../README.md#working-on-this-repository) says where an item stands among the stages of the work.
 
 An item describes: it is neither a promise nor a date, and it is not a request to start the work. An agent starts work on an item only when the person it works for asks for it, and an item is built only while the default branch gives its status as Planned or In progress.
 

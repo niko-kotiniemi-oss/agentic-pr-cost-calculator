@@ -17,4 +17,4 @@ The check is run on Windows, and assumption A5 says what it showed. If a project
 
 ## Postponed points
 
-- From the security review of pull request 13 (its finding 1), as issue 15 gives it.
+- From the security review of pull request 13 (its finding 1): whether a project's Claude Code settings can set the three Windows variables that name the home folder, checked by setting them in a trusted folder's settings and seeing whether Claude Code ignores them or a hook sees their values.

@@ -49,7 +49,7 @@ The tool runs on Python 3.11 and every later release, with the standard library 
 
 ## Working on this repository
 
-Anyone may open an issue to propose a change, ask a question or report a bug, with no approval needed. An issue is public as soon as it is opened, so it holds nothing private, and a security problem goes to [`SECURITY.md`](SECURITY.md) instead. What an issue proposes is neither planned nor committed to. Planned work is kept as backlog items, so that the repository's history holds every agreement. A backlog item changes only through a pull request that the owner merges.
+Anyone may open an issue to propose a change, ask a question or report a bug, with no approval needed. An issue is public as soon as it is opened, so it holds nothing private, and a security problem goes to [`SECURITY.md`](SECURITY.md) instead. What an issue proposes is neither planned nor committed to. Proposed and planned work is kept as backlog items, so that the repository's history holds every agreement. A backlog item changes only through a pull request that the owner merges.
 
 The work moves through these stages, each kept where the table says:
 

@@ -17,4 +17,4 @@ A ledger line whose model name is well formed but missing from the report's pric
 
 ## Postponed points
 
-- From the threat review at design of pull request 22 (its threat 10), as issue 24 gives it.
+- From the threat review at design of pull request 22 (its threat 10): counting a line whose model the report's price table does not list, in tokens and not in cost, instead of refusing it, once a threat model says what makes a model name well formed.

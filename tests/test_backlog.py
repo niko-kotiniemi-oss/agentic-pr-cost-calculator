@@ -18,7 +18,8 @@ done names a pull request, and a dropped item has its section on why (R207, DR-2
 Rests on names requirements, records, threats, assumptions, other items and tasks,
 each of which exists, in active and archived changes alike; no item names a closed
 record, and an item that is neither done nor dropped names no tasks that are all
-ticked, which would make it stale (R215, T161).
+ticked, which would make it stale (R215, T161). Every ID that the roadmap names, in any
+section, exists too (T161).
 
 Now, Next and Later give one line for each item that is open to feedback and
 contributions, planned or in progress, and none for one that is done or dropped,
@@ -78,6 +79,7 @@ from test_roadmap import (
     TARGET,
     THREAT_HEADING,
     TREE,
+    index_line,
     make_tree,
     read,
     records,
@@ -86,6 +88,9 @@ from test_roadmap import (
     session_free_environment,
     tasks,
     tracked,
+)
+from test_roadmap import (
+    item as item_text,
 )
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -125,7 +130,8 @@ ITEM_FILE = re.compile(r"B-(\d{3})-[a-z0-9]+(?:-[a-z0-9]+)*\.md")
 ITEM_HEADING = re.compile(r"# (B-\d{3}): (\S.*)")
 FIELD = re.compile(r"- \*\*([^*]+):\*\* (.*)")
 DATE = re.compile(r"\d{4}-\d{2}-\d{2}")
-SENTENCE_END = re.compile(r"[.?!](?= |$)")
+SENTENCE_END = re.compile(r"[.?!][)\"']*(?= |$)")
+CLOSING = ")\"'"
 REST = re.compile(r"R\d+|DR-\d{3}|T\d+|A\d+|B-\d{3}|task (\d+\.\d+) of `([a-z0-9-]+)`")
 ISSUE = re.compile(r"none|[1-9]\d*")
 PULLS = re.compile(r"none|[1-9]\d*(?:, [1-9]\d*)*")
@@ -133,6 +139,7 @@ INDEX_LINE = re.compile(
     r"- \[(B-\d{3}): (.+?)\]\(backlog/(B-\d{3}-[a-z0-9-]+\.md)\) - (.+?), "
     r"last changed (\S+)\. (.+)"
 )
+ID = re.compile(r"\b(?:DR-\d{3}|B-\d{3}|R\d+|T\d+|A\d+)\b")
 ASSUMPTION = re.compile(r"^- \*\*(A\d+)\.\*\* ", re.M)
 AUTHOR = {
     "GIT_AUTHOR_NAME": "Test",
@@ -192,7 +199,7 @@ def backlog_items(root: Path) -> list[Item]:
 
 
 def sentences(text: str) -> int:
-    return len(SENTENCE_END.findall(text)) if text[-1:] in ".?!" else 0
+    return len(SENTENCE_END.findall(text)) if text.rstrip(CLOSING)[-1:] in ".?!" else 0
 
 
 def folder_problems(root: Path) -> list[str]:
@@ -216,6 +223,7 @@ def folder_problems(root: Path) -> list[str]:
         for number in sorted(set(numbers))
         if numbers.count(number) > 1
     ]
+    problems += [f"{BACKLOG} gives B-000, below B-001" for number in numbers if number == 0]
     problems += [
         f"{BACKLOG} has no B-{number:03d}, so its numbers have a gap"
         for number in range(1, max(numbers, default=0) + 1)
@@ -313,16 +321,33 @@ def status_problems(root: Path) -> list[str]:
     return problems
 
 
+def holders(root: Path) -> dict[str, tuple[set[str], str]]:
+    """Each kind of ID, by its prefix, with the IDs that exist and where they are held."""
+    files = (
+        ("R", REGISTER_ROW, "docs/requirements.md", "the register"),
+        ("T", THREAT_HEADING, "docs/threat-model.md", "the threat model"),
+        ("A", ASSUMPTION, "docs/assumptions/README.md", "docs/assumptions/"),
+    )
+    found = {
+        prefix: (set(pattern.findall(read(root / path))), holder)
+        for prefix, pattern, path, holder in files
+    }
+    found["DR-"] = (set(records(root)), "docs/decisions/")
+    found["B-"] = ({item.ident for item in backlog_items(root)}, BACKLOG)
+    return found
+
+
+def holder_of(name: str, held: dict[str, tuple[set[str], str]]) -> tuple[set[str], str]:
+    prefix = name[:3] if name.startswith("DR-") else name[:2] if name[1] == "-" else name[0]
+    return held[prefix]
+
+
 def name_problems(root: Path) -> list[str]:
-    register = set(REGISTER_ROW.findall(read(root / "docs" / "requirements.md")))
-    threats = set(THREAT_HEADING.findall(read(root / "docs" / "threat-model.md")))
-    assumptions = set(ASSUMPTION.findall(read(root / "docs" / "assumptions" / "README.md")))
-    held = records(root)
+    held = holders(root)
+    closed = records(root)
     listed = tasks(root)
-    items = backlog_items(root)
-    idents = {item.ident for item in items}
     problems = []
-    for item in items:
+    for item in backlog_items(root):
         named_tasks = []
         for name in item.rests:
             form = REST.fullmatch(name)
@@ -333,20 +358,10 @@ def name_problems(root: Path) -> list[str]:
                 if named_tasks[-1] not in listed:
                     problems.append(f"{item.path} names {name}, which no change's tasks.md holds")
                 continue
-            kind, holder = (
-                (held, "docs/decisions/")
-                if name.startswith("DR-")
-                else (idents, BACKLOG)
-                if name.startswith("B-")
-                else (register, "the register")
-                if name.startswith("R")
-                else (threats, "the threat model")
-                if name.startswith("T")
-                else (assumptions, "docs/assumptions/")
-            )
-            if name not in kind:
+            idents, holder = holder_of(name, held)
+            if name not in idents:
                 problems.append(f"{item.path} names {name}, which {holder} does not hold")
-            elif name.startswith("DR-") and held[name]:
+            elif closed.get(name):
                 problems.append(f"{item.path} names {name}, which is closed")
         if (
             item.status not in (DONE, DROPPED)
@@ -354,6 +369,18 @@ def name_problems(root: Path) -> list[str]:
             and all(listed.get(task, False) for task in named_tasks)
         ):
             problems.append(f"{item.path} is {item.status} and names only finished tasks")
+    return problems
+
+
+def roadmap_name_problems(root: Path) -> list[str]:
+    """Every ID that the roadmap names, in any section, exists (T161)."""
+    held = holders(root)
+    problems = []
+    for number, line in enumerate(read(root / ROADMAP).split("\n"), 1):
+        for name in ID.findall(line):
+            idents, holder = holder_of(name, held)
+            if name not in idents:
+                problems.append(f"{ROADMAP}:{number} names {name}, which {holder} does not hold")
     return problems
 
 
@@ -379,7 +406,8 @@ def index_lines(root: Path) -> tuple[list[Line], list[str]]:
         if name == "Now":
             # The line on the build closes Now, and the roadmap's test holds it.
             last = max((i for i, line in enumerate(lines) if line.strip()), default=-1)
-            lines = [line if i != last else "" for i, line in enumerate(lines)]
+            if last >= 0 and not lines[last].startswith("- "):
+                lines = [line if i != last else "" for i, line in enumerate(lines)]
         begun = False
         for offset, line in enumerate(lines):
             where = f"{ROADMAP}:{start + offset}"
@@ -637,6 +665,7 @@ def backlog_problems(root: Path) -> list[str]:
         form_problems(root)
         + status_problems(root)
         + name_problems(root)
+        + roadmap_name_problems(root)
         + index_problems(root)
         + later_problems(root)
         + page_problems(root)
@@ -738,6 +767,11 @@ FORM = [
     ("2026-01-01", "2026-02-30", "gives '2026-02-30' in Last changed, which is not a date"),
     ("A thing to build first.", "A thing. To. Build. First.", "gives a brief that is not one"),
     ("A thing to build first.", "A thing to build first", "gives a brief that is not one"),
+    (
+        "A thing to build first.",
+        'A thing (built first.) And more (later.) Again "so." Not.',
+        "gives a brief",
+    ),
     ("R1, task 1.1 of `c`", "R1 and task 1.1 of `c`", "gives Rests on in a form other"),
     ("R1, task 1.1 of `c`", "R1,task 1.1 of `c`", "gives Rests on in a form other"),
     ("R1, task 1.1 of `c`", "", "gives Rests on in a form other"),
@@ -764,6 +798,14 @@ def test_an_item_out_of_form_is_reported(tmp_path: Path, old: str, new: str, pro
     assert [p for p in found if p.startswith(ITEM) and problem in p], found
 
 
+@pytest.mark.parametrize(
+    "brief", ["A thing (to build first.)", 'A thing "to build first."', "Why? Because. So!"]
+)
+def test_a_brief_whose_stop_stands_inside_a_closing_mark_passes(tmp_path: Path, brief: str) -> None:
+    root = build(tmp_path, {ITEM: WHOLE[ITEM].replace("A thing to build first.", brief)})
+    assert [p for p in form_problems(root) if "brief" in p] == []
+
+
 def test_a_dropped_item_may_say_why(tmp_path: Path) -> None:
     root = plant(tmp_path, DROPPED_ITEM, f"## {WHY}", f"## {WHY}")
     assert form_problems(root) == [] and status_problems(root) == []
@@ -778,6 +820,7 @@ def test_a_dropped_item_may_say_why(tmp_path: Path) -> None:
         ({f"{BACKLOG}/sub/README.md": "x\n"}, f"{BACKLOG}/sub is a folder"),
         ({f"{BACKLOG}/B-007-x.md": WHOLE[ITEM]}, f"{BACKLOG} has no B-006, so its numbers"),
         ({f"{BACKLOG}/B-005-again.md": WHOLE[ITEM]}, f"{BACKLOG} gives B-005 more than once"),
+        ({f"{BACKLOG}/B-000-zero.md": WHOLE[ITEM]}, f"{BACKLOG} gives B-000, below B-001"),
     ],
 )
 def test_the_folder_out_of_form_is_reported(
@@ -904,9 +947,36 @@ def test_a_line_that_differs_from_its_item_is_reported(
     assert [p for p in found if p.startswith(f"{ROADMAP}{problem}")], found
 
 
-def test_a_line_on_the_build_is_not_read_as_an_item(tmp_path: Path) -> None:
-    root = plant(tmp_path, ROADMAP, "Then the build", "- Then the build")
+def test_now_without_its_line_on_the_build_still_reads_its_last_item(tmp_path: Path) -> None:
+    build_line = next(
+        line for line in WHOLE[ROADMAP].split("\n") if line.startswith("Then the build")
+    )
+    root = plant(tmp_path, ROADMAP, f"{build_line}\n\n", "")
     assert index_problems(root) == []
+    text = WHOLE[ROADMAP].replace(f"{build_line}\n\n", "").replace("first.\n", "first!\n", 1)
+    root = build(tmp_path / "other", {ROADMAP: text})
+    assert index_problems(root) == [f"{ROADMAP}:9 gives a brief that differs from its item's"]
+
+
+def test_the_roadmap_names_only_what_exists(tmp_path: Path) -> None:
+    root = plant(tmp_path, ROADMAP, "None yet.", "- A bug that R99, DR-009, T9, A9 and B-009 hold.")
+    assert roadmap_name_problems(root) == [
+        f"{ROADMAP}:34 names R99, which the register does not hold",
+        f"{ROADMAP}:34 names DR-009, which docs/decisions/ does not hold",
+        f"{ROADMAP}:34 names T9, which the threat model does not hold",
+        f"{ROADMAP}:34 names A9, which docs/assumptions/ does not hold",
+        f"{ROADMAP}:34 names B-009, which {BACKLOG} does not hold",
+    ]
+
+
+def test_the_roadmap_names_what_exists(tmp_path: Path) -> None:
+    root = plant(tmp_path, ROADMAP, "None yet.", "A bug that R1, DR-001, T1, A1 and B-005 hold.")
+    assert roadmap_name_problems(root) == []
+
+
+def test_a_line_on_the_build_written_as_an_item_is_reported(tmp_path: Path) -> None:
+    root = plant(tmp_path, ROADMAP, "Then the build", "- Then the build")
+    assert index_problems(root) == [f"{ROADMAP}:11 is not a line of the index, as an item gives it"]
 
 
 def test_an_open_item_missing_or_listed_twice_is_reported(tmp_path: Path) -> None:
@@ -925,13 +995,8 @@ def test_an_open_item_missing_or_listed_twice_is_reported(tmp_path: Path) -> Non
     "name", [f"{BACKLOG}/B-004-a-done-thing.md", f"{BACKLOG}/B-005-a-dropped-thing.md"]
 )
 def test_a_done_or_dropped_item_still_listed_is_reported(tmp_path: Path, name: str) -> None:
-    head = WHOLE[name].split("\n")
-    ident, title = head[0][2:].split(": ", 1)
-    status, changed, brief = (line.split(":** ", 1)[1] for line in head[2:5])
-    line = (
-        f"- [{ident}: {title}](backlog/{name.rsplit('/', 1)[1]}) - {status}, "
-        f"last changed {changed}. {brief}"
-    )
+    status = DONE if "done" in name else DROPPED
+    line = index_line(name)
     root = plant(tmp_path, ROADMAP, "What follows.\n", f"What follows.\n\n{line}\n")
     assert index_problems(root) == [f"{name} is {status} and is still listed"]
 
@@ -1186,7 +1251,7 @@ def test_a_date_after_the_day_of_the_run_is_reported(tmp_path: Path) -> None:
 
 @pytest.mark.parametrize("status", [IN_PROGRESS, DONE, DROPPED])
 def test_an_item_added_past_agreement_is_reported(tmp_path: Path, status: str) -> None:
-    text = item_text(6, "A new thing", status)
+    text = item_text(6, "A new thing", status, "It is new.")
     root = with_base(tmp_path, {f"{BACKLOG}/B-006-a-new-thing.md": text})
     assert compared(root) == [
         f"{BACKLOG}/B-006-a-new-thing.md was added as {status}, where an item is added only "
@@ -1196,7 +1261,7 @@ def test_an_item_added_past_agreement_is_reported(tmp_path: Path, status: str) -
 
 @pytest.mark.parametrize("status", [OPEN, PLANNED])
 def test_an_item_added_open_or_planned_passes(tmp_path: Path, status: str) -> None:
-    text = item_text(6, "A new thing", status)
+    text = item_text(6, "A new thing", status, "It is new.")
     assert compared(with_base(tmp_path, {f"{BACKLOG}/B-006-a-new-thing.md": text})) == []
 
 
@@ -1239,11 +1304,3 @@ def test_no_base_that_holds_the_backlog_examines_nothing(tmp_path: Path) -> None
     assert compared(tmp_path) == [
         f"{ITEM}, which a base commit holds, was removed, renamed or moved"
     ]
-
-
-def item_text(number: int, title: str, status: str) -> str:
-    return (
-        WHOLE[ITEM]
-        .replace("# B-001: A thing", f"# B-{number:03d}: {title}")
-        .replace("**Status:** Planned", f"**Status:** {status}")
-    )
