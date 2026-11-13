@@ -562,7 +562,7 @@ def briefing_problems(root: Path) -> list[str]:
             f"{name}:{number} gives the header of the README's table of stages, "
             "whose one home is the README"
             for number, line in enumerate(read(root / name).split("\n"), 1)
-            if line.startswith("|") and cells(line) == list(COLUMNS)
+            if "|" in line and cells(line.lstrip(" >")) == list(COLUMNS)
         ]
     problems += [
         f"{name} does not link the README's section {WORKING}"
@@ -1084,6 +1084,18 @@ def test_a_readme_without_the_section_is_reported(tmp_path: Path) -> None:
 def test_a_second_copy_of_the_table_is_reported(tmp_path: Path) -> None:
     table = f"| {' | '.join(COLUMNS)} |"
     root = build(tmp_path, {"docs/other.md": f"# Other\n\n{table.replace(' | ', '|')}\n"})
+    assert briefing_problems(root) == [
+        "docs/other.md:3 gives the header of the README's table of stages, whose one home is "
+        "the README"
+    ]
+
+
+@pytest.mark.parametrize(
+    "header",
+    [" | ".join(COLUMNS), f"   | {' | '.join(COLUMNS)} |", f"> | {' | '.join(COLUMNS)} |"],
+)
+def test_a_copy_of_the_header_in_another_form_is_reported(tmp_path: Path, header: str) -> None:
+    root = build(tmp_path, {"docs/other.md": f"# Other\n\n{header}\n"})
     assert briefing_problems(root) == [
         "docs/other.md:3 gives the header of the README's table of stages, whose one home is "
         "the README"

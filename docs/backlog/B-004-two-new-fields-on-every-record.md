@@ -17,5 +17,5 @@ A record replaces DR-121 with a rule that lets one change add a field to every r
 
 ## Postponed points
 
-- From a review of the records' checks (its findings V7.3 and V7.10): a check that a record's Decided by date is not before the repository's first commit, and a check of a new record's file mode.
+- From earlier reviews of the records' checks: a check that a record's Decided by date is not before the repository's first commit, and a check of a new record's file mode.
 - From the threat model (T76): how to recover when two records with one number reach the default branch anyway, which the owner decides.

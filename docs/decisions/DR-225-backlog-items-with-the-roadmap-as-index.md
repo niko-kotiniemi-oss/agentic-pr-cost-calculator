@@ -27,7 +27,7 @@ The roadmap, `docs/roadmap.md`, keeps the sections that DR-218 gave it, Now, Nex
 ## Consequences
 
 - Tests fail when a line under Now, Next or Later differs from its item, when an open item is missing or listed twice, when a done or dropped item is listed, when an item under Now is not agreed, and when an item listed under Next or Later rests on nothing (R206, R213).
-- Tests fail when an item is out of form (R211), names an ID that does not exist, or is open and names a closed record or tasks that are all ticked (R215), and when it is changed without a later date than the base commit gives it, or is removed or renamed (R216, T161).
+- Tests fail when an item is out of form (R211), names an ID that does not exist or a closed record, as R127 asks of every page outside the history, or is open and names tasks that are all ticked (R215), and when it is changed without a later date than the base commit gives it, or is removed or renamed (R216, T161).
 - The items under Now are written for public readers from the owner's planning notes, which keep only what is private and point to the items for the rest, so that the items hold no private text (T167).
 - Tests fail when the roadmap or the backlog's page does not say that an item describes and is neither a promise nor a date, and when the page does not say what each status means (R206, R217, T161).
 - DR-218's last section named DR-219, DR-220 and DR-221 to be revisited: DR-219 and DR-221 are closed by DR-226 and DR-227, and DR-220 still holds as it stands, since which risks the roadmap lists does not change.

@@ -2,7 +2,7 @@
 
 Planned work, one item to a file. The [roadmap](../roadmap.md) is their index, in the order of the work, and the README's [briefing on how work flows](../../README.md#working-on-this-repository) says where an item stands among the stages of the work.
 
-An item describes: it is neither a promise nor a date, and it is not a request to start the work. Work on an item starts only when someone asks for it, and an item is built only while the default branch gives its status as Planned or In progress.
+An item describes: it is neither a promise nor a date, and it is not a request to start the work. An agent starts work on an item only when the person it works for asks for it, and an item is built only while the default branch gives its status as Planned or In progress.
 
 ## An item's form
 
@@ -32,4 +32,4 @@ Its sections follow, in this order:
 
 An item becomes planned only through a pull request that the owner merges. An issue on which the owner agrees is where a proposal is discussed, not where it is agreed. Issues and pull requests are named by their numbers and never linked, since anyone can write text on GitHub.
 
-An item keeps its file once the default branch holds it, done or dropped, so that every link to it still leads to it, and its date moves whenever its text changes. The tests in tests/test_backlog.py hold all of this.
+An item keeps its file once the default branch holds it, done or dropped, so that every link to it still leads to it, and its date moves whenever its text changes. The tests in tests/test_backlog.py check an item's form, its status, what it names, the roadmap's line for it, and its changes against the default branch.

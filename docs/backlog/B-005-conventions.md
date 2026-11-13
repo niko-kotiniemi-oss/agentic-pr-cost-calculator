@@ -17,4 +17,4 @@ Everything that the project writes holds printable ASCII, and CI checks every fi
 
 ## Postponed points
 
-None.
+- From the threat review at implementation of pull request 29: a link from the roadmap or a backlog item may lead to any tracked file, which no check of hidden text reads, so a linked page could hold text that GitHub hides. Checking every file for such characters answers it.

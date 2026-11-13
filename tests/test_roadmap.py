@@ -75,6 +75,9 @@ RISKS = "Risks / Trade-offs"
 HEADING = re.compile(r"^(#{1,6}) +(.+?) *$")
 FENCE = re.compile(r"^ *(```|~~~)")
 MISPLACED_HEADING = re.compile(r"^ {1,3}#{1,6}( |$)|^ {0,3}(=+|-+) *$")
+# The marks of block quotes and list items that open a line, after which code can
+# start as it does at the start of a line.
+CONTAINER = re.compile(r"^(?: {0,3}> ?| {0,3}(?:[-*+]|\d+[.)]) )*")
 LIST_MARKER = re.compile(r"^ *([-*+]|\d+[.)])( |$)")
 RECORD_NAME = re.compile(r"\bDR-\d{3}\b")
 # A link to a change's proposal or tasks, from the roadmap's folder.
@@ -398,9 +401,10 @@ def link_problems(root: Path) -> list[str]:
         text = "\n".join(lines)
         for offset, line in enumerate(lines):
             where = f"{name}:{start + offset}"
-            if FENCE.match(line):
+            inner = CONTAINER.sub("", line, count=1)
+            if FENCE.match(inner):
                 problems.append(f"{where} holds a fenced code block")
-            if line.startswith("    "):
+            if inner.startswith("    "):
                 problems.append(f"{where} holds indented code")
             if WEB_ADDRESS.search(line):
                 problems.append(f"{where} gives a web address")
@@ -880,6 +884,10 @@ LINKS_ELSEWHERE = [
     ("``a ` b``", "holds inline code that holds a space"),
     ("`git\nconfig`", "holds inline code that holds a space"),
     ("    pip install something", "holds indented code"),
+    (">     pip install something", "holds indented code"),
+    ("-     pip install something", "holds indented code"),
+    ("> ~~~", "holds a fenced code block"),
+    ("- ```", "holds a fenced code block"),
     ("```", "holds a fenced code block"),
 ]
 
