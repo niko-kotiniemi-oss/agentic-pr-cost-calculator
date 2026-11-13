@@ -3,7 +3,7 @@
 - **Type:** security and privacy
 - **Status:** accepted
 - **Decided by:** the owner, 2026-11-12
-- **Requirements:** R122, R186, R199, R216
+- **Requirements:** R122, R186, R199, R216, R217
 - **Threats:** T167, T171, T172
 - **Replaces:** none
 - **Closed by:** none
@@ -14,7 +14,7 @@ A person opts in with `pr-cost.capture` (DR-202), and one opt-in covers every re
 
 ## Decision
 
-One opt-in, `pr-cost.capture`, records every agent that the tool records: Claude Code alone in the first version, and each agent that a later release adds, with no further step of the person's. The README says so before any step that opts anyone in, and has an organization tell its members so before it opts them in (R199, R216, R186).
+One opt-in, `pr-cost.capture`, records every agent that the tool records: Claude Code alone in the first version, and each agent that a later release adds, with no further step of the person's (R217). The README says so before any step that opts anyone in, and has an organization tell its members so before it opts them in (R199, R216, R186).
 
 ## Alternatives
 
@@ -34,4 +34,4 @@ This covers which agents an opt-in records. Whether other agents are planned is 
 
 ## What reversing it would change
 
-R199, R216 and R186 in `project-standards` would change, with their scenarios, and so would R122 in `releases-and-compatibility`, design decisions 6 and 12, tasks 1.27, 4.4 and 6.1, the opt-in's feature page and the README's sections that task 4.4 writes, the answers of T167 and T172, and the change that adds an agent, which would add an opt-in key of its own.
+R199, R216 and R186 in `project-standards` would change, with their scenarios, and so would R217 in `switch-and-opt-in` and R122 in `releases-and-compatibility`, design decisions 6 and 12, tasks 1.27, 4.4 and 6.1, the opt-in's feature page and the README's sections that task 4.4 writes, the answers of T167 and T172, and the change that adds an agent, which would add an opt-in key of its own.

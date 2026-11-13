@@ -4,7 +4,7 @@
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** R215
-- **Threats:** T168, T170
+- **Threats:** T32, T168, T170
 - **Replaces:** none
 - **Closed by:** none
 
@@ -24,7 +24,7 @@ The walking skeleton records nothing unless the repository's configuration turns
 
 ## Consequences
 
-- A test fails while this repository tracks `.pr-cost.json` or a file under `.pr-cost/` before task 7.1 is ticked (R215, task 1.28).
+- A test fails while this repository tracks `.pr-cost.json` or a file under `.pr-cost/` at its root before task 7.1 is ticked (R215, task 1.28).
 - The skeleton's pull request says where its run happened and what of it the repository keeps, and the owner approves that with its design, before it is built (DR-227).
 - The opt-in for that run is set by the owner, in that project's environment, since an agent never turns capture on for anyone (DR-214).
 

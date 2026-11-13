@@ -913,8 +913,13 @@ Every link, image, autolink, web address and host, such as `example.org`, in the
 
 #### Scenario: A link elsewhere fails a test
 
-- **WHEN** the roadmap or such a section gives a web address, a host such as `example.org`, in prose or in inline code, that is not a tracked file's path, an image, an `@`, an `owner/repo`, a fenced or indented code block, or a relative path that leaves the repository or names no tracked file, as `../../../issues/15` does
+- **WHEN** the roadmap or such a section gives a web address, a host such as `example.org`, in prose or in inline code, that is not a tracked file's path or a name that the test lists as not a host, an image, an `@`, an `owner/repo`, a fenced or indented code block, or a relative path that leaves the repository or names no tracked file, as `../../../issues/15` does
 - **THEN** a test fails and names the line
+
+#### Scenario: A name that only looks like a host passes when the test lists it
+
+- **WHEN** the roadmap or such a section gives, in prose or in inline code, a name that reads as a host, as two or more labels joined by dots whose last is made of letters, and that the test lists, with its reason, among the names that are not hosts, such as the git configuration key `core.autocrlf`
+- **THEN** the test passes it, and fails on that name once it is taken off the list
 
 ### Requirement: The roadmap and the feature pages' roadmap sections hold no hidden text
 
@@ -979,7 +984,7 @@ The patterns page SHALL hold to the rules that "The roadmap links only this repo
 
 #### Scenario: A link elsewhere in the patterns page fails a test
 
-- **WHEN** the patterns page gives a web address, a host such as `example.org`, in prose or in inline code, that is not a tracked file's path, an image, an `@`, an `owner/repo`, a fenced or indented code block, or a relative path that leaves the repository or names no tracked file
+- **WHEN** the patterns page gives a web address, a host such as `example.org`, in prose or in inline code, that is not a tracked file's path or a name that the test lists as not a host, an image, an `@`, an `owner/repo`, a fenced or indented code block, or a relative path that leaves the repository or names no tracked file
 - **THEN** a test fails and names the line
 
 #### Scenario: Text that GitHub hides in the patterns page fails a test
@@ -1018,16 +1023,21 @@ Each item on the patterns page SHALL give its recognised name, where it applies,
 
 ### Requirement: This repository holds no switch and no ledger file before its own capture is turned on
 
-This repository SHALL track no `.pr-cost.json` and no file under `.pr-cost/` while task 7.1 of `add-pr-cost-calculator`, which turns the tool on here, is not ticked in that change's `tasks.md`, active or archived, so that no capture records here before then. A test SHALL fail and name the file otherwise.
+This repository SHALL track no `.pr-cost.json` and no file under `.pr-cost/` at its root while task 7.1 of `add-pr-cost-calculator`, which turns the tool on here, is not ticked in that change's `tasks.md`, active or archived, so that no capture records here before then. A test SHALL fail and name the file otherwise.
 
 #### Scenario: A switch or a ledger file here before task 7.1 fails a test
 
-- **WHEN** task 7.1 of `add-pr-cost-calculator` is not ticked, and this repository tracks `.pr-cost.json` or a file under `.pr-cost/`
+- **WHEN** task 7.1 of `add-pr-cost-calculator` is not ticked, and this repository tracks `.pr-cost.json` or a file under `.pr-cost/` at its root
 - **THEN** a test fails and names the file
 
 #### Scenario: A switch and ledger files here after task 7.1 pass
 
-- **WHEN** task 7.1 of `add-pr-cost-calculator` is ticked, and this repository tracks `.pr-cost.json` and files under `.pr-cost/`
+- **WHEN** task 7.1 of `add-pr-cost-calculator` is ticked, and this repository tracks `.pr-cost.json` and files under `.pr-cost/` at its root
+- **THEN** that test passes them
+
+#### Scenario: A switch or a ledger file below the root passes before task 7.1
+
+- **WHEN** task 7.1 of `add-pr-cost-calculator` is not ticked, and this repository tracks `.pr-cost.json` or files under `.pr-cost/` only in a folder below its root, as a golden session in `tests/golden/` can
 - **THEN** that test passes them
 
 ### Requirement: The documentation says which agents an opt-in records
@@ -1041,7 +1051,7 @@ The README's section on the opt-in and the opt-in's feature page SHALL name each
 
 #### Scenario: An opt-in's page that does not say which agents it records fails a test
 
-- **WHEN** the README's section on the opt-in or the opt-in's feature page leaves out an agent that the surface manifest says the release records, says that it records an agent that the manifest does not name, or leaves out that one opt-in also records each agent that a later release adds, with no further step, or that a person who does not want an added agent recorded turns capture off where they use it
+- **WHEN** the README's section on the opt-in or the opt-in's feature page leaves out an agent that the surface manifest says the release records, says that it records an agent that the manifest does not name, or leaves out that one opt-in also records each agent that a later release adds, with no further step, that no opt-in leaves one agent out, or that a person who does not want an added agent recorded turns capture off where they use it
 - **THEN** a test fails and names the page and what is missing
 
 ### Requirement: Each ledger format that a release wrote keeps its golden figures
