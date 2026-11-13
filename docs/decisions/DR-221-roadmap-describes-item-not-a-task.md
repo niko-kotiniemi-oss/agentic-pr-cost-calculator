@@ -1,12 +1,12 @@
 # DR-221: The roadmap describes, and leads only to this repository's own files
 
 - **Type:** security and privacy
-- **Status:** accepted
+- **Status:** closed
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** R209, R210
 - **Threats:** T33, T159, T160, T163, T165
 - **Replaces:** none
-- **Closed by:** none
+- **Closed by:** DR-227
 
 ## Context
 

@@ -832,51 +832,36 @@ While this repository's root marketplace file is missing, or holds no entry for 
 
 ### Requirement: The roadmap says what is now, next and later
 
-The repository SHALL keep a roadmap, `docs/roadmap.md`, linked from the README's list of documentation, with the sections Now, Next, Later, Known limitations and Known bugs in that order. Each item under Next or Later SHALL name the requirements, records, threats or tasks that it rests on, a task by its change and number. Tests SHALL fail otherwise, and when an item in any section names one that does not exist, names a closed record, or names tasks that are all finished.
+The repository SHALL keep a roadmap, `docs/roadmap.md`, linked from the README's list of documentation, with the sections Now, Next, Later, Known limitations and Known bugs in that order, and Now SHALL end with one line on the build that links the change's proposal and tasks. Tests SHALL fail otherwise.
 
 #### Scenario: The roadmap gives its sections in order
 
 - **WHEN** the README's list of documentation and `docs/roadmap.md` are read
-- **THEN** the list links the roadmap, and the roadmap's sections are Now, Next, Later, Known limitations and Known bugs, in that order
+- **THEN** the list links the roadmap, its sections are Now, Next, Later, Known limitations and Known bugs, in that order, and Now ends with the line on the build
 
-#### Scenario: A roadmap without its link or a section fails a test
+#### Scenario: A roadmap without its link, a section or the line on the build fails a test
 
-- **WHEN** `docs/roadmap.md` is missing, a section is missing or out of order, or the README's list of documentation does not link it
+- **WHEN** `docs/roadmap.md` is missing, a section is missing or out of order, the README's list of documentation does not link it, or Now does not end with the line on the build
 - **THEN** a test fails and names what is missing
 
-#### Scenario: An item under Next or Later that rests on nothing fails a test
+### Requirement: Each backlog item says how far it is from being built
 
-- **WHEN** an item under Next or Later names no requirement, record, threat or task
+Each backlog item SHALL give one of five statuses: `Open to feedback and contributions`, `Planned`, `In progress`, `Done` or `Dropped`. An item that is `In progress` or `Done` SHALL name at least one pull request, and an item that is `Dropped` SHALL have a section that says why. Tests SHALL fail otherwise.
+
+#### Scenario: Each item gives one of five statuses
+
+- **WHEN** the backlog items are read
+- **THEN** each gives one of the five statuses, each that is `In progress` or `Done` names a pull request, and each that is `Dropped` says why
+
+#### Scenario: An item without one of the five statuses fails a test
+
+- **WHEN** an item gives no status, or a status other than the five, such as `Planned.` with a stop or `Agreed`
 - **THEN** a test fails and names the item
 
-#### Scenario: An item that names what does not exist fails a test
+#### Scenario: An item in progress or done that names no pull request fails a test
 
-- **WHEN** an item names a requirement that the register does not hold, a record that `docs/decisions/` does not hold, a threat that the threat model does not hold, or a task by a change and number that no change's `tasks.md`, active or archived, holds
-- **THEN** a test fails and names the item and what it names
-
-#### Scenario: A stale item fails a test
-
-- **WHEN** every task that an item names is ticked in its change's `tasks.md`, or a record that it names is closed
+- **WHEN** an item that is `In progress` or `Done` gives `none` in its field Pull requests, or an item that is `Dropped` has no section that says why
 - **THEN** a test fails and names the item
-
-### Requirement: Each item under Next and Later says whether it is planned
-
-Each item under the roadmap's Next and Later SHALL open with `**Planned.**` or `**Open to feedback and contributions.**`, and Later SHALL open by saying that work on an item starts with an issue on which the owner agrees, and that some items need a spec, a threat review and the owner's decision first. Each record that the README's list of what the first version does not support links SHALL be named by an item under Later. Tests SHALL fail otherwise.
-
-#### Scenario: Each item under Next and Later says whether it is planned
-
-- **WHEN** the roadmap's Next and Later are read
-- **THEN** each item opens with `**Planned.**` or `**Open to feedback and contributions.**`, and Later opens by saying that work on an item starts with an issue on which the owner agrees, and that some items need a spec, a threat review and the owner's decision first
-
-#### Scenario: An item that does not say whether it is planned fails a test
-
-- **WHEN** an item under Next or Later opens with neither mark, or Later does not open with that sentence
-- **THEN** a test fails and names the item or the section
-
-#### Scenario: A record that the README leaves out and Later does not name fails a test
-
-- **WHEN** the README's list of what the first version does not support links a record that no item under Later names
-- **THEN** a test fails and names the record
 
 ### Requirement: Every risk of the design is listed as a known limitation
 
@@ -902,28 +887,132 @@ Each risk that the risks and trade-offs of any change's design give, active or a
 - **WHEN** the change whose design gives a risk is archived
 - **THEN** the risk is still read from its archived design, and a page that no longer lists it fails a test
 
-### Requirement: The roadmap links only this repository's own files
+### Requirement: The roadmap and the backlog link only this repository's own files
 
-Every link, image, autolink and web address in the roadmap and each feature page's section on known limitations and the roadmap, prose and code alike, and every `owner/repo` they name, SHALL name a heading of its own page or a tracked file of this repository by a relative path that stays inside it. They SHALL name issues and pull requests by number alone and give no `@` and no fenced or indented code, so that they lead no reader or agent to what someone else writes. Tests SHALL fail otherwise.
+Every link, image, autolink and web address in the roadmap, in `docs/backlog/` and in each feature page's section on known limitations and the roadmap, prose and code alike, and every `owner/repo` they name, SHALL name a heading of its own page or a tracked file of this repository by a relative path that stays inside it. They SHALL name issues and pull requests by number alone and give no `@` and no fenced or indented code. Tests SHALL fail otherwise.
 
-#### Scenario: The roadmap's links stay within this repository's files
+#### Scenario: The roadmap's and the backlog's links stay within this repository's files
 
-- **WHEN** every link, autolink, web address and `owner/repo` in the roadmap and in those sections is read, each link from its `](` whatever its text holds, in prose and in inline code alike
+- **WHEN** every link, autolink, web address and `owner/repo` in the roadmap, in the files in `docs/backlog/` and in those sections is read, each link from its `](` whatever its text holds, in prose and in inline code alike
 - **THEN** each names a heading of its own page, or a tracked file of this repository by a relative path that, resolved from the page's folder, stays inside the repository
 
 #### Scenario: A link elsewhere fails a test
 
-- **WHEN** the roadmap or such a section gives a web address, an image, an `@`, an `owner/repo`, a fenced or indented code block, or a relative path that leaves the repository or names no tracked file, as `../../../issues/15` does
-- **THEN** a test fails and names the line
+- **WHEN** the roadmap, a file in `docs/backlog/` or such a section gives a web address, an image, an `@`, an `owner/repo`, a fenced or indented code block, or a relative path that leaves the repository or names no tracked file, as `../../../issues/15` does
+- **THEN** a test fails and names the file and the line
 
-### Requirement: The roadmap and the feature pages' roadmap sections hold no hidden text
+### Requirement: The roadmap, the backlog and the feature pages' roadmap sections hold no hidden text
 
-The roadmap, and each feature page's section on known limitations and the roadmap, SHALL hold only printable ASCII and line feeds, and nowhere, inline code included, a `<`, a `&`, a backslash, a `]:` or a link with a title, so that what GitHub shows of them is all that an agent reads. Tests SHALL fail otherwise.
+The roadmap, each file in `docs/backlog/`, and each feature page's section on known limitations and the roadmap, SHALL hold only printable ASCII and line feeds, and nowhere, inline code included, a `<`, a `&`, a backslash, a `]:` or a link with a title, so that what GitHub shows of them is all that an agent reads. Tests SHALL fail otherwise.
 
 #### Scenario: Text that GitHub hides fails a test
 
-- **WHEN** the roadmap or such a section holds a character other than printable ASCII and a line feed, such as a carriage return, a zero-width space or a bidirectional control, or, inline code included, a `<`, as in an HTML comment, a `&`, as in a character reference, a backslash, as in an escape, a `]:`, as in a link reference definition, or a link with a title
+- **WHEN** the roadmap, a file in `docs/backlog/` or such a section holds a character other than printable ASCII and a line feed, such as a carriage return, a zero-width space or a bidirectional control, or, inline code included, a `<`, as in an HTML comment, a `&`, as in a character reference, a backslash, as in an escape, a `]:`, as in a link reference definition, or a link with a title
 - **THEN** a test fails and names the file, the line and what it holds
+
+### Requirement: A backlog item has its form
+
+Each backlog item SHALL be a file `docs/backlog/B-NNN-words.md`, numbered from B-001 without a gap or a repeat, and the folder SHALL hold nothing else but `README.md`, which gives the form. An item SHALL open with `# B-NNN: title` and the fields Status, Last changed, Brief, Rests on, Issue and Pull requests, in that order, and then give the sections Problem, What done looks like and Postponed points, each once and in that order. Tests SHALL fail otherwise.
+
+#### Scenario: Each backlog item has its form
+
+- **WHEN** the files in `docs/backlog/` are read
+- **THEN** each but `README.md` is an item named `B-NNN-words.md`, numbered from B-001 without a gap, with its heading, its six fields in order, a date as `YYYY-MM-DD` in Last changed, a brief of one to three sentences, IDs or `none` in Rests on, a number or `none` in Issue and numbers or `none` in Pull requests, and its sections in order
+
+#### Scenario: An item out of form fails a test
+
+- **WHEN** an item's file name, heading, fields or sections are missing, repeated, out of order or in another form, its brief holds more than three sentences, its date is not a date, the numbers have a gap or a repeat, or the folder holds another file, a folder or a symbolic link
+- **THEN** a test fails and names the file and what is wrong
+
+### Requirement: The README briefs developers on how work flows
+
+The README's section on working on this repository SHALL open, before its setup, with a briefing for developers: anyone may open an issue with no approval needed, what an issue proposes is neither planned nor committed to, and a backlog item changes only through a pull request that the owner merges. It SHALL give the stages of the work as one table, which no other Markdown file gives, and `CONTRIBUTING.md` and `docs/backlog/README.md` SHALL link the section. Tests SHALL fail otherwise.
+
+#### Scenario: The README opens its section on working here with the briefing
+
+- **WHEN** the README's section on working on this repository is read
+- **THEN** before its setup it says that anyone may open an issue with no approval needed, that what an issue proposes is neither planned nor committed to, and that a backlog item changes only through a pull request that the owner merges, and it gives the table of stages, with the columns Step, Where it lives, What it holds and Who writes it, and the rows An idea or a bug, Agreed work, Order, Delivery and Result, in that order, each row linking a page of this repository
+
+#### Scenario: A briefing out of form, or a second copy of its table, fails a test
+
+- **WHEN** the briefing is missing or follows the setup, leaves out one of those statements, its table lacks a column or a row, or gives them out of order, a row links no page, another tracked Markdown file gives the table's header, or `CONTRIBUTING.md` or `docs/backlog/README.md` does not link the section
+- **THEN** a test fails and names what is wrong
+
+### Requirement: The roadmap is the index of the open backlog items
+
+Now, Next and Later SHALL give one line for each backlog item that is `Open to feedback and contributions`, `Planned` or `In progress`, in the order of the work, linking its file and giving its ID, title, status, date and brief as the item gives them, and no line for an item that is `Done` or `Dropped`. Now SHALL list only items that are `Planned` or `In progress`, and each item listed under Next or Later SHALL name at least one ID in Rests on. Tests SHALL fail otherwise.
+
+#### Scenario: The roadmap lists each open item as the item gives it
+
+- **WHEN** the roadmap's Now, Next and Later and the backlog items are read
+- **THEN** each item that is `Open to feedback and contributions`, `Planned` or `In progress` is listed once, by a line that links its file and gives its ID, title, status, date and brief as the item gives them, and no item that is `Done` or `Dropped` is listed
+
+#### Scenario: A line that differs from its item fails a test
+
+- **WHEN** a line under Now, Next or Later gives a title, a status, a date or a brief that differs from its item's, links no backlog item's file, or is in another form
+- **THEN** a test fails and names the line
+
+#### Scenario: An open item missing or listed twice, or a closed one still listed, fails a test
+
+- **WHEN** an item that is `Open to feedback and contributions`, `Planned` or `In progress` is listed in none of Now, Next and Later, or more than once, or an item that is `Done` or `Dropped` is listed
+- **THEN** a test fails and names the item
+
+#### Scenario: An item under Now that is not agreed fails a test
+
+- **WHEN** an item listed under Now is `Open to feedback and contributions`
+- **THEN** a test fails and names the item
+
+#### Scenario: An item under Next or Later that rests on nothing fails a test
+
+- **WHEN** an item listed under Next or Later gives `none` in its field Rests on
+- **THEN** a test fails and names the item
+
+### Requirement: Later says how work on an item starts
+
+Later SHALL open by saying that work on an item that is open to feedback and contributions starts with an issue, that an item is built only once it is `Planned`, which only a pull request that the owner merges makes it, and that some items need a spec, a threat review and the owner's decision first. Each record that the README's list of what the first version does not support links SHALL be named in Rests on by an item listed under Later. Tests SHALL fail otherwise.
+
+#### Scenario: Later opens with how work on an item starts
+
+- **WHEN** the roadmap's Later is read
+- **THEN** it opens, before its first line, with its sentence on how work on an item starts, and each record that the README's list of what the first version does not support links is named in Rests on by an item listed under Later
+
+#### Scenario: Later without its opening fails a test
+
+- **WHEN** Later does not open, before its first line, with its sentence on how work on an item starts
+- **THEN** a test fails and names the section
+
+#### Scenario: A record that the README leaves out and Later does not name fails a test
+
+- **WHEN** the README's list of what the first version does not support links a record that Rests on of no item listed under Later names
+- **THEN** a test fails and names the record
+
+### Requirement: A backlog item names only what exists, and is not stale
+
+Each requirement, record, threat and assumption that a backlog item names, and each task that it names by its change and number, SHALL exist, in active and archived changes alike, and an item that is neither `Done` nor `Dropped` SHALL name no closed record and no tasks that are all ticked. Tests SHALL fail otherwise.
+
+#### Scenario: An item that names what does not exist fails a test
+
+- **WHEN** an item names a requirement that the register does not hold, a record that `docs/decisions/` does not hold, a threat that the threat model does not hold, an assumption that `docs/assumptions/` does not hold, or a task by a change and number that no change's `tasks.md`, active or archived, holds
+- **THEN** a test fails and names the item and what it names
+
+#### Scenario: A stale item fails a test
+
+- **WHEN** an item that is neither `Done` nor `Dropped` names a closed record, or names tasks that are all ticked in their change's `tasks.md`
+- **THEN** a test fails and names the item
+
+### Requirement: A backlog item keeps its file, and its date moves with its text
+
+Compared with the base commit that the records' check uses, no backlog item SHALL be removed, renamed or moved, an item whose text a branch changes SHALL give a later date in Last changed than the base's copy gives, and no item SHALL give a date later than the day on which the test runs, in UTC. Tests SHALL fail otherwise.
+
+#### Scenario: An item changed without a new date fails a test
+
+- **WHEN** a branch changes an item's text and leaves its date at, or before, the date that the base commit's copy gives, or an item gives a date later than the day on which the test runs
+- **THEN** a test fails and names the item
+
+#### Scenario: An item removed or renamed fails a test
+
+- **WHEN** the base commit holds an item that the branch removes, renames or moves
+- **THEN** a test fails and names the item, so that every link to an item still leads to it once it is done or dropped
 
 ### Requirement: Each ledger format that a release wrote keeps its golden figures
 
