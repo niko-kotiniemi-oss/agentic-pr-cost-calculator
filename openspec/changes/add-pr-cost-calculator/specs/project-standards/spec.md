@@ -1052,95 +1052,90 @@ Compared with the base commit that the records' check uses, an item that the bas
 - **WHEN** no base commit holds `docs/backlog/`
 - **THEN** the check of status changes examines nothing and passes, and once a base holds it, the check reads every item
 
-### Requirement: The patterns page says which patterns the design follows and which anti-patterns it meets
+### Requirement: The guide says how the project builds, concern by concern
 
-The repository SHALL keep a page of patterns, `docs/patterns.md`, linked from the README's list of documentation, that opens by saying that it describes the design, that an item on it is not a request to start work, and that an anti-pattern to fix is fixed by the pull request that the roadmap's Now names for it, and then has the sections Patterns followed, Anti-patterns and Named practices, in that order, each holding list items and nothing else. Tests SHALL fail otherwise.
+A guide, `docs/patterns.md`, SHALL be linked from the README's list of documentation and named in `CLAUDE.md`. It SHALL open by saying that the specs decide what the tool does, `CLAUDE.md` what an agent may do and the guide how the project builds, that both win over it, that a gap is not a task and closes only through its backlog item, and that entries are read again at each assessment and before each release, then give the sections that the first scenario names. Tests SHALL fail otherwise.
 
-#### Scenario: The patterns page gives its sections in order
+#### Scenario: The guide opens with how it steers and gives its concerns in order
 
-- **WHEN** the README's list of documentation and `docs/patterns.md` are read
-- **THEN** the list links the patterns page, the page opens by saying that it describes the design, that an item on it is not a request to start work, and that an anti-pattern to fix is fixed by the pull request that the roadmap's Now names for it, and its sections are Patterns followed, Anti-patterns and Named practices, in that order, each holding one or more list items and nothing else
+- **WHEN** the README's list of documentation, `CLAUDE.md` and `docs/patterns.md` are read
+- **THEN** the list links the guide and `CLAUDE.md` names it, the guide opens, before its first section, by saying that the specs decide what the tool does, `CLAUDE.md` what an agent may do and the guide how the project builds, that the specs and `CLAUDE.md` win where the guide differs from them, that a gap is not, by being there, a request to start work and is closed only through the backlog item that it names, and that its entries are read again at each assessment and before each release, and its sections are Architecture and integration, Security, Privacy, Identity and credentials, Supply chain and releases, Testing, Decisions and documentation, Working with agents, and Conventions, in that order, each holding one or more entries
 
-#### Scenario: A patterns page without its link or a section fails a test
+#### Scenario: A guide without its links, its opening or a concern fails a test
 
-- **WHEN** `docs/patterns.md` is missing, a section is missing, out of order, holds no list item or holds anything but list items, or the README's list of documentation does not link it
+- **WHEN** `docs/patterns.md` is missing, the README's list of documentation does not link it, `CLAUDE.md` does not name it, it does not open, before its first section, with one of those statements, or a section is missing, repeated, out of order or holds no entry
 - **THEN** a test fails and names what is missing
 
-#### Scenario: A patterns page that does not open with how its anti-patterns are fixed fails a test
+### Requirement: Each entry of the guide gives its principle and where the project stands
 
-- **WHEN** the patterns page, before its first section, does not say that it describes the design, that an item on it is not a request to start work, or that an anti-pattern to fix is fixed by the pull request that the roadmap's Now names for it
-- **THEN** a test fails and names what is missing
+Each entry SHALL be a `###` heading that names a principle, followed by the fields Statement, Rationale, Implications, Pattern, Anti-patterns, Held by, Rests on and Where we stand, each once, in that order, and nothing else. Where we stand SHALL open with `Followed.`, `Knowingly accepted.` or `Gap.`: one knowingly accepted SHALL name an accepted record that gives the reason, and a gap a backlog item, and no backlog item that it names SHALL be `Done` or `Dropped`. Tests SHALL fail otherwise.
 
-### Requirement: Each anti-pattern on the patterns page says how the design meets it
+#### Scenario: Each entry gives its fields in order
 
-Each item under the patterns page's Anti-patterns SHALL open with `**Avoided.**`, `**Knowingly accepted.**` or `**To fix before the build.**`. An item knowingly accepted SHALL name a record that gives the reason, and an item to fix SHALL give, in bold, the whole bold opening of the item under the roadmap's Now that fixes it. Tests SHALL fail otherwise, and no release SHALL be published while its tag's page holds an item to fix.
+- **WHEN** the guide's entries are read
+- **THEN** each is a `###` heading followed by the fields Statement, Rationale, Implications, Pattern, Anti-patterns, Held by, Rests on and Where we stand, each once, in that order, none of them empty, and each section holds its entries and nothing else
 
-#### Scenario: Each anti-pattern opens with how the design meets it
+#### Scenario: An entry out of form fails a test
 
-- **WHEN** the patterns page's Anti-patterns are read
-- **THEN** each item opens with `**Avoided.**`, `**Knowingly accepted.**` or `**To fix before the build.**`
+- **WHEN** an entry leaves out a field, repeats one, gives them out of order or leaves one empty, or a section holds text outside its entries
+- **THEN** a test fails and names the entry, or the section and the line
 
-#### Scenario: An anti-pattern that does not say how the design meets it fails a test
+#### Scenario: An entry that does not say where the project stands fails a test
 
-- **WHEN** an item under Anti-patterns opens with none of the three
-- **THEN** a test fails and names the item
+- **WHEN** an entry's Where we stand opens with none of `Followed.`, `Knowingly accepted.` and `Gap.`
+- **THEN** a test fails and names the entry
 
-#### Scenario: An anti-pattern knowingly accepted with no record fails a test
+#### Scenario: A principle knowingly accepted without its record fails a test
 
-- **WHEN** an item opens with `**Knowingly accepted.**` and names no record
-- **THEN** a test fails and names the item
+- **WHEN** an entry's Where we stand opens with `Knowingly accepted.` and names no record, or names only records that `docs/decisions/` does not hold or that are closed
+- **THEN** a test fails and names the entry
 
-#### Scenario: An anti-pattern to fix that no item under Now fixes fails a test
+#### Scenario: A gap without an open backlog item fails a test
 
-- **WHEN** an item opens with `**To fix before the build.**` and gives in bold no whole bold opening of an item under the roadmap's Now, as when that item has left Now or the item gives only its first word
-- **THEN** a test fails and names the item
+- **WHEN** an entry's Where we stand opens with `Gap.` and names no backlog item, or it names a backlog item that `docs/backlog/` does not hold or that is `Done` or `Dropped`
+- **THEN** a test fails and names the entry and the item, so that the pull request that finishes or drops an item says again where the project stands
 
-#### Scenario: A release whose patterns page still has an anti-pattern to fix is not published
+### Requirement: The guide links only this repository's own files and holds no hidden text
 
-- **WHEN** a tag's tree holds a patterns page with an item that opens with `**To fix before the build.**`
-- **THEN** the release check fails, and no release is published
+The guide SHALL hold to the rules that "The roadmap and the backlog link only this repository's own files" and "The roadmap, the backlog and the feature pages' roadmap sections hold no hidden text" give the roadmap, so that it leads no reader or agent to what someone else writes or hides. Tests SHALL fail otherwise.
 
-### Requirement: The patterns page links only this repository's own files and holds no hidden text
+#### Scenario: A link elsewhere in the guide fails a test
 
-The patterns page SHALL hold to the rules that "The roadmap and the backlog link only this repository's own files" and "The roadmap, the backlog and the feature pages' roadmap sections hold no hidden text" give the roadmap, so that it leads no reader or agent to what someone else writes or hides. Tests SHALL fail otherwise.
-
-#### Scenario: A link elsewhere in the patterns page fails a test
-
-- **WHEN** the patterns page gives a web address, a host such as `example.org`, in prose or in inline code, that is not a tracked file's path or a name that the test lists as not a host, an image, an `@`, an `owner/repo`, a fenced or indented code block, or a relative path that leaves the repository or names no tracked file
+- **WHEN** the guide gives a web address, a host such as `example.org`, in prose or in inline code, that is not a tracked file's path or a name that the test lists as not a host, an image, an `@`, an `owner/repo`, a fenced or indented code block, inline code that holds a space, or a relative path that leaves the repository or names no tracked file
 - **THEN** a test fails and names the line
 
-#### Scenario: Text that GitHub hides in the patterns page fails a test
+#### Scenario: Text that GitHub hides in the guide fails a test
 
-- **WHEN** the patterns page holds a character other than printable ASCII and a line feed, or, inline code included, a `<`, a `&`, a backslash, a `]:`, a `|` or a link with a title
+- **WHEN** the guide holds a character other than printable ASCII and a line feed, or, inline code included, a `<`, a `&`, a backslash, a `]:`, a `|` or a link with a title
 - **THEN** a test fails and names the file, the line and what it holds
 
-### Requirement: Each item on the patterns page gives its source and what it rests on
+### Requirement: Each entry of the guide gives its source, what holds it and what it rests on
 
-Each item on the patterns page SHALL give its recognised name, where it applies, its source after `Source:`, and the requirements, records, threats or tasks that it rests on, a task by its change and number, and Named practices SHALL give Clean Code, PEP 8, OWASP's secure coding practices and OpenSSF's Scorecard. Tests SHALL fail on an item that gives no source or names none of those, or names one that does not exist or a closed record, and on a named practice left out.
+An entry's Pattern SHALL give its recognised name and, after `Source:`, its source by author or body and work. Held by SHALL cite what holds the entry as the threat model's Held by does, or say after `Review:` what review checks, or both. Rests on SHALL hold IDs, in the forms of a backlog item's Rests on, that exist and name no closed record. Clean Code, PEP 8, OWASP's secure coding practices and OpenSSF's Scorecard SHALL each be named in a Pattern. Tests SHALL fail otherwise.
 
-#### Scenario: Each item of the patterns page gives its source and what it rests on
+#### Scenario: Each entry gives its source, what holds it and what it rests on
 
-- **WHEN** the patterns page's items are read
-- **THEN** each gives text after `Source:` and names a requirement, record, threat or task that exists, and Named practices gives Clean Code, PEP 8, OWASP's secure coding practices and OpenSSF's Scorecard
+- **WHEN** the guide's entries are read
+- **THEN** each Pattern gives text after `Source:`, each Held by cites scenarios, tasks, decisions, records or files that exist, or gives text after `Review:`, or both, each Rests on names one or more requirements, records, threats, assumptions, backlog items or tasks that exist and no closed record, and Clean Code, PEP 8, OWASP's secure coding practices and OpenSSF's Scorecard are each named in an entry's Pattern
 
-#### Scenario: An item of the patterns page with no source fails a test
+#### Scenario: An entry with no source fails a test
 
-- **WHEN** an item of the patterns page gives no `Source:` or nothing after it
-- **THEN** a test fails and names the item
+- **WHEN** an entry's Pattern gives no `Source:` or nothing after it
+- **THEN** a test fails and names the entry
 
-#### Scenario: An item of the patterns page that rests on nothing fails a test
+#### Scenario: An entry whose Held by holds nothing that resolves fails a test
 
-- **WHEN** an item of the patterns page names no requirement, record, threat or task
-- **THEN** a test fails and names the item
+- **WHEN** an entry's Held by cites a scenario, a task, a design decision, a record or a file that does not exist, or neither cites anything nor gives text after `Review:`
+- **THEN** a test fails and names the entry and what it cites
 
-#### Scenario: An item of the patterns page that names what does not exist fails a test
+#### Scenario: An entry that rests on nothing, or on what does not exist, fails a test
 
-- **WHEN** an item of the patterns page names a requirement that the register does not hold, a record that `docs/decisions/` does not hold or that is closed, a threat that the threat model does not hold, or a task by a change and number that no change's `tasks.md`, active or archived, holds
-- **THEN** a test fails and names the item and what it names
+- **WHEN** an entry's Rests on gives `none` or an ID in another form, or names a requirement that the register does not hold, a record that `docs/decisions/` does not hold or that is closed, a threat that the threat model does not hold, an assumption that `docs/assumptions/` does not hold, a backlog item that `docs/backlog/` does not hold, or a task by a change and number that no change's `tasks.md`, active or archived, holds
+- **THEN** a test fails and names the entry and what it names
 
-#### Scenario: Named practices that leave one out fail a test
+#### Scenario: A named practice left out of the guide fails a test
 
-- **WHEN** Named practices gives no item for one of Clean Code, PEP 8, OWASP's secure coding practices and OpenSSF's Scorecard
+- **WHEN** no entry's Pattern names one of Clean Code, PEP 8, OWASP's secure coding practices and OpenSSF's Scorecard
 - **THEN** a test fails and names the practice
 
 ### Requirement: This repository holds no switch and no ledger file before its own capture is turned on

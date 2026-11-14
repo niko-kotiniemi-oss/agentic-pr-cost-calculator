@@ -1,0 +1,43 @@
+# DR-231: A guide by concern says how the project builds, and steers below the specs and `CLAUDE.md`
+
+- **Type:** process
+- **Status:** accepted
+- **Decided by:** the owner, 2026-11-13
+- **Requirements:** R219, R220, R221, R222
+- **Threats:** T33, T159, T160, T163, T165, T170
+- **Replaces:** none
+- **Closed by:** none
+
+## Context
+
+The owner asked on 2026-10-29 whether the design follows recognised patterns or falls into recognised anti-patterns, written down so that agents get it as context, and asked that each anti-pattern be fixed before the build. On 2026-11-12 three reviewers, each in a context of its own, assessed the design: one its architecture, one its CI and security, one its testing. They found patterns that records chose, anti-patterns that records accept with their reasons, and anti-patterns that no record accepts, among them a long design before any code runs, behaviour stated again in several documents, acceptance tests written before the entry points that they call are defined, and two security rules that the design does not state. The plan of the pull requests that prepare the build moved four named practices to the page from the one on conventions: Clean Code, PEP 8, OWASP's secure coding practices and OpenSSF's Scorecard. A page designed as three lists from that assessment describes one moment, and nothing that developers and agents follow comes of it. On 2026-11-13 the owner asked instead for a guide that developers and agents follow: for each concern, the patterns chosen, the anti-patterns to steer clear of, what holds each, and where the project stands, so that the project can follow its own progress as the tool grows, with decision records and their superseding as one of its entries. arc42 gives such a guide a section of its own, for crosscutting concepts, one heading for each; TOGAF gives a principle's form, a name, a statement, its rationale and its implications; and Ford, Parsons and Kua's Building Evolutionary Architectures call the check that holds a characteristic a fitness function.
+
+## Decision
+
+The repository keeps a guide, `docs/patterns.md`, that the README's list of documentation links and `CLAUDE.md` names. It opens by saying that the specs decide what the tool does, `CLAUDE.md` what an agent may do and the guide how the project builds, that both win where the guide differs from them, that a gap is not, by being there, a request to start work and is closed only through the backlog item that it names, and that its entries are read again at each assessment and before each release. Its sections are its concerns, in this order: Architecture and integration, Security, Privacy, Identity and credentials, Supply chain and releases, Testing, Decisions and documentation, Working with agents, and Conventions (R219). Each entry names a principle and gives its statement, rationale and implications, the pattern that it follows, the anti-patterns that it steers clear of, what holds it, what it rests on, and where the project stands: followed, knowingly accepted with the record that gives the reason, or a gap with the backlog item that closes it (R220, R222). The guide never states what the tool does, citing the requirement instead (DR-232), and never widens what `CLAUDE.md` lets an agent do. It holds to the roadmap's rules on links and hidden text, so that it names a source with no web address and no host (R221). Its first view of where the project stands comes from the assessment of 2026-11-12, and its entry on decisions says that each record holds one topic, says how hard it is to reverse, and is closed by the record that replaces it, never edited, which starts an assessment of what rests on it (DR-108, DR-121, DR-230).
+
+## Alternatives
+
+- The page as first designed, which describes the design in three lists, Patterns followed, Anti-patterns and Named practices, and steers no one: it holds one assessment's view, which ages with it, and gives developers and agents no principle to follow.
+- The assessment kept only in the pull request's comments, which no agent reads as context once the pull request merges.
+- The principles written into the design, which an agent reads as part of the change that it builds, so that a gap would read as part of the work.
+- A guide that steers beside `CLAUDE.md`, or above it: a page that anyone may propose a change to would decide what an agent may do, which `CLAUDE.md` alone decides.
+- A release check that refuses a release while the guide names a gap, as the first design had for an anti-pattern to fix: gaps are expected as the tool grows, each with its backlog item, so such a check would hold back every release once an assessment finds one, while a test that fails on a gap whose item is done or dropped keeps the page true.
+- Each source linked by its address, which leads a reader or an agent to pages that others write and change (T160).
+
+## Consequences
+
+- Tests fail as R219 to R222 say. Its tests read links and hidden text with the roadmap's readings, Rests on with the backlog's reading and Held by with the threat model's, rather than with readings of their own.
+- `CLAUDE.md` names the guide as the page to read before working on a concern, gives the order in which the specs, `CLAUDE.md` and the guide steer, and says that the guide never widens what an agent may do, and that where the guide and Superpowers' skills both speak to how a change is built, the skills hold the steps and the guide the principles. It changes in the same pull request, which the owner reviews as a change to what steers agents, and the guide changes only through a pull request that the owner merges, as `CLAUDE.md` does.
+- A gap is not a request to start work: it is closed by the backlog item that it names, while the default branch gives that item as `Planned` or `In progress`, and a test fails while it names an item that is done or dropped, so that the pull request that finishes or drops an item says again where the project stands.
+- Whether a principle is right, whether a source says what an entry says it does, and whether a gap's item really closes it, rest on review (T170), and task 5.3 reads the guide again against what was built.
+- DR-166 stays as it is: it covers the glossary, the assumptions and the pages that they link to, as its title and its scope give it, and the guide is none of these, though the README links it, as it links `CLAUDE.md`. `CLAUDE.md` names the guide apart from the pages that describe, and B-001 rests on this record rather than on DR-166.
+- B-001's item says what the guide is, as the owner asked on 2026-11-13. The item on context files (B-003) can point each rule file to the guide's section for the files it concerns rather than restate it, and the item on conventions (B-005) fills the guide's section on conventions.
+
+## Scope
+
+This covers the guide: its form, its concerns, how it steers and how it is kept true. Which document states what the tool does is DR-232 (The specs are the single source of what the tool does), how a record is reversed is DR-230 (Each record says how hard it is to reverse, and replacing one starts an assessment of what rests on it), and how the roadmap and the backlog may steer and link is DR-227 (The roadmap and the backlog describe, and lead only to this repository's own files).
+
+## What reversing it would change
+
+How hard it is to reverse: reversible, with work. The guide is a page that one pull request can turn back into a description, though the agents and rule files that follow it by then would need another home for its principles. R219 to R222 in `project-standards` would change, with their scenarios, and so would design decisions 12 and 14, tasks 1.28 and 5.3, `CLAUDE.md`'s lines on what steers and on the guide, the README's list of documentation, B-001, B-003 and B-005, the project standards' feature page and the answers of T33, T159, T160, T163, T165 and T170.

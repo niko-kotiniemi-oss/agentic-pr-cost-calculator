@@ -230,10 +230,10 @@ The capability names the spec that holds the requirement. Each capability is one
 | R216 | non-functional | `project-standards` | A backlog item keeps its file, and its date moves with its text |
 | R217 | non-functional | `project-standards` | The backlog's page says what an item is and is not |
 | R218 | non-functional | `project-standards` | An item becomes agreed only by a change to its status |
-| R219 | non-functional | `project-standards` | The patterns page says which patterns the design follows and which anti-patterns it meets |
-| R220 | non-functional | `project-standards` | Each anti-pattern on the patterns page says how the design meets it |
-| R221 | non-functional | `project-standards` | The patterns page links only this repository's own files and holds no hidden text |
-| R222 | non-functional | `project-standards` | Each item on the patterns page gives its source and what it rests on |
+| R219 | non-functional | `project-standards` | The guide says how the project builds, concern by concern |
+| R220 | non-functional | `project-standards` | Each entry of the guide gives its principle and where the project stands |
+| R221 | non-functional | `project-standards` | The guide links only this repository's own files and holds no hidden text |
+| R222 | non-functional | `project-standards` | Each entry of the guide gives its source, what holds it and what it rests on |
 | R223 | non-functional | `project-standards` | This repository holds no switch and no ledger file before its own capture is turned on |
 | R224 | non-functional | `project-standards` | The documentation says which agents an opt-in records |
 | R225 | behavioural | `switch-and-opt-in` | One opt-in covers every agent that the tool records |
