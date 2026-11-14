@@ -38,7 +38,7 @@ Work on an item here that is open to feedback and contributions starts with an i
 - [B-016: An organization mode](backlog/B-016-an-organization-mode.md) - Open to feedback and contributions, last changed 2026-11-13. An organization mode, in which an organization turns its members' capture on and they cannot turn it off. Nothing in the first version rules it out.
 - [B-017: Agents other than Claude Code](backlog/B-017-agents-other-than-claude-code.md) - Planned, last changed 2026-11-14. Agents other than Claude Code, such as GitHub Copilot, Codex or Gemini, each in a change of its own after the first version.
 - [B-018: The PowerShell tool](backlog/B-018-the-powershell-tool.md) - Open to feedback and contributions, last changed 2026-11-13. Commands sent through Claude Code's PowerShell tool, which capture does not see.
-- [B-019: GitHub Enterprise Server](backlog/B-019-github-enterprise-server.md) - Open to feedback and contributions, last changed 2026-11-13. GitHub Enterprise Server.
+- [B-019: GitHub Enterprise Server](backlog/B-019-github-enterprise-server.md) - Open to feedback and contributions, last changed 2026-11-14. GitHub Enterprise Server.
 - [B-020: Other repository and CI services](backlog/B-020-other-repository-and-ci-services.md) - Open to feedback and contributions, last changed 2026-11-13. Repository and CI services other than GitHub, such as GitLab or Gitea.
 
 ## Known limitations
