@@ -135,7 +135,7 @@ The assumptions about Claude Code: what its transcripts hold, when its hooks run
 
 ## A5. What a session loads comes from its settings and the branch it starts on, and a project's settings cannot set the variables that name a person's home folder or the `XDG_*` variables.
 
-- **Rests on it:** R1, R37, R93, R103, R104, R160, R169, R194, T3, T33, T34, T35, T36, T41, T60, T66, T119, T134, T156, DR-022, DR-041, DR-050, DR-071, DR-081, DR-082, DR-093, DR-115, DR-126, DR-142, DR-143, DR-145, DR-183, DR-186, DR-188, DR-201, DR-202
+- **Rests on it:** R1, R37, R93, R103, R104, R160, R169, R194, T3, T33, T34, T35, T36, T41, T60, T66, T119, T134, T156, DR-022, DR-041, DR-050, DR-071, DR-081, DR-093, DR-115, DR-126, DR-142, DR-143, DR-145, DR-183, DR-186, DR-188, DR-201, DR-202, DR-237
 - **If it is wrong:** If a person's own pick of an environment took precedence over a repository's, the README's advice to keep it with the clone's local settings would be more than needed, and if the local settings did not, a person could not keep a repository's choice of environment from opting them in (T156). If a project's settings could set `HOME`, the `XDG_*` variables, or on Windows `HOMEDRIVE`, `HOMEPATH` or `USERPROFILE`, a repository could point both the step's reading of the opt-in and git's at configuration files of its own, to opt every contributor in or to hide an opt-out, so their usage would be published without their consent (T3, T119), as a hook that its settings register already could by changing the person's own configuration (A62). On Windows, such a folder could lie on a network path, which the step's check that the folder exists would reach. If a session loaded more from its branch than the rules expect, the rules that keep sessions off untrusted branches would not be enough (T34, T35, T66), and if the vendored skills did not load, agents would build without them unless they read their files (T35). If a settings file's `env` could not replace the session's `GIT_CONFIG_` variables, the README would warn of an undoing that cannot happen, and nothing else would change (R194, T134).
 - **Fact:** Environment variables that a repository's `.claude/settings.json` sets reach every process Claude Code starts, hooks included.
   - **Relied on:** R37, R160, R169, T3, T36, T119, DR-071, DR-183, DR-188
@@ -162,7 +162,7 @@ The assumptions about Claude Code: what its transcripts hold, when its hooks run
   - **Relied on:** T34, T35, T66, DR-081, DR-115, DR-126, DR-145
   - **Checked:** not yet: none will, since no test may reach Claude Code
 - **Fact:** `.claude/settings.json` makes Claude Code load the vendored Superpowers skills into every session here, and a session started outside the repository does not have them.
-  - **Relied on:** T33, T35, DR-082, DR-142, DR-143
+  - **Relied on:** T33, T35, DR-142, DR-143, DR-237
   - **Checked:** not yet: none will, since no test may reach Claude Code
 - **Fact:** A Claude Code plugin does not install itself in a fresh session, and a repository's own session-start hook can install one for everyone.
   - **Relied on:** DR-022, DR-041

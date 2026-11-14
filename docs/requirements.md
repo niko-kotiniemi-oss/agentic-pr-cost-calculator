@@ -145,7 +145,7 @@ The capability names the spec that holds the requirement. Each capability is one
 | R131 | non-functional | `project-standards` | A record and the threats it lists name each other |
 | R132 | non-functional | `project-standards` | A removed threat's ID is retired, never used again |
 | R133 | non-functional | `project-standards` | The records' folder holds only the records and their index |
-| R134 | non-functional | `project-standards` | No attribute hides the diff of a record, the README or what the marketplace serves, or changes the plugin's checkout |
+| R134 | non-functional | `project-standards` | No attribute hides the diff of a record, the README, `CLAUDE.md`, the guide, a change's tasks or what the marketplace serves, or changes the plugin's checkout |
 | R135 | non-functional | `project-standards` | The assumptions the design rests on are written down |
 | R136 | non-functional | `project-standards` | The assumptions with the most at stake come first |
 | R137 | non-functional | `project-standards` | The specs and pages use the glossary's words |
@@ -230,6 +230,21 @@ The capability names the spec that holds the requirement. Each capability is one
 | R216 | non-functional | `project-standards` | A backlog item keeps its file, and its date moves with its text |
 | R217 | non-functional | `project-standards` | The backlog's page says what an item is and is not |
 | R218 | non-functional | `project-standards` | An item becomes agreed only by a change to its status |
+| R219 | non-functional | `project-standards` | The guide says how the project builds, concern by concern |
+| R220 | non-functional | `project-standards` | Each entry of the guide gives its principle and where the project stands |
+| R221 | non-functional | `project-standards` | The guide links only this repository's own files and holds no hidden text |
+| R222 | non-functional | `project-standards` | Each entry of the guide gives its source, what holds it and what it rests on |
+| R223 | non-functional | `project-standards` | This repository holds no switch and no ledger file before its own capture is turned on |
+| R224 | non-functional | `project-standards` | The documentation says which agents an opt-in records |
+| R225 | behavioural | `switch-and-opt-in` | One opt-in covers every agent that the tool records |
+| R226 | non-functional | `project-standards` | Where the guide says the project stands is held true |
+| R227 | non-functional | `project-standards` | A gap to close before the build holds the build back |
+| R228 | non-functional | `project-standards` | A principle of the guide changes alone |
+| R229 | non-functional | `project-standards` | This repository holds no reusable workflow before the one that refuses other events |
+| R230 | non-functional | `releases-and-compatibility` | A release's guide was read for it, and its text names the gaps that adopters rely on |
+| R231 | non-functional | `project-standards` | A gap given to an agreed item changes that item |
+| R232 | non-functional | `project-standards` | Each change's tasks are read as GitHub shows them |
+| R233 | non-functional | `project-standards` | A gap of the guide closes only with its item |
 
 IDs are stable: a requirement keeps its ID while it exists, and a new one takes the next free number, so the rows follow the order in which requirements were added rather than the order of the specs. A requirement that a later change removes leaves the table, and its ID is listed below with the change that removed it, never to be used again.
 

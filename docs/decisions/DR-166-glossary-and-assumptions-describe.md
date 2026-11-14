@@ -1,12 +1,12 @@
 # DR-166: The glossary, the assumptions and the pages they link to describe, and never steer
 
 - **Type:** security and privacy
-- **Status:** accepted
+- **Status:** closed
 - **Decided by:** the change `add-pr-cost-calculator`, as the owner asked on 2026-10-28
 - **Requirements:** none
 - **Threats:** T33, T93, T95
 - **Replaces:** none
-- **Closed by:** none
+- **Closed by:** DR-238
 
 ## Context
 

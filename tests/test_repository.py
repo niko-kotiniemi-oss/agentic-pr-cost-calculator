@@ -2,7 +2,8 @@
 
 These hold the properties the first pull request promises: the files a
 standalone public repository needs, pinned tooling, a read-only CI token, and
-nothing private carried over from elsewhere.
+nothing private carried over from elsewhere; and, until the tasks that bring
+them are ticked, no switch, no ledger file and no reusable workflow (R223, R229).
 """
 
 from __future__ import annotations
@@ -13,11 +14,20 @@ import json
 import re
 import subprocess
 import tomllib
-from collections.abc import Iterable, Iterator
+from collections.abc import Hashable, Iterable, Iterator
 from pathlib import Path
 from typing import Any
 
+import pytest
 import yaml
+from test_roadmap import (
+    ARCHIVED_TASKS,
+    BUILD_CHANGE,
+    CHANGE_TASKS,
+    make_tree,
+    tasks,
+    tracked,
+)
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -247,12 +257,51 @@ WRITES_ALLOWED: dict[str, set[str]] = {}
 FORBIDDEN_TRIGGERS = {"pull_request_target", "workflow_run"}
 
 
+class WorkflowLoader(yaml.SafeLoader):
+    """YAML read as `yaml.safe_load` reads it, but a mapping that gives a key twice is
+    refused, since PyYAML keeps its last value and another reader may not."""
+
+    def construct_mapping(self, node: yaml.MappingNode, deep: bool = False) -> dict[Any, Any]:
+        seen: set[Any] = set()
+        for key_node, _ in node.value:
+            if key_node.tag == "tag:yaml.org,2002:merge":
+                continue
+            key = self.construct_object(key_node, deep=deep)
+            if not isinstance(key, Hashable):
+                continue
+            if key in seen:
+                written = key_node.value if isinstance(key_node, yaml.ScalarNode) else key
+                raise yaml.constructor.ConstructorError(
+                    None, None, f"gives the key {written!r} twice", key_node.start_mark
+                )
+            seen.add(key)
+        return super().construct_mapping(node, deep=deep)
+
+
+def load_workflow(text: str) -> Any:
+    # WorkflowLoader is a SafeLoader, so this builds no object that YAML names.
+    return yaml.load(text, Loader=WorkflowLoader)
+
+
 def triggers(doc: dict[Any, Any]) -> set[str]:
-    # YAML 1.1 reads a bare `on:` key as the boolean true.
-    on = doc.get("on", doc.get(True))
-    if isinstance(on, str):
-        return {on}
-    return set(on or [])
+    """The events that a workflow names under `on`, quoted or bare, which YAML 1.1 reads
+    as the boolean true, given as one name, as a mapping, or as a list of names and
+    mappings.
+
+    Raises ValueError for events given in any other form, which GitHub may read
+    otherwise."""
+    found: set[str] = set()
+    for on in (doc.get("on"), doc.get(True)):
+        if on is None:
+            continue
+        for item in on if isinstance(on, list) else [on]:
+            if isinstance(item, str):
+                found.add(item)
+            elif isinstance(item, dict):
+                found.update(str(key) for key in item)
+            else:
+                raise ValueError(f"events given as {type(item).__name__}")
+    return found
 
 
 def writes(permissions: Any) -> set[str]:
@@ -264,10 +313,15 @@ def writes(permissions: Any) -> set[str]:
 
 
 def workflow_problems(name: str, text: str) -> list[str]:
-    doc = yaml.safe_load(text)
-    problems = [
-        f"{name} triggers on {trigger}" for trigger in sorted(triggers(doc) & FORBIDDEN_TRIGGERS)
-    ]
+    doc = load_workflow(text)
+    try:
+        events = triggers(doc)
+    except ValueError:
+        problems = [f"{name} gives its events in a form that this check cannot read"]
+    else:
+        problems = [
+            f"{name} triggers on {trigger}" for trigger in sorted(events & FORBIDDEN_TRIGGERS)
+        ]
     blocks = [("the workflow", doc.get("permissions"))] + [
         (f"job `{job}`", body.get("permissions")) for job, body in (doc.get("jobs") or {}).items()
     ]
@@ -323,6 +377,23 @@ def test_a_write_the_workflow_is_allowed_is_not_reported(monkeypatch: Any) -> No
     monkeypatch.setitem(WRITES_ALLOWED, "r.yml", {"pull-requests: write"})
     assert workflow_problems("r.yml", text) == []
     assert triggers({"on": ["push", "pull_request"]}) == {"push", "pull_request"}
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "'on': push\non: pull_request_target\n",
+        "on: push\n'on': pull_request_target\n",
+        "on: [push, {pull_request_target: {}}]\n",
+    ],
+)
+def test_a_trigger_under_either_on_key_or_in_a_list_s_mapping_is_read(text: str) -> None:
+    assert workflow_problems("x.yml", text) == ["x.yml triggers on pull_request_target"]
+
+
+def test_a_workflow_that_gives_a_key_twice_is_refused() -> None:
+    with pytest.raises(yaml.YAMLError, match="gives the key 'on' twice"):
+        workflow_problems("x.yml", "on: pull_request_target\non: push\n")
 
 
 def checkouts(name: str, text: str) -> tuple[list[str], int]:
@@ -675,3 +746,233 @@ def test_a_bug_report_form_whose_privacy_checkbox_is_optional_is_refused() -> No
     assert not required_privacy_checkbox({"body": []})
     option["required"] = True
     assert required_privacy_checkbox({"body": [field]})
+
+
+# R223 and R229: what this repository holds before the tool is turned on here.
+
+NEITHER_TICKED = "- [ ] 4.3 Add the reusable workflow\n- [ ] 7.1 Turn the tool on here\n"
+CAPTURE_ON = "- [ ] 4.3 Add the reusable workflow\n- [x] 7.1 Turn the tool on here\n"
+GUARD_ADDED = "- [x] 4.3 Add the reusable workflow\n- [ ] 7.1 Turn the tool on here\n"
+REUSABLE = "on:\n  workflow_call:\npermissions:\n  contents: read\n"
+
+
+def ticked(root: Path, number: str) -> bool:
+    """Whether a task of the change is ticked, in it or in its archived copy."""
+    return tasks(root).get((BUILD_CHANGE, number), False)
+
+
+def capture_file_problems(root: Path) -> list[str]:
+    """R223: no switch and no ledger file at the root before task 7.1 turns the tool on,
+    whatever the case of their letters, which a file system that ignores case does not
+    tell apart."""
+    if ticked(root, "7.1"):
+        return []
+    return [
+        f"`{name}` is tracked at the root while task 7.1 of `{BUILD_CHANGE}` is not ticked"
+        for name in sorted(tracked(root))
+        if name.casefold() == ".pr-cost.json" or name.casefold().startswith(".pr-cost/")
+    ]
+
+
+def reusable_workflow_problems(root: Path) -> list[str]:
+    """R229: no workflow that another repository can call before task 4.3 adds its guard."""
+    if ticked(root, "4.3"):
+        return []
+    problems = []
+    for name in sorted(tracked(root)):
+        if not name.startswith(".github/workflows/"):
+            continue
+        try:
+            doc = load_workflow((root / name).read_text(encoding="utf-8"))
+        except yaml.YAMLError:
+            problems.append(
+                f"`{name}` cannot be read as YAML, so it may declare `workflow_call` while "
+                f"task 4.3 of `{BUILD_CHANGE}` is not ticked"
+            )
+            continue
+        try:
+            events = triggers(doc) if isinstance(doc, dict) else set()
+        except ValueError:
+            problems.append(
+                f"`{name}` gives its events in a form that this check cannot read, so it may "
+                f"declare `workflow_call` while task 4.3 of `{BUILD_CHANGE}` is not ticked"
+            )
+            continue
+        if "workflow_call" in events:
+            problems.append(
+                f"`{name}` declares `workflow_call` while task 4.3 of `{BUILD_CHANGE}` is not "
+                "ticked"
+            )
+    return problems
+
+
+@pytest.mark.parametrize(
+    "name",
+    [
+        ".pr-cost.json",
+        ".pr-cost/a-ledger-file",
+        ".PR-COST.json",
+        ".Pr-Cost/ledger/2026-11/a.jsonl",
+        ".pr-co\u017ft.json",
+    ],
+)
+def test_a_switch_or_a_ledger_file_at_the_root_before_task_7_1_is_named(
+    tmp_path: Path, name: str
+) -> None:
+    root = make_tree(tmp_path, {CHANGE_TASKS: NEITHER_TICKED, name: "{}\n"})
+    assert capture_file_problems(root) == [
+        f"`{name}` is tracked at the root while task 7.1 of `add-pr-cost-calculator` is not ticked"
+    ]
+
+
+@pytest.mark.parametrize(
+    "name",
+    [
+        "tests/golden/.pr-cost.json",
+        "tests/golden/.pr-cost/a-ledger-file",
+        ".pr-cost.json.example",
+        ".pr-costs/a-file",
+    ],
+)
+def test_a_name_that_is_not_the_switch_or_a_ledger_file_at_the_root_passes(
+    tmp_path: Path, name: str
+) -> None:
+    root = make_tree(tmp_path, {CHANGE_TASKS: NEITHER_TICKED, name: "{}\n"})
+    assert capture_file_problems(root) == []
+
+
+def test_an_untracked_switch_is_not_named(tmp_path: Path) -> None:
+    root = make_tree(tmp_path, {CHANGE_TASKS: NEITHER_TICKED})
+    (root / ".pr-cost.json").write_text("{}\n")
+    assert capture_file_problems(root) == []
+
+
+@pytest.mark.parametrize("where", [CHANGE_TASKS, ARCHIVED_TASKS])
+def test_a_switch_and_ledger_files_pass_once_task_7_1_is_ticked(tmp_path: Path, where: str) -> None:
+    files: dict[str, str | None] = {
+        where: CAPTURE_ON,
+        ".pr-cost.json": "{}\n",
+        ".pr-cost/a-ledger-file": "{}\n",
+    }
+    assert capture_file_problems(make_tree(tmp_path, files)) == []
+
+
+def test_task_7_1_ticked_in_another_change_does_not_turn_the_tool_on_here(tmp_path: Path) -> None:
+    files: dict[str, str | None] = {
+        CHANGE_TASKS: NEITHER_TICKED,
+        "openspec/changes/another/tasks.md": CAPTURE_ON,
+        ".pr-cost.json": "{}\n",
+    }
+    assert capture_file_problems(make_tree(tmp_path, files)) == [
+        "`.pr-cost.json` is tracked at the root while task 7.1 of `add-pr-cost-calculator` is "
+        "not ticked"
+    ]
+
+
+@pytest.mark.parametrize(
+    "workflow",
+    [
+        REUSABLE,
+        "on: workflow_call\n",
+        "on: [push, workflow_call]\n",
+        "'on': {workflow_call: {inputs: {}}}\n",
+        "'on': push\non: workflow_call\n",
+        "on: push\n'on': workflow_call\n",
+        "on: [push, {workflow_call: {}}]\n",
+    ],
+)
+def test_a_reusable_workflow_before_task_4_3_is_named(tmp_path: Path, workflow: str) -> None:
+    files: dict[str, str | None] = {
+        CHANGE_TASKS: NEITHER_TICKED,
+        ".github/workflows/report.yml": workflow,
+    }
+    assert reusable_workflow_problems(make_tree(tmp_path, files)) == [
+        "`.github/workflows/report.yml` declares `workflow_call` while task 4.3 of "
+        "`add-pr-cost-calculator` is not ticked"
+    ]
+
+
+@pytest.mark.parametrize("where", [CHANGE_TASKS, ARCHIVED_TASKS])
+def test_a_reusable_workflow_passes_once_task_4_3_is_ticked(tmp_path: Path, where: str) -> None:
+    files: dict[str, str | None] = {where: GUARD_ADDED, ".github/workflows/report.yml": REUSABLE}
+    assert reusable_workflow_problems(make_tree(tmp_path, files)) == []
+
+
+@pytest.mark.parametrize(
+    ("name", "workflow"),
+    [
+        (".github/workflows/ci.yml", "on: [push, pull_request]\n"),
+        (".github/workflows/ci.yml", "on: push\nx: &x {a: 1}\ny:\n  <<: *x\n  a: 2\n"),
+        (".github/workflows/ci.yml", "on:\njobs: {}\n"),
+        (".github/workflows/ci.yml", ""),
+        (".github/workflows/ci.yml", "- workflow_call\n"),
+        ("docs/a-reusable-workflow-shown.yml", REUSABLE),
+    ],
+)
+def test_a_workflow_that_declares_no_workflow_call_or_lies_elsewhere_passes(
+    tmp_path: Path, name: str, workflow: str
+) -> None:
+    files: dict[str, str | None] = {CHANGE_TASKS: NEITHER_TICKED, name: workflow}
+    assert reusable_workflow_problems(make_tree(tmp_path, files)) == []
+
+
+@pytest.mark.parametrize(
+    "workflow",
+    [
+        "on: [workflow_call\n",
+        "on: workflow_call\non: push\n",
+        "a: 1\na: 2\n",
+        "? [a, b]\n: c\n",
+    ],
+)
+def test_a_workflow_that_cannot_be_read_is_named(tmp_path: Path, workflow: str) -> None:
+    files: dict[str, str | None] = {
+        CHANGE_TASKS: NEITHER_TICKED,
+        ".github/workflows/broken.yml": workflow,
+    }
+    assert reusable_workflow_problems(make_tree(tmp_path, files)) == [
+        "`.github/workflows/broken.yml` cannot be read as YAML, so it may declare "
+        "`workflow_call` while task 4.3 of `add-pr-cost-calculator` is not ticked"
+    ]
+
+
+# Events given in a form that `triggers` cannot read, which GitHub may read otherwise.
+EVENTS_IN_ANOTHER_FORM = [
+    "on: !!set {workflow_call}\n",
+    "on: [[workflow_call]]\n",
+    "on: !!omap [workflow_call: {}]\n",
+    "on: !!pairs [workflow_call: {}]\n",
+    "on: 5\n",
+    "'on': [push, 5]\n",
+]
+
+
+@pytest.mark.parametrize("workflow", EVENTS_IN_ANOTHER_FORM)
+def test_a_workflow_whose_events_cannot_be_read_is_named(tmp_path: Path, workflow: str) -> None:
+    files: dict[str, str | None] = {
+        CHANGE_TASKS: NEITHER_TICKED,
+        ".github/workflows/odd.yml": workflow,
+    }
+    assert reusable_workflow_problems(make_tree(tmp_path, files)) == [
+        "`.github/workflows/odd.yml` gives its events in a form that this check cannot read, "
+        "so it may declare `workflow_call` while task 4.3 of `add-pr-cost-calculator` is not "
+        "ticked"
+    ]
+
+
+@pytest.mark.parametrize("workflow", EVENTS_IN_ANOTHER_FORM)
+def test_the_workflow_checks_name_events_that_they_cannot_read(workflow: str) -> None:
+    assert workflow_problems("x.yml", workflow + "permissions: write-all\n") == [
+        "x.yml gives its events in a form that this check cannot read",
+        "x.yml the workflow grants `write-all`",
+    ]
+
+
+def test_this_repository_holds_no_switch_ledger_file_or_reusable_workflow_too_early() -> None:
+    """A check that examined nothing fails: the tasks that each check waits for, and the
+    workflows that one reads, are found."""
+    change = "add-pr-cost-calculator"
+    assert {(change, "4.3"), (change, "7.1")} <= tasks(ROOT).keys()
+    assert any(name.startswith(".github/workflows/") for name in tracked(ROOT))
+    assert capture_file_problems(ROOT) == []
+    assert reusable_workflow_problems(ROOT) == []

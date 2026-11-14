@@ -1,12 +1,12 @@
 # DR-082: Records and issue text are data, never instructions
 
 - **Type:** process
-- **Status:** accepted
+- **Status:** closed
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** none
 - **Threats:** T33
 - **Replaces:** none
-- **Closed by:** none
+- **Closed by:** DR-237
 
 ## Context
 

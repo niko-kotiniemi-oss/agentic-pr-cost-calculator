@@ -6,7 +6,8 @@ Run in the repository, it compares HEAD with where HEAD left BASE, which is
 `refs/remotes/origin/main` unless given, in the Markdown files that the wording test
 reads, and prints Markdown for the pull request (task 1.20; design decision 14; T90,
 T94). It names both commits by their full hashes, compares a renamed page with what it
-was, and names each changed file that it does not compare. It reads each page with
+was, and names each changed file that it does not compare. It lists the changes to
+`CLAUDE.md` first and those to the guide next, since both steer. It reads each page with
 `scripts/wording.py`, as the wording test does, so that a word inside code, among the
 glossary's words to avoid or in a title that an accepted record quotes is never taken
 for a replacement. A replacement is judged by the glossary at HEAD, and a line that
@@ -50,7 +51,8 @@ from wording import (
 )
 
 USAGE = "usage: python3 scripts/rewording.py [BASE]"
-STEERING = "CLAUDE.md"
+# The files that steer, whose changes are listed first, in this order (T94).
+STEERING = ("CLAUDE.md", "docs/patterns.md")
 TOKEN = re.compile(r"\S+|\s+")
 # How many tokens, each a word or the spaces after one, are shown on each side of a change.
 CONTEXT = 8
@@ -239,6 +241,14 @@ def counted(number: int, noun: str) -> str:
     return f"{number} {noun}" if number == 1 else f"{number} {noun}s"
 
 
+def listed_first(change: tuple[str, str, str]) -> tuple[int, str]:
+    """Where a changed file is listed: the files that steer first, in their order, a
+    rename by either of its paths, then the rest by path."""
+    _, old, new = change
+    ranks = [STEERING.index(path) if path in STEERING else len(STEERING) for path in (old, new)]
+    return (min(ranks), new)
+
+
 def report(base: str) -> str:
     """The comparison of HEAD with where HEAD left the base, as Markdown."""
     tip = git("rev-parse", "--verify", f"{base}^{{commit}}", refused=f"{base} is not a commit")
@@ -257,7 +267,7 @@ def report(base: str) -> str:
         kept = kept_at(Path.cwd(), since)
     except subprocess.CalledProcessError as failed:
         raise Refused(failed.stderr.decode("utf-8", "replace").strip()) from None
-    changes = sorted(changed_files(since), key=lambda change: (change[2] != STEERING, change[2]))
+    changes = sorted(changed_files(since), key=listed_first)
     seen = {path for _, old, new in changes for path in (old, new)}
     every = git("diff-tree", "-r", "-z", "--name-only", since, "HEAD").split("\0")[:-1]
     skipped = [
