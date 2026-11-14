@@ -279,24 +279,28 @@ class WorkflowLoader(yaml.SafeLoader):
 
 
 def load_workflow(text: str) -> Any:
-    loader = WorkflowLoader(text)
-    try:
-        return loader.get_single_data()
-    finally:
-        loader.dispose()
+    # WorkflowLoader is a SafeLoader, so this builds no object that YAML names.
+    return yaml.load(text, Loader=WorkflowLoader)
 
 
 def triggers(doc: dict[Any, Any]) -> set[str]:
     """The events that a workflow names under `on`, quoted or bare, which YAML 1.1 reads
     as the boolean true, given as one name, as a mapping, or as a list of names and
-    mappings."""
+    mappings.
+
+    Raises ValueError for events given in any other form, which GitHub may read
+    otherwise."""
     found: set[str] = set()
     for on in (doc.get("on"), doc.get(True)):
+        if on is None:
+            continue
         for item in on if isinstance(on, list) else [on]:
             if isinstance(item, str):
                 found.add(item)
             elif isinstance(item, dict):
                 found.update(str(key) for key in item)
+            else:
+                raise ValueError(f"events given as {type(item).__name__}")
     return found
 
 
@@ -310,9 +314,14 @@ def writes(permissions: Any) -> set[str]:
 
 def workflow_problems(name: str, text: str) -> list[str]:
     doc = load_workflow(text)
-    problems = [
-        f"{name} triggers on {trigger}" for trigger in sorted(triggers(doc) & FORBIDDEN_TRIGGERS)
-    ]
+    try:
+        events = triggers(doc)
+    except ValueError:
+        problems = [f"{name} gives its events in a form that this check cannot read"]
+    else:
+        problems = [
+            f"{name} triggers on {trigger}" for trigger in sorted(events & FORBIDDEN_TRIGGERS)
+        ]
     blocks = [("the workflow", doc.get("permissions"))] + [
         (f"job `{job}`", body.get("permissions")) for job, body in (doc.get("jobs") or {}).items()
     ]
@@ -779,7 +788,15 @@ def reusable_workflow_problems(root: Path) -> list[str]:
                 f"task 4.3 of `{BUILD_CHANGE}` is not ticked"
             )
             continue
-        if isinstance(doc, dict) and "workflow_call" in triggers(doc):
+        try:
+            events = triggers(doc) if isinstance(doc, dict) else set()
+        except ValueError:
+            problems.append(
+                f"`{name}` gives its events in a form that this check cannot read, so it may "
+                f"declare `workflow_call` while task 4.3 of `{BUILD_CHANGE}` is not ticked"
+            )
+            continue
+        if "workflow_call" in events:
             problems.append(
                 f"`{name}` declares `workflow_call` while task 4.3 of `{BUILD_CHANGE}` is not "
                 "ticked"
@@ -875,6 +892,9 @@ def test_a_reusable_workflow_passes_once_task_4_3_is_ticked(tmp_path: Path, wher
     [
         (".github/workflows/ci.yml", "on: [push, pull_request]\n"),
         (".github/workflows/ci.yml", "on: push\nx: &x {a: 1}\ny:\n  <<: *x\n  a: 2\n"),
+        (".github/workflows/ci.yml", "on:\njobs: {}\n"),
+        (".github/workflows/ci.yml", ""),
+        (".github/workflows/ci.yml", "- workflow_call\n"),
         ("docs/a-reusable-workflow-shown.yml", REUSABLE),
     ],
 )
@@ -902,6 +922,38 @@ def test_a_workflow_that_cannot_be_read_is_named(tmp_path: Path, workflow: str) 
     assert reusable_workflow_problems(make_tree(tmp_path, files)) == [
         "`.github/workflows/broken.yml` cannot be read as YAML, so it may declare "
         "`workflow_call` while task 4.3 of `add-pr-cost-calculator` is not ticked"
+    ]
+
+
+# Events given in a form that `triggers` cannot read, which GitHub may read otherwise.
+EVENTS_IN_ANOTHER_FORM = [
+    "on: !!set {workflow_call}\n",
+    "on: [[workflow_call]]\n",
+    "on: !!omap [workflow_call: {}]\n",
+    "on: !!pairs [workflow_call: {}]\n",
+    "on: 5\n",
+    "'on': [push, 5]\n",
+]
+
+
+@pytest.mark.parametrize("workflow", EVENTS_IN_ANOTHER_FORM)
+def test_a_workflow_whose_events_cannot_be_read_is_named(tmp_path: Path, workflow: str) -> None:
+    files: dict[str, str | None] = {
+        CHANGE_TASKS: NEITHER_TICKED,
+        ".github/workflows/odd.yml": workflow,
+    }
+    assert reusable_workflow_problems(make_tree(tmp_path, files)) == [
+        "`.github/workflows/odd.yml` gives its events in a form that this check cannot read, "
+        "so it may declare `workflow_call` while task 4.3 of `add-pr-cost-calculator` is not "
+        "ticked"
+    ]
+
+
+@pytest.mark.parametrize("workflow", EVENTS_IN_ANOTHER_FORM)
+def test_the_workflow_checks_name_events_that_they_cannot_read(workflow: str) -> None:
+    assert workflow_problems("x.yml", workflow + "permissions: write-all\n") == [
+        "x.yml gives its events in a form that this check cannot read",
+        "x.yml the workflow grants `write-all`",
     ]
 
 

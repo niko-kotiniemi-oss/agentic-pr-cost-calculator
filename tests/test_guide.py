@@ -18,11 +18,11 @@ under the four concerns that adopters rely on, only an owner's record accepts a 
 only an agreed item closes a gap (R226). While a gap names an item that the roadmap lists
 under Now, no task of `add-pr-cost-calculator` that it holds back is ticked, and a gap to
 close before the build names such an item (R227). Compared with the base that the
-records' check uses, a pull request that adds or removes an entry, or changes its
-principle, changes nothing outside `docs/`, `openspec/`, `CLAUDE.md` and `CHANGELOG.md`
-(R228), and one that gives an agreed item a gap changes that item's What done looks like
-(R231), both examining nothing while no base holds the guide. No attribute hides the
-diff of the guide or of `CLAUDE.md` (R134).
+records' check uses, a pull request that adds or removes an entry, moves one to another
+concern, or changes its principle, changes nothing outside `docs/`, `openspec/`,
+`CLAUDE.md` and `CHANGELOG.md` (R228), and one that gives an agreed item a gap changes
+that item's What done looks like (R231), both examining nothing while no base holds the
+guide. No attribute hides the diff of the guide or of `CLAUDE.md` (R134).
 
 Each check is shown to fail on a synthetic tree, the roadmap's with a guide, into which
 its defect is planted, or on a history of two commits made in it.
@@ -435,8 +435,9 @@ def is_gap(entry: Entry) -> bool:
 
 def gap_items(entry: Entry) -> list[str]:
     """The backlog items that an entry names, each once, when it is a gap."""
-    standing = entry.fields.get("Where we stand", "")
-    return list(dict.fromkeys(ITEM_NAME.findall(standing))) if is_gap(entry) else []
+    if not is_gap(entry):
+        return []
+    return list(dict.fromkeys(ITEM_NAME.findall(entry.fields["Where we stand"])))
 
 
 def holds_the_build_back(number: str) -> bool:
@@ -506,10 +507,9 @@ def beside_a_principle(path: str) -> bool:
 def principle_change_problems(root: Path, *bases: str) -> tuple[list[str], bool]:
     """Compared with each base that holds the guide, a pull request that adds or removes an
     entry, moves one to another concern, or changes its principle, changes no file outside
-    `docs/`, `openspec/`,
-    `CLAUDE.md` and `CHANGELOG.md`, read as the files that differ between the base's tree
-    and HEAD's, where git detects no rename unless asked, so that a rename reads as a
-    removal and an addition; and whether a base held the guide (R228).
+    `docs/`, `openspec/`, `CLAUDE.md` and `CHANGELOG.md`, read as the files that differ
+    between the base's tree and HEAD's, where git detects no rename unless asked, so that a
+    rename reads as a removal and an addition; and whether a base held the guide (R228).
 
     Raises LookupError when git cannot list or read a commit's files."""
     held = guides_at(root, bases)
@@ -585,8 +585,8 @@ def agreed_gap_problems(root: Path, *bases: str) -> tuple[list[str], bool]:
 
 def closed_gap_problems(root: Path, *bases: str) -> tuple[list[str], bool]:
     """Compared with each base that holds the guide, an entry, known by its heading, that
-    the base gives as a gap and HEAD does not leaves each item that the base's gap names
-    Done or Dropped; and whether a base held the guide (R233).
+    stops being a gap, or whose gap stops naming an item that the base's gap names, leaves
+    that item Done or Dropped; and whether a base held the guide (R233).
 
     Raises LookupError when git cannot list or read a commit's files."""
     held = guides_at(root, bases)
@@ -598,20 +598,29 @@ def closed_gap_problems(root: Path, *bases: str) -> tuple[list[str], bool]:
     for _, before in held:
         for heading, entry in after.items():
             old = before.get(heading)
-            if old is None or is_gap(entry):
+            if old is None:
                 continue
+            still = gap_items(entry)
             for ident in gap_items(old):
                 item = now.get(ident)
-                if item is None:
-                    problems[
-                        f"{entry.name} is no longer a gap, while {BACKLOG} does not hold "
-                        f"{ident}, which the base's gap names"
-                    ] = None
-                elif item.status not in (DONE, DROPPED):
-                    problems[
-                        f"{entry.name} is no longer a gap, while {ident}, which the base's gap "
-                        f"names, is {item.status}"
-                    ] = None
+                if ident in still or (item is not None and item.status in (DONE, DROPPED)):
+                    continue
+                if is_gap(entry):
+                    state = (
+                        f"{BACKLOG} does not hold it" if item is None else f"it is {item.status}"
+                    )
+                    problem = f"no longer names {ident}, which the base's gap names, while {state}"
+                elif item is None:
+                    problem = (
+                        f"is no longer a gap, while {BACKLOG} does not hold {ident}, which the "
+                        "base's gap names"
+                    )
+                else:
+                    problem = (
+                        f"is no longer a gap, while {ident}, which the base's gap names, is "
+                        f"{item.status}"
+                    )
+                problems[f"{entry.name} {problem}"] = None
     return list(problems), True
 
 
@@ -1755,16 +1764,53 @@ def test_a_gap_closed_with_its_item_done_or_dropped_passes(tmp_path: Path, statu
     assert closed(history(tmp_path, {}, after)) == ([], True)
 
 
+def no_longer_named(heading: str, guide: str, ident: str, status: str) -> str:
+    return (
+        f"{named(heading, guide)} no longer names {ident}, which the base's gap names, while "
+        f"it is {status}"
+    )
+
+
+@pytest.mark.parametrize(
+    "standing", ["Gap. B-003 pins it now.", "Gap. Before the build. B-003.", "Gap."]
+)
+def test_a_gap_that_stops_naming_its_open_item_is_reported(tmp_path: Path, standing: str) -> None:
+    guide = synthetic({"Pinned and locked": {"Where we stand": standing}})
+    root = history(tmp_path, {}, {GUIDE: guide, **OUTSIDE})
+    assert closed(root) == ([no_longer_named("Pinned and locked", guide, "B-001", "Planned")], True)
+
+
+def test_a_gap_that_stops_naming_an_item_that_is_gone_is_reported(tmp_path: Path) -> None:
+    guide = synthetic({"Pinned and locked": {"Where we stand": "Gap. B-003 pins it now."}})
+    root = history(tmp_path, {}, {GUIDE: guide, A_THING: None})
+    assert closed(root) == (
+        [
+            f"{named('Pinned and locked', guide)} no longer names B-001, which the base's gap "
+            f"names, while {BACKLOG} does not hold it"
+        ],
+        True,
+    )
+
+
+@pytest.mark.parametrize("status", ["Done", "Dropped"])
+def test_a_gap_that_stops_naming_an_item_done_or_dropped_passes(
+    tmp_path: Path, status: str
+) -> None:
+    guide = synthetic({"Pinned and locked": {"Where we stand": "Gap. B-003 pins it now."}})
+    after: dict[str, str | None] = {GUIDE: guide, A_THING: finished(A_THING, status), **OUTSIDE}
+    assert closed(history(tmp_path, {}, after)) == ([], True)
+
+
 @pytest.mark.parametrize(
     ("heading", "standing"),
     [
-        ("Pinned and locked", "Gap. B-003 pins it now."),
-        ("Pinned and locked", "Gap."),
+        ("Pinned and locked", "Gap. B-001 and B-003 pin it."),
+        ("Pinned and locked", "Gap. Before the build. B-001 pins it."),
         ("Least privilege", "Designed."),
         ("Counts, never content", "Followed."),
     ],
 )
-def test_an_entry_still_a_gap_or_never_one_passes(
+def test_an_entry_still_a_gap_that_names_its_items_or_never_one_passes(
     tmp_path: Path, heading: str, standing: str
 ) -> None:
     guide = synthetic({heading: {"Where we stand": standing}})

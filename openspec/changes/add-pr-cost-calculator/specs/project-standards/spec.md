@@ -1246,16 +1246,21 @@ Compared with the base that the records' check uses, a pull request that makes a
 
 ### Requirement: A gap of the guide closes only with its item
 
-Compared with the base that the records' check uses, a pull request that gives an entry of the guide, known by its heading, another standing than the `Gap.` that the base gives it SHALL leave each backlog item that the base's gap names `Done` or `Dropped`, so that a gap closes only through its item, and not in the pull request whose work it holds back. The check SHALL be skipped while no base holds the guide. Tests SHALL fail otherwise.
+Compared with the base that the records' check uses, a pull request in which an entry of the guide, known by its heading, stops being a gap, or its gap stops naming a backlog item that the base's gap names, SHALL leave that item `Done` or `Dropped`, so that a gap closes, or passes to other work, only through its item, and not in the pull request whose work it holds back. The check SHALL be skipped while no base holds the guide. Tests SHALL fail otherwise.
 
 #### Scenario: A gap closed while its item is open fails a test
 
 - **WHEN**, compared with the base, an entry that the base gives as `Gap.` no longer opens Where we stand with `Gap.`, and a backlog item that the base's gap names is neither `Done` nor `Dropped`, or `docs/backlog/` does not hold it
 - **THEN** a test fails and names the entry and the item
 
+#### Scenario: A gap that stops naming its open item fails a test
+
+- **WHEN**, compared with the base, an entry that the base gives as `Gap.` still opens Where we stand with `Gap.`, but no longer names a backlog item that the base's gap names, and that item is neither `Done` nor `Dropped`, or `docs/backlog/` does not hold it
+- **THEN** a test fails and names the entry and the item
+
 #### Scenario: A gap closed with its item done or dropped passes
 
-- **WHEN**, compared with the base, an entry that the base gives as `Gap.` no longer opens Where we stand with `Gap.`, and each backlog item that the base's gap names is `Done` or `Dropped`, or the entry is still a gap, whatever its items
+- **WHEN**, compared with the base, each backlog item that the base's gap names is `Done` or `Dropped`, or is still named by the entry's gap, whatever other items the gap comes to name
 - **THEN** the test passes it
 
 #### Scenario: The guide's first standings pass before any base holds the guide
@@ -1298,11 +1303,11 @@ No tracked file under `.github/workflows/` SHALL declare `workflow_call` while t
 
 ### Requirement: Each change's tasks are read as GitHub shows them
 
-Each change's `tasks.md`, active or archived, SHALL give each of its tasks once, on a line that opens with `- [ ]` or `- [x]`, a space, the task's number and a space, and SHALL hold no other line with a checkbox, no HTML comment, no line whose first character other than a space is `<`, and no fenced code, so that the tests that wait on a task's tick, or refuse one, read the tasks that GitHub shows the owner. Tests SHALL fail otherwise.
+Each change's `tasks.md`, active or archived, SHALL give each of its tasks once, on a line that opens with `- [ ]` or `- [x]`, a space, the task's number and a space, and SHALL hold no other line with a checkbox, no HTML comment, fenced code, front matter or byte-order mark, no line that opens with `<` or `$$` after any spaces, and no carriage return without a line feed after it, so that the checks read the ticks that GitHub shows the owner. Tests SHALL fail otherwise.
 
 #### Scenario: A task list read as GitHub shows it passes
 
-- **WHEN** each line of a change's `tasks.md` that holds a checkbox is a task as the checks read it, no task is given twice, and the file holds no HTML comment, no line that opens with `<` and no fenced code
+- **WHEN** each line of a change's `tasks.md` that holds a checkbox is a task as the checks read it, no task is given twice, and the file holds none of the text that GitHub does not show in a task list
 - **THEN** the test passes it
 
 #### Scenario: A checkbox that the checks do not read as a task fails a test
@@ -1312,7 +1317,7 @@ Each change's `tasks.md`, active or archived, SHALL give each of its tasks once,
 
 #### Scenario: Text that GitHub does not show in a task list fails a test
 
-- **WHEN** a change's `tasks.md` holds an HTML comment, a line whose first character other than a space is `<`, with which Markdown starts HTML that can hide the lines after it, or fenced code, in which GitHub shows a tick as code
+- **WHEN** a change's `tasks.md` holds an HTML comment; a line whose first character other than a space is `<`, with which Markdown starts HTML that can hide the lines after it; fenced code, in which GitHub shows a tick as code; a line that opens with `$$` after any spaces, with which GitHub starts a math block; front matter, which a first line of `---` opens; a byte-order mark; or a carriage return without a line feed after it, which Markdown reads as the end of a line where the checks read none
 - **THEN** a test fails and names the file and the line
 
 #### Scenario: A task given twice fails a test

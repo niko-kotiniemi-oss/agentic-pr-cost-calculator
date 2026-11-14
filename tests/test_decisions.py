@@ -72,7 +72,7 @@ from datetime import UTC, date, datetime
 from pathlib import Path
 
 import pytest
-from test_roadmap import session_free_environment
+from test_roadmap import isolated_environment
 from wording import ACCEPTED, DEFAULT_BRANCH, QUOTATION, SPEC_FILE, SPEC_TITLE
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -633,7 +633,7 @@ def git(root: Path, *args: str) -> subprocess.CompletedProcess[bytes]:
         cwd=root,
         capture_output=True,
         check=False,
-        env={**session_free_environment(), **GIT_ENVIRONMENT},
+        env=isolated_environment(),
     )
 
 
@@ -1585,13 +1585,20 @@ def run_git(root: Path, *args: str) -> str:
 def test_git_reads_the_repository_it_is_given_whatever_the_session_sets(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    """A git variable of the session's, such as a repository named elsewhere, or its own
-    configuration, does not reach the checks' runs of git."""
+    """A git variable of the session's, such as a repository named elsewhere or a
+    configuration of its own, and the session's global configuration, wherever git finds
+    it, do not reach the checks' runs of git."""
     run_git(tmp_path, "init", "-q")
     setting = tmp_path / "config"
     setting.write_text("[planted]\n\tkey = set\n", encoding="utf-8")
+    home = tmp_path / "home"
+    (home / ".config" / "git").mkdir(parents=True)
+    (home / ".gitconfig").write_text("[planted]\n\tkey = home\n", encoding="utf-8")
+    (home / ".config" / "git" / "config").write_text("[planted]\n\tkey = xdg\n", encoding="utf-8")
     monkeypatch.setenv("GIT_DIR", str(tmp_path / "elsewhere"))
     monkeypatch.setenv("GIT_CONFIG_GLOBAL", str(setting))
+    monkeypatch.setenv("HOME", str(home))
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(home / ".config"))
     found = git(tmp_path, "rev-parse", "--absolute-git-dir")
     assert found.stdout.decode().strip() == str((tmp_path / ".git").resolve())
     assert git(tmp_path, "config", "planted.key").returncode == 1

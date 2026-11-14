@@ -72,7 +72,6 @@ from test_decisions import base_commits
 from test_roadmap import (
     BACKLOG,
     FENCE,
-    GIT_ENVIRONMENT,
     LATER_OPENING,
     LIST_MARKER,
     NOT_SUPPORTED,
@@ -83,12 +82,12 @@ from test_roadmap import (
     THREAT_HEADING,
     TREE,
     index_line,
+    isolated_environment,
     make_tree,
     read,
     records,
     section_of,
     sections,
-    session_free_environment,
     tasks,
     tracked,
 )
@@ -624,7 +623,7 @@ def git(root: Path, *args: str) -> subprocess.CompletedProcess[bytes]:
         cwd=root,
         capture_output=True,
         check=False,
-        env={**session_free_environment(), **GIT_ENVIRONMENT, **AUTHOR},
+        env={**isolated_environment(), **AUTHOR},
     )
 
 

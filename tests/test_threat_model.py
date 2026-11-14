@@ -30,7 +30,7 @@ the figures are compared with the threats' headings and the boundaries' headings
 from __future__ import annotations
 
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, fields
 from pathlib import Path
 
 import pytest
@@ -129,6 +129,10 @@ class Citations:
     records: list[str]
     paths: list[str]
 
+    def __len__(self) -> int:
+        """How many citations it holds, of every kind."""
+        return sum(len(getattr(self, kind.name)) for kind in fields(self))
+
 
 def citations(held: str) -> Citations:
     """Each kind is read from what the kinds before it leave, so that the name of a
@@ -167,11 +171,7 @@ def citation_problems(ident: str, held: str, found: Index, root: Path) -> tuple[
         target = (root / path).resolve()
         if root.resolve() not in target.parents or not target.exists():
             problems.append(f"{ident} cites `{path}`, which is not a file in this repository")
-    count = sum(
-        len(kind)
-        for kind in (cited.scenarios, cited.tasks, cited.decisions, cited.records, cited.paths)
-    )
-    return problems, count
+    return problems, len(cited)
 
 
 def problems_in(text: str, root: Path) -> tuple[list[str], int]:

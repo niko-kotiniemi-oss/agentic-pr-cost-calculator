@@ -41,9 +41,10 @@ guide's test reads the guide with them (R221).
 
 Each change's `tasks.md`, active or archived, gives each task once, on a line that
 opens with `- [ ]` or `- [x]`, a space, its number and a space, as `TASK_LINE` reads
-it, and holds no other line with a checkbox, no HTML comment, no line that opens with
-`<` and no code fence, so that the checks that wait on a tick, or refuse one, read the
-tasks that GitHub shows (R232, T184).
+it, and holds no other line with a checkbox, no HTML comment, code fence, front matter
+or byte-order mark, no line that opens with `<` or `$$`, and no carriage return that no
+line feed follows, so that the checks that wait on a tick, or refuse one, read the tasks
+that GitHub shows (R232, T184).
 
 Each check is shown to fail on a synthetic tree, a git repository so that its
 tracked files can be read, into which the defect is planted. The tree holds backlog
@@ -104,10 +105,12 @@ REGISTER_ROW = re.compile(r"^\| (R\d+) \| ", re.M)
 THREAT_HEADING = re.compile(r"^### (T\d+)\. ", re.M)
 RECORD_FILE = re.compile(r"(DR-\d{3})-[a-z0-9-]+\.md")
 CLOSED_BY = re.compile(r"^- \*\*Closed by:\*\* (.+?) *$", re.M)
-TASK_LINE = re.compile(r"^- \[([ xX])\] ([0-9]+\.[0-9]+) ", re.M)
+TASK_LINE = re.compile(r"^- \[([ x])\] ([0-9]+\.[0-9]+) ", re.M)
 # A checkbox as GitHub shows one in a list, and a line that opens or closes fenced code.
 BOX = re.compile(r"\[[ xX]\]")
 CODE_FENCE = re.compile(r"\s*(```|~~~)")
+# A carriage return that no line feed follows, which Markdown reads as the end of a line.
+LONE_RETURN = re.compile(r"\r(?!\n)")
 # The change that the build follows, whose tasks this repository's own gates read, and
 # where tests plant its tasks, active or archived.
 BUILD_CHANGE = "add-pr-cost-calculator"
@@ -146,6 +149,9 @@ HIDING = (
     ("|", "|, with which Markdown builds a table, whose cells past its header's it hides"),
 )
 
+# With these, git reads no global or system configuration. A test plants the global one
+# in HOME; the system one is where git was built to look, such as /etc/gitconfig, which
+# no test writes, so no test sees GIT_CONFIG_NOSYSTEM dropped.
 GIT_ENVIRONMENT = {
     "GIT_CONFIG_GLOBAL": os.devnull,
     "GIT_CONFIG_NOSYSTEM": "1",
@@ -156,6 +162,12 @@ def session_free_environment() -> dict[str, str]:
     """The environment with no git variable of the session's, such as an index file,
     that would make git read another repository than the one it runs in."""
     return {key: value for key, value in os.environ.items() if not key.startswith("GIT_")}
+
+
+def isolated_environment() -> dict[str, str]:
+    """The environment with no git variable of the session's and no global or system
+    configuration, so that git reads only the repository it runs in, as it is."""
+    return {**session_free_environment(), **GIT_ENVIRONMENT}
 
 
 def tracked(root: Path) -> set[str]:
@@ -274,13 +286,31 @@ def tasks(root: Path) -> dict[tuple[str, str], bool]:
 
 def task_list_problems(root: Path) -> list[str]:
     """Each change's `tasks.md` gives each task once, on a line that `TASK_LINE` reads,
-    and holds no other line with a checkbox, no HTML comment, no line that opens with
-    `<` and no code fence, so that `tasks` reads the tasks that GitHub shows (R232)."""
+    and holds no other line with a checkbox, no HTML comment, code fence, front matter or
+    byte-order mark, no line that opens with `<` or `$$`, and no carriage return that
+    ends a line for Markdown but not for the checks, so that `tasks` reads the tasks that
+    GitHub shows (R232)."""
     problems = []
     for _, path in changes(root):
         name = (path / "tasks.md").relative_to(root).as_posix()
         given: dict[str, list[int]] = {}
-        for number, line in enumerate(read(path / "tasks.md").split("\n"), 1):
+        text = read(path / "tasks.md")
+        returns = {text.count("\n", 0, found.start()) + 1 for found in LONE_RETURN.finditer(text)}
+        for number, line in enumerate(text.split("\n"), 1):
+            if "\ufeff" in line:
+                problems.append(
+                    f"{name}:{number} holds a byte-order mark, which GitHub does not show"
+                )
+            if number in returns:
+                problems.append(
+                    f"{name}:{number} holds a carriage return without a line feed after it, "
+                    "where Markdown ends a line that the checks do not"
+                )
+            if number == 1 and line.rstrip() == "---":
+                problems.append(
+                    f"{name}:1 opens with ---, with which GitHub starts front matter that it "
+                    "shows as a table"
+                )
             task = TASK_LINE.match(line)
             if task:
                 given.setdefault(task.group(2), []).append(number)
@@ -296,6 +326,11 @@ def task_list_problems(root: Path) -> list[str]:
                 problems.append(
                     f"{name}:{number} opens with <, with which Markdown starts HTML that can hide "
                     "the lines after it"
+                )
+            elif line.lstrip().startswith("$$"):
+                problems.append(
+                    f"{name}:{number} opens with $$, with which GitHub starts a math block that "
+                    "it shows a tick in as math"
                 )
             if CODE_FENCE.match(line):
                 problems.append(
@@ -767,9 +802,10 @@ def make_tree(root: Path, changed: dict[str, str | None] | None = None) -> Path:
         path = root / name
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_bytes(text.encode("utf-8"))
-    environment = {**session_free_environment(), **GIT_ENVIRONMENT}
     for args in (["init", "-q"], ["add", "-A"]):
-        subprocess.run(["git", *args], cwd=root, check=True, capture_output=True, env=environment)
+        subprocess.run(
+            ["git", *args], cwd=root, check=True, capture_output=True, env=isolated_environment()
+        )
     return root
 
 
@@ -889,6 +925,13 @@ UNREAD = "holds a checkbox that the checks do not read as a task"
 COMMENT = "holds an HTML comment, which GitHub does not show"
 HTML = "opens with <, with which Markdown starts HTML that can hide the lines after it"
 FENCED = "holds a code fence, inside which GitHub shows a tick as code"
+MATH = "opens with $$, with which GitHub starts a math block that it shows a tick in as math"
+FRONT_MATTER = "opens with ---, with which GitHub starts front matter that it shows as a table"
+BYTE_ORDER_MARK = "holds a byte-order mark, which GitHub does not show"
+CARRIAGE_RETURN = (
+    "holds a carriage return without a line feed after it, where Markdown ends a line that "
+    "the checks do not"
+)
 
 
 def with_tasks(root: Path, added: str, where: str = TASKS) -> Path:
@@ -897,7 +940,7 @@ def with_tasks(root: Path, added: str, where: str = TASKS) -> Path:
 
 
 def test_a_task_list_read_as_github_shows_it_has_no_problem(tmp_path: Path) -> None:
-    root = with_tasks(tmp_path, "\n## 2. More\n\n- [X] 2.1 Did more\n  - A note on it.\n")
+    root = with_tasks(tmp_path, "\n## 2. More\n\n- [x] 2.1 Did more\n  - A note on it.\n")
     assert task_list_problems(root) == []
 
 
@@ -916,6 +959,7 @@ def test_a_task_list_read_as_github_shows_it_has_no_problem(tmp_path: Path) -> N
         "- [x] 1.3.1 Did a thing",
         "- [x] \uff11.3 Did a thing",
         "- [X]1.3 Did a thing",
+        "- [X] 1.3 Did a thing",
         "- [x] 1.3",
         "- [ ]  1.3 Do a thing",
         "Then - [x] 1.3 Did a thing",
@@ -940,6 +984,13 @@ def test_a_checkbox_that_the_checks_do_not_read_as_a_task_is_reported(
         ("```\n- [x] 1.3 Did a thing\n```\n", [(3, FENCED), (5, FENCED)]),
         ("~~~ text\n- [x] 1.3 Did a thing\n~~~\n", [(3, FENCED), (5, FENCED)]),
         ("   ```\n", [(3, FENCED)]),
+        ("$$\n- [x] 1.3 Did a thing\n$$\n", [(3, MATH), (5, MATH)]),
+        ("  $$ x $$\n", [(3, MATH)]),
+        ("Notes.\r<details>\n\n- [x] 1.3 Did a thing\n", [(3, CARRIAGE_RETURN)]),
+        ("Notes.\r```\n- [x] 1.3 Did a thing\n", [(3, CARRIAGE_RETURN)]),
+        ("Notes.\r", [(3, CARRIAGE_RETURN)]),
+        ("\ufeff<details>\n- [x] 1.3 Did a thing\n", [(3, BYTE_ORDER_MARK)]),
+        ("Notes.\ufeff\n", [(3, BYTE_ORDER_MARK)]),
     ],
 )
 def test_text_that_github_does_not_show_in_a_task_list_is_reported(
@@ -947,6 +998,39 @@ def test_text_that_github_does_not_show_in_a_task_list_is_reported(
 ) -> None:
     found = task_list_problems(with_tasks(tmp_path, added))
     assert found == [f"{TASKS}:{number} {problem}" for number, problem in problems]
+
+
+@pytest.mark.parametrize(
+    ("opening", "problems"),
+    [
+        ("\ufeff", [BYTE_ORDER_MARK, UNREAD]),
+        ("---\ntitle: Tasks\n---\n\n", [FRONT_MATTER]),
+        ("---\r\n", [FRONT_MATTER]),
+    ],
+)
+def test_text_that_github_does_not_show_at_the_top_of_a_task_list_is_reported(
+    tmp_path: Path, opening: str, problems: list[str]
+) -> None:
+    root = make_tree(tmp_path, {TASKS: opening + TREE[TASKS]})
+    assert task_list_problems(root) == [f"{TASKS}:1 {problem}" for problem in problems]
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "----\n\n" + TREE[TASKS],
+        TREE[TASKS] + "$1 a month, as the note on it says.\n",
+    ],
+)
+def test_a_rule_at_the_top_or_one_dollar_sign_passes(tmp_path: Path, text: str) -> None:
+    """A first line of more than three dashes is a rule, not front matter, and a line
+    that opens with one `$` opens no math block."""
+    assert task_list_problems(make_tree(tmp_path, {TASKS: text})) == []
+
+
+def test_a_task_list_with_a_carriage_return_before_each_line_feed_passes(tmp_path: Path) -> None:
+    root = make_tree(tmp_path, {TASKS: (TREE[TASKS] + "Notes.\n---\n").replace("\n", "\r\n")})
+    assert task_list_problems(root) == []
 
 
 @pytest.mark.parametrize(
