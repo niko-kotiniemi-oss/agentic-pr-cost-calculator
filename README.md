@@ -49,6 +49,18 @@ The tool runs on Python 3.11 and every later release, with the standard library 
 
 ## Working on this repository
 
+Anyone may open an issue to propose a change, ask a question or report a bug, with no approval needed. An issue is public as soon as it is opened, so it holds nothing private, and a security problem goes to [`SECURITY.md`](SECURITY.md) instead. What an issue proposes is neither planned nor committed to. Proposed and planned work is kept as backlog items, so that the repository's history holds every agreement. A backlog item changes only through a pull request that the owner merges.
+
+The work moves through these stages, each kept where the table says:
+
+| Step | Where it lives | What it holds | Who writes it |
+| --- | --- | --- | --- |
+| An idea or a bug | A GitHub issue, opened as [`CONTRIBUTING.md`](CONTRIBUTING.md) says | The conversation | Anyone |
+| Agreed work | A [backlog item](docs/backlog/README.md) | What and why, its status and its date | A pull request that the owner merges |
+| Order | The [roadmap](docs/roadmap.md) | Which item comes when | A pull request that the owner merges |
+| Delivery | An OpenSpec change, such as [`add-pr-cost-calculator`](openspec/changes/add-pr-cost-calculator/proposal.md), and its pull request | How, the tests and the reviews | The builder |
+| Result | The specs, the [decision records](docs/decisions/README.md), the [threat model](docs/threat-model.md) and the [changelog](CHANGELOG.md) | What holds now, why, and what shipped | The same pull request |
+
 How to contribute is in [`CONTRIBUTING.md`](CONTRIBUTING.md), and the rules for contributors, human or agent, are in [`CLAUDE.md`](CLAUDE.md). Everyone taking part follows the [code of conduct](CODE_OF_CONDUCT.md). In short: tests come first, every figure in prose is computed rather than recalled, and scope is never narrowed silently.
 
 Setup for a local clone:
