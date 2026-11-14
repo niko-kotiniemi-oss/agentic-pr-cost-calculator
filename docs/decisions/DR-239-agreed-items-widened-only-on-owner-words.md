@@ -26,7 +26,7 @@ An agent gives an agreed item, one that the default branch gives as `Planned` or
 
 - `CLAUDE.md`'s rule on what an agent agrees to only on the owner's words, and the pull request template, name a postponed point and a gap of the guide given to an agreed item.
 - A test fails on a gap given to an agreed item whose What done looks like is unchanged, compared with the base, and examines nothing while no base holds the guide (R231, task 1.30).
-- The gap of a ledger format and a price table shaped for one provider names the item that the owner chooses, before task 1.28 writes the guide: B-007, whose What done looks like would then take it, or B-017 (DR-234). The postponed points that B-007 and B-021 gain in this change are those that the owner answered on 2026-11-12.
+- The gap of a ledger format and a price table shaped for one provider names B-007, which the owner chose on 2026-11-14, and B-007's What done looks like takes it (DR-234). The postponed points that B-007 and B-021 gain in this change are those that the owner answered on 2026-11-12.
 
 ## Scope
 

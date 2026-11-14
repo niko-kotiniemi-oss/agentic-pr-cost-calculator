@@ -2,8 +2,8 @@
 
 - **Status:** Planned
 - **Last changed:** 2026-11-14
-- **Brief:** The change's requirements, corrected with what the items above find, before any of them is built. It also settles how the comment shows a cost, the prices' rules, and the points that earlier reviews left open.
-- **Rests on:** R18, R21, R97, B-001, B-002
+- **Brief:** The change's requirements, corrected with what the items above find, before any of them is built. It also settles how the comment shows a cost, the prices' rules, a ledger and a price table that fit more than one provider, and the points that earlier reviews left open.
+- **Rests on:** R18, R21, R97, R122, B-001, B-002, DR-234
 - **Issue:** 18
 - **Pull requests:** none
 
@@ -13,7 +13,7 @@ None of the change's requirements is built yet, so a fix made to them now costs 
 
 ## What done looks like
 
-The change is revised before it is built. It takes the design fixes from the assessment of patterns and anti-patterns (B-001) and the further answers to high risks from the risk register (B-002). A fork records nothing until its owner turns the tool on there. The comment shows, by default, a brief summary of each model's tokens and price, with the detail on request, in a small block that a program can also read, and no dollar sign and no tilde outside inline code in the comment or its job summary, so that GitHub shows no amount as a formula or struck through, as issue 18 asks (R21, R97). The rounding of CI minutes is settled (R18), and so are the prices' rules: when a price is added, models with no price, and the price table's currency. The ledger's day field is named so that it says UTC, and the tool keeps, prints and sends no text of a transcript and reads no secret.
+The change is revised before it is built. It takes the design fixes from the assessment of patterns and anti-patterns (B-001) and the further answers to high risks from the risk register (B-002). The ledger entry and the price table can name an agent and a provider, so that the change that adds an agent need not also change a ledger format that a release wrote, which the public surface holds (R122, DR-234). A fork records nothing until its owner turns the tool on there. The comment shows, by default, a brief summary of each model's tokens and price, with the detail on request, in a small block that a program can also read, and no dollar sign and no tilde outside inline code in the comment or its job summary, so that GitHub shows no amount as a formula or struck through, as issue 18 asks (R21, R97). The rounding of CI minutes is settled (R18), and so are the prices' rules: when a price is added, models with no price, and the price table's currency. The ledger's day field is named so that it says UTC, and the tool keeps, prints and sends no text of a transcript and reads no secret.
 
 ## Postponed points
 
