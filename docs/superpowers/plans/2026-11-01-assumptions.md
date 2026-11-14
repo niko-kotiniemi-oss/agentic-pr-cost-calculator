@@ -116,13 +116,13 @@ A fact may also give `- **Handled by:**`, indented as its other fields, naming t
 
 ### Task 6: The review's fixes
 
-**Files:** Modify `tests/test_assumptions.py`, `tests/test_decisions.py`, `tests/test_git_lazy_fetch.py`, `docs/assumptions/*.md`, `docs/threat-model.md`, the spec of `project-standards` in the change, its design, `docs/requirements.md`, `docs/features/project-standards.md`, DR-162, DR-166, `docs/decisions/README.md` and `README.md`.
+**Files:** Modify `tests/test_assumptions.py`, `tests/test_decisions.py`, `tests/test_git_lazy_fetch.py`, `docs/assumptions/*.md`, `docs/threat-model.md`, the spec of `project-standards` in the change, its design, `docs/requirements.md`, `docs/features/project-standards.md`, DR-162, the record that DR-238 replaced, `docs/decisions/README.md` and `README.md`.
 
 **Interfaces:**
 - `problems(root: Path, collected: frozenset[str], marked: frozenset[str] = frozenset()) -> tuple[list[str], int]`: as before, with the collected tests that a mark skips or expects to fail.
 - `marked_tests(root: Path) -> frozenset[str]`: the collected tests that a mark skips or expects to fail.
 
-- [x] **Step 1:** Update the change first, for each finding that changes what must hold: the requirements and scenarios of `project-standards`, design decision 14 and its risks, the register's row, the feature page, and DR-162 and DR-166, which the default branch does not hold yet.
+- [x] **Step 1:** Update the change first, for each finding that changes what must hold: the requirements and scenarios of `project-standards`, design decision 14 and its risks, the register's row, the feature page, and DR-162 and the record that DR-238 replaced, which the default branch does not hold yet.
 - [x] **Step 2:** Write a failing test for each finding that the checks fix, planting its defect in the passing fixture, and see each fail for the reason that the finding gives, or, where the check was written first, fail once the check's line is removed.
 - [x] **Step 3:** Write the checks until the synthetic tests pass. The repository's test then fails on the facts that the new checks read.
 - [x] **Step 4:** Fix the pages and the threat model: each fact that stated what the tool does, each threat that rests on an assumption without naming it, the threats that the review found, and the matrix.

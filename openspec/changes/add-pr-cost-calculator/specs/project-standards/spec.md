@@ -434,9 +434,9 @@ The threat model SHALL number its threats from T1 in order, and a threat that a 
 - **WHEN** `docs/decisions/` holds a folder, a link, or a file that is neither a record nor the index, or a file elsewhere is named as a record
 - **THEN** a test fails and names the file
 
-### Requirement: No attribute hides the diff of a record, the README or what the marketplace serves, or changes the plugin's checkout
+### Requirement: No attribute hides the diff of a record, the README, the guide or what the marketplace serves, or changes the plugin's checkout
 
-No attribute that the repository sets SHALL make git show as binary, or GitHub hide as generated, the diff of a record, the index, the README, the root marketplace file or a file in the plugin folder that it names, so that whoever merges a pull request reads each change that it makes to them, nor make git's checkout of the hook file or of a file in that folder write more than other line endings.
+No attribute that the repository sets SHALL make git show as binary, or GitHub hide as generated, the diff of a record, the index, the README, the guide, the root marketplace file or a file in the plugin folder that it names, so that whoever merges a pull request reads each change that it makes to them, nor make git's checkout of the hook file or of a file in that folder write more than other line endings.
 
 #### Scenario: An attribute that hides a record's diff fails CI
 
@@ -451,6 +451,11 @@ No attribute that the repository sets SHALL make git show as binary, or GitHub h
 #### Scenario: An attribute that hides the README's diff fails CI
 
 - **WHEN** the repository's attributes give `README.md` `binary`, `diff` or `linguist-generated`, in any state
+- **THEN** a test fails and names the file and the attribute
+
+#### Scenario: An attribute that hides the guide's diff fails CI
+
+- **WHEN** the repository's attributes give `docs/patterns.md` `binary`, `diff` or `linguist-generated`, in any state
 - **THEN** a test fails and names the file and the attribute
 
 #### Scenario: An attribute that changes the plugin's checkout fails CI
@@ -889,16 +894,16 @@ Each risk that the risks and trade-offs of any change's design give, active or a
 
 ### Requirement: The roadmap and the backlog link only this repository's own files
 
-Every link, image, autolink, web address and host, such as `example.org`, in the roadmap, in `docs/backlog/` and in each feature page's section on known limitations and the roadmap, prose and code alike, and every `owner/repo` they name, SHALL name a heading of its own page or a tracked file of this repository by a relative path inside it. They SHALL name issues and pull requests by number alone and give no `@`, no fenced or indented code and no space in inline code. Tests SHALL fail otherwise.
+Every link, image, autolink, web address, host and `owner/repo` in the roadmap, `docs/backlog/` and each feature page's section on known limitations and the roadmap, prose and code alike, SHALL name a heading of its own page or, by a relative path inside this repository, a tracked file of it outside `vendor/` and `.claude/skills/`. They SHALL name issues and pull requests by number alone, and give no `@`, commit ID, fenced or indented code, or space in inline code. Tests SHALL fail otherwise.
 
 #### Scenario: The roadmap's and the backlog's links stay within this repository's files
 
 - **WHEN** every link, autolink, web address and `owner/repo` in the roadmap, in the files in `docs/backlog/` and in those sections is read, each link from its `](` whatever its text holds, in prose and in inline code alike
-- **THEN** each names a heading of its own page, or a tracked file of this repository by a relative path that, resolved from the page's folder, stays inside the repository
+- **THEN** each names a heading of its own page, or a tracked file of this repository outside `vendor/` and `.claude/skills/` by a relative path that, resolved from the page's folder, stays inside the repository
 
 #### Scenario: A link elsewhere fails a test
 
-- **WHEN** the roadmap, a file in `docs/backlog/` or such a section gives a web address, a host such as `example.org`, in prose or in inline code, that is not a tracked file's path or a name that the test lists as not a host, an image, an `@`, an `owner/repo`, a fenced or indented code block, inline code that holds a space, as a command such as `git config --global pr-cost.capture true` does, or a relative path that leaves the repository or names no tracked file, as `../../../issues/15` does
+- **WHEN** the roadmap, a file in `docs/backlog/` or such a section gives a web address, a host such as `example.org`, in prose or in inline code, that is not a tracked file's path or a name that the test lists as not a host, among them, in prose, one that emphasis marks split, as `evil.*example*` is, which GitHub shows as one name, and four numbers joined by dots, as an IP address is, an image, an `@`, an `owner/repo`, a commit ID, read as seven or more hexadecimal digits that hold both a digit and a letter, a fenced or indented code block, inline code that holds a space, as a command such as `git config --global pr-cost.capture true` does, a relative path that leaves the repository or names no tracked file, as `../../../issues/15` does, or a link into `vendor/` or `.claude/skills/`, whose files others write
 - **THEN** a test fails and names the file and the line
 
 #### Scenario: A name that only looks like a host passes when the test lists it
@@ -1054,21 +1059,21 @@ Compared with the base commit that the records' check uses, an item that the bas
 
 ### Requirement: The guide says how the project builds, concern by concern
 
-A guide, `docs/patterns.md`, SHALL be linked from the README's list of documentation and named in `CLAUDE.md`. It SHALL open by saying that the specs decide what the tool does, `CLAUDE.md` what an agent may do and the guide how the project builds, that both win over it, that a gap is not a task and closes only through its backlog item, and that entries are read again at each assessment and before each release, then give the sections that the first scenario names. Tests SHALL fail otherwise.
+A guide, `docs/patterns.md`, SHALL be linked from the README's list of documentation, and `CLAUDE.md` SHALL give the sentence on the guide's rank that the first scenario gives. The guide SHALL open with the text that the scenario gives, word for word, and a last line that names the assessment, by its date, or the release, by its version, for which its entries were last read, and SHALL then give the sections that the scenario names, each holding one or more entries. Tests SHALL fail otherwise.
 
-#### Scenario: The guide opens with how it steers and gives its concerns in order
+#### Scenario: The guide opens with its text and gives its concerns in order
 
 - **WHEN** the README's list of documentation, `CLAUDE.md` and `docs/patterns.md` are read
-- **THEN** the list links the guide and `CLAUDE.md` names it, the guide opens, before its first section, by saying that the specs decide what the tool does, `CLAUDE.md` what an agent may do and the guide how the project builds, that the specs and `CLAUDE.md` win where the guide differs from them, that a gap is not, by being there, a request to start work and is closed only through the backlog item that it names, and that its entries are read again at each assessment and before each release, and its sections are Architecture and integration, Security, Privacy, Identity and credentials, Supply chain and releases, Testing, Decisions and documentation, Working with agents, and Conventions, in that order, each holding one or more entries
+- **THEN** the list links the guide; `CLAUDE.md` gives the sentence "The guide is not one of the pages that only describe, but it steers below the specs and this file: where it differs from either, they win, so tell the owner, and it never widens what this file lets you do."; the guide opens, before its first section, with these lines, word for word, each followed by a blank line: "# How the project builds", "This guide says how the project builds, concern by concern: the principles that the project follows, each with the pattern that it applies and the anti-patterns that it steers clear of, what holds it, and where the project stands.", "The specs decide what the tool does, `CLAUDE.md` what an agent may do, and this guide how the project builds. Where the guide differs from the specs or `CLAUDE.md`, they win, and the owner is told. It never widens what `CLAUDE.md` lets an agent do, and an entry cites the requirement or the rule of `CLAUDE.md` that it rests on rather than stating it again. Where an entry and a step of a Superpowers skill differ, the step is followed, and the owner is told.", "The guide steers as the default branch holds it: an entry that a branch adds or changes is a proposal until the owner merges it, and a principle is added, removed or changed only when the owner asks for it, in a pull request that changes nothing outside `docs/`, `openspec/`, `CLAUDE.md` and `CHANGELOG.md`. It speaks to work on this repository, not to setting the tool up, which is the README's section on adopting it: an agent that sets the tool up turns capture on for no one.", "Where we stand gives where the default branch stands, and a release's guide is the copy at its tag. It opens with `Followed.` when the default branch's code and checks hold the principle, `Designed.` when its specs and tasks hold it before it is built, `Knowingly accepted.` with the record that gives the reason, or `Gap.` with the backlog item that closes it, as `Gap. Before the build.` when the owner asked for it to be closed before the build." and "A gap is not, by being there, a request to start work: it closes only through the backlog item that it names, and work outside that item leaves what the gap concerns as it stands. A principle knowingly accepted is accepted only where its record says."; then a last line that is "The entries are read again at each assessment and before each release, and were last read for " followed by "the assessment of " and a date as `YYYY-MM-DD`, or by "release " and a version as `MAJOR.MINOR.PATCH`, and a full stop; and its sections are Architecture and integration, Security, Privacy, Identity and credentials, Supply chain and releases, Testing, Decisions and documentation, Working with agents, and Conventions, in that order, each holding one or more entries
 
 #### Scenario: A guide without its links, its opening or a concern fails a test
 
-- **WHEN** `docs/patterns.md` is missing, the README's list of documentation does not link it, `CLAUDE.md` does not name it, it does not open, before its first section, with one of those statements, or a section is missing, repeated, out of order or holds no entry
-- **THEN** a test fails and names what is missing
+- **WHEN** `docs/patterns.md` is missing, the README's list of documentation does not link it, `CLAUDE.md` does not give that sentence, the text before the guide's first section differs from that text or names no assessment or release in its last line, or a section is missing, repeated, out of order or holds no entry
+- **THEN** a test fails and names what is missing, or the first line that differs
 
 ### Requirement: Each entry of the guide gives its principle and where the project stands
 
-Each entry SHALL be a `###` heading that names a principle, followed by the fields Statement, Rationale, Implications, Pattern, Anti-patterns, Held by, Rests on and Where we stand, each once, in that order, and nothing else. Where we stand SHALL open with `Followed.`, `Knowingly accepted.` or `Gap.`: one knowingly accepted SHALL name an accepted record that gives the reason, and a gap a backlog item, and no backlog item that it names SHALL be `Done` or `Dropped`. Tests SHALL fail otherwise.
+Each entry SHALL be a `###` heading that names a principle, followed by the fields Statement, Rationale, Implications, Pattern, Anti-patterns, Held by, Rests on and Where we stand, each once, in that order, and nothing else, an entry under Working with agents citing `CLAUDE.md` in Held by. Where we stand SHALL open with `Followed.`, `Designed.`, `Knowingly accepted.` or `Gap.`, as "Where the guide says the project stands is held true" holds them. Tests SHALL fail otherwise.
 
 #### Scenario: Each entry gives its fields in order
 
@@ -1082,31 +1087,26 @@ Each entry SHALL be a `###` heading that names a principle, followed by the fiel
 
 #### Scenario: An entry that does not say where the project stands fails a test
 
-- **WHEN** an entry's Where we stand opens with none of `Followed.`, `Knowingly accepted.` and `Gap.`
+- **WHEN** an entry's Where we stand opens with none of `Followed.`, `Designed.`, `Knowingly accepted.` and `Gap.`
 - **THEN** a test fails and names the entry
 
-#### Scenario: A principle knowingly accepted without its record fails a test
+#### Scenario: An entry on working with agents that does not cite `CLAUDE.md` fails a test
 
-- **WHEN** an entry's Where we stand opens with `Knowingly accepted.` and names no record, or names only records that `docs/decisions/` does not hold or that are closed
+- **WHEN** an entry under Working with agents does not cite `CLAUDE.md` in its Held by, so that an entry there could stand in for a rule of `CLAUDE.md`
 - **THEN** a test fails and names the entry
-
-#### Scenario: A gap without an open backlog item fails a test
-
-- **WHEN** an entry's Where we stand opens with `Gap.` and names no backlog item, or it names a backlog item that `docs/backlog/` does not hold or that is `Done` or `Dropped`
-- **THEN** a test fails and names the entry and the item, so that the pull request that finishes or drops an item says again where the project stands
 
 ### Requirement: The guide links only this repository's own files and holds no hidden text
 
-The guide SHALL hold to the rules that "The roadmap and the backlog link only this repository's own files" and "The roadmap, the backlog and the feature pages' roadmap sections hold no hidden text" give the roadmap, so that it leads no reader or agent to what someone else writes or hides. Tests SHALL fail otherwise.
+The guide SHALL hold to the rules that "The roadmap and the backlog link only this repository's own files" and "The roadmap, the backlog and the feature pages' roadmap sections hold no hidden text" give the roadmap, and SHALL give no `$` and no `~` outside inline code and cite no file under `vendor/` or `.claude/skills/` in Held by, so that it leads no reader or agent to what someone else writes or hides, and shows no mathematics or struck-through text. Tests SHALL fail otherwise.
 
 #### Scenario: A link elsewhere in the guide fails a test
 
-- **WHEN** the guide gives a web address, a host such as `example.org`, in prose or in inline code, that is not a tracked file's path or a name that the test lists as not a host, an image, an `@`, an `owner/repo`, a fenced or indented code block, inline code that holds a space, or a relative path that leaves the repository or names no tracked file
+- **WHEN** the guide gives a web address, a host such as `example.org`, in prose or in inline code, that is not a tracked file's path or a name that the test lists as not a host, among them, in prose, one that emphasis marks split and four numbers joined by dots, an image, an `@`, an `owner/repo`, a commit ID, a fenced or indented code block, inline code that holds a space, a relative path that leaves the repository or names no tracked file, or a link into `vendor/` or `.claude/skills/`, or an entry's Held by cites a file there, whose text others write
 - **THEN** a test fails and names the line
 
 #### Scenario: Text that GitHub hides in the guide fails a test
 
-- **WHEN** the guide holds a character other than printable ASCII and a line feed, or, inline code included, a `<`, a `&`, a backslash, a `]:`, a `|` or a link with a title
+- **WHEN** the guide holds a character other than printable ASCII and a line feed, or, inline code included, a `<`, a `&`, a backslash, a `]:`, a `|` or a link with a title, or, outside inline code, a `$` or a `~`, with which GitHub shows mathematics or struck-through text
 - **THEN** a test fails and names the file, the line and what it holds
 
 ### Requirement: Each entry of the guide gives its source, what holds it and what it rests on
@@ -1138,6 +1138,97 @@ An entry's Pattern SHALL give its recognised name and, after `Source:`, its sour
 - **WHEN** no entry's Pattern names one of Clean Code, PEP 8, OWASP's secure coding practices and OpenSSF's Scorecard
 - **THEN** a test fails and names the practice
 
+### Requirement: Where the guide says the project stands is held true
+
+`Followed.` SHALL be given only while every task that the entry's Held by cites is ticked, and `Designed.` only while one is not. `Knowingly accepted.` SHALL name an accepted record, and `Gap.` a backlog item that is not `Done` or `Dropped`. Under Security, Privacy, Identity and credentials, and Supply chain and releases, a record so named SHALL give the owner as its decider, and an item so named SHALL be `Planned` or `In progress`. Tests SHALL fail otherwise.
+
+#### Scenario: A principle followed or designed as its tasks give passes
+
+- **WHEN** an entry's Where we stand opens with `Followed.` and every task that its Held by cites is ticked, or with `Designed.` and one of them is not
+- **THEN** the test passes it
+
+#### Scenario: A principle said to be followed before it is built fails a test
+
+- **WHEN** an entry's Where we stand opens with `Followed.` and its Held by cites a task that is not ticked, or with `Designed.` and its Held by cites no task that is not ticked
+- **THEN** a test fails and names the entry, and the task that is not ticked
+
+#### Scenario: A principle knowingly accepted without its record fails a test
+
+- **WHEN** an entry's Where we stand opens with `Knowingly accepted.` and names no record, or names only records that `docs/decisions/` does not hold or that are closed
+- **THEN** a test fails and names the entry
+
+#### Scenario: A gap without an open backlog item fails a test
+
+- **WHEN** an entry's Where we stand opens with `Gap.` and names no backlog item, or it names a backlog item that `docs/backlog/` does not hold or that is `Done` or `Dropped`
+- **THEN** a test fails and names the entry and the item, so that the pull request that finishes or drops an item says again where the project stands
+
+#### Scenario: A risk that adopters rely on, accepted without the owner, fails a test
+
+- **WHEN** an entry under Security, Privacy, Identity and credentials, or Supply chain and releases opens Where we stand with `Knowingly accepted.`, and no record that it names gives the owner in Decided by
+- **THEN** a test fails and names the entry and the records
+
+#### Scenario: A gap that adopters rely on, without an agreed item, fails a test
+
+- **WHEN** an entry under Security, Privacy, Identity and credentials, or Supply chain and releases opens Where we stand with `Gap.`, and names no backlog item that is `Planned` or `In progress`
+- **THEN** a test fails and names the entry and the items that it names
+
+### Requirement: A gap to close before the build holds the build back
+
+While an entry's Where we stand opens with `Gap.` and names a backlog item that the roadmap lists under Now, no task of `add-pr-cost-calculator` numbered 1.1 to 1.9, 1.13 to 1.15 or 1.21, or in a section after the first, SHALL be ticked in that change's `tasks.md`, active or archived, so that what the owner asked to be fixed before the build is fixed first, and an entry that opens with `Gap. Before the build.` SHALL name such an item. Tests SHALL fail otherwise.
+
+#### Scenario: A gap to close before the build, with its item under Now, passes
+
+- **WHEN** an entry's Where we stand opens with `Gap. Before the build.` and names an item that the roadmap lists under Now, and no task of `add-pr-cost-calculator` numbered 1.1 to 1.9, 1.13 to 1.15 or 1.21, or in a section after the first, is ticked
+- **THEN** the test passes it
+
+#### Scenario: A gap to close before the build whose item is not under Now fails a test
+
+- **WHEN** an entry's Where we stand opens with `Gap. Before the build.` and names no item that the roadmap lists under Now
+- **THEN** a test fails and names the entry and the items that it names
+
+#### Scenario: A build task ticked while a gap to close before it is open fails a test
+
+- **WHEN** an entry's Where we stand opens with `Gap.` and names an item that the roadmap lists under Now, whether or not it goes on with `Before the build.`, and a task of `add-pr-cost-calculator` numbered 1.1 to 1.9, 1.13 to 1.15 or 1.21, or in a section after the first, is ticked
+- **THEN** a test fails and names the entry, the item and the task
+
+### Requirement: A principle of the guide changes alone
+
+Compared with the base that the records' check uses, a pull request that adds or removes a guide entry, or changes an entry's Statement, Rationale, Implications, Pattern or Anti-patterns, SHALL change no file outside `docs/`, `openspec/`, `CLAUDE.md` and `CHANGELOG.md`, so that one diff cannot both weaken a principle and add the work that the principle forbade. The check SHALL be skipped while no base holds the guide. Tests SHALL fail otherwise.
+
+#### Scenario: A principle changed beside other work fails a test
+
+- **WHEN**, compared with the base, a pull request adds or removes an entry of the guide, or changes an entry's Statement, Rationale, Implications, Pattern or Anti-patterns, and also changes a file outside `docs/`, `openspec/`, `CLAUDE.md` and `CHANGELOG.md`
+- **THEN** a test fails and names the entry and the file
+
+#### Scenario: A principle changed alone passes
+
+- **WHEN**, compared with the base, a pull request that changes a principle so changes no file outside them, or one that changes no principle changes an entry's Held by, Rests on or Where we stand beside other work
+- **THEN** the test passes it
+
+#### Scenario: The guide's first entries pass before any base holds the guide
+
+- **WHEN** no base commit holds `docs/patterns.md`
+- **THEN** the check of changes to the guide's principles examines nothing and passes, and once a base holds it, the check reads every entry
+
+### Requirement: A gap given to an agreed item changes that item
+
+Compared with the base that the records' check uses, a pull request that makes an entry of the guide name as a gap a backlog item that the base gives as `Planned` or `In progress` SHALL change that item's What done looks like, so that what an agreed item takes on shows in its own text, which changes only on the owner's words. The check SHALL be skipped while no base holds the guide. Tests SHALL fail otherwise.
+
+#### Scenario: A gap given to an agreed item without a change to that item fails a test
+
+- **WHEN**, compared with the base, an entry comes to name as a gap a backlog item that the base gives as `Planned` or `In progress`, and that item's What done looks like is as the base gives it
+- **THEN** a test fails and names the entry and the item
+
+#### Scenario: A gap given to an agreed item with a change to that item passes
+
+- **WHEN**, compared with the base, an entry comes to name as a gap a backlog item that the base gives as `Planned` or `In progress`, and that item's What done looks like differs from the base's, or it comes to name an item that the base gives with another status or does not hold
+- **THEN** the test passes it
+
+#### Scenario: The guide's first gaps pass before any base holds the guide
+
+- **WHEN** no base commit holds `docs/patterns.md`
+- **THEN** the check of gaps given to agreed items examines nothing and passes, and once a base holds it, the check reads every entry's gap
+
 ### Requirement: This repository holds no switch and no ledger file before its own capture is turned on
 
 This repository SHALL track no `.pr-cost.json` and no file under `.pr-cost/` at its root while task 7.1 of `add-pr-cost-calculator`, which turns the tool on here, is not ticked in that change's `tasks.md`, active or archived, so that no capture records here before then. A test SHALL fail and name the file otherwise.
@@ -1156,6 +1247,20 @@ This repository SHALL track no `.pr-cost.json` and no file under `.pr-cost/` at 
 
 - **WHEN** task 7.1 of `add-pr-cost-calculator` is not ticked, and this repository tracks `.pr-cost.json` or files under `.pr-cost/` only in a folder below its root, as a golden session in `tests/golden/` can
 - **THEN** that test passes them
+
+### Requirement: This repository holds no reusable workflow before the one that refuses other events
+
+No tracked file under `.github/workflows/` SHALL declare `workflow_call` while task 4.3 of `add-pr-cost-calculator`, which adds the reusable workflow that refuses every event but a push to the default branch, is not ticked in that change's `tasks.md`, active or archived, so that no workflow here can be called from another repository before that guard exists. A test SHALL fail and name the file otherwise.
+
+#### Scenario: A reusable workflow here before task 4.3 fails a test
+
+- **WHEN** task 4.3 of `add-pr-cost-calculator` is not ticked, and a tracked file under `.github/workflows/` declares `workflow_call`
+- **THEN** a test fails and names the file
+
+#### Scenario: A reusable workflow after task 4.3 passes this test
+
+- **WHEN** task 4.3 of `add-pr-cost-calculator` is ticked, and the reusable workflow that it adds declares `workflow_call`
+- **THEN** that test passes it, and the checks of task 4.3 hold its events and permissions
 
 ### Requirement: The documentation says which agents an opt-in records
 
