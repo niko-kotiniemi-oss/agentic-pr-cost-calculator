@@ -1102,12 +1102,17 @@ Each entry SHALL be a `###` heading that names a principle, followed by the fiel
 
 ### Requirement: The guide links only this repository's own files and holds no hidden text
 
-The guide SHALL hold to the rules that "The roadmap and the backlog link only this repository's own files" and "The roadmap, the backlog and the feature pages' roadmap sections hold no hidden text" give the roadmap, and SHALL give no `$` and no `~` outside inline code and cite no file under `vendor/` or `.claude/skills/` in Held by, so that it leads no reader or agent to what someone else writes or hides, and shows no mathematics or struck-through text. Tests SHALL fail otherwise.
+The guide SHALL hold to the rules that "The roadmap and the backlog link only this repository's own files" and "The roadmap, the backlog and the feature pages' roadmap sections hold no hidden text" give the roadmap, apart from inline code with a space in its opening, which is fixed word for word, and SHALL give no `$` and no `~` outside inline code and cite no file under `vendor/` or `.claude/skills/` in Held by, so that it leads no one to what others write or hide. Tests SHALL fail otherwise.
 
 #### Scenario: A link elsewhere in the guide fails a test
 
-- **WHEN** the guide gives a web address, a host such as `example.org`, in prose or in inline code, that is not a tracked file's path or a name that the test lists as not a host, among them, in prose, one that emphasis marks split and four numbers joined by dots, an image, an `@`, an `owner/repo`, a commit ID, a fenced or indented code block, inline code that holds a space, a relative path that leaves the repository or names no tracked file, or a link into `vendor/` or `.claude/skills/`, or an entry's Held by cites a file there, whose text others write
+- **WHEN** the guide gives a web address, a host such as `example.org`, in prose or in inline code, that is not a tracked file's path or a name that the test lists as not a host, among them, in prose, one that emphasis marks split and four numbers joined by dots, an image, an `@`, an `owner/repo`, a commit ID, a fenced or indented code block, inline code that holds a space after its opening, a relative path that leaves the repository or names no tracked file, or a link into `vendor/` or `.claude/skills/`, or an entry's Held by cites a file there, whose text others write
 - **THEN** a test fails and names the line
+
+#### Scenario: The guide's opening keeps its fixed words in inline code
+
+- **WHEN** the guide's opening, which is fixed word for word, gives `Knowingly accepted.` and `Gap. Before the build.` in inline code
+- **THEN** the test passes them, and fails on inline code that holds a space anywhere after the opening
 
 #### Scenario: Text that GitHub hides in the guide fails a test
 
