@@ -13,7 +13,7 @@ The same behaviour is stated in the specs and again in other documents, such as 
 
 ## What done looks like
 
-Each document other than the specs cites the requirement or scenario that states a behaviour instead of stating it again, and says only what no scenario can, such as why or what remains, while a page that a requirement obliges to tell its readers something tells them and cites that requirement (DR-232). The pull request shows, for each sentence that it removes, the scenario that holds it or the spec that it moved into, so that no clause is lost on the way (T173).
+Each document other than the specs cites the requirement or scenario that states a behaviour instead of stating it again, and says only what no scenario can, such as why or what remains, while a page that a requirement obliges to tell its readers something tells them and cites that requirement (DR-232). The pull request shows, for each sentence that it removes, the scenario that holds it or the spec that it moved into, so that no clause is lost on the way (T173). A record says which checks of the documentation stay, and when a rule about prose goes to review instead of a new check, so that those checks do not grow faster than what they protect.
 
 ## Postponed points
 
