@@ -59,9 +59,12 @@ import os
 import posixpath
 import re
 import subprocess
+import sys
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import UTC, date, datetime
 from pathlib import Path
+from types import ModuleType
 from urllib.parse import unquote
 
 import pytest
@@ -626,12 +629,20 @@ def git(root: Path, *args: str) -> subprocess.CompletedProcess[bytes]:
 
 
 def items_in(root: Path, commit: str) -> dict[str, Item]:
-    """The items that a commit holds, by path."""
+    """The items that a commit holds, by path.
+
+    Raises LookupError when git cannot list the commit's files or read one of them."""
     listing = git(root, "ls-tree", "-r", "-z", "--name-only", commit, f"{BACKLOG}/")
+    if listing.returncode != 0:
+        raise LookupError(f"cannot list the files of {commit}")
     found = {}
     for path in listing.stdout.decode("utf-8").split("\0"):
-        text = git(root, "show", f"{commit}:{path}").stdout.decode("utf-8") if path else ""
-        item = item_from(path, text) if path.startswith(f"{BACKLOG}/") else None
+        if not path:
+            continue
+        shown = git(root, "show", f"{commit}:{path}")
+        if shown.returncode != 0:
+            raise LookupError(f"cannot read {path} in {commit}")
+        item = item_from(path, shown.stdout.decode("utf-8"))
         if item:
             found[path] = item
     return found
@@ -643,7 +654,7 @@ def history_problems(root: Path, *bases: str, today: date) -> list[str]:
         changed = item.fields.get("Last changed", "")
         if is_date(changed) and date.fromisoformat(changed) > today:
             problems[f"{item.path} gives {changed}, after the day of the run, {today}"] = None
-    now = items_in(root, "HEAD")
+    now = items_in(root, "HEAD") if bases else {}
     for base in bases:
         if git(root, "cat-file", "-e", f"{base}:{BACKLOG}").returncode != 0:
             continue
@@ -1197,6 +1208,19 @@ def commit(root: Path, message: str = "A change") -> str:
     return git(root, "rev-parse", "HEAD").stdout.decode().strip()
 
 
+def failing(module: ModuleType, command: str, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Make each run of this git command from the module's functions fail, as in a clone
+    that git cannot read."""
+    real: Callable[..., subprocess.CompletedProcess[bytes]] = module.git
+
+    def run(root: Path, *args: str) -> subprocess.CompletedProcess[bytes]:
+        if args[0] == command:
+            return subprocess.CompletedProcess(["git", *args], 128, b"", b"fatal: planted")
+        return real(root, *args)
+
+    monkeypatch.setattr(module, "git", run)
+
+
 def with_base(root: Path, changed: dict[str, str | None] | None = None) -> Path:
     """The tree, committed as the default branch, and then changed and committed."""
     build(root)
@@ -1219,6 +1243,20 @@ def compared(root: Path, today: date = TODAY) -> list[str]:
 
 def test_an_unchanged_tree_passes_against_its_base(tmp_path: Path) -> None:
     assert compared(with_base(tmp_path)) == []
+
+
+@pytest.mark.parametrize(
+    ("command", "error"),
+    [("ls-tree", "cannot list the files of HEAD"), ("show", f"cannot read {ITEM} in HEAD")],
+)
+def test_a_git_run_that_fails_is_an_error_not_an_empty_backlog(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, command: str, error: str
+) -> None:
+    root = with_base(tmp_path)
+    bases = base_commits(root, {})
+    failing(sys.modules[__name__], command, monkeypatch)
+    with pytest.raises(LookupError, match=error):
+        history_problems(root, *bases, today=TODAY)
 
 
 def test_an_item_removed_renamed_or_moved_is_reported(tmp_path: Path) -> None:

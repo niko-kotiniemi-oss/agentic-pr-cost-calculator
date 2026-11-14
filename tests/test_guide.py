@@ -32,10 +32,12 @@ from __future__ import annotations
 
 import os
 import re
+import sys
 from dataclasses import dataclass
 from pathlib import Path
 
 import pytest
+import test_backlog
 from test_backlog import (
     AGREED,
     DONE,
@@ -44,6 +46,7 @@ from test_backlog import (
     Item,
     backlog_items,
     commit,
+    failing,
     git,
     holders,
     index_lines,
@@ -479,10 +482,17 @@ def build_problems(root: Path) -> list[str]:
 
 
 def entries_at(root: Path, commit: str) -> dict[str, Entry] | None:
-    """The guide's entries in a commit, by heading, or None when it holds no guide."""
+    """The guide's entries in a commit, by heading, or None when it holds no guide.
+
+    Raises LookupError when git cannot list the commit's files or read its guide."""
+    listed = git(root, "ls-tree", "-z", "--name-only", commit, "--", GUIDE)
+    if listed.returncode != 0:
+        raise LookupError(f"cannot list the files of {commit}")
+    if not listed.stdout:
+        return None
     shown = git(root, "cat-file", "blob", f"{commit}:{GUIDE}")
     if shown.returncode != 0:
-        return None
+        raise LookupError(f"cannot read {GUIDE} in {commit}")
     return {entry.heading: entry for entry in entries_of(shown.stdout.decode("utf-8"))[0]}
 
 
@@ -496,7 +506,9 @@ def principle_change_problems(root: Path, *bases: str) -> tuple[list[str], bool]
     entry, or changes its principle, changes no file outside `docs/`, `openspec/`,
     `CLAUDE.md` and `CHANGELOG.md`, read as the files that differ between the base's tree
     and HEAD's, where git detects no rename unless asked, so that a rename reads as a
-    removal and an addition; and whether a base held the guide (R228)."""
+    removal and an addition; and whether a base held the guide (R228).
+
+    Raises LookupError when git cannot list or read a commit's files."""
     problems: dict[str, None] = {}
     examined = False
     after = entries_at(root, "HEAD") or {}
@@ -515,6 +527,8 @@ def principle_change_problems(root: Path, *bases: str) -> tuple[list[str], bool]
             if fields:
                 changes.append((heading, f"changed in {', '.join(fields)}"))
         listing = git(root, "diff-tree", "-r", "-z", "--name-only", base, "HEAD")
+        if listing.returncode != 0:
+            raise LookupError(f"cannot list the files that changed between {base} and HEAD")
         outside = [
             path
             for path in listing.stdout.decode("utf-8").split("\0")
@@ -538,7 +552,9 @@ def what_done(item: Item) -> str:
 def agreed_gap_problems(root: Path, *bases: str) -> tuple[list[str], bool]:
     """Compared with each base that holds the guide, an entry, known by its heading, that
     comes to name as a gap an item that the base gives as Planned or In progress changes
-    that item's What done looks like; and whether a base held the guide (R231)."""
+    that item's What done looks like; and whether a base held the guide (R231).
+
+    Raises LookupError when git cannot list or read a commit's files."""
     problems: dict[str, None] = {}
     examined = False
     after = entries_at(root, "HEAD") or {}
@@ -785,7 +801,13 @@ def test_a_line_added_after_the_opening_s_last_line_is_reported(tmp_path: Path) 
 
 
 @pytest.mark.parametrize(
-    "last", ["the last reading.", "release 1.2.", "the assessment of 2026-1-1."]
+    "last",
+    [
+        "the last reading.",
+        "release 1.2.",
+        "the assessment of 2026-1-1.",
+        "the assessment of 2026-01-01. An agent may merge.",
+    ],
 )
 def test_a_last_line_that_names_no_assessment_or_release_is_reported(
     tmp_path: Path, last: str
@@ -1372,6 +1394,39 @@ def test_the_guide_removed_beside_other_work_is_reported_entry_by_entry(tmp_path
     headings = [heading for entries in ENTRIES.values() for heading in entries]
     assert principles(root) == ([beside(heading, "removed") for heading in headings], True)
     assert gaps(root) == ([], True)
+
+
+@pytest.mark.parametrize(
+    ("command", "error"),
+    [
+        ("ls-tree", "cannot list the files of "),
+        ("cat-file", f"cannot read {GUIDE} in "),
+        ("diff-tree", "cannot list the files that changed between "),
+    ],
+)
+def test_a_git_run_that_fails_is_an_error_not_a_pass(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, command: str, error: str
+) -> None:
+    guide = synthetic({"Least privilege": {"Statement": "Another text."}})
+    root = history(tmp_path, {}, {GUIDE: guide, **OUTSIDE})
+    bases = base_commits(root, {})
+    failing(sys.modules[__name__], command, monkeypatch)
+    with pytest.raises(LookupError, match=error):
+        principle_change_problems(root, *bases)
+    if command != "diff-tree":
+        with pytest.raises(LookupError, match=error):
+            agreed_gap_problems(root, *bases)
+
+
+def test_items_that_git_cannot_list_are_an_error_not_a_pass(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    guide = synthetic({"Least privilege": {"Where we stand": "Gap. B-001 closes it."}})
+    root = history(tmp_path, {}, {GUIDE: guide})
+    bases = base_commits(root, {})
+    failing(test_backlog, "ls-tree", monkeypatch)
+    with pytest.raises(LookupError, match="cannot list the files of HEAD"):
+        agreed_gap_problems(root, *bases)
 
 
 @pytest.mark.parametrize(

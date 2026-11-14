@@ -161,7 +161,7 @@ The entries are read again at each assessment and before each release, and were 
 - **Anti-patterns:** An agent with the account's full rights, recognised by a session that merges, tags or changes a setting because the account can; leave each such step where only the owner's key reaches.
 - **Held by:** `CLAUDE.md`, DR-073, DR-074 and DR-161. Review: the owner reads the rulesets and settings back after each change to them.
 - **Rests on:** DR-073, DR-074, DR-161, T67
-- **Where we stand:** Followed.
+- **Where we stand:** Followed. `CLAUDE.md` keeps each such step from agents, and the rulesets and the setting for immutable releases are the owner's own, which no file holds and no test reads, so they hold while the owner keeps them (DR-073, DR-074).
 
 ### Each person's opt-in is their own
 
