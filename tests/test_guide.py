@@ -15,21 +15,42 @@ each Rests on names IDs in a backlog item's forms that exist and are no closed r
 and four named practices are each named in a Pattern (R222). Where we stand opens with
 one of four words, each held true against the tasks, the records and the backlog, and,
 under the four concerns that adopters rely on, only an owner's record accepts a risk and
-only an agreed item closes a gap (R226).
+only an agreed item closes a gap (R226). While a gap names an item that the roadmap lists
+under Now, no task of `add-pr-cost-calculator` that it holds back is ticked, and a gap to
+close before the build names such an item (R227). Compared with the base that the
+records' check uses, a pull request that adds or removes an entry, or changes its
+principle, changes nothing outside `docs/`, `openspec/`, `CLAUDE.md` and `CHANGELOG.md`
+(R228), and one that gives an agreed item a gap changes that item's What done looks like
+(R231), both examining nothing while no base holds the guide. No attribute hides the
+diff of the guide or of `CLAUDE.md` (R134).
 
 Each check is shown to fail on a synthetic tree, the roadmap's with a guide, into which
-its defect is planted.
+its defect is planted, or on a history of two commits made in it.
 """
 
 from __future__ import annotations
 
+import os
 import re
 from dataclasses import dataclass
 from pathlib import Path
 
 import pytest
-from test_backlog import AGREED, DONE, DROPPED, REST, backlog_items, holders, rest_problems
-from test_decisions import DECIDER, records_of
+from test_backlog import (
+    AGREED,
+    DONE,
+    DROPPED,
+    REST,
+    Item,
+    backlog_items,
+    commit,
+    git,
+    holders,
+    index_lines,
+    items_in,
+    rest_problems,
+)
+from test_decisions import DECIDER, attribute_problems, base_commits, records_of
 from test_roadmap import (
     BACKLOG,
     DOCUMENTATION,
@@ -39,6 +60,7 @@ from test_roadmap import (
     RECORD_NAME,
     TREE,
     hidden_text_problems_in,
+    item,
     link_problems_in,
     make_tree,
     others_write,
@@ -122,6 +144,13 @@ RANK = (
 )
 PRACTICES = ("Clean Code", "PEP 8", "OWASP Secure Coding Practices", "OpenSSF Scorecard")
 STANDINGS = ("Followed.", "Designed.", "Knowingly accepted.", "Gap.")
+BEFORE_THE_BUILD = "Gap. Before the build."
+# The change whose build a gap under Now holds back (R227).
+BUILD_CHANGE = "add-pr-cost-calculator"
+# The fields that state a principle, which a pull request changes only beside the pages
+# (R228).
+PRINCIPLE = FIELDS[:5]
+WHAT_DONE = "What done looks like"
 # The opening's fixed lines, each followed by a blank line, as R219 gives them.
 OPENING_LINES = [line for paragraph in OPENING for line in (paragraph, "")]
 LAST_LINE = re.compile(
@@ -390,7 +419,7 @@ def standing_problems(root: Path, entries: list[Entry]) -> list[str]:
                     if not owner_decided(deciders.get(ident, ""))
                 ]
         else:
-            named = list(dict.fromkeys(ITEM_NAME.findall(standing)))
+            named = gap_items(entry)
             if not named:
                 problems.append(f"{entry.name} is a Gap. and names no backlog item")
             for ident in named:
@@ -405,6 +434,133 @@ def standing_problems(root: Path, entries: list[Entry]) -> list[str]:
                         f"names {ident}, which is {item.status}, not Planned or In progress"
                     )
     return problems
+
+
+def gap_items(entry: Entry) -> list[str]:
+    """The backlog items that an entry names, each once, when it is a gap."""
+    standing = entry.fields.get("Where we stand", "")
+    return list(dict.fromkeys(ITEM_NAME.findall(standing))) if standing.startswith("Gap.") else []
+
+
+def holds_the_build_back(number: str) -> bool:
+    """Whether a gap under Now holds back this task of the build's change: 1.1 to 1.9,
+    1.13 to 1.15, 1.21, or one in a section after the first (R227)."""
+    major, minor = (int(part) for part in number.split("."))
+    return major > 1 or (major == 1 and (1 <= minor <= 9 or 13 <= minor <= 15 or minor == 21))
+
+
+def build_problems(root: Path) -> list[str]:
+    """While a gap names an item that the roadmap lists under Now, no task that it holds
+    back is ticked, and a gap to close before the build names such an item (R227)."""
+    entries, _ = entries_of(read(root / GUIDE))
+    now = {line.ident for line in index_lines(root)[0] if line.section == "Now"}
+    ticked = [
+        number
+        for (change, number), done in tasks(root).items()
+        if change == BUILD_CHANGE and done and holds_the_build_back(number)
+    ]
+    problems = []
+    for entry in entries:
+        named = gap_items(entry)
+        first = [ident for ident in named if ident in now]
+        if entry.fields.get("Where we stand", "").startswith(BEFORE_THE_BUILD) and not first:
+            given = f": it names {', '.join(named)}" if named else ""
+            problems.append(
+                f"{entry.name} is a gap to close before the build and names no item that the "
+                f"roadmap lists under Now{given}"
+            )
+        problems += [
+            f"{entry.name} names {ident}, which the roadmap lists under Now, while task "
+            f"{number} of `{BUILD_CHANGE}` is ticked"
+            for ident in first
+            for number in ticked
+        ]
+    return problems
+
+
+def entries_at(root: Path, commit: str) -> dict[str, Entry] | None:
+    """The guide's entries in a commit, by heading, or None when it holds no guide."""
+    shown = git(root, "cat-file", "blob", f"{commit}:{GUIDE}")
+    if shown.returncode != 0:
+        return None
+    return {entry.heading: entry for entry in entries_of(shown.stdout.decode("utf-8"))[0]}
+
+
+def beside_a_principle(path: str) -> bool:
+    """Whether a pull request that changes a principle may change this file too (R228)."""
+    return path.startswith(("docs/", "openspec/")) or path in ("CLAUDE.md", "CHANGELOG.md")
+
+
+def principle_change_problems(root: Path, *bases: str) -> tuple[list[str], bool]:
+    """Compared with each base that holds the guide, a pull request that adds or removes an
+    entry, or changes its principle, changes no file outside `docs/`, `openspec/`,
+    `CLAUDE.md` and `CHANGELOG.md`, read as the files that differ between the base's tree
+    and HEAD's, where git detects no rename unless asked, so that a rename reads as a
+    removal and an addition; and whether a base held the guide (R228)."""
+    problems: dict[str, None] = {}
+    examined = False
+    after = entries_at(root, "HEAD") or {}
+    for base in bases:
+        before = entries_at(root, base)
+        if before is None:
+            continue
+        examined = True
+        changes = [(heading, "added") for heading in after if heading not in before]
+        for heading, old in before.items():
+            new = after.get(heading)
+            if new is None:
+                changes.append((heading, "removed"))
+                continue
+            fields = [name for name in PRINCIPLE if new.fields.get(name) != old.fields.get(name)]
+            if fields:
+                changes.append((heading, f"changed in {', '.join(fields)}"))
+        listing = git(root, "diff-tree", "-r", "-z", "--name-only", base, "HEAD")
+        outside = [
+            path
+            for path in listing.stdout.decode("utf-8").split("\0")
+            if path and not beside_a_principle(path)
+        ]
+        if not outside:
+            continue
+        for heading, what in changes:
+            problems[
+                f'{GUIDE}: the entry "{heading}" is {what} beside a change to '
+                f"{', '.join(outside)}, outside docs/, openspec/, CLAUDE.md and CHANGELOG.md"
+            ] = None
+    return list(problems), examined
+
+
+def what_done(item: Item) -> str:
+    """What an item says done looks like, its spacing aside."""
+    return " ".join("\n".join(section_of(item.text, WHAT_DONE)[1]).split())
+
+
+def agreed_gap_problems(root: Path, *bases: str) -> tuple[list[str], bool]:
+    """Compared with each base that holds the guide, an entry, known by its heading, that
+    comes to name as a gap an item that the base gives as Planned or In progress changes
+    that item's What done looks like; and whether a base held the guide (R231)."""
+    problems: dict[str, None] = {}
+    examined = False
+    after = entries_at(root, "HEAD") or {}
+    now = {item.ident: item for item in items_in(root, "HEAD").values()}
+    for base in bases:
+        before = entries_at(root, base)
+        if before is None:
+            continue
+        examined = True
+        then = {item.ident: item for item in items_in(root, base).values()}
+        for heading, entry in after.items():
+            given = gap_items(before[heading]) if heading in before else []
+            for ident in gap_items(entry):
+                old, new = then.get(ident), now.get(ident)
+                if ident in given or old is None or old.status not in AGREED or new is None:
+                    continue
+                if what_done(new) == what_done(old):
+                    problems[
+                        f"{entry.name} comes to name {ident} as a gap, which the base gives as "
+                        f"{old.status}, and leaves its What done looks like as the base gives it"
+                    ] = None
+    return list(problems), examined
 
 
 def guide_problems(root: Path) -> list[str]:
@@ -432,6 +588,7 @@ def guide_problems(root: Path) -> list[str]:
         + rests_on_problems(root, entries)
         + practice_problems(entries)
         + standing_problems(root, entries)
+        + build_problems(root)
     )
 
 
@@ -1002,3 +1159,401 @@ def test_only_an_agreed_item_closes_a_gap_that_adopters_rely_on(
         ]
     else:
         assert found == []
+
+
+# R227: a gap to close before the build holds the build back.
+
+CHANGE_TASKS = "openspec/changes/add-pr-cost-calculator/tasks.md"
+ARCHIVED_TASKS = "openspec/changes/archive/2026-01-01-add-pr-cost-calculator/tasks.md"
+NUMBERS = ["0.5", "1.0", *(f"1.{minor}" for minor in range(1, 31)), "2.1", "3.4"]
+# The tasks that a gap under Now holds back, and some beside them that it does not.
+HELD_BACK = ["1.1", "1.9", "1.13", "1.15", "1.21", "2.1", "3.4"]
+NOT_HELD_BACK = ["0.5", "1.0", "1.10", "1.12", "1.16", "1.20", "1.22", "1.30"]
+
+
+def build_tree(
+    root: Path, ticked: list[str], standing: str = "Gap. B-001 pins it.", where: str = CHANGE_TASKS
+) -> Path:
+    """The guide's tree with the tasks of `add-pr-cost-calculator`, some ticked, and the
+    gap of "Pinned and locked", which names B-001, under the roadmap's Now."""
+    text = "".join(
+        f"- [{'x' if number in ticked else ' '}] {number} A task\n" for number in NUMBERS
+    )
+    guide = synthetic({"Pinned and locked": {"Where we stand": standing}})
+    return guide_tree(root, guide, {where: text})
+
+
+@pytest.mark.parametrize("where", [CHANGE_TASKS, ARCHIVED_TASKS])
+@pytest.mark.parametrize(
+    "standing", ["Gap. B-001 pins it.", "Gap. Before the build. B-001 pins it."]
+)
+@pytest.mark.parametrize("number", HELD_BACK)
+def test_a_build_task_ticked_while_a_gap_names_an_item_under_now_is_reported(
+    tmp_path: Path, number: str, standing: str, where: str
+) -> None:
+    root = build_tree(tmp_path, [number], standing, where)
+    assert build_problems(root) == [
+        f"{named('Pinned and locked')} names B-001, which the roadmap lists under Now, while "
+        f"task {number} of `add-pr-cost-calculator` is ticked"
+    ]
+
+
+def test_each_build_task_ticked_is_named(tmp_path: Path) -> None:
+    root = build_tree(tmp_path, ["1.1", "2.1"], "Gap. B-001 pins it, and B-001 locks it.")
+    assert build_problems(root) == [
+        f"{named('Pinned and locked')} names B-001, which the roadmap lists under Now, while "
+        f"task {number} of `add-pr-cost-calculator` is ticked"
+        for number in ("1.1", "2.1")
+    ]
+
+
+def test_a_standing_that_is_no_gap_holds_nothing_back_whatever_it_names(tmp_path: Path) -> None:
+    assert build_problems(build_tree(tmp_path, HELD_BACK, "Followed. B-001 pinned it.")) == []
+
+
+@pytest.mark.parametrize("number", NOT_HELD_BACK)
+def test_a_task_that_a_gap_does_not_hold_back_passes_when_ticked(
+    tmp_path: Path, number: str
+) -> None:
+    assert build_problems(build_tree(tmp_path, [number])) == []
+
+
+def test_build_tasks_ticked_while_no_gap_names_an_item_under_now_pass(tmp_path: Path) -> None:
+    assert build_problems(build_tree(tmp_path, HELD_BACK, "Gap. B-003 pins it.")) == []
+
+
+def test_a_gap_to_close_before_the_build_whose_item_is_not_under_now_is_reported(
+    tmp_path: Path,
+) -> None:
+    heading = "Records are closed, not edited"
+    text = synthetic({heading: {"Where we stand": "Gap. Before the build. B-003 closes it."}})
+    assert build_problems(guide_tree(tmp_path, text)) == [
+        f"{named(heading)} is a gap to close before the build and names no item that the "
+        "roadmap lists under Now: it names B-003"
+    ]
+
+
+def test_a_gap_to_close_before_the_build_that_names_no_item_is_reported(tmp_path: Path) -> None:
+    heading = "Records are closed, not edited"
+    text = synthetic({heading: {"Where we stand": "Gap. Before the build."}})
+    assert build_problems(guide_tree(tmp_path, text)) == [
+        f"{named(heading)} is a gap to close before the build and names no item that the "
+        "roadmap lists under Now"
+    ]
+
+
+def test_a_gap_to_close_before_the_build_with_one_item_under_now_passes(tmp_path: Path) -> None:
+    standing = "Gap. Before the build. B-003 and B-001 pin it."
+    assert build_problems(build_tree(tmp_path, NOT_HELD_BACK, standing)) == []
+
+
+def test_the_repository_holds_tasks_that_a_gap_under_now_would_hold_back() -> None:
+    """A check that examined nothing fails."""
+    listed = tasks(ROOT)
+    assert [n for (change, n) in listed if change == BUILD_CHANGE and holds_the_build_back(n)]
+
+
+def test_the_build_s_check_is_one_of_the_guide_s(tmp_path: Path) -> None:
+    found = guide_problems(build_tree(tmp_path, ["1.1"]))
+    assert found == build_problems(build_tree(tmp_path / "again", ["1.1"])) != []
+
+
+# R228 and R231: compared with the base that the records' check uses.
+
+OUTSIDE = {"tool/capture.py": "print()\n"}
+NEW_ENTRY = "".join(f"- **{name}:** {value}\n" for name, value in ENTRY.items())
+
+
+def history(root: Path, before: dict[str, str | None], after: dict[str, str | None]) -> Path:
+    """The guide's tree with `before`, committed as the default branch, then `after`
+    committed on it."""
+    guide_tree(root, changed=before)
+    commit(root, "The base")
+    git(root, "update-ref", "refs/remotes/origin/main", "HEAD")
+    for name, text in after.items():
+        path = root / name
+        if text is None:
+            path.unlink()
+        else:
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(text, encoding="utf-8")
+    commit(root)
+    return root
+
+
+def principles(root: Path) -> tuple[list[str], bool]:
+    return principle_change_problems(root, *base_commits(root, {}))
+
+
+def gaps(root: Path) -> tuple[list[str], bool]:
+    return agreed_gap_problems(root, *base_commits(root, {}))
+
+
+def beside(heading: str, what: str, files: str = "tool/capture.py") -> str:
+    return (
+        f'{GUIDE}: the entry "{heading}" is {what} beside a change to {files}, outside docs/, '
+        "openspec/, CLAUDE.md and CHANGELOG.md"
+    )
+
+
+@pytest.mark.parametrize(
+    ("guide", "problem"),
+    [
+        (
+            GUIDE_TEXT + f"\n### A new principle\n\n{NEW_ENTRY}",
+            beside("A new principle", "added"),
+        ),
+        (
+            synthetic().replace(
+                GUIDE_TEXT[
+                    GUIDE_TEXT.index("\n### Another thing is accepted\n") : GUIDE_TEXT.index(
+                        "\n## Security\n"
+                    )
+                ],
+                "",
+            ),
+            beside("Another thing is accepted", "removed"),
+        ),
+        *(
+            (
+                synthetic({"Least privilege": {name: "Another text. Source: another."}}),
+                beside("Least privilege", f"changed in {name}"),
+            )
+            for name in FIELDS[:5]
+        ),
+    ],
+)
+def test_a_principle_changed_beside_other_work_is_reported(
+    tmp_path: Path, guide: str, problem: str
+) -> None:
+    assert principles(history(tmp_path, {}, {GUIDE: guide, **OUTSIDE})) == ([problem], True)
+
+
+@pytest.mark.parametrize(
+    ("old", "new"), [("docs/notes.md", "notes.md"), ("notes.md", "docs/notes.md")]
+)
+def test_a_rename_into_or_out_of_the_folders_that_a_principle_may_change_beside_is_reported(
+    tmp_path: Path, old: str, new: str
+) -> None:
+    guide = synthetic({"Least privilege": {"Statement": "Another text."}})
+    root = history(tmp_path, {old: "# Notes\n"}, {GUIDE: guide, old: None, new: "# Notes\n"})
+    assert principles(root) == (
+        [beside("Least privilege", "changed in Statement", "notes.md")],
+        True,
+    )
+
+
+@pytest.mark.parametrize(
+    "path", ["docs.md", "openspec.md", "CLAUDE.md.orig", "CHANGELOG.md.orig", "tool/docs/a.md"]
+)
+def test_a_file_that_only_begins_as_those_beside_a_principle_do_is_outside_them(
+    tmp_path: Path, path: str
+) -> None:
+    guide = synthetic({"Least privilege": {"Statement": "Another text."}})
+    root = history(tmp_path, {}, {GUIDE: guide, path: "# Notes\n"})
+    assert principles(root) == ([beside("Least privilege", "changed in Statement", path)], True)
+
+
+def test_each_field_changed_and_each_file_outside_is_named(tmp_path: Path) -> None:
+    changed: dict[str, str | None] = {
+        "Statement": "Another text.",
+        "Pattern": "Another. Source: another.",
+    }
+    guide = synthetic({"Least privilege": changed})
+    root = history(tmp_path, {}, {GUIDE: guide, "a.py": "", **OUTSIDE})
+    files = "a.py, tool/capture.py"
+    assert principles(root) == (
+        [beside("Least privilege", "changed in Statement, Pattern", files)],
+        True,
+    )
+
+
+def test_the_guide_removed_beside_other_work_is_reported_entry_by_entry(tmp_path: Path) -> None:
+    root = history(tmp_path, {}, {GUIDE: None, **OUTSIDE})
+    headings = [heading for entries in ENTRIES.values() for heading in entries]
+    assert principles(root) == ([beside(heading, "removed") for heading in headings], True)
+    assert gaps(root) == ([], True)
+
+
+@pytest.mark.parametrize(
+    ("name", "value"),
+    [
+        ("Held by", "`c` task 1.2 and DR-001"),
+        ("Rests on", "R1, DR-001"),
+        ("Where we stand", "Gap. B-001 closes it."),
+    ],
+)
+def test_held_by_rests_on_or_where_we_stand_changed_beside_other_work_passes(
+    tmp_path: Path, name: str, value: str
+) -> None:
+    guide = synthetic({"Least privilege": {name: value}})
+    assert principles(history(tmp_path, {}, {GUIDE: guide, **OUTSIDE})) == ([], True)
+
+
+def test_a_principle_changed_alone_passes(tmp_path: Path) -> None:
+    after: dict[str, str | None] = {
+        GUIDE: synthetic({"Least privilege": {"Statement": "Another text."}}),
+        "docs/notes.md": "# Notes\n",
+        "openspec/changes/c/notes.md": "# Notes\n",
+        "CLAUDE.md": FILES["CLAUDE.md"] + "- Another rule.\n",
+        "CHANGELOG.md": "# Changelog\n\n- A line.\n",
+    }
+    assert principles(history(tmp_path, {}, after)) == ([], True)
+
+
+def test_the_checks_against_the_base_examine_nothing_while_no_base_holds_the_guide(
+    tmp_path: Path,
+) -> None:
+    root = history(tmp_path, {GUIDE: None}, {GUIDE: GUIDE_TEXT, **OUTSIDE})
+    assert principles(root) == ([], False)
+    assert gaps(root) == ([], False)
+
+
+THING = f"{BACKLOG}/B-003-other-agents.md"
+
+
+@pytest.mark.parametrize(
+    ("guide", "heading", "ident"),
+    [
+        (
+            synthetic({"Data never instructs": {"Where we stand": "Gap. B-003 closes it."}}),
+            "Data never instructs",
+            "B-003",
+        ),
+        (
+            GUIDE_TEXT
+            + "\n### A new principle\n\n"
+            + NEW_ENTRY.replace("Followed.", "Gap. B-001 closes it."),
+            "A new principle",
+            "B-001",
+        ),
+        (
+            GUIDE_TEXT.replace("### Records are closed, not edited", "### Records are closed"),
+            "Records are closed",
+            "B-003",
+        ),
+    ],
+)
+def test_a_gap_given_to_an_agreed_item_that_leaves_the_item_as_it_was_is_reported(
+    tmp_path: Path, guide: str, heading: str, ident: str
+) -> None:
+    root = history(tmp_path, {}, {GUIDE: guide})
+    assert gaps(root) == (
+        [
+            f"{named(heading, guide)} comes to name {ident} as a gap, which the base gives as "
+            "Planned, and leaves its What done looks like as the base gives it"
+        ],
+        True,
+    )
+
+
+@pytest.mark.parametrize(
+    ("changed", "after"),
+    [
+        (TREE[THING].replace("once it is done.", "once\nit is done.  "), THING),
+        (TREE[THING], f"{BACKLOG}/B-003-agents.md"),
+    ],
+)
+def test_an_agreed_item_rewrapped_or_renamed_is_as_the_base_gives_it(
+    tmp_path: Path, changed: str, after: str
+) -> None:
+    guide = synthetic({"Data never instructs": {"Where we stand": "Gap. B-003 closes it."}})
+    root = history(tmp_path, {}, {GUIDE: guide, THING: None, after: changed})
+    assert gaps(root) == (
+        [
+            f"{named('Data never instructs', guide)} comes to name B-003 as a gap, which the "
+            "base gives as Planned, and leaves its What done looks like as the base gives it"
+        ],
+        True,
+    )
+
+
+def test_a_gap_given_to_an_item_that_the_pull_request_removes_is_left_to_the_backlog_s_check(
+    tmp_path: Path,
+) -> None:
+    guide = synthetic({"Data never instructs": {"Where we stand": "Gap. B-003 closes it."}})
+    assert gaps(history(tmp_path, {}, {GUIDE: guide, THING: None})) == ([], True)
+
+
+def test_each_base_that_holds_the_guide_is_read_and_a_problem_is_named_once(
+    tmp_path: Path,
+) -> None:
+    guide_tree(tmp_path, None)
+    first = commit(tmp_path, "Before the guide")
+    (tmp_path / GUIDE).write_text(GUIDE_TEXT, encoding="utf-8")
+    base = commit(tmp_path, "The guide")
+    changed: dict[str, dict[str, str | None]] = {
+        "Least privilege": {"Statement": "Another text."},
+        "Data never instructs": {"Where we stand": "Gap. B-003 closes it."},
+    }
+    guide = synthetic(changed)
+    (tmp_path / GUIDE).write_text(guide, encoding="utf-8")
+    (tmp_path / "tool").mkdir()
+    (tmp_path / "tool/capture.py").write_text(OUTSIDE["tool/capture.py"], encoding="utf-8")
+    commit(tmp_path)
+    assert principle_change_problems(tmp_path, first, base, base) == (
+        [beside("Least privilege", "changed in Statement")],
+        True,
+    )
+    assert agreed_gap_problems(tmp_path, first, base, base) == (
+        [
+            f"{named('Data never instructs', guide)} comes to name B-003 as a gap, which the "
+            "base gives as Planned, and leaves its What done looks like as the base gives it"
+        ],
+        True,
+    )
+
+
+def test_a_gap_given_to_an_agreed_item_that_changes_the_item_passes(tmp_path: Path) -> None:
+    guide = synthetic({"Data never instructs": {"Where we stand": "Gap. B-003 closes it."}})
+    changed = TREE[THING].replace("What holds once it is done.", "What holds, gap closed.")
+    assert gaps(history(tmp_path, {}, {GUIDE: guide, THING: changed})) == ([], True)
+
+
+def test_a_gap_given_to_an_item_that_the_base_does_not_give_as_agreed_passes(
+    tmp_path: Path,
+) -> None:
+    guide = synthetic({"Data never instructs": {"Where we stand": "Gap. B-002 and B-006."}})
+    new_item = item(6, "A new thing", "Planned", "A new thing.")
+    after: dict[str, str | None] = {GUIDE: guide, f"{BACKLOG}/B-006-a-new-thing.md": new_item}
+    assert gaps(history(tmp_path, {}, after)) == ([], True)
+
+
+def test_a_gap_that_the_base_already_gives_passes(tmp_path: Path) -> None:
+    assert gaps(history(tmp_path, {}, {"docs/notes.md": "# Notes\n"})) == ([], True)
+
+
+def test_the_repository_holds_its_principles_and_agreed_items_against_its_base() -> None:
+    bases = base_commits(ROOT, os.environ)
+    changes, held = principle_change_problems(ROOT, *bases)
+    given, _ = agreed_gap_problems(ROOT, *bases)
+    assert changes == [] and given == []
+    if not held:
+        pytest.skip("no base holds the guide yet, so its checks against the base examine nothing")
+
+
+# R134: no attribute hides the diff of the guide or of `CLAUDE.md`.
+
+
+def test_no_attribute_changes_how_the_guide_s_or_claude_md_s_diff_shows() -> None:
+    assert attribute_problems(ROOT, [GUIDE, "CLAUDE.md"]) == []
+
+
+@pytest.mark.parametrize(
+    ("attribute", "shown"),
+    [
+        ("binary", "binary: set"),
+        ("diff", "diff: set"),
+        ("-diff", "diff: unset"),
+        ("diff=word", "diff: word"),
+        ("linguist-generated", "linguist-generated: set"),
+    ],
+)
+@pytest.mark.parametrize("path", [GUIDE, "CLAUDE.md"])
+def test_an_attribute_that_changes_how_the_guide_s_or_claude_md_s_diff_shows_is_reported(
+    tmp_path: Path, path: str, attribute: str, shown: str
+) -> None:
+    root = guide_tree(tmp_path, changed={".gitattributes": f"{path} {attribute}\n"})
+    found = attribute_problems(root, [GUIDE, "CLAUDE.md"])
+    assert f"{path} has {shown}, which changes how its diff shows" in found
+    assert all(problem.startswith(f"{path} has ") for problem in found)
