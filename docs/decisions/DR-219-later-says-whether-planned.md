@@ -1,12 +1,12 @@
 # DR-219: Each item under Next and Later says whether it is planned
 
 - **Type:** process
-- **Status:** accepted
+- **Status:** closed
 - **Decided by:** the owner, 2026-11-11
 - **Requirements:** R207
 - **Threats:** T159, T161
 - **Replaces:** none
-- **Closed by:** none
+- **Closed by:** DR-226
 
 ## Context
 

@@ -218,10 +218,18 @@ The capability names the spec that holds the requirement. Each capability is one
 | R204 | non-functional | `project-standards` | The README leaves each opt-in to the person, or to their organization |
 | R205 | non-functional | `project-standards` | The README's status says when this repository's marketplace does not serve the plugin yet |
 | R206 | non-functional | `project-standards` | The roadmap says what is now, next and later |
-| R207 | non-functional | `project-standards` | Each item under Next and Later says whether it is planned |
+| R207 | non-functional | `project-standards` | Each backlog item says how far it is from being built |
 | R208 | non-functional | `project-standards` | Every risk of the design is listed as a known limitation |
-| R209 | non-functional | `project-standards` | The roadmap links only this repository's own files |
-| R210 | non-functional | `project-standards` | The roadmap and the feature pages' roadmap sections hold no hidden text |
+| R209 | non-functional | `project-standards` | The roadmap and the backlog link only this repository's own files |
+| R210 | non-functional | `project-standards` | The roadmap, the backlog and the feature pages' roadmap sections hold no hidden text |
+| R211 | non-functional | `project-standards` | A backlog item has its form |
+| R212 | non-functional | `project-standards` | The README briefs developers on how work flows |
+| R213 | non-functional | `project-standards` | The roadmap is the index of the open backlog items |
+| R214 | non-functional | `project-standards` | Later says how work on an item starts |
+| R215 | non-functional | `project-standards` | A backlog item names only what exists, and is not stale |
+| R216 | non-functional | `project-standards` | A backlog item keeps its file, and its date moves with its text |
+| R217 | non-functional | `project-standards` | The backlog's page says what an item is and is not |
+| R218 | non-functional | `project-standards` | An item becomes agreed only by a change to its status |
 | R219 | non-functional | `project-standards` | The patterns page says which patterns the design follows and which anti-patterns it meets |
 | R220 | non-functional | `project-standards` | Each anti-pattern on the patterns page says how the design meets it |
 | R221 | non-functional | `project-standards` | The patterns page links only this repository's own files and holds no hidden text |

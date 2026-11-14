@@ -62,7 +62,7 @@ The design's risks that concern this feature and are not on the roadmap, each wi
 - **Claude Code changes its transcript format**: a change shows up as refused calls, counted, rather than as a guess, until the parser learns the new shape.
 - **A call read without a stop reason gives the usage of its start, not of its end**: such a call's output tokens are too low, and the comment says that the token cost is a lower bound.
 - **A call is recorded on the branch checked out when it is recorded, which can differ from the one it was made on**: in three narrow cases a call can be counted on another branch than the one it was made on.
-- **A `git add` that stages nothing comes before a commit that would otherwise commit nothing**: the commit holds the ledger file alone, where without the tool it would have failed.
+- **A git add that stages nothing comes before a commit that would otherwise commit nothing**: the commit holds the ledger file alone, where without the tool it would have failed.
 - **A commit is refused at a permission prompt or by a permission rule, blocked, cancelled or interrupted after its ledger file was staged**: the ledger file stays staged until a later run of the capture step takes it back.
 - **A git command starts while a run stages or takes back a ledger file**: that git command fails at the index lock, as when any two git commands meet.
 - **A person removes a ledger file from their branch, or a commit that holds one is undone**: the calls in that file are not counted again unless the file itself is committed again.

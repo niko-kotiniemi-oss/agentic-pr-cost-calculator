@@ -1,12 +1,12 @@
 # DR-224: The roadmap names issues and pull requests by number, with no link
 
 - **Type:** security and privacy
-- **Status:** accepted
+- **Status:** closed
 - **Decided by:** the owner, 2026-11-11
 - **Requirements:** R209
 - **Threats:** T160, T164
 - **Replaces:** none
-- **Closed by:** none
+- **Closed by:** DR-228
 
 ## Context
 
