@@ -13,8 +13,8 @@ The design is long and none of the tool's code runs yet, so its riskiest assumpt
 
 ## What done looks like
 
-A pull request of its own, whose design the owner approves before it is built, builds the thinnest path that runs end to end and runs it once in a real Claude Code session, and what the run shows goes into the specs and the assumptions first (DR-232, DR-233). The run happens in a repository made for it, from a project that holds no other repository, and records nothing without that repository's switch and the person's own opt-in, while this repository keeps from it only what that pull request asks the owner to keep (DR-236).
+A pull request of its own, whose design the owner approves before it is built, builds the thinnest path that runs end to end and runs it once in a real Claude Code session, and what the run shows goes into the specs and the assumptions first (DR-232, DR-233). The path builds the test seam that the corrected requirements name in the design (B-007). The run gives a record of a real transcript's shape, with no values, as a named exception to the rule in `CLAUDE.md` against transcripts, with a record of its own and a test that holds it, so that the fixtures have a real case to be compared with (B-007). The run happens in a repository made for it, from a project that holds no other repository, and records nothing without that repository's switch and the person's own opt-in, while this repository keeps from it only what that pull request asks the owner to keep (DR-236).
 
 ## Postponed points
 
-- From the assessment of 2026-11-12, with the owner's answers that day: a scratch repository that calls the reusable workflow once, kept to that use; and a record of a real transcript's shape with no values, as a named exception to the rule in `CLAUDE.md` against transcripts, with a record of its own and a test that holds it, so that the fixtures have a real case to be compared with.
+- From the assessment of 2026-11-12, with the owner's answers that day: a scratch repository that calls the reusable workflow once, kept to that use.

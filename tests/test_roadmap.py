@@ -39,6 +39,12 @@ line feeds only, and no `<`, `&`, backslash, `]:` or `|`, inline code included (
 T165). `link_problems_in` and `hidden_text_problems_in` read any text so, and the
 guide's test reads the guide with them (R221).
 
+Each change's `tasks.md`, active or archived, gives each task once, on a line that
+opens with `- [ ]` or `- [x]`, a space, its number and a space, as `TASK_LINE` reads
+it, and holds no other line with a checkbox, no HTML comment, no line that opens with
+`<` and no code fence, so that the checks that wait on a tick, or refuse one, read the
+tasks that GitHub shows (R232, T184).
+
 Each check is shown to fail on a synthetic tree, a git repository so that its
 tracked files can be read, into which the defect is planted. The tree holds backlog
 items and a roadmap that lists them, so that `tests/test_backlog.py` plants its
@@ -98,7 +104,10 @@ REGISTER_ROW = re.compile(r"^\| (R\d+) \| ", re.M)
 THREAT_HEADING = re.compile(r"^### (T\d+)\. ", re.M)
 RECORD_FILE = re.compile(r"(DR-\d{3})-[a-z0-9-]+\.md")
 CLOSED_BY = re.compile(r"^- \*\*Closed by:\*\* (.+?) *$", re.M)
-TASK_LINE = re.compile(r"^- \[([ xX])\] (\d+\.\d+) ", re.M)
+TASK_LINE = re.compile(r"^- \[([ xX])\] ([0-9]+\.[0-9]+) ", re.M)
+# A checkbox as GitHub shows one in a list, and a line that opens or closes fenced code.
+BOX = re.compile(r"\[[ xX]\]")
+CODE_FENCE = re.compile(r"\s*(```|~~~)")
 # The change that the build follows, whose tasks this repository's own gates read, and
 # where tests plant its tasks, active or archived.
 BUILD_CHANGE = "add-pr-cost-calculator"
@@ -261,6 +270,43 @@ def tasks(root: Path) -> dict[tuple[str, str], bool]:
         for tick, number in TASK_LINE.findall(read(path / "tasks.md")):
             found[(name, number)] = tick != " "
     return found
+
+
+def task_list_problems(root: Path) -> list[str]:
+    """Each change's `tasks.md` gives each task once, on a line that `TASK_LINE` reads,
+    and holds no other line with a checkbox, no HTML comment, no line that opens with
+    `<` and no code fence, so that `tasks` reads the tasks that GitHub shows (R232)."""
+    problems = []
+    for _, path in changes(root):
+        name = (path / "tasks.md").relative_to(root).as_posix()
+        given: dict[str, list[int]] = {}
+        for number, line in enumerate(read(path / "tasks.md").split("\n"), 1):
+            task = TASK_LINE.match(line)
+            if task:
+                given.setdefault(task.group(2), []).append(number)
+            elif BOX.search(line):
+                problems.append(
+                    f"{name}:{number} holds a checkbox that the checks do not read as a task"
+                )
+            if "<!--" in line:
+                problems.append(
+                    f"{name}:{number} holds an HTML comment, which GitHub does not show"
+                )
+            elif line.lstrip().startswith("<"):
+                problems.append(
+                    f"{name}:{number} opens with <, with which Markdown starts HTML that can hide "
+                    "the lines after it"
+                )
+            if CODE_FENCE.match(line):
+                problems.append(
+                    f"{name}:{number} holds a code fence, inside which GitHub shows a tick as code"
+                )
+        problems += [
+            f"{name} gives task {ident} on lines {', '.join(map(str, lines[:-1]))} and {lines[-1]}"
+            for ident, lines in given.items()
+            if len(lines) > 1
+        ]
+    return problems
 
 
 def padless(code: str) -> str:
@@ -583,6 +629,7 @@ def test_the_repository_gives_each_check_something_to_examine() -> None:
     backlog = sorted((ROOT / BACKLOG).glob("*.md"))
     assert len(backlog) > 1
     assert len(checked_text(ROOT)) == len(feature_pages(ROOT)) + 1 + len(backlog)
+    assert [path for _, path in changes(ROOT) if (path / "tasks.md").is_file()]
 
 
 # A synthetic tree that has no problem. Each test plants one defect into it.
@@ -832,6 +879,98 @@ def test_two_changes_of_one_name_are_reported(tmp_path: Path) -> None:
     assert change_problems(root) == [
         "two changes are named `old`, so a task cannot be named by its change"
     ]
+
+
+# R232: each change's tasks are read as GitHub shows them.
+
+TASKS = "openspec/changes/c/tasks.md"
+OLD_TASKS = "openspec/changes/archive/2026-01-01-old/tasks.md"
+UNREAD = "holds a checkbox that the checks do not read as a task"
+COMMENT = "holds an HTML comment, which GitHub does not show"
+HTML = "opens with <, with which Markdown starts HTML that can hide the lines after it"
+FENCED = "holds a code fence, inside which GitHub shows a tick as code"
+
+
+def with_tasks(root: Path, added: str, where: str = TASKS) -> Path:
+    """The synthetic tree with lines added to the end of a change's `tasks.md`."""
+    return make_tree(root, {where: TREE[where] + added})
+
+
+def test_a_task_list_read_as_github_shows_it_has_no_problem(tmp_path: Path) -> None:
+    root = with_tasks(tmp_path, "\n## 2. More\n\n- [X] 2.1 Did more\n  - A note on it.\n")
+    assert task_list_problems(root) == []
+
+
+@pytest.mark.parametrize(
+    "line",
+    [
+        "  - [x] 1.3 Did a thing",
+        "* [x] 1.3 Did a thing",
+        "+ [x] 1.3 Did a thing",
+        "1. [x] 1.3 Did a thing",
+        "> - [x] 1.3 Did a thing",
+        "- [x]  1.3 Did a thing",
+        "- [x]\t1.3 Did a thing",
+        "- [x] **1.3** Did a thing",
+        "- [x] 1.3: Did a thing",
+        "- [x] 1.3.1 Did a thing",
+        "- [x] \uff11.3 Did a thing",
+        "- [X]1.3 Did a thing",
+        "- [x] 1.3",
+        "- [ ]  1.3 Do a thing",
+        "Then - [x] 1.3 Did a thing",
+        "\\- [x] 1.3 Did a thing",
+    ],
+)
+def test_a_checkbox_that_the_checks_do_not_read_as_a_task_is_reported(
+    tmp_path: Path, line: str
+) -> None:
+    assert task_list_problems(with_tasks(tmp_path, line + "\n")) == [f"{TASKS}:3 {UNREAD}"]
+
+
+@pytest.mark.parametrize(
+    ("added", "problems"),
+    [
+        ("<!--\n- [x] 1.3 Did a thing\n-->\n", [(3, COMMENT)]),
+        ("- [ ] 1.3 Do a thing <!-- and another -->\n", [(3, COMMENT)]),
+        ("<!-- - [x] 1.3 Did a thing -->\n", [(3, UNREAD), (3, COMMENT)]),
+        ("<details>\n\n- [x] 1.3 Did a thing\n\n</details>\n", [(3, HTML), (7, HTML)]),
+        ("  <div>\n- [x] 1.3 Did a thing\n", [(3, HTML)]),
+        ("\t<script>\n", [(3, HTML)]),
+        ("```\n- [x] 1.3 Did a thing\n```\n", [(3, FENCED), (5, FENCED)]),
+        ("~~~ text\n- [x] 1.3 Did a thing\n~~~\n", [(3, FENCED), (5, FENCED)]),
+        ("   ```\n", [(3, FENCED)]),
+    ],
+)
+def test_text_that_github_does_not_show_in_a_task_list_is_reported(
+    tmp_path: Path, added: str, problems: list[tuple[int, str]]
+) -> None:
+    found = task_list_problems(with_tasks(tmp_path, added))
+    assert found == [f"{TASKS}:{number} {problem}" for number, problem in problems]
+
+
+@pytest.mark.parametrize(
+    ("added", "problem"),
+    [
+        ("- [ ] 1.2 Did a thing again\n", "gives task 1.2 on lines 2 and 3"),
+        ("- [x] 1.1 Did a thing\n", "gives task 1.1 on lines 1 and 3"),
+        ("- [ ] 1.1 Do it\n- [ ] 1.1 Do it\n", "gives task 1.1 on lines 1, 3 and 4"),
+    ],
+)
+def test_a_task_given_twice_is_reported(tmp_path: Path, added: str, problem: str) -> None:
+    assert task_list_problems(with_tasks(tmp_path, added)) == [f"{TASKS} {problem}"]
+
+
+def test_an_archived_task_list_is_read_too(tmp_path: Path) -> None:
+    root = with_tasks(tmp_path, "<!--\n- [ ] 2.1 Did an old thing\n-->\n", OLD_TASKS)
+    assert task_list_problems(root) == [
+        f"{OLD_TASKS}:2 {COMMENT}",
+        f"{OLD_TASKS} gives task 2.1 on lines 1 and 3",
+    ]
+
+
+def test_each_change_s_tasks_are_read_as_github_shows_them() -> None:
+    assert task_list_problems(ROOT) == []
 
 
 def test_a_risk_that_no_page_lists_is_reported(tmp_path: Path) -> None:

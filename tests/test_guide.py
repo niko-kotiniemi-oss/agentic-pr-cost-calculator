@@ -428,10 +428,15 @@ def standing_problems(root: Path, entries: list[Entry]) -> list[str]:
     return problems
 
 
+def is_gap(entry: Entry) -> bool:
+    """Whether an entry's Where we stand opens with `Gap.`."""
+    return entry.fields.get("Where we stand", "").startswith("Gap.")
+
+
 def gap_items(entry: Entry) -> list[str]:
     """The backlog items that an entry names, each once, when it is a gap."""
     standing = entry.fields.get("Where we stand", "")
-    return list(dict.fromkeys(ITEM_NAME.findall(standing))) if standing.startswith("Gap.") else []
+    return list(dict.fromkeys(ITEM_NAME.findall(standing))) if is_gap(entry) else []
 
 
 def holds_the_build_back(number: str) -> bool:
@@ -500,7 +505,8 @@ def beside_a_principle(path: str) -> bool:
 
 def principle_change_problems(root: Path, *bases: str) -> tuple[list[str], bool]:
     """Compared with each base that holds the guide, a pull request that adds or removes an
-    entry, or changes its principle, changes no file outside `docs/`, `openspec/`,
+    entry, moves one to another concern, or changes its principle, changes no file outside
+    `docs/`, `openspec/`,
     `CLAUDE.md` and `CHANGELOG.md`, read as the files that differ between the base's tree
     and HEAD's, where git detects no rename unless asked, so that a rename reads as a
     removal and an addition; and whether a base held the guide (R228).
@@ -518,9 +524,14 @@ def principle_change_problems(root: Path, *bases: str) -> tuple[list[str], bool]
             if new is None:
                 changes.append((heading, "removed"))
                 continue
+            parts: list[str] = []
+            if new.concern != old.concern:
+                parts.append(f"moved from {old.concern} to {new.concern}")
             fields = [name for name in PRINCIPLE if new.fields.get(name) != old.fields.get(name)]
             if fields:
-                changes.append((heading, f"changed in {', '.join(fields)}"))
+                parts.append(f"changed in {', '.join(fields)}")
+            if parts:
+                changes.append((heading, " and ".join(parts)))
         listing = git(root, "diff-tree", "-r", "-z", "--name-only", base, "HEAD")
         if listing.returncode != 0:
             raise LookupError(f"cannot list the files that changed between {base} and HEAD")
@@ -568,6 +579,38 @@ def agreed_gap_problems(root: Path, *bases: str) -> tuple[list[str], bool]:
                     problems[
                         f"{entry.name} comes to name {ident} as a gap, which the base gives as "
                         f"{old.status}, and leaves its What done looks like as the base gives it"
+                    ] = None
+    return list(problems), True
+
+
+def closed_gap_problems(root: Path, *bases: str) -> tuple[list[str], bool]:
+    """Compared with each base that holds the guide, an entry, known by its heading, that
+    the base gives as a gap and HEAD does not leaves each item that the base's gap names
+    Done or Dropped; and whether a base held the guide (R233).
+
+    Raises LookupError when git cannot list or read a commit's files."""
+    held = guides_at(root, bases)
+    if not held:
+        return [], False
+    problems: dict[str, None] = {}
+    after = entries_at(root, "HEAD") or {}
+    now = {item.ident: item for item in items_in(root, "HEAD").values()}
+    for _, before in held:
+        for heading, entry in after.items():
+            old = before.get(heading)
+            if old is None or is_gap(entry):
+                continue
+            for ident in gap_items(old):
+                item = now.get(ident)
+                if item is None:
+                    problems[
+                        f"{entry.name} is no longer a gap, while {BACKLOG} does not hold "
+                        f"{ident}, which the base's gap names"
+                    ] = None
+                elif item.status not in (DONE, DROPPED):
+                    problems[
+                        f"{entry.name} is no longer a gap, while {ident}, which the base's gap "
+                        f"names, is {item.status}"
                     ] = None
     return list(problems), True
 
@@ -694,11 +737,15 @@ OPENING_TEXT = (
 )
 
 
-def synthetic(changed: dict[str, dict[str, str | None]] | None = None) -> str:
+def synthetic(
+    changed: dict[str, dict[str, str | None]] | None = None,
+    concerns: dict[str, dict[str, dict[str, str]]] | None = None,
+) -> str:
     """The synthetic guide, with the fields that `changed` gives for an entry by its
-    heading, a field given as None left out."""
+    heading, a field given as None left out, and each concern's entries as `concerns`
+    gives them, or as `ENTRIES` does."""
     text = OPENING_TEXT
-    for concern, entries in ENTRIES.items():
+    for concern, entries in (concerns or ENTRIES).items():
         text += f"\n## {concern}\n"
         for heading, values in entries.items():
             fields = {**ENTRY, **values, **(changed or {}).get(heading, {})}
@@ -1310,6 +1357,10 @@ def gaps(root: Path) -> tuple[list[str], bool]:
     return agreed_gap_problems(root, *base_commits(root, {}))
 
 
+def closed(root: Path) -> tuple[list[str], bool]:
+    return closed_gap_problems(root, *base_commits(root, {}))
+
+
 def beside(heading: str, what: str, files: str = "tool/capture.py") -> str:
     return (
         f'{GUIDE}: the entry "{heading}" is {what} beside a change to {files}, outside docs/, '
@@ -1416,6 +1467,8 @@ def test_a_git_run_that_fails_is_an_error_not_a_pass(
     if command != "diff-tree":
         with pytest.raises(LookupError, match=error):
             agreed_gap_problems(root, *bases)
+        with pytest.raises(LookupError, match=error):
+            closed_gap_problems(root, *bases)
 
 
 def test_items_that_git_cannot_list_are_an_error_not_a_pass(
@@ -1427,6 +1480,8 @@ def test_items_that_git_cannot_list_are_an_error_not_a_pass(
     failing(test_backlog, "ls-tree", monkeypatch)
     with pytest.raises(LookupError, match="cannot list the files of HEAD"):
         agreed_gap_problems(root, *bases)
+    with pytest.raises(LookupError, match="cannot list the files of HEAD"):
+        closed_gap_problems(root, *bases)
 
 
 @pytest.mark.parametrize(
@@ -1455,12 +1510,59 @@ def test_a_principle_changed_alone_passes(tmp_path: Path) -> None:
     assert principles(history(tmp_path, {}, after)) == ([], True)
 
 
+def moved(heading: str, concern: str, **fields: str) -> str:
+    """The synthetic guide with the entry under `heading` moved to the end of `concern`,
+    with the fields that `fields` gives."""
+    concerns = {name: dict(entries) for name, entries in ENTRIES.items()}
+    values = next(entries.pop(heading) for entries in concerns.values() if heading in entries)
+    concerns[concern][heading] = {**values, **fields}
+    return synthetic(concerns=concerns)
+
+
+@pytest.mark.parametrize(
+    ("heading", "before", "after"),
+    [
+        ("Each input is checked", "Security", "Conventions"),
+        ("A thing is built first", "Architecture and integration", "Testing"),
+        ("Data never instructs", "Working with agents", "Privacy"),
+    ],
+)
+def test_an_entry_moved_to_another_concern_beside_other_work_is_reported(
+    tmp_path: Path, heading: str, before: str, after: str
+) -> None:
+    root = history(tmp_path, {}, {GUIDE: moved(heading, after), **OUTSIDE})
+    assert principles(root) == ([beside(heading, f"moved from {before} to {after}")], True)
+
+
+def test_an_entry_moved_and_changed_beside_other_work_is_named_once(tmp_path: Path) -> None:
+    guide = moved("Each input is checked", "Conventions", Statement="Another text.")
+    root = history(tmp_path, {}, {GUIDE: guide, **OUTSIDE})
+    what = "moved from Security to Conventions and changed in Statement"
+    assert principles(root) == ([beside("Each input is checked", what)], True)
+
+
+def test_an_entry_moved_to_another_concern_alone_passes(tmp_path: Path) -> None:
+    after: dict[str, str | None] = {
+        GUIDE: moved("Each input is checked", "Conventions"),
+        "docs/notes.md": "# Notes\n",
+    }
+    assert principles(history(tmp_path, {}, after)) == ([], True)
+
+
+def test_entries_reordered_within_their_concern_beside_other_work_pass(tmp_path: Path) -> None:
+    concerns = {name: dict(reversed(entries.items())) for name, entries in ENTRIES.items()}
+    guide = synthetic(concerns=concerns)
+    assert guide != GUIDE_TEXT
+    assert principles(history(tmp_path, {}, {GUIDE: guide, **OUTSIDE})) == ([], True)
+
+
 def test_the_checks_against_the_base_examine_nothing_while_no_base_holds_the_guide(
     tmp_path: Path,
 ) -> None:
     root = history(tmp_path, {GUIDE: None}, {GUIDE: GUIDE_TEXT, **OUTSIDE})
     assert principles(root) == ([], False)
     assert gaps(root) == ([], False)
+    assert closed(root) == ([], False)
 
 
 THING = f"{BACKLOG}/B-003-other-agents.md"
@@ -1539,6 +1641,7 @@ def test_each_base_that_holds_the_guide_is_read_and_a_problem_is_named_once(
     changed: dict[str, dict[str, str | None]] = {
         "Least privilege": {"Statement": "Another text."},
         "Data never instructs": {"Where we stand": "Gap. B-003 closes it."},
+        "Pinned and locked": {"Where we stand": "Followed."},
     }
     guide = synthetic(changed)
     (tmp_path / GUIDE).write_text(guide, encoding="utf-8")
@@ -1554,6 +1657,10 @@ def test_each_base_that_holds_the_guide_is_read_and_a_problem_is_named_once(
             f"{named('Data never instructs', guide)} comes to name B-003 as a gap, which the "
             "base gives as Planned, and leaves its What done looks like as the base gives it"
         ],
+        True,
+    )
+    assert closed_gap_problems(tmp_path, first, base, base) == (
+        [no_longer_a_gap("Pinned and locked", guide, "B-001", "Planned")],
         True,
     )
 
@@ -1577,11 +1684,111 @@ def test_a_gap_that_the_base_already_gives_passes(tmp_path: Path) -> None:
     assert gaps(history(tmp_path, {}, {"docs/notes.md": "# Notes\n"})) == ([], True)
 
 
+A_THING = f"{BACKLOG}/B-001-a-thing.md"
+
+
+def finished(path: str, status: str) -> str:
+    """A backlog item of the synthetic tree, given another status."""
+    return TREE[path].replace("- **Status:** Planned\n", f"- **Status:** {status}\n", 1)
+
+
+def no_longer_a_gap(heading: str, guide: str, ident: str, status: str) -> str:
+    return (
+        f"{named(heading, guide)} is no longer a gap, while {ident}, which the base's gap "
+        f"names, is {status}"
+    )
+
+
+@pytest.mark.parametrize(
+    "standing",
+    [
+        "Followed.",
+        "Designed.",
+        "Knowingly accepted. DR-001 gives why.",
+        "Gaps remain. B-001 pins it.",
+        "Pinned. B-001.",
+        None,
+    ],
+)
+def test_a_gap_closed_while_its_item_is_open_is_reported(
+    tmp_path: Path, standing: str | None
+) -> None:
+    guide = synthetic({"Pinned and locked": {"Where we stand": standing}})
+    root = history(tmp_path, {}, {GUIDE: guide, **OUTSIDE})
+    assert closed(root) == ([no_longer_a_gap("Pinned and locked", guide, "B-001", "Planned")], True)
+
+
+def test_a_gap_closed_while_its_item_is_open_to_contributions_is_reported(tmp_path: Path) -> None:
+    guide = synthetic({"A thing is built first": {"Where we stand": "Designed."}})
+    root = history(tmp_path, {}, {GUIDE: guide})
+    status = "Open to feedback and contributions"
+    assert closed(root) == (
+        [no_longer_a_gap("A thing is built first", guide, "B-002", status)],
+        True,
+    )
+
+
+def test_a_gap_closed_while_its_item_is_gone_is_reported(tmp_path: Path) -> None:
+    guide = synthetic({"Records are closed, not edited": {"Where we stand": "Followed."}})
+    root = history(tmp_path, {}, {GUIDE: guide, THING: None})
+    assert closed(root) == (
+        [
+            f"{named('Records are closed, not edited', guide)} is no longer a gap, while "
+            f"{BACKLOG} does not hold B-003, which the base's gap names"
+        ],
+        True,
+    )
+
+
+def test_each_open_item_of_a_gap_closed_is_named(tmp_path: Path) -> None:
+    before = synthetic({"Pinned and locked": {"Where we stand": "Gap. B-001 and B-003 do it."}})
+    guide = synthetic({"Pinned and locked": {"Where we stand": "Followed."}})
+    after: dict[str, str | None] = {GUIDE: guide, A_THING: finished(A_THING, "Done")}
+    root = history(tmp_path, {GUIDE: before}, after)
+    assert closed(root) == ([no_longer_a_gap("Pinned and locked", guide, "B-003", "Planned")], True)
+
+
+@pytest.mark.parametrize("status", ["Done", "Dropped"])
+def test_a_gap_closed_with_its_item_done_or_dropped_passes(tmp_path: Path, status: str) -> None:
+    guide = synthetic({"Pinned and locked": {"Where we stand": "Followed."}})
+    after: dict[str, str | None] = {GUIDE: guide, A_THING: finished(A_THING, status), **OUTSIDE}
+    assert closed(history(tmp_path, {}, after)) == ([], True)
+
+
+@pytest.mark.parametrize(
+    ("heading", "standing"),
+    [
+        ("Pinned and locked", "Gap. B-003 pins it now."),
+        ("Pinned and locked", "Gap."),
+        ("Least privilege", "Designed."),
+        ("Counts, never content", "Followed."),
+    ],
+)
+def test_an_entry_still_a_gap_or_never_one_passes(
+    tmp_path: Path, heading: str, standing: str
+) -> None:
+    guide = synthetic({heading: {"Where we stand": standing}})
+    assert closed(history(tmp_path, {}, {GUIDE: guide, **OUTSIDE})) == ([], True)
+
+
+def test_a_gap_renamed_as_it_closes_is_left_to_the_check_of_principles(tmp_path: Path) -> None:
+    guide = synthetic({"Pinned and locked": {"Where we stand": "Followed."}}).replace(
+        "### Pinned and locked\n", "### Pinned\n"
+    )
+    root = history(tmp_path, {}, {GUIDE: guide, **OUTSIDE})
+    assert closed(root) == ([], True)
+    assert principles(root) == (
+        [beside("Pinned", "added"), beside("Pinned and locked", "removed")],
+        True,
+    )
+
+
 def test_the_repository_holds_its_principles_and_agreed_items_against_its_base() -> None:
     bases = base_commits(ROOT, os.environ)
     changes, held = principle_change_problems(ROOT, *bases)
     given, _ = agreed_gap_problems(ROOT, *bases)
-    assert changes == [] and given == []
+    lifted, _ = closed_gap_problems(ROOT, *bases)
+    assert changes == [] and given == [] and lifted == []
     if not held:
         pytest.skip("no base holds the guide yet, so its checks against the base examine nothing")
 

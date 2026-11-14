@@ -243,6 +243,8 @@ The capability names the spec that holds the requirement. Each capability is one
 | R229 | non-functional | `project-standards` | This repository holds no reusable workflow before the one that refuses other events |
 | R230 | non-functional | `releases-and-compatibility` | A release's guide was read for it, and its text names the gaps that adopters rely on |
 | R231 | non-functional | `project-standards` | A gap given to an agreed item changes that item |
+| R232 | non-functional | `project-standards` | Each change's tasks are read as GitHub shows them |
+| R233 | non-functional | `project-standards` | A gap of the guide closes only with its item |
 
 IDs are stable: a requirement keeps its ID while it exists, and a new one takes the next free number, so the rows follow the order in which requirements were added rather than the order of the specs. A requirement that a later change removes leaves the table, and its ID is listed below with the change that removed it, never to be used again.
 

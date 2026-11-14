@@ -1174,13 +1174,13 @@ An entry's Pattern SHALL give its recognised name and, after `Source:`, its sour
 
 #### Scenario: A risk that adopters rely on, accepted without the owner, fails a test
 
-- **WHEN** an entry under Security, Privacy, Identity and credentials, or Supply chain and releases opens Where we stand with `Knowingly accepted.`, and no record that it names gives the owner in Decided by
-- **THEN** a test fails and names the entry and the records
+- **WHEN** an entry under Security, Privacy, Identity and credentials, or Supply chain and releases opens Where we stand with `Knowingly accepted.`, and a record that it names does not give the owner in Decided by
+- **THEN** a test fails and names the entry and that record
 
 #### Scenario: A gap that adopters rely on, without an agreed item, fails a test
 
-- **WHEN** an entry under Security, Privacy, Identity and credentials, or Supply chain and releases opens Where we stand with `Gap.`, and names no backlog item that is `Planned` or `In progress`
-- **THEN** a test fails and names the entry and the items that it names
+- **WHEN** an entry under Security, Privacy, Identity and credentials, or Supply chain and releases opens Where we stand with `Gap.`, and names a backlog item that is not `Planned` or `In progress`
+- **THEN** a test fails and names the entry and that item
 
 ### Requirement: A gap to close before the build holds the build back
 
@@ -1203,12 +1203,17 @@ While an entry's Where we stand opens with `Gap.` and names a backlog item that 
 
 ### Requirement: A principle of the guide changes alone
 
-Compared with the base that the records' check uses, a pull request that adds or removes a guide entry, or changes an entry's Statement, Rationale, Implications, Pattern or Anti-patterns, SHALL change no file outside `docs/`, `openspec/`, `CLAUDE.md` and `CHANGELOG.md`, so that one diff cannot both weaken a principle and add the work that the principle forbade. The check SHALL be skipped while no base holds the guide. Tests SHALL fail otherwise.
+Compared with the base that the records' check uses, a pull request that adds or removes a guide entry, moves one to another concern, or changes an entry's Statement, Rationale, Implications, Pattern or Anti-patterns, SHALL change no file outside `docs/`, `openspec/`, `CLAUDE.md` and `CHANGELOG.md`, so that one diff cannot both weaken a principle and add the work that the principle forbade. The check SHALL be skipped while no base holds the guide. Tests SHALL fail otherwise.
 
 #### Scenario: A principle changed beside other work fails a test
 
 - **WHEN**, compared with the base, a pull request adds or removes an entry of the guide, or changes an entry's Statement, Rationale, Implications, Pattern or Anti-patterns, and also changes a file outside `docs/`, `openspec/`, `CLAUDE.md` and `CHANGELOG.md`
 - **THEN** a test fails and names the entry and the file
+
+#### Scenario: An entry moved to another concern beside other work fails a test
+
+- **WHEN**, compared with the base, a pull request moves an entry of the guide from one concern to another, as from Security, where only a record that the owner decided accepts it, to Conventions, and also changes a file outside `docs/`, `openspec/`, `CLAUDE.md` and `CHANGELOG.md`
+- **THEN** a test fails and names the entry, both concerns and the file
 
 #### Scenario: A principle changed alone passes
 
@@ -1238,6 +1243,25 @@ Compared with the base that the records' check uses, a pull request that makes a
 
 - **WHEN** no base commit holds `docs/patterns.md`
 - **THEN** the check of gaps given to agreed items examines nothing and passes, and once a base holds it, the check reads every entry's gap
+
+### Requirement: A gap of the guide closes only with its item
+
+Compared with the base that the records' check uses, a pull request that gives an entry of the guide, known by its heading, another standing than the `Gap.` that the base gives it SHALL leave each backlog item that the base's gap names `Done` or `Dropped`, so that a gap closes only through its item, and not in the pull request whose work it holds back. The check SHALL be skipped while no base holds the guide. Tests SHALL fail otherwise.
+
+#### Scenario: A gap closed while its item is open fails a test
+
+- **WHEN**, compared with the base, an entry that the base gives as `Gap.` no longer opens Where we stand with `Gap.`, and a backlog item that the base's gap names is neither `Done` nor `Dropped`, or `docs/backlog/` does not hold it
+- **THEN** a test fails and names the entry and the item
+
+#### Scenario: A gap closed with its item done or dropped passes
+
+- **WHEN**, compared with the base, an entry that the base gives as `Gap.` no longer opens Where we stand with `Gap.`, and each backlog item that the base's gap names is `Done` or `Dropped`, or the entry is still a gap, whatever its items
+- **THEN** the test passes it
+
+#### Scenario: The guide's first standings pass before any base holds the guide
+
+- **WHEN** no base commit holds `docs/patterns.md`
+- **THEN** the check of gaps closed examines nothing and passes, and once a base holds it, the check reads every entry that the base gives as a gap
 
 ### Requirement: This repository holds no switch and no ledger file before its own capture is turned on
 
@@ -1271,6 +1295,30 @@ No tracked file under `.github/workflows/` SHALL declare `workflow_call` while t
 
 - **WHEN** task 4.3 of `add-pr-cost-calculator` is ticked, and the reusable workflow that it adds declares `workflow_call`
 - **THEN** that test passes it, and the checks of task 4.3 hold its events and permissions
+
+### Requirement: Each change's tasks are read as GitHub shows them
+
+Each change's `tasks.md`, active or archived, SHALL give each of its tasks once, on a line that opens with `- [ ]` or `- [x]`, a space, the task's number and a space, and SHALL hold no other line with a checkbox, no HTML comment, no line whose first character other than a space is `<`, and no fenced code, so that the tests that wait on a task's tick, or refuse one, read the tasks that GitHub shows the owner. Tests SHALL fail otherwise.
+
+#### Scenario: A task list read as GitHub shows it passes
+
+- **WHEN** each line of a change's `tasks.md` that holds a checkbox is a task as the checks read it, no task is given twice, and the file holds no HTML comment, no line that opens with `<` and no fenced code
+- **THEN** the test passes it
+
+#### Scenario: A checkbox that the checks do not read as a task fails a test
+
+- **WHEN** a line of a change's `tasks.md` holds a checkbox, `[ ]`, `[x]` or `[X]`, and is not a task as the checks read it, such as one indented, given with another bullet, with two spaces or a tab after its box, with its number in bold or followed by a colon, or numbered in three parts or in digits other than 0 to 9
+- **THEN** a test fails and names the file and the line
+
+#### Scenario: Text that GitHub does not show in a task list fails a test
+
+- **WHEN** a change's `tasks.md` holds an HTML comment, a line whose first character other than a space is `<`, with which Markdown starts HTML that can hide the lines after it, or fenced code, in which GitHub shows a tick as code
+- **THEN** a test fails and names the file and the line
+
+#### Scenario: A task given twice fails a test
+
+- **WHEN** a change's `tasks.md` gives one task number on two lines, ticked or not
+- **THEN** a test fails and names the file, the task and both lines
 
 ### Requirement: The documentation says which agents an opt-in records
 
