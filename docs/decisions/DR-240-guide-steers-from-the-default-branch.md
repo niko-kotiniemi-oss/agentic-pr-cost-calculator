@@ -14,7 +14,7 @@ A session reads the guide from its working tree. The threat review at design of 
 
 ## Decision
 
-An agent reads the guide as the default branch holds it, so that an entry that a branch adds or changes is a proposal until the owner merges it. A principle of the guide, an entry with its Statement, Rationale, Implications, Pattern and Anti-patterns, is added, removed or changed only when the owner asks for it, in a pull request that changes no file outside `docs/`, `openspec/`, `CLAUDE.md` and `CHANGELOG.md`, and the pull request template asks a pull request that does so to say so, and where the owner asked. An entry's Held by, Rests on and Where we stand change with the work that they follow.
+An agent reads the guide as the default branch holds it, so that an entry that a branch adds or changes is a proposal until the owner merges it. A principle of the guide, an entry with its Statement, Rationale, Implications, Pattern and Anti-patterns, is added, removed or changed only when the owner asks for it, and, once the default branch holds the guide, in a pull request that changes no file outside `docs/`, `openspec/`, `CLAUDE.md` and `CHANGELOG.md`, and the pull request template asks a pull request that does so to say so, and where the owner asked. An entry's Held by, Rests on and Where we stand change with the work that they follow.
 
 ## Alternatives
 
@@ -26,7 +26,7 @@ An agent reads the guide as the default branch holds it, so that an entry that a
 
 - `CLAUDE.md` and the guide's opening say that the guide steers as the default branch holds it, and that a principle changes only when the owner asks (R219).
 - Compared with the base commit that the records' check uses, a test fails on a pull request that adds, removes or changes a principle and changes a file outside those folders and files, and examines nothing while no base holds the guide (R228, task 1.30).
-- Until the pull request that adds the guide merges, no copy of it steers, since the default branch holds none.
+- Until the pull request that adds the guide merges, no copy of it steers, since the default branch holds none. That pull request adds the guide's first entries beside the checks that hold them, and rests on the owner's review of the whole page (T179).
 
 ## Scope
 

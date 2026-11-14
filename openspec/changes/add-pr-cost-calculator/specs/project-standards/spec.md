@@ -434,9 +434,9 @@ The threat model SHALL number its threats from T1 in order, and a threat that a 
 - **WHEN** `docs/decisions/` holds a folder, a link, or a file that is neither a record nor the index, or a file elsewhere is named as a record
 - **THEN** a test fails and names the file
 
-### Requirement: No attribute hides the diff of a record, the README, the guide or what the marketplace serves, or changes the plugin's checkout
+### Requirement: No attribute hides the diff of a record, the README, `CLAUDE.md`, the guide or what the marketplace serves, or changes the plugin's checkout
 
-No attribute that the repository sets SHALL make git show as binary, or GitHub hide as generated, the diff of a record, the index, the README, the guide, the root marketplace file or a file in the plugin folder that it names, so that whoever merges a pull request reads each change that it makes to them, nor make git's checkout of the hook file or of a file in that folder write more than other line endings.
+No attribute that the repository sets SHALL make git show as binary, or GitHub hide as generated, the diff of a record, the index, the README, `CLAUDE.md`, the guide, the root marketplace file or a file in the plugin folder that it names, so that whoever merges a pull request reads each change that it makes to them, nor make git's checkout of the hook file or of a file in that folder write more than other line endings.
 
 #### Scenario: An attribute that hides a record's diff fails CI
 
@@ -456,6 +456,11 @@ No attribute that the repository sets SHALL make git show as binary, or GitHub h
 #### Scenario: An attribute that hides the guide's diff fails CI
 
 - **WHEN** the repository's attributes give `docs/patterns.md` `binary`, `diff` or `linguist-generated`, in any state
+- **THEN** a test fails and names the file and the attribute
+
+#### Scenario: An attribute that hides `CLAUDE.md`'s diff fails CI
+
+- **WHEN** the repository's attributes give `CLAUDE.md` `binary`, `diff` or `linguist-generated`, in any state
 - **THEN** a test fails and names the file and the attribute
 
 #### Scenario: An attribute that changes the plugin's checkout fails CI

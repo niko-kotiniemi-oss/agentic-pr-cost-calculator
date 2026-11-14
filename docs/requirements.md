@@ -145,7 +145,7 @@ The capability names the spec that holds the requirement. Each capability is one
 | R131 | non-functional | `project-standards` | A record and the threats it lists name each other |
 | R132 | non-functional | `project-standards` | A removed threat's ID is retired, never used again |
 | R133 | non-functional | `project-standards` | The records' folder holds only the records and their index |
-| R134 | non-functional | `project-standards` | No attribute hides the diff of a record, the README, the guide or what the marketplace serves, or changes the plugin's checkout |
+| R134 | non-functional | `project-standards` | No attribute hides the diff of a record, the README, `CLAUDE.md`, the guide or what the marketplace serves, or changes the plugin's checkout |
 | R135 | non-functional | `project-standards` | The assumptions the design rests on are written down |
 | R136 | non-functional | `project-standards` | The assumptions with the most at stake come first |
 | R137 | non-functional | `project-standards` | The specs and pages use the glossary's words |
