@@ -14,13 +14,20 @@ import json
 import re
 import subprocess
 import tomllib
-from collections.abc import Iterable, Iterator
+from collections.abc import Hashable, Iterable, Iterator
 from pathlib import Path
 from typing import Any
 
 import pytest
 import yaml
-from test_roadmap import make_tree, tasks, tracked
+from test_roadmap import (
+    ARCHIVED_TASKS,
+    BUILD_CHANGE,
+    CHANGE_TASKS,
+    make_tree,
+    tasks,
+    tracked,
+)
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -250,12 +257,47 @@ WRITES_ALLOWED: dict[str, set[str]] = {}
 FORBIDDEN_TRIGGERS = {"pull_request_target", "workflow_run"}
 
 
+class WorkflowLoader(yaml.SafeLoader):
+    """YAML read as `yaml.safe_load` reads it, but a mapping that gives a key twice is
+    refused, since PyYAML keeps its last value and another reader may not."""
+
+    def construct_mapping(self, node: yaml.MappingNode, deep: bool = False) -> dict[Any, Any]:
+        seen: set[Any] = set()
+        for key_node, _ in node.value:
+            if key_node.tag == "tag:yaml.org,2002:merge":
+                continue
+            key = self.construct_object(key_node, deep=deep)
+            if not isinstance(key, Hashable):
+                continue
+            if key in seen:
+                written = key_node.value if isinstance(key_node, yaml.ScalarNode) else key
+                raise yaml.constructor.ConstructorError(
+                    None, None, f"gives the key {written!r} twice", key_node.start_mark
+                )
+            seen.add(key)
+        return super().construct_mapping(node, deep=deep)
+
+
+def load_workflow(text: str) -> Any:
+    loader = WorkflowLoader(text)
+    try:
+        return loader.get_single_data()
+    finally:
+        loader.dispose()
+
+
 def triggers(doc: dict[Any, Any]) -> set[str]:
-    # YAML 1.1 reads a bare `on:` key as the boolean true.
-    on = doc.get("on", doc.get(True))
-    if isinstance(on, str):
-        return {on}
-    return set(on or [])
+    """The events that a workflow names under `on`, quoted or bare, which YAML 1.1 reads
+    as the boolean true, given as one name, as a mapping, or as a list of names and
+    mappings."""
+    found: set[str] = set()
+    for on in (doc.get("on"), doc.get(True)):
+        for item in on if isinstance(on, list) else [on]:
+            if isinstance(item, str):
+                found.add(item)
+            elif isinstance(item, dict):
+                found.update(str(key) for key in item)
+    return found
 
 
 def writes(permissions: Any) -> set[str]:
@@ -267,7 +309,7 @@ def writes(permissions: Any) -> set[str]:
 
 
 def workflow_problems(name: str, text: str) -> list[str]:
-    doc = yaml.safe_load(text)
+    doc = load_workflow(text)
     problems = [
         f"{name} triggers on {trigger}" for trigger in sorted(triggers(doc) & FORBIDDEN_TRIGGERS)
     ]
@@ -326,6 +368,23 @@ def test_a_write_the_workflow_is_allowed_is_not_reported(monkeypatch: Any) -> No
     monkeypatch.setitem(WRITES_ALLOWED, "r.yml", {"pull-requests: write"})
     assert workflow_problems("r.yml", text) == []
     assert triggers({"on": ["push", "pull_request"]}) == {"push", "pull_request"}
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "'on': push\non: pull_request_target\n",
+        "on: push\n'on': pull_request_target\n",
+        "on: [push, {pull_request_target: {}}]\n",
+    ],
+)
+def test_a_trigger_under_either_on_key_or_in_a_list_s_mapping_is_read(text: str) -> None:
+    assert workflow_problems("x.yml", text) == ["x.yml triggers on pull_request_target"]
+
+
+def test_a_workflow_that_gives_a_key_twice_is_refused() -> None:
+    with pytest.raises(yaml.YAMLError, match="gives the key 'on' twice"):
+        workflow_problems("x.yml", "on: pull_request_target\non: push\n")
 
 
 def checkouts(name: str, text: str) -> tuple[list[str], int]:
@@ -682,9 +741,6 @@ def test_a_bug_report_form_whose_privacy_checkbox_is_optional_is_refused() -> No
 
 # R223 and R229: what this repository holds before the tool is turned on here.
 
-CHANGE = "add-pr-cost-calculator"
-CHANGE_TASKS = f"openspec/changes/{CHANGE}/tasks.md"
-ARCHIVED_TASKS = f"openspec/changes/archive/2026-01-01-{CHANGE}/tasks.md"
 NEITHER_TICKED = "- [ ] 4.3 Add the reusable workflow\n- [ ] 7.1 Turn the tool on here\n"
 CAPTURE_ON = "- [ ] 4.3 Add the reusable workflow\n- [x] 7.1 Turn the tool on here\n"
 GUARD_ADDED = "- [x] 4.3 Add the reusable workflow\n- [ ] 7.1 Turn the tool on here\n"
@@ -693,7 +749,7 @@ REUSABLE = "on:\n  workflow_call:\npermissions:\n  contents: read\n"
 
 def ticked(root: Path, number: str) -> bool:
     """Whether a task of the change is ticked, in it or in its archived copy."""
-    return tasks(root).get((CHANGE, number), False)
+    return tasks(root).get((BUILD_CHANGE, number), False)
 
 
 def capture_file_problems(root: Path) -> list[str]:
@@ -701,7 +757,7 @@ def capture_file_problems(root: Path) -> list[str]:
     if ticked(root, "7.1"):
         return []
     return [
-        f"`{name}` is tracked at the root while task 7.1 of `{CHANGE}` is not ticked"
+        f"`{name}` is tracked at the root while task 7.1 of `{BUILD_CHANGE}` is not ticked"
         for name in sorted(tracked(root))
         if name == ".pr-cost.json" or name.startswith(".pr-cost/")
     ]
@@ -716,16 +772,17 @@ def reusable_workflow_problems(root: Path) -> list[str]:
         if not name.startswith(".github/workflows/"):
             continue
         try:
-            doc = yaml.safe_load((root / name).read_text(encoding="utf-8"))
+            doc = load_workflow((root / name).read_text(encoding="utf-8"))
         except yaml.YAMLError:
             problems.append(
                 f"`{name}` cannot be read as YAML, so it may declare `workflow_call` while "
-                f"task 4.3 of `{CHANGE}` is not ticked"
+                f"task 4.3 of `{BUILD_CHANGE}` is not ticked"
             )
             continue
         if isinstance(doc, dict) and "workflow_call" in triggers(doc):
             problems.append(
-                f"`{name}` declares `workflow_call` while task 4.3 of `{CHANGE}` is not ticked"
+                f"`{name}` declares `workflow_call` while task 4.3 of `{BUILD_CHANGE}` is not "
+                "ticked"
             )
     return problems
 
@@ -736,7 +793,7 @@ def test_a_switch_or_a_ledger_file_at_the_root_before_task_7_1_is_named(
 ) -> None:
     root = make_tree(tmp_path, {CHANGE_TASKS: NEITHER_TICKED, name: "{}\n"})
     assert capture_file_problems(root) == [
-        f"`{name}` is tracked at the root while task 7.1 of `{CHANGE}` is not ticked"
+        f"`{name}` is tracked at the root while task 7.1 of `add-pr-cost-calculator` is not ticked"
     ]
 
 
@@ -779,7 +836,8 @@ def test_task_7_1_ticked_in_another_change_does_not_turn_the_tool_on_here(tmp_pa
         ".pr-cost.json": "{}\n",
     }
     assert capture_file_problems(make_tree(tmp_path, files)) == [
-        f"`.pr-cost.json` is tracked at the root while task 7.1 of `{CHANGE}` is not ticked"
+        "`.pr-cost.json` is tracked at the root while task 7.1 of `add-pr-cost-calculator` is "
+        "not ticked"
     ]
 
 
@@ -790,6 +848,9 @@ def test_task_7_1_ticked_in_another_change_does_not_turn_the_tool_on_here(tmp_pa
         "on: workflow_call\n",
         "on: [push, workflow_call]\n",
         "'on': {workflow_call: {inputs: {}}}\n",
+        "'on': push\non: workflow_call\n",
+        "on: push\n'on': workflow_call\n",
+        "on: [push, {workflow_call: {}}]\n",
     ],
 )
 def test_a_reusable_workflow_before_task_4_3_is_named(tmp_path: Path, workflow: str) -> None:
@@ -798,8 +859,8 @@ def test_a_reusable_workflow_before_task_4_3_is_named(tmp_path: Path, workflow: 
         ".github/workflows/report.yml": workflow,
     }
     assert reusable_workflow_problems(make_tree(tmp_path, files)) == [
-        f"`.github/workflows/report.yml` declares `workflow_call` while task 4.3 of `{CHANGE}` "
-        "is not ticked"
+        "`.github/workflows/report.yml` declares `workflow_call` while task 4.3 of "
+        "`add-pr-cost-calculator` is not ticked"
     ]
 
 
@@ -813,6 +874,7 @@ def test_a_reusable_workflow_passes_once_task_4_3_is_ticked(tmp_path: Path, wher
     ("name", "workflow"),
     [
         (".github/workflows/ci.yml", "on: [push, pull_request]\n"),
+        (".github/workflows/ci.yml", "on: push\nx: &x {a: 1}\ny:\n  <<: *x\n  a: 2\n"),
         ("docs/a-reusable-workflow-shown.yml", REUSABLE),
     ],
 )
@@ -823,21 +885,31 @@ def test_a_workflow_that_declares_no_workflow_call_or_lies_elsewhere_passes(
     assert reusable_workflow_problems(make_tree(tmp_path, files)) == []
 
 
-def test_a_workflow_that_cannot_be_read_is_named(tmp_path: Path) -> None:
+@pytest.mark.parametrize(
+    "workflow",
+    [
+        "on: [workflow_call\n",
+        "on: workflow_call\non: push\n",
+        "a: 1\na: 2\n",
+        "? [a, b]\n: c\n",
+    ],
+)
+def test_a_workflow_that_cannot_be_read_is_named(tmp_path: Path, workflow: str) -> None:
     files: dict[str, str | None] = {
         CHANGE_TASKS: NEITHER_TICKED,
-        ".github/workflows/broken.yml": "on: [workflow_call\n",
+        ".github/workflows/broken.yml": workflow,
     }
     assert reusable_workflow_problems(make_tree(tmp_path, files)) == [
         "`.github/workflows/broken.yml` cannot be read as YAML, so it may declare "
-        f"`workflow_call` while task 4.3 of `{CHANGE}` is not ticked"
+        "`workflow_call` while task 4.3 of `add-pr-cost-calculator` is not ticked"
     ]
 
 
 def test_this_repository_holds_no_switch_ledger_file_or_reusable_workflow_too_early() -> None:
     """A check that examined nothing fails: the tasks that each check waits for, and the
     workflows that one reads, are found."""
-    assert {(CHANGE, "4.3"), (CHANGE, "7.1")} <= tasks(ROOT).keys()
+    change = "add-pr-cost-calculator"
+    assert {(change, "4.3"), (change, "7.1")} <= tasks(ROOT).keys()
     assert any(name.startswith(".github/workflows/") for name in tracked(ROOT))
     assert capture_file_problems(ROOT) == []
     assert reusable_workflow_problems(ROOT) == []

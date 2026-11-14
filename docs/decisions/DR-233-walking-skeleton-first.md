@@ -23,7 +23,7 @@ The pull request after the one that adds the guide builds a walking skeleton, th
 
 ## Consequences
 
-- The roadmap's Now lists B-021 right after the guide's item, B-001, and before the other items that prepare the build.
+- The roadmap's Now lists B-021 first once the guide's item, B-001, is done, before the other items that prepare the build.
 - Facts about Claude Code's transcripts and hooks can be observed before the requirements are corrected, and the specs and the assumptions take what it shows.
 - What the skeleton builds, how it is tested, and what of it the build keeps, are for its own pull request to propose, within the bounds that DR-236 sets on where its real run happens and what it records (T172, T174).
 - The README's status, which says that none of the tool's code exists yet and that code starts once the design is approved, changes with the skeleton's pull request.

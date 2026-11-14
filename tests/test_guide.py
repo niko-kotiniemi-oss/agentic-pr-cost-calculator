@@ -33,6 +33,7 @@ from __future__ import annotations
 import os
 import re
 import sys
+import time
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -55,12 +56,16 @@ from test_backlog import (
 )
 from test_decisions import DECIDER, attribute_problems, base_commits, records_of
 from test_roadmap import (
+    ARCHIVED_TASKS,
     BACKLOG,
+    BUILD_CHANGE,
+    CHANGE_TASKS,
     DOCUMENTATION,
     HIDDEN_TEXT,
     INLINE_CODE,
     LINKS_ELSEWHERE,
     RECORD_NAME,
+    SPACED_CODE,
     TREE,
     hidden_text_problems_in,
     item,
@@ -73,15 +78,7 @@ from test_roadmap import (
     sections,
     tasks,
 )
-from test_threat_model import (
-    DECISION_REF,
-    PATH_REF,
-    RECORD_REF,
-    SCENARIO_REF,
-    TASK_REF,
-    citation_problems,
-    index,
-)
+from test_threat_model import citation_problems, citations, index
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -148,8 +145,6 @@ RANK = (
 PRACTICES = ("Clean Code", "PEP 8", "OWASP Secure Coding Practices", "OpenSSF Scorecard")
 STANDINGS = ("Followed.", "Designed.", "Knowingly accepted.", "Gap.")
 BEFORE_THE_BUILD = "Gap. Before the build."
-# The change whose build a gap under Now holds back (R227).
-BUILD_CHANGE = "add-pr-cost-calculator"
 # The fields that state a principle, which a pull request changes only beside the pages
 # (R228).
 PRINCIPLE = FIELDS[:5]
@@ -159,7 +154,7 @@ OPENING_LINES = [line for paragraph in OPENING for line in (paragraph, "")]
 LAST_LINE = re.compile(
     re.escape(LAST_READ) + r"(?:the assessment of \d{4}-\d{2}-\d{2}|release \d+\.\d+\.\d+)\."
 )
-ENTRY_HEADING = re.compile(r"### (.+?) *")
+ENTRY_HEADING = re.compile(r"### (.*\S) *")
 FIELD = re.compile(r"- \*\*([^*]+):\*\* ?(.*)")
 SOURCE = re.compile(r"\bSource: *\S")
 ITEM_NAME = re.compile(r"\bB-\d{3}\b")
@@ -279,7 +274,7 @@ def text_problems(root: Path, text: str) -> list[str]:
     lines = text.split("\n")
     texts = [(GUIDE, "docs", 1, lines, text)]
     exempt = {
-        f"{GUIDE}:{number} holds inline code that holds a space, as a command does"
+        f"{GUIDE}:{number} {SPACED_CODE}"
         for number, (line, fixed) in enumerate(zip(lines, OPENING_LINES, strict=False), 1)
         if line == fixed
     }
@@ -301,12 +296,6 @@ def source_problems(entries: list[Entry]) -> list[str]:
     ]
 
 
-def cited_paths(held: str) -> list[str]:
-    """The files that a Held by cites, read as the threat model's citations are read."""
-    rest = DECISION_REF.sub("", TASK_REF.sub("", SCENARIO_REF.sub("", held)))
-    return PATH_REF.findall(RECORD_REF.sub("", rest))
-
-
 def held_by_problems(root: Path, entries: list[Entry]) -> list[str]:
     """Each Held by cites what holds the entry, or says what review checks, or both (R222);
     under Working with agents it cites `CLAUDE.md` (R220); it cites no file that others
@@ -324,7 +313,7 @@ def held_by_problems(root: Path, entries: list[Entry]) -> list[str]:
             problems.append(
                 f"{entry.name} cites nothing in Held by and gives nothing after Review:"
             )
-        paths = cited_paths(held)
+        paths = citations(held).paths
         if entry.concern == "Working with agents" and "CLAUDE.md" not in paths:
             problems.append(
                 f"{entry.name} is under Working with agents and does not cite `CLAUDE.md` in "
@@ -398,7 +387,7 @@ def standing_problems(root: Path, entries: list[Entry]) -> list[str]:
                 "Knowingly accepted. and Gap."
             )
         elif word in ("Followed.", "Designed."):
-            cited = TASK_REF.findall(SCENARIO_REF.sub("", entry.fields.get("Held by", "")))
+            cited = citations(entry.fields.get("Held by", "")).tasks
             unticked = [(change, n) for change, n in cited if not listed.get((change, n), False)]
             if word == "Followed.":
                 problems += [
@@ -496,6 +485,14 @@ def entries_at(root: Path, commit: str) -> dict[str, Entry] | None:
     return {entry.heading: entry for entry in entries_of(shown.stdout.decode("utf-8"))[0]}
 
 
+def guides_at(root: Path, bases: tuple[str, ...]) -> list[tuple[str, dict[str, Entry]]]:
+    """Each base that holds the guide, with its entries, by heading.
+
+    Raises LookupError when git cannot list a base's files or read its guide."""
+    held = [(base, entries_at(root, base)) for base in bases]
+    return [(base, entries) for base, entries in held if entries is not None]
+
+
 def beside_a_principle(path: str) -> bool:
     """Whether a pull request that changes a principle may change this file too (R228)."""
     return path.startswith(("docs/", "openspec/")) or path in ("CLAUDE.md", "CHANGELOG.md")
@@ -509,14 +506,12 @@ def principle_change_problems(root: Path, *bases: str) -> tuple[list[str], bool]
     removal and an addition; and whether a base held the guide (R228).
 
     Raises LookupError when git cannot list or read a commit's files."""
+    held = guides_at(root, bases)
+    if not held:
+        return [], False
     problems: dict[str, None] = {}
-    examined = False
     after = entries_at(root, "HEAD") or {}
-    for base in bases:
-        before = entries_at(root, base)
-        if before is None:
-            continue
-        examined = True
+    for base, before in held:
         changes = [(heading, "added") for heading in after if heading not in before]
         for heading, old in before.items():
             new = after.get(heading)
@@ -541,7 +536,7 @@ def principle_change_problems(root: Path, *bases: str) -> tuple[list[str], bool]
                 f'{GUIDE}: the entry "{heading}" is {what} beside a change to '
                 f"{', '.join(outside)}, outside docs/, openspec/, CLAUDE.md and CHANGELOG.md"
             ] = None
-    return list(problems), examined
+    return list(problems), True
 
 
 def what_done(item: Item) -> str:
@@ -555,15 +550,13 @@ def agreed_gap_problems(root: Path, *bases: str) -> tuple[list[str], bool]:
     that item's What done looks like; and whether a base held the guide (R231).
 
     Raises LookupError when git cannot list or read a commit's files."""
+    held = guides_at(root, bases)
+    if not held:
+        return [], False
     problems: dict[str, None] = {}
-    examined = False
     after = entries_at(root, "HEAD") or {}
     now = {item.ident: item for item in items_in(root, "HEAD").values()}
-    for base in bases:
-        before = entries_at(root, base)
-        if before is None:
-            continue
-        examined = True
+    for base, before in held:
         then = {item.ident: item for item in items_in(root, base).values()}
         for heading, entry in after.items():
             given = gap_items(before[heading]) if heading in before else []
@@ -576,7 +569,7 @@ def agreed_gap_problems(root: Path, *bases: str) -> tuple[list[str], bool]:
                         f"{entry.name} comes to name {ident} as a gap, which the base gives as "
                         f"{old.status}, and leaves its What done looks like as the base gives it"
                     ] = None
-    return list(problems), examined
+    return list(problems), True
 
 
 def guide_problems(root: Path) -> list[str]:
@@ -933,6 +926,15 @@ def test_an_empty_field_is_reported(tmp_path: Path, empty: str) -> None:
     assert found == [f"{named('Data never instructs', text)} leaves Statement empty"]
 
 
+@pytest.mark.parametrize("spaces", ["a" + " " * 50_000 + "b", "a" + " " * 50_000])
+def test_a_long_heading_is_read_in_one_pass(spaces: str) -> None:
+    """A run of spaces inside a heading is read without trying each split of it again."""
+    started = time.perf_counter()
+    head = ENTRY_HEADING.fullmatch(f"### {spaces}")
+    assert time.perf_counter() - started < 0.5
+    assert head is not None and head.group(1) == spaces.rstrip(" ")
+
+
 def test_a_repeated_heading_is_reported(tmp_path: Path) -> None:
     text = GUIDE_TEXT.replace("### Counts, never content", "### Least privilege", 1)
     first = text.index("### Least privilege\n")
@@ -1184,8 +1186,6 @@ def test_only_an_agreed_item_closes_a_gap_that_adopters_rely_on(
 
 # R227: a gap to close before the build holds the build back.
 
-CHANGE_TASKS = "openspec/changes/add-pr-cost-calculator/tasks.md"
-ARCHIVED_TASKS = "openspec/changes/archive/2026-01-01-add-pr-cost-calculator/tasks.md"
 NUMBERS = ["0.5", "1.0", *(f"1.{minor}" for minor in range(1, 31)), "2.1", "3.4"]
 # The tasks that a gap under Now holds back, and some beside them that it does not.
 HELD_BACK = ["1.1", "1.9", "1.13", "1.15", "1.21", "2.1", "3.4"]

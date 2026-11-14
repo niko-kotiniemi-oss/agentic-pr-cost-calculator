@@ -241,10 +241,12 @@ def counted(number: int, noun: str) -> str:
     return f"{number} {noun}" if number == 1 else f"{number} {noun}s"
 
 
-def listed_first(path: str) -> tuple[int, str]:
-    """Where a changed file is listed: the files that steer first, in their order, then the
-    rest by path."""
-    return (STEERING.index(path) if path in STEERING else len(STEERING), path)
+def listed_first(change: tuple[str, str, str]) -> tuple[int, str]:
+    """Where a changed file is listed: the files that steer first, in their order, a
+    rename by either of its paths, then the rest by path."""
+    _, old, new = change
+    ranks = [STEERING.index(path) if path in STEERING else len(STEERING) for path in (old, new)]
+    return (min(ranks), new)
 
 
 def report(base: str) -> str:
@@ -265,7 +267,7 @@ def report(base: str) -> str:
         kept = kept_at(Path.cwd(), since)
     except subprocess.CalledProcessError as failed:
         raise Refused(failed.stderr.decode("utf-8", "replace").strip()) from None
-    changes = sorted(changed_files(since), key=lambda change: listed_first(change[2]))
+    changes = sorted(changed_files(since), key=listed_first)
     seen = {path for _, old, new in changes for path in (old, new)}
     every = git("diff-tree", "-r", "-z", "--name-only", since, "HEAD").split("\0")[:-1]
     skipped = [

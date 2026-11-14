@@ -91,11 +91,19 @@ BUILD_LINK = re.compile(r"\]\(\.\./openspec/changes/([a-z0-9-]+)/(proposal|tasks
 # Inline code, over line breaks, as Markdown reads it: a run of backticks to the next
 # run of the same length.
 INLINE_CODE = re.compile(r"(?<!`)(`+)(?!`)(.+?)(?<!`)\1(?!`)", re.S)
+# What the reading of links says of inline code that holds a space, from which the
+# guide's fixed opening is exempt.
+SPACED_CODE = "holds inline code that holds a space, as a command does"
 REGISTER_ROW = re.compile(r"^\| (R\d+) \| ", re.M)
 THREAT_HEADING = re.compile(r"^### (T\d+)\. ", re.M)
 RECORD_FILE = re.compile(r"(DR-\d{3})-[a-z0-9-]+\.md")
 CLOSED_BY = re.compile(r"^- \*\*Closed by:\*\* (.+?) *$", re.M)
 TASK_LINE = re.compile(r"^- \[([ xX])\] (\d+\.\d+) ", re.M)
+# The change that the build follows, whose tasks this repository's own gates read, and
+# where tests plant its tasks, active or archived.
+BUILD_CHANGE = "add-pr-cost-calculator"
+CHANGE_TASKS = f"openspec/changes/{BUILD_CHANGE}/tasks.md"
+ARCHIVED_TASKS = f"openspec/changes/archive/2026-01-01-{BUILD_CHANGE}/tasks.md"
 ARCHIVED = re.compile(r"\d{4}-\d{2}-\d{2}-(.+)")
 RISK = re.compile(r"^- \[(.+?)\] \u2192 ")
 LISTED = re.compile(r"^- \*\*(.+?)\*\*: ", re.M)
@@ -424,12 +432,13 @@ def others_write(path: str) -> str:
     return next((folder for folder in OTHERS_WRITE if path.startswith(folder)), "")
 
 
-def name_problems(name: str, start: int, text: str, files: set[str]) -> list[str]:
+def address_problems(name: str, start: int, text: str, files: set[str]) -> list[str]:
     """The paths that the text gives, which name only tracked files outside the folders
     that others write, and the hosts, IP addresses and commit IDs that it names, in prose
     or in inline code."""
     problems = []
-    for offset, line in enumerate(unlinked(text).split("\n")):
+    bare = unlinked(text)
+    for offset, line in enumerate(bare.split("\n")):
         for token in OWNER_REPO.findall(line):
             path = token.rstrip(".")
             if path not in files:
@@ -441,9 +450,12 @@ def name_problems(name: str, start: int, text: str, files: set[str]) -> list[str
                 problems.append(
                     f"{name}:{start + offset} names {path}, a file under {folder} that others write"
                 )
-    seen = shown(unlinked(text))
+    seen = shown(bare)
+
+    def at(found: re.Match[str]) -> str:
+        return f"{name}:{start + seen.count(chr(10), 0, found.start())}"
+
     for found in NAME.finditer(seen):
-        where = f"{name}:{start + seen.count(chr(10), 0, found.start())}"
         token = found.group(0).rstrip(".")
         if token in files:
             continue
@@ -451,15 +463,13 @@ def name_problems(name: str, start: int, text: str, files: set[str]) -> list[str
             host = segment.strip("._")
             labels = host.split(".")
             if len(labels) > 1 and LETTERS.fullmatch(labels[-1]) and host not in NOT_HOSTS:
-                problems.append(f"{where} names {host}, which reads as a host")
+                problems.append(f"{at(found)} names {host}, which reads as a host")
     for found in ADDRESS.finditer(seen):
-        where = f"{name}:{start + seen.count(chr(10), 0, found.start())}"
-        problems.append(f"{where} names {found.group(0)}, which reads as an IP address")
+        problems.append(f"{at(found)} names {found.group(0)}, which reads as an IP address")
     for found in COMMIT_ID.finditer(seen):
         ident = found.group(0)
         if any(c.isdigit() for c in ident) and not ident.isdigit():
-            where = f"{name}:{start + seen.count(chr(10), 0, found.start())}"
-            problems.append(f"{where} names {ident}, which reads as a commit ID")
+            problems.append(f"{at(found)} names {ident}, which reads as a commit ID")
     return problems
 
 
@@ -490,13 +500,11 @@ def link_problems_in(root: Path, texts: list[tuple[str, str, int, list[str], str
                 problems.append(f"{where} holds an image")
             if EMPHASIZED_PATH.search(line):
                 problems.append(f"{where} marks a path with emphasis")
-        problems += name_problems(name, start, text, files)
+        problems += address_problems(name, start, text, files)
         for code in INLINE_CODE.finditer(text):
             if " " in padless(code.group(2)) or "\n" in code.group(2):
                 number = start + text.count("\n", 0, code.start())
-                problems.append(
-                    f"{name}:{number} holds inline code that holds a space, as a command does"
-                )
+                problems.append(f"{name}:{number} {SPACED_CODE}")
         found = list(TARGET.finditer(text))
         if text.count("](") != len(found):
             problems.append(f"{name} holds a link whose target this test cannot read")

@@ -72,6 +72,7 @@ from datetime import UTC, date, datetime
 from pathlib import Path
 
 import pytest
+from test_roadmap import session_free_environment
 from wording import ACCEPTED, DEFAULT_BRANCH, QUOTATION, SPEC_FILE, SPEC_TITLE
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -625,7 +626,15 @@ def tracked_texts(root: Path) -> dict[str, str]:
 
 
 def git(root: Path, *args: str) -> subprocess.CompletedProcess[bytes]:
-    return subprocess.run(["git", *args], cwd=root, capture_output=True, check=False)
+    """git run in the repository at root, with no git variable of the session's and no
+    global or system configuration."""
+    return subprocess.run(
+        ["git", *args],
+        cwd=root,
+        capture_output=True,
+        check=False,
+        env={**session_free_environment(), **GIT_ENVIRONMENT},
+    )
 
 
 def fetch_advice(root: Path, otherwise: str) -> str:
@@ -1571,6 +1580,21 @@ def run_git(root: Path, *args: str) -> str:
         env={**os.environ, **GIT_ENVIRONMENT},
     )
     return done.stdout.decode().strip()
+
+
+def test_git_reads_the_repository_it_is_given_whatever_the_session_sets(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A git variable of the session's, such as a repository named elsewhere, or its own
+    configuration, does not reach the checks' runs of git."""
+    run_git(tmp_path, "init", "-q")
+    setting = tmp_path / "config"
+    setting.write_text("[planted]\n\tkey = set\n", encoding="utf-8")
+    monkeypatch.setenv("GIT_DIR", str(tmp_path / "elsewhere"))
+    monkeypatch.setenv("GIT_CONFIG_GLOBAL", str(setting))
+    found = git(tmp_path, "rev-parse", "--absolute-git-dir")
+    assert found.stdout.decode().strip() == str((tmp_path / ".git").resolve())
+    assert git(tmp_path, "config", "planted.key").returncode == 1
 
 
 def repository_with_history(root: Path, records: list[str]) -> Path:

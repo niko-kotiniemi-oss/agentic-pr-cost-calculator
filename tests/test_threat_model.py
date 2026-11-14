@@ -119,39 +119,59 @@ def index(root: Path) -> Index:
     return Index(scenarios, changes)
 
 
+@dataclass(frozen=True)
+class Citations:
+    """What a Held by cites, by kind."""
+
+    scenarios: list[tuple[str, str]]
+    tasks: list[tuple[str, str]]
+    decisions: list[tuple[str, str]]
+    records: list[str]
+    paths: list[str]
+
+
+def citations(held: str) -> Citations:
+    """Each kind is read from what the kinds before it leave, so that the name of a
+    capability or a change, which is in backticks, is not read as a path."""
+    scenarios = SCENARIO_REF.findall(held)
+    rest = SCENARIO_REF.sub("", held)
+    tasks = TASK_REF.findall(rest)
+    rest = TASK_REF.sub("", rest)
+    decisions = DECISION_REF.findall(rest)
+    rest = DECISION_REF.sub("", rest)
+    records = RECORD_REF.findall(rest)
+    paths = PATH_REF.findall(RECORD_REF.sub("", rest))
+    return Citations(scenarios, tasks, decisions, records, paths)
+
+
 def citation_problems(ident: str, held: str, found: Index, root: Path) -> tuple[list[str], int]:
     problems: list[str] = []
-    cited = 0
-    for capability, name in SCENARIO_REF.findall(held):
-        cited += 1
+    cited = citations(held)
+    for capability, name in cited.scenarios:
         if name not in found.scenarios.get(capability, set()):
             problems.append(f'{ident} cites `{capability}`: "{name}", which no spec holds')
-    rest = SCENARIO_REF.sub("", held)
-    for change, number in TASK_REF.findall(rest):
-        cited += 1
+    for change, number in cited.tasks:
         tasks = found.changes[change] / "tasks.md" if change in found.changes else None
         line = re.compile(rf"^- \[[ x]\] {re.escape(number)} ", re.M)
         if tasks is None or not tasks.is_file() or not line.search(tasks.read_text()):
             problems.append(f"{ident} cites `{change}` task {number}, which does not exist")
-    rest = TASK_REF.sub("", rest)
-    for change, number in DECISION_REF.findall(rest):
-        cited += 1
+    for change, number in cited.decisions:
         design = found.changes[change] / "design.md" if change in found.changes else None
         heading = re.compile(rf"^### {re.escape(number)}\. ", re.M)
         if design is None or not design.is_file() or not heading.search(design.read_text()):
             problems.append(f"{ident} cites `{change}` decision {number}, which does not exist")
-    rest = DECISION_REF.sub("", rest)
-    for number in RECORD_REF.findall(rest):
-        cited += 1
+    for number in cited.records:
         if not sorted((root / "docs" / "decisions").glob(f"DR-{number}-*.md")):
             problems.append(f"{ident} cites DR-{number}, which is not a decision record")
-    rest = RECORD_REF.sub("", rest)
-    for path in PATH_REF.findall(rest):
-        cited += 1
+    for path in cited.paths:
         target = (root / path).resolve()
         if root.resolve() not in target.parents or not target.exists():
             problems.append(f"{ident} cites `{path}`, which is not a file in this repository")
-    return problems, cited
+    count = sum(
+        len(kind)
+        for kind in (cited.scenarios, cited.tasks, cited.decisions, cited.records, cited.paths)
+    )
+    return problems, count
 
 
 def problems_in(text: str, root: Path) -> tuple[list[str], int]:
