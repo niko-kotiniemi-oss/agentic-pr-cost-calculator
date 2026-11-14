@@ -20,9 +20,11 @@ under Now, no task of `add-pr-cost-calculator` that it holds back is ticked, and
 close before the build names such an item (R227). Compared with the base that the
 records' check uses, a pull request that adds or removes an entry, moves one to another
 concern, or changes its principle, changes nothing outside `docs/`, `openspec/`,
-`CLAUDE.md` and `CHANGELOG.md` (R228), and one that gives an agreed item a gap changes
-that item's What done looks like (R231), both examining nothing while no base holds the
-guide. No attribute hides the diff of the guide or of `CLAUDE.md` (R134).
+`CLAUDE.md` and `CHANGELOG.md` (R228), one that gives an agreed item a gap changes that
+item's What done looks like (R231), and an entry leaves `Gap.`, or its gap stops naming
+an item that it named, only while that item is `Done` or `Dropped` (R233), each
+examining nothing while no base holds the guide. No attribute hides the diff of the
+guide, of `CLAUDE.md` or of a change's `tasks.md` (R134).
 
 Each check is shown to fail on a synthetic tree, the roadmap's with a guide, into which
 its defect is planted, or on a history of two commits made in it.
@@ -66,7 +68,9 @@ from test_roadmap import (
     LINKS_ELSEWHERE,
     RECORD_NAME,
     SPACED_CODE,
+    TASKS,
     TREE,
+    changes,
     hidden_text_problems_in,
     item,
     link_problems_in,
@@ -1335,7 +1339,7 @@ def test_the_build_s_check_is_one_of_the_guide_s(tmp_path: Path) -> None:
     assert found == build_problems(build_tree(tmp_path / "again", ["1.1"])) != []
 
 
-# R228 and R231: compared with the base that the records' check uses.
+# R228, R231 and R233: compared with the base that the records' check uses.
 
 OUTSIDE = {"tool/capture.py": "print()\n"}
 NEW_ENTRY = "".join(f"- **{name}:** {value}\n" for name, value in ENTRY.items())
@@ -1839,11 +1843,23 @@ def test_the_repository_holds_its_principles_and_agreed_items_against_its_base()
         pytest.skip("no base holds the guide yet, so its checks against the base examine nothing")
 
 
-# R134: no attribute hides the diff of the guide or of `CLAUDE.md`.
+# R134: no attribute hides the diff of the guide, of `CLAUDE.md` or of a change's tasks.
 
 
-def test_no_attribute_changes_how_the_guide_s_or_claude_md_s_diff_shows() -> None:
-    assert attribute_problems(ROOT, [GUIDE, "CLAUDE.md"]) == []
+def reviewed(root: Path) -> list[str]:
+    """The guide, `CLAUDE.md` and each change's `tasks.md`, active or archived, whose diffs
+    the owner reads to accept a principle or a tick."""
+    return [
+        GUIDE,
+        "CLAUDE.md",
+        *((path / "tasks.md").relative_to(root).as_posix() for _, path in changes(root)),
+    ]
+
+
+def test_no_attribute_changes_how_the_guide_s_claude_md_s_or_a_change_s_tasks_diff_shows() -> None:
+    paths = reviewed(ROOT)
+    assert any(path.endswith("/tasks.md") for path in paths), "no change's tasks.md was read"
+    assert attribute_problems(ROOT, paths) == []
 
 
 @pytest.mark.parametrize(
@@ -1856,11 +1872,25 @@ def test_no_attribute_changes_how_the_guide_s_or_claude_md_s_diff_shows() -> Non
         ("linguist-generated", "linguist-generated: set"),
     ],
 )
-@pytest.mark.parametrize("path", [GUIDE, "CLAUDE.md"])
-def test_an_attribute_that_changes_how_the_guide_s_or_claude_md_s_diff_shows_is_reported(
+@pytest.mark.parametrize("path", [GUIDE, "CLAUDE.md", TASKS, ARCHIVED_TASKS])
+def test_an_attribute_that_changes_how_a_reviewed_file_s_diff_shows_is_reported(
     tmp_path: Path, path: str, attribute: str, shown: str
 ) -> None:
-    root = guide_tree(tmp_path, changed={".gitattributes": f"{path} {attribute}\n"})
-    found = attribute_problems(root, [GUIDE, "CLAUDE.md"])
+    root = guide_tree(
+        tmp_path,
+        changed={".gitattributes": f"{path} {attribute}\n", ARCHIVED_TASKS: TREE[TASKS]},
+    )
+    found = attribute_problems(root, reviewed(root))
     assert f"{path} has {shown}, which changes how its diff shows" in found
     assert all(problem.startswith(f"{path} has ") for problem in found)
+
+
+def test_an_attribute_given_to_every_change_s_tasks_is_reported(tmp_path: Path) -> None:
+    root = guide_tree(
+        tmp_path,
+        changed={".gitattributes": "openspec/changes/*/tasks.md -diff linguist-generated\n"},
+    )
+    assert attribute_problems(root, reviewed(root)) == [
+        f"{TASKS} has diff: unset, which changes how its diff shows",
+        f"{TASKS} has linguist-generated: set, which changes how its diff shows",
+    ]

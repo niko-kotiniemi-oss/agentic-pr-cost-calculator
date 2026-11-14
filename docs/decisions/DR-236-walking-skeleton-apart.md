@@ -24,7 +24,7 @@ The walking skeleton records nothing unless the repository's configuration turns
 
 ## Consequences
 
-- A test fails while this repository tracks `.pr-cost.json` or a file under `.pr-cost/` at its root before task 7.1 is ticked (R223, task 1.29).
+- A test fails while this repository tracks `.pr-cost.json` or a file under `.pr-cost/` at its root, whatever the case of their letters, before task 7.1 is ticked (R223, task 1.29).
 - A test fails while a tracked workflow here declares `workflow_call` before task 4.3, which adds the reusable workflow with its guard that refuses every event but a push to the default branch, is ticked, so that a thinnest path merged here cannot be called from another repository, the skeleton's own among them, before that guard exists (R229, task 1.29, T178).
 - The skeleton's pull request says where its run happened and what of it the repository keeps, and the owner approves that with its design, before it is built (DR-233).
 - The opt-in for that run is set by the owner, in that project's environment, since an agent never turns capture on for anyone (DR-214).

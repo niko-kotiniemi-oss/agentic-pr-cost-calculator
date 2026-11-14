@@ -72,6 +72,7 @@ from test_decisions import base_commits
 from test_roadmap import (
     BACKLOG,
     FENCE,
+    GIT_ENVIRONMENT,
     LATER_OPENING,
     LIST_MARKER,
     NOT_SUPPORTED,
@@ -623,7 +624,7 @@ def git(root: Path, *args: str) -> subprocess.CompletedProcess[bytes]:
         cwd=root,
         capture_output=True,
         check=False,
-        env={**isolated_environment(), **AUTHOR},
+        env={**isolated_environment(root), **AUTHOR},
     )
 
 
@@ -1242,6 +1243,16 @@ def compared(root: Path, today: date = TODAY) -> list[str]:
 
 def test_an_unchanged_tree_passes_against_its_base(tmp_path: Path) -> None:
     assert compared(with_base(tmp_path)) == []
+
+
+def test_a_checkout_that_another_user_owns_is_compared_with_its_base(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A checkout that another user owns, as one mounted into a container is, is read,
+    though the checks' runs of git read no global configuration that could trust it."""
+    monkeypatch.setitem(GIT_ENVIRONMENT, "GIT_TEST_ASSUME_DIFFERENT_OWNER", "1")
+    root = with_base(tmp_path, {ITEM: None})
+    assert compared(root) == [f"{ITEM}, which a base commit holds, was removed, renamed or moved"]
 
 
 @pytest.mark.parametrize(

@@ -72,7 +72,7 @@ from datetime import UTC, date, datetime
 from pathlib import Path
 
 import pytest
-from test_roadmap import isolated_environment
+from test_roadmap import GIT_ENVIRONMENT, isolated_environment
 from wording import ACCEPTED, DEFAULT_BRANCH, QUOTATION, SPEC_FILE, SPEC_TITLE
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -633,7 +633,7 @@ def git(root: Path, *args: str) -> subprocess.CompletedProcess[bytes]:
         cwd=root,
         capture_output=True,
         check=False,
-        env=isolated_environment(),
+        env=isolated_environment(root),
     )
 
 
@@ -1561,9 +1561,7 @@ def test_a_threat_that_an_accepted_record_lists_names_it(tmp_path: Path) -> None
     ]
 
 
-GIT_ENVIRONMENT = {
-    "GIT_CONFIG_GLOBAL": os.devnull,
-    "GIT_CONFIG_NOSYSTEM": "1",
+AUTHOR = {
     "GIT_AUTHOR_NAME": "Test",
     "GIT_AUTHOR_EMAIL": "test@example.invalid",
     "GIT_COMMITTER_NAME": "Test",
@@ -1577,7 +1575,7 @@ def run_git(root: Path, *args: str) -> str:
         cwd=root,
         check=True,
         capture_output=True,
-        env={**os.environ, **GIT_ENVIRONMENT},
+        env={**isolated_environment(root), **AUTHOR},
     )
     return done.stdout.decode().strip()
 
@@ -1587,8 +1585,7 @@ def test_git_reads_the_repository_it_is_given_whatever_the_session_sets(
 ) -> None:
     """A git variable of the session's, such as a repository named elsewhere or a
     configuration of its own, and the session's global configuration, wherever git finds
-    it, do not reach the checks' runs of git."""
-    run_git(tmp_path, "init", "-q")
+    it, reach neither the checks' runs of git nor the runs that build their repositories."""
     setting = tmp_path / "config"
     setting.write_text("[planted]\n\tkey = set\n", encoding="utf-8")
     home = tmp_path / "home"
@@ -1599,9 +1596,34 @@ def test_git_reads_the_repository_it_is_given_whatever_the_session_sets(
     monkeypatch.setenv("GIT_CONFIG_GLOBAL", str(setting))
     monkeypatch.setenv("HOME", str(home))
     monkeypatch.setenv("XDG_CONFIG_HOME", str(home / ".config"))
+    run_git(tmp_path, "init", "-q")
     found = git(tmp_path, "rev-parse", "--absolute-git-dir")
     assert found.stdout.decode().strip() == str((tmp_path / ".git").resolve())
     assert git(tmp_path, "config", "planted.key").returncode == 1
+
+
+def test_git_reads_a_repository_that_another_user_owns(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A checkout that another user owns, as one mounted into a container is, is read,
+    though the checks' runs of git read no global configuration that could trust it."""
+    run_git(tmp_path, "init", "-q")
+    monkeypatch.setitem(GIT_ENVIRONMENT, "GIT_TEST_ASSUME_DIFFERENT_OWNER", "1")
+    found = git(tmp_path, "rev-parse", "--absolute-git-dir")
+    assert found.stdout.decode().strip() == str((tmp_path / ".git").resolve())
+
+
+def test_git_trusts_no_repository_but_the_one_it_is_given(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A repository that git finds above the folder that it is given is not trusted for
+    it, so that git does not read one there that another user owns."""
+    run_git(tmp_path, "init", "-q")
+    below = tmp_path / "below"
+    below.mkdir()
+    assert git(below, "rev-parse", "--absolute-git-dir").returncode == 0
+    monkeypatch.setitem(GIT_ENVIRONMENT, "GIT_TEST_ASSUME_DIFFERENT_OWNER", "1")
+    assert git(below, "rev-parse", "--absolute-git-dir").returncode != 0
 
 
 def repository_with_history(root: Path, records: list[str]) -> Path:

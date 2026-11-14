@@ -41,10 +41,11 @@ guide's test reads the guide with them (R221).
 
 Each change's `tasks.md`, active or archived, gives each task once, on a line that
 opens with `- [ ]` or `- [x]`, a space, its number and a space, as `TASK_LINE` reads
-it, and holds no other line with a checkbox, no HTML comment, code fence, front matter
-or byte-order mark, no line that opens with `<` or `$$`, and no carriage return that no
-line feed follows, so that the checks that wait on a tick, or refuse one, read the tasks
-that GitHub shows (R232, T184).
+it, and holds no other line with a checkbox, no code fence, front matter or byte-order
+mark, no `<` before a letter, `/`, `!` or `?` outside inline code on its line, with
+which an HTML comment or tag opens, no line that opens with `$$`, and no carriage return
+that no line feed follows, so that the checks that wait on a tick, or refuse one, read
+the tasks that GitHub shows (R232, T184).
 
 Each check is shown to fail on a synthetic tree, a git repository so that its
 tracked files can be read, into which the defect is planted. The tree holds backlog
@@ -111,6 +112,11 @@ BOX = re.compile(r"\[[ xX]\]")
 CODE_FENCE = re.compile(r"\s*(```|~~~)")
 # A carriage return that no line feed follows, which Markdown reads as the end of a line.
 LONE_RETURN = re.compile(r"\r(?!\n)")
+# Inline code that opens and closes on one line. A backtick after a backslash is plain
+# text, so it opens none.
+CODE_ON_A_LINE = re.compile(r"(?<![`\\])(`+)(?!`)(.+?)(?<!`)\1(?!`)")
+# A `<` with which Markdown starts HTML: before a letter, `/`, `!` or `?`.
+TAG_START = re.compile(r"<[A-Za-z/!?]")
 # The change that the build follows, whose tasks this repository's own gates read, and
 # where tests plant its tasks, active or archived.
 BUILD_CHANGE = "add-pr-cost-calculator"
@@ -164,10 +170,21 @@ def session_free_environment() -> dict[str, str]:
     return {key: value for key, value in os.environ.items() if not key.startswith("GIT_")}
 
 
-def isolated_environment() -> dict[str, str]:
+def isolated_environment(root: Path) -> dict[str, str]:
     """The environment with no git variable of the session's and no global or system
-    configuration, so that git reads only the repository it runs in, as it is."""
-    return {**session_free_environment(), **GIT_ENVIRONMENT}
+    configuration, so that git reads only the repository at root, as it is.
+
+    A session trusts a checkout that another user owns, as one mounted into a container
+    is, by `safe.directory` in its global configuration. So root is trusted here, and no
+    other folder: it is this checkout, whose code the suite already runs, or a repository
+    that a test makes."""
+    return {
+        **session_free_environment(),
+        **GIT_ENVIRONMENT,
+        "GIT_CONFIG_COUNT": "1",
+        "GIT_CONFIG_KEY_0": "safe.directory",
+        "GIT_CONFIG_VALUE_0": str(root),
+    }
 
 
 def tracked(root: Path) -> set[str]:
@@ -286,10 +303,10 @@ def tasks(root: Path) -> dict[tuple[str, str], bool]:
 
 def task_list_problems(root: Path) -> list[str]:
     """Each change's `tasks.md` gives each task once, on a line that `TASK_LINE` reads,
-    and holds no other line with a checkbox, no HTML comment, code fence, front matter or
-    byte-order mark, no line that opens with `<` or `$$`, and no carriage return that
-    ends a line for Markdown but not for the checks, so that `tasks` reads the tasks that
-    GitHub shows (R232)."""
+    and holds no other line with a checkbox, no code fence, front matter or byte-order
+    mark, no `<` before a letter, `/`, `!` or `?` outside inline code on its line, no line
+    that opens with `$$`, and no carriage return that ends a line for Markdown but not for
+    the checks, so that `tasks` reads the tasks that GitHub shows (R232)."""
     problems = []
     for _, path in changes(root):
         name = (path / "tasks.md").relative_to(root).as_posix()
@@ -318,14 +335,15 @@ def task_list_problems(root: Path) -> list[str]:
                 problems.append(
                     f"{name}:{number} holds a checkbox that the checks do not read as a task"
                 )
-            if "<!--" in line:
+            outside = CODE_ON_A_LINE.sub("", line)
+            if "<!--" in outside:
                 problems.append(
                     f"{name}:{number} holds an HTML comment, which GitHub does not show"
                 )
-            elif line.lstrip().startswith("<"):
+            elif TAG_START.search(outside):
                 problems.append(
-                    f"{name}:{number} opens with <, with which Markdown starts HTML that can hide "
-                    "the lines after it"
+                    f"{name}:{number} holds a < before a letter, /, ! or ? outside inline code "
+                    "on its line, with which Markdown starts HTML that can hide the lines after it"
                 )
             elif line.lstrip().startswith("$$"):
                 problems.append(
@@ -804,7 +822,11 @@ def make_tree(root: Path, changed: dict[str, str | None] | None = None) -> Path:
         path.write_bytes(text.encode("utf-8"))
     for args in (["init", "-q"], ["add", "-A"]):
         subprocess.run(
-            ["git", *args], cwd=root, check=True, capture_output=True, env=isolated_environment()
+            ["git", *args],
+            cwd=root,
+            check=True,
+            capture_output=True,
+            env=isolated_environment(root),
         )
     return root
 
@@ -923,7 +945,10 @@ TASKS = "openspec/changes/c/tasks.md"
 OLD_TASKS = "openspec/changes/archive/2026-01-01-old/tasks.md"
 UNREAD = "holds a checkbox that the checks do not read as a task"
 COMMENT = "holds an HTML comment, which GitHub does not show"
-HTML = "opens with <, with which Markdown starts HTML that can hide the lines after it"
+HTML = (
+    "holds a < before a letter, /, ! or ? outside inline code on its line, with which Markdown "
+    "starts HTML that can hide the lines after it"
+)
 FENCED = "holds a code fence, inside which GitHub shows a tick as code"
 MATH = "opens with $$, with which GitHub starts a math block that it shows a tick in as math"
 FRONT_MATTER = "opens with ---, with which GitHub starts front matter that it shows as a table"
@@ -981,15 +1006,27 @@ def test_a_checkbox_that_the_checks_do_not_read_as_a_task_is_reported(
         ("<details>\n\n- [x] 1.3 Did a thing\n\n</details>\n", [(3, HTML), (7, HTML)]),
         ("  <div>\n- [x] 1.3 Did a thing\n", [(3, HTML)]),
         ("\t<script>\n", [(3, HTML)]),
+        ("Notes <details>\n\n- [x] 1.3 Did a thing\n", [(3, HTML)]),
+        ("- [ ] 1.3 Do a thing <details>\n", [(3, HTML)]),
+        ("\u200b<details>\n- [x] 1.3 Did a thing\n", [(3, HTML)]),
+        ("Notes </details>\n", [(3, HTML)]),
+        ("Notes <?x?>\n", [(3, HTML)]),
+        ("Notes <!DOCTYPE html>\n", [(3, HTML)]),
+        ("Notes <Details>\n", [(3, HTML)]),
+        ("Notes `code` <details> `code`\n", [(3, HTML)]),
+        ("Notes \\`x <details> `y\n", [(3, HTML)]),
+        ("Notes `x\\` <details> `y`\n", [(3, HTML)]),
+        ("Notes `x\n<details>` y\n", [(4, HTML)]),
+        ("Notes `` <!-- `` --> <!-- `x`\n", [(3, COMMENT)]),
         ("```\n- [x] 1.3 Did a thing\n```\n", [(3, FENCED), (5, FENCED)]),
         ("~~~ text\n- [x] 1.3 Did a thing\n~~~\n", [(3, FENCED), (5, FENCED)]),
         ("   ```\n", [(3, FENCED)]),
         ("$$\n- [x] 1.3 Did a thing\n$$\n", [(3, MATH), (5, MATH)]),
         ("  $$ x $$\n", [(3, MATH)]),
-        ("Notes.\r<details>\n\n- [x] 1.3 Did a thing\n", [(3, CARRIAGE_RETURN)]),
+        ("Notes.\r<details>\n\n- [x] 1.3 Did a thing\n", [(3, CARRIAGE_RETURN), (3, HTML)]),
         ("Notes.\r```\n- [x] 1.3 Did a thing\n", [(3, CARRIAGE_RETURN)]),
         ("Notes.\r", [(3, CARRIAGE_RETURN)]),
-        ("\ufeff<details>\n- [x] 1.3 Did a thing\n", [(3, BYTE_ORDER_MARK)]),
+        ("\ufeff<details>\n- [x] 1.3 Did a thing\n", [(3, BYTE_ORDER_MARK), (3, HTML)]),
         ("Notes.\ufeff\n", [(3, BYTE_ORDER_MARK)]),
     ],
 )
@@ -1026,6 +1063,23 @@ def test_a_rule_at_the_top_or_one_dollar_sign_passes(tmp_path: Path, text: str) 
     """A first line of more than three dashes is a rule, not front matter, and a line
     that opens with one `$` opens no math block."""
     assert task_list_problems(make_tree(tmp_path, {TASKS: text})) == []
+
+
+@pytest.mark.parametrize(
+    "line",
+    [
+        "Notes on `<details>`, which the comment opens with.",
+        "- [ ] 1.3 Do a thing as `refs/pull/<number>/head` and `` <!-- `` say",
+        "Notes on `<`, which opens no tag here, and on a < b, <5 and <-.",
+        "Notes on `a`` <b> `c, whose code closes only at a run of one backtick.",
+        "Notes on ``a` <b>`, whose two backticks open nothing, and whose one does.",
+        "< a line that opens with a < before a space",
+    ],
+)
+def test_a_less_than_sign_in_inline_code_or_before_no_tag_passes(tmp_path: Path, line: str) -> None:
+    """A `<` in inline code that opens and closes on its line is shown as code, and one
+    before anything but a letter, `/`, `!` or `?` starts no HTML."""
+    assert task_list_problems(with_tasks(tmp_path, line + "\n")) == []
 
 
 def test_a_task_list_with_a_carriage_return_before_each_line_feed_passes(tmp_path: Path) -> None:

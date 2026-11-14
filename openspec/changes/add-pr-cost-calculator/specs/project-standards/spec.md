@@ -434,9 +434,9 @@ The threat model SHALL number its threats from T1 in order, and a threat that a 
 - **WHEN** `docs/decisions/` holds a folder, a link, or a file that is neither a record nor the index, or a file elsewhere is named as a record
 - **THEN** a test fails and names the file
 
-### Requirement: No attribute hides the diff of a record, the README, `CLAUDE.md`, the guide or what the marketplace serves, or changes the plugin's checkout
+### Requirement: No attribute hides the diff of a record, the README, `CLAUDE.md`, the guide, a change's tasks or what the marketplace serves, or changes the plugin's checkout
 
-No attribute that the repository sets SHALL make git show as binary, or GitHub hide as generated, the diff of a record, the index, the README, `CLAUDE.md`, the guide, the root marketplace file or a file in the plugin folder that it names, so that whoever merges a pull request reads each change that it makes to them, nor make git's checkout of the hook file or of a file in that folder write more than other line endings.
+No attribute that the repository sets SHALL make git show as binary, or GitHub hide as generated, the diff of a record, the index, the README, `CLAUDE.md`, the guide, a change's `tasks.md`, the root marketplace file or a file in the plugin folder that it names, so that whoever merges a pull request reads each change that it makes to them, nor make git's checkout of the hook file or of a file in that folder write more than other line endings.
 
 #### Scenario: An attribute that hides a record's diff fails CI
 
@@ -461,6 +461,11 @@ No attribute that the repository sets SHALL make git show as binary, or GitHub h
 #### Scenario: An attribute that hides `CLAUDE.md`'s diff fails CI
 
 - **WHEN** the repository's attributes give `CLAUDE.md` `binary`, `diff` or `linguist-generated`, in any state
+- **THEN** a test fails and names the file and the attribute
+
+#### Scenario: An attribute that hides a change's tasks' diff fails CI
+
+- **WHEN** the repository's attributes give a change's `tasks.md`, active or archived, `binary`, `diff` or `linguist-generated`, in any state
 - **THEN** a test fails and names the file and the attribute
 
 #### Scenario: An attribute that changes the plugin's checkout fails CI
@@ -1270,11 +1275,11 @@ Compared with the base that the records' check uses, a pull request in which an 
 
 ### Requirement: This repository holds no switch and no ledger file before its own capture is turned on
 
-This repository SHALL track no `.pr-cost.json` and no file under `.pr-cost/` at its root while task 7.1 of `add-pr-cost-calculator`, which turns the tool on here, is not ticked in that change's `tasks.md`, active or archived, so that no capture records here before then. A test SHALL fail and name the file otherwise.
+This repository SHALL track no `.pr-cost.json` and no file under `.pr-cost/` at its root, whatever the case of their letters, while task 7.1 of `add-pr-cost-calculator`, which turns the tool on here, is not ticked in that change's `tasks.md`, active or archived, so that no capture records here before then. A test SHALL fail and name the file otherwise.
 
 #### Scenario: A switch or a ledger file here before task 7.1 fails a test
 
-- **WHEN** task 7.1 of `add-pr-cost-calculator` is not ticked, and this repository tracks `.pr-cost.json` or a file under `.pr-cost/` at its root
+- **WHEN** task 7.1 of `add-pr-cost-calculator` is not ticked, and this repository tracks `.pr-cost.json` or a file under `.pr-cost/` at its root, whatever the case of their letters, since a file system that ignores case opens such a file by those names
 - **THEN** a test fails and names the file
 
 #### Scenario: A switch and ledger files here after task 7.1 pass
@@ -1303,7 +1308,7 @@ No tracked file under `.github/workflows/` SHALL declare `workflow_call` while t
 
 ### Requirement: Each change's tasks are read as GitHub shows them
 
-Each change's `tasks.md`, active or archived, SHALL give each of its tasks once, on a line that opens with `- [ ]` or `- [x]`, a space, the task's number and a space, and SHALL hold no other line with a checkbox, no HTML comment, fenced code, front matter or byte-order mark, no line that opens with `<` or `$$` after any spaces, and no carriage return without a line feed after it, so that the checks read the ticks that GitHub shows the owner. Tests SHALL fail otherwise.
+Each change's `tasks.md`, active or archived, SHALL give each task once, on a line that opens with `- [ ]` or `- [x]`, a space, its number and a space, and SHALL hold no other line with a checkbox, no fenced code, front matter, byte-order mark or carriage return without a line feed after it, no `<` before a letter, `/`, `!` or `?` outside inline code on its line, and no line that opens with `$$` after any spaces, so that the checks read what GitHub shows the owner. Tests SHALL fail otherwise.
 
 #### Scenario: A task list read as GitHub shows it passes
 
@@ -1317,7 +1322,7 @@ Each change's `tasks.md`, active or archived, SHALL give each of its tasks once,
 
 #### Scenario: Text that GitHub does not show in a task list fails a test
 
-- **WHEN** a change's `tasks.md` holds an HTML comment; a line whose first character other than a space is `<`, with which Markdown starts HTML that can hide the lines after it; fenced code, in which GitHub shows a tick as code; a line that opens with `$$` after any spaces, with which GitHub starts a math block; front matter, which a first line of `---` opens; a byte-order mark; or a carriage return without a line feed after it, which Markdown reads as the end of a line where the checks read none
+- **WHEN** a change's `tasks.md` holds a `<` before a letter, `/`, `!` or `?`, at the start of a line or after other text, that is not in inline code that opens and closes on its line, with which Markdown starts HTML, such as a comment, that can hide the lines after it; fenced code, in which GitHub shows a tick as code; a line that opens with `$$` after any spaces, with which GitHub starts a math block; front matter, which a first line of `---` opens; a byte-order mark; or a carriage return without a line feed after it, which Markdown reads as the end of a line where the checks read none
 - **THEN** a test fails and names the file and the line
 
 #### Scenario: A task given twice fails a test

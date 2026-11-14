@@ -762,13 +762,15 @@ def ticked(root: Path, number: str) -> bool:
 
 
 def capture_file_problems(root: Path) -> list[str]:
-    """R223: no switch and no ledger file at the root before task 7.1 turns the tool on."""
+    """R223: no switch and no ledger file at the root before task 7.1 turns the tool on,
+    whatever the case of their letters, which a file system that ignores case does not
+    tell apart."""
     if ticked(root, "7.1"):
         return []
     return [
         f"`{name}` is tracked at the root while task 7.1 of `{BUILD_CHANGE}` is not ticked"
         for name in sorted(tracked(root))
-        if name == ".pr-cost.json" or name.startswith(".pr-cost/")
+        if name.casefold() == ".pr-cost.json" or name.casefold().startswith(".pr-cost/")
     ]
 
 
@@ -804,7 +806,16 @@ def reusable_workflow_problems(root: Path) -> list[str]:
     return problems
 
 
-@pytest.mark.parametrize("name", [".pr-cost.json", ".pr-cost/a-ledger-file"])
+@pytest.mark.parametrize(
+    "name",
+    [
+        ".pr-cost.json",
+        ".pr-cost/a-ledger-file",
+        ".PR-COST.json",
+        ".Pr-Cost/ledger/2026-11/a.jsonl",
+        ".pr-co\u017ft.json",
+    ],
+)
 def test_a_switch_or_a_ledger_file_at_the_root_before_task_7_1_is_named(
     tmp_path: Path, name: str
 ) -> None:
