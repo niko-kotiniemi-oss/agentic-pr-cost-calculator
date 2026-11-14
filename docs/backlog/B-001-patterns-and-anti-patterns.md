@@ -1,6 +1,6 @@
 # B-001: Patterns and anti-patterns, as a guide by concern
 
-- **Status:** Planned
+- **Status:** Done
 - **Last changed:** 2026-11-14
 - **Brief:** A guide that says how the project builds, concern by concern: the principles that it follows, the patterns chosen, the anti-patterns to steer clear of, what holds each and where the project stands. Developers and agents follow it, below the specs and `CLAUDE.md`, and each gap on it names the backlog item that closes it.
 - **Rests on:** DR-231

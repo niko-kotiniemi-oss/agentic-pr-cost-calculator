@@ -600,7 +600,6 @@ def test_the_opening_and_the_sentence_on_the_guide_s_rank_are_those_that_r219_gi
     assert f'"{LAST_READ}"' in text
 
 
-@pytest.mark.xfail(strict=True, reason="task 5 of the plan writes the guide")
 def test_the_repository_has_no_guide_problem() -> None:
     assert guide_problems(ROOT) == []
 
