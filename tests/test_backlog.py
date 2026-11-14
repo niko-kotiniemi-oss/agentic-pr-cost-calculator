@@ -342,6 +342,30 @@ def holder_of(name: str, held: dict[str, tuple[set[str], str]]) -> tuple[set[str
     return held[prefix]
 
 
+def rest_problems(
+    where: str,
+    name: str,
+    held: dict[str, tuple[set[str], str]],
+    closed: dict[str, bool],
+    listed: dict[tuple[str, str], bool],
+) -> list[str]:
+    """What is wrong with one name of a Rests on that is in its form: a task that no
+    change's tasks.md holds, an ID that its holder does not hold, or a closed record."""
+    form = REST.fullmatch(name)
+    if not form:
+        return []
+    if form.group(1):
+        if (form.group(2), form.group(1)) not in listed:
+            return [f"{where} names {name}, which no change's tasks.md holds"]
+        return []
+    idents, holder = holder_of(name, held)
+    if name not in idents:
+        return [f"{where} names {name}, which {holder} does not hold"]
+    if closed.get(name):
+        return [f"{where} names {name}, which is closed"]
+    return []
+
+
 def name_problems(root: Path) -> list[str]:
     held = holders(root)
     closed = records(root)
@@ -351,18 +375,9 @@ def name_problems(root: Path) -> list[str]:
         named_tasks = []
         for name in item.rests:
             form = REST.fullmatch(name)
-            if not form:
-                continue
-            if form.group(1):
+            if form and form.group(1):
                 named_tasks.append((form.group(2), form.group(1)))
-                if named_tasks[-1] not in listed:
-                    problems.append(f"{item.path} names {name}, which no change's tasks.md holds")
-                continue
-            idents, holder = holder_of(name, held)
-            if name not in idents:
-                problems.append(f"{item.path} names {name}, which {holder} does not hold")
-            elif closed.get(name):
-                problems.append(f"{item.path} names {name}, which is closed")
+            problems += rest_problems(item.path, name, held, closed, listed)
         if (
             item.status not in (DONE, DROPPED)
             and named_tasks
