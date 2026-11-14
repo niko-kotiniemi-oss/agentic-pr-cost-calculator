@@ -6,7 +6,7 @@ Two switches decide whether anything is recorded. The repository decides whether
 
 **Spec:** `switch-and-opt-in`
 
-**Requirements:** R1, R182, R36, R37, R103, R104, R105, R38, R106, R39, R160, R40, R144, R107, R145, R108, R166, R109, R161, R162, R146, R110, R19, R91, R92, R171, R172, R93
+**Requirements:** R1, R182, R225, R36, R37, R103, R104, R105, R38, R106, R39, R160, R40, R144, R107, R145, R108, R166, R109, R161, R162, R146, R110, R19, R91, R92, R171, R172, R93
 
 ## Expected behaviour
 
@@ -17,6 +17,7 @@ Two switches decide whether anything is recorded. The repository decides whether
 - **The plugin opts no one in.** The plugin records nothing for a session whose opt-in is not on, however it came to that session, as when a person adds it or their organization turns it on for its members or requires it (DR-202).
 - **An organization's option.** An Owner of a Team or Enterprise organization can put the opt-in's line in the setup script of a cloud environment that it shares with its members, which opts in each session that a member starts in that environment, in every repository that turns the tool on, and a member who never picked that environment when the organization makes it their default. An organization's managed settings can also run a hook that writes the opt-in, whatever environment its members use; the hook that the README gives writes it only when `CLAUDE_CODE_REMOTE` is `true`, in cloud sessions alone, since one that writes it on a member's own computer leaves it in their own git configuration after the hook goes and after they leave, and only when it is not already `true`, since a write of the person's global configuration ends every interval. A member sees what turns capture on with `git config --show-origin --get-all pr-cost.capture` and `/hooks`, and turns it off with an opt-out of their own, as above, and a person's own line belongs in an environment of their own. An organization that does this tells its members first, and what is then published, as the README asks. Claude Code's pages say that Projects are not offered on Team or Enterprise plans yet, so the option reaches members' project threads only once they are (DR-202).
 - **One opt-in for every repository.** One opt-in covers every repository that turns the tool on, those that adopt it later among them, and none of them says so when it does (DR-185). With the plugin, that is each such repository where the person's sessions work or commit, whether or not it registers the hook. A person who opts in for their own work and then works in another repository that turns the tool on has their counts recorded there, in ledger files that their commits there carry.
+- **Every agent, those that later releases add among them.** One opt-in records Claude Code, the one agent that the first version records, and each agent that a later release adds, with no further step. No opt-in leaves one agent out, so a person who does not want an added agent recorded turns capture off where they use it (R225, R224, DR-235).
 - **Turning capture off for one clone or for a folder.** Setting `pr-cost.capture` to `false` in a repository's own git configuration turns capture off in that clone only, and setting it to `true` there opts no one in. To turn capture off for every repository in a folder, a person uses git's own conditional includes:
 
   ```ini
@@ -55,6 +56,7 @@ The design's risks that concern this feature and are not on the roadmap, each wi
 - **The system's clock steps back between a run that finds a switch off and a later call**: a call made while capture was off can be recorded, in narrow cases.
 - **No session runs again in a repository after its person opts out or stops**: the store's notes stay until a run of a release that knows the store comes, or the person removes the store.
 - **A person removes the opt-in's line from a setup script, or moves to another environment, while threads that use it still run**: threads that already run keep capture on until their machines are rebuilt, unless the person uses an opt-out that reaches them.
+- **One opt-in also records each agent that a later release adds**: a person who opted in, or whose organization opted them in, has that agent's calls recorded once they use it, with no step of theirs, and keeps one agent out only by turning capture off where they use it.
 
 The [roadmap](../roadmap.md) gives what is planned next and later, and the limitations that an adopter notices.
 

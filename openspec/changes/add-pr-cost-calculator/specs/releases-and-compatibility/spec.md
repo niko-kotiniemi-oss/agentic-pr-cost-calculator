@@ -77,6 +77,25 @@ A release SHALL be made only by pushing a tag `vMAJOR.MINOR.PATCH` that names a 
 - **WHEN** a pushed tag is not `v` followed by a semantic version, such as one holding shell characters
 - **THEN** the workflow fails before any other step and publishes nothing
 
+### Requirement: A release's guide was read for it, and its text names the gaps that adopters rely on
+
+The release workflow SHALL refuse a tag whose guide, `docs/patterns.md`, does not say that its entries were last read for that tag's version, or gives a gap under Security, Privacy, Identity and credentials, or Supply chain and releases whose backlog item the tag's entry in `CHANGELOG.md` does not name, so that each release's guide was read for it and its text, which carries that entry, tells adopters of each such gap.
+
+#### Scenario: A release whose guide was read for it, and whose changelog names its gaps, goes on
+
+- **WHEN** a tag `v1.2.0` is pushed whose guide says that its entries were last read for release 1.2.0, and whose changelog entry for `1.2.0` names the backlog item of each gap that the guide gives under those concerns
+- **THEN** the check of the guide passes, and the release goes on to its other checks
+
+#### Scenario: A release whose guide was not read for it is refused
+
+- **WHEN** a tag `v1.2.0` is pushed whose guide says that its entries were last read for another release, or for an assessment
+- **THEN** no release is published, and the workflow says that the guide was not read for that release
+
+#### Scenario: A release whose changelog leaves out a gap that adopters rely on is refused
+
+- **WHEN** a tag's guide gives, under Security, Privacy, Identity and credentials, or Supply chain and releases, a gap whose backlog item the tag's changelog entry does not name
+- **THEN** no release is published, and the workflow names the entry and the item
+
 ### Requirement: Versions are semantic, and their numbers say what an adopter must do
 
 The version SHALL raise its major number for a change that existing adopters must act on, which is any change to the public surface (see "The public surface is kept in a manifest"). It SHALL raise its minor number for a change that adds behaviour without breaking any part of that surface, and its patch number for a fix alone. A changelog entry that lists a breaking change SHALL come with a raised major number and a `### Breaking` section.
@@ -88,7 +107,7 @@ The version SHALL raise its major number for a change that existing adopters mus
 
 ### Requirement: The public surface is kept in a manifest
 
-The public surface SHALL be the hook file's path and registration and the plugin's name and hooks, each by its events, matchers and command's form, not the checksum it carries; the marketplace's name, the opt-in key, the ledger path and format, the store's format and fingerprint, the configuration file and the keys and values that its format documents, the reusable workflow's path, inputs and permissions, and the Python and git floors. A manifest of it SHALL be kept in the repository.
+The public surface SHALL be the hook file's path and registration and the plugin's name and hooks, each by its events, matchers and command's form, not the checksum it carries; the marketplace's name, the opt-in key and the agents it records, the ledger path and format, the store's format and fingerprint, the configuration file and the keys and values its format documents, the reusable workflow's path, inputs and permissions, and the Python and git floors. The repository SHALL keep its manifest.
 
 #### Scenario: The surface manifest names the whole public surface
 
@@ -109,6 +128,11 @@ The public surface SHALL be the hook file's path and registration and the plugin
 
 - **WHEN** the surface manifest in the repository is read
 - **THEN** it names each key that the configuration's format documents, and the values that each takes, and no other key or value of the configuration
+
+#### Scenario: The surface manifest names each agent that the opt-in records
+
+- **WHEN** the surface manifest in the repository is read
+- **THEN** it names each agent whose calls the release records under the opt-in, so that a release that adds one changes the public surface
 
 ### Requirement: The release workflow compares the surface manifest with the previous release's
 

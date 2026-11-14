@@ -39,6 +39,7 @@ Each line links the decision record that leaves it out. A later version may add 
 - [Threat model](docs/threat-model.md): what could go wrong, each threat rated for impact and likelihood, and what answers it.
 - [Assumptions](docs/assumptions/README.md): what the design assumes about what lies outside the tool's own code, and how each of those facts is checked.
 - [Decisions](docs/decisions/README.md): one record per decision, with why it was made, what else was considered and what reversing it would change.
+- [How the project builds](docs/patterns.md): the guide, which gives, concern by concern, the principles that the project follows, each with its pattern and the anti-patterns that it steers clear of, what holds it and where the project stands.
 - [Roadmap](docs/roadmap.md): what is being built now, what comes next and later, and the known limitations.
 - [Glossary](docs/glossary.md): the words that the pages use, each with its meaning and the words to avoid for it.
 - [Changelog](CHANGELOG.md).

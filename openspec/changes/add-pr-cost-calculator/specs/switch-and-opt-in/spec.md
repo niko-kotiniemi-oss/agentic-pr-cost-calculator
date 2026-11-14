@@ -39,6 +39,20 @@ The plugin SHALL record nothing for a session whose opt-in is not on, however th
 - **WHEN** the step runs as the plugin in a session whose global git configuration does not turn capture on, as for a member who has not opted in and whose organization requires the plugin, in a repository that turns the tool on
 - **THEN** nothing is recorded, no store is created and no ledger file is staged
 
+### Requirement: One opt-in covers every agent that the tool records
+
+Capture SHALL take the person's opt-in, `pr-cost.capture`, as the one opt-in for every agent whose calls the tool records, those that a later release adds among them, and SHALL read no opt-in of its own for any agent, so that no opt-in leaves one agent out. Tests SHALL fail otherwise.
+
+#### Scenario: The one opt-in records each agent that the release records
+
+- **WHEN** a repository turns the tool on, the person's opt-in is on, and a session of any agent that the surface manifest says the release records makes calls there and then commits
+- **THEN** that commit adds a ledger file that holds those calls, whichever of those agents made them
+
+#### Scenario: An opt-in key of its own for an agent changes nothing
+
+- **WHEN** the person's global git configuration also sets a key under `pr-cost` that names an agent, such as `pr-cost.claude-code`, to `false` while the opt-in is on, or to `true` while it is off
+- **THEN** capture records as it would without that key: the session's calls while the opt-in is on, and nothing while it is off
+
 ### Requirement: Capture reads the configuration file only as a regular file within its bound
 
 The capture step SHALL read the repository's configuration file in the working tree only when it is a regular file no larger than the size bound that the configuration's format documents, and SHALL take the tool to be off otherwise, or when the file there is not valid.

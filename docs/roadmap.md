@@ -6,13 +6,14 @@ What is being built now, what comes next and what is left for later, with what t
 
 The tool has no code yet. Its design, the change `add-pr-cost-calculator`, is being made ready for the build by these items, in this order:
 
-- [B-001: Patterns and anti-patterns](backlog/B-001-patterns-and-anti-patterns.md) - Planned, last changed 2026-11-13. A page that lists each recognised pattern that the design follows and each anti-pattern that it avoids or knowingly accepts. It comes from an assessment by reviewers of their own, and each anti-pattern found is fixed before the build.
+- [B-021: A walking skeleton](backlog/B-021-a-walking-skeleton.md) - Planned, last changed 2026-11-14. The thinnest path from a session's calls through capture and a ledger file in a commit to the report's figure, run once in a real Claude Code session. It comes right after the guide and before the other items that prepare the build.
+- [B-022: The specs as the single source](backlog/B-022-the-specs-as-the-single-source.md) - Planned, last changed 2026-11-14. The documents that state what the tool does today, such as the threat model, the design's risks, the feature pages and the register, brought to cite the specs instead of stating it again.
 - [B-002: A risk register](backlog/B-002-a-risk-register.md) - Planned, last changed 2026-11-13. Each threat rated as if its answer were not built, beside its rating with the answer in place, on a page generated from the threat model. Every high or critical risk gets a further answer.
 - [B-003: Context files and the rules agents follow](backlog/B-003-context-files-and-the-rules-agents-follow.md) - Planned, last changed 2026-11-13. Rules that load only for the files they concern, a shorter `CLAUDE.md`, and rules on how reviews are reported and how files are staged.
 - [B-004: Two new fields on every record](backlog/B-004-two-new-fields-on-every-record.md) - Planned, last changed 2026-11-13. Each decision record says which way its boundary faces and how hard it is to reverse, each in a field of its own with a column in the index.
 - [B-005: Conventions](backlog/B-005-conventions.md) - Planned, last changed 2026-11-13. Printable ASCII in everything the project writes, diagrams as code, and naming conventions, each checked in CI.
 - [B-006: Scope and visual documentation](backlog/B-006-scope-and-visual-documentation.md) - Planned, last changed 2026-11-13. Records on what the project takes from elsewhere, a section of the page on how the tool works that lists everything incoming and outgoing, and diagrams in the README and the feature pages.
-- [B-007: The tool's requirements, corrected before the build](backlog/B-007-the-tools-requirements-corrected-before-the-build.md) - Planned, last changed 2026-11-13. The change's requirements, corrected with what the items above find, before any of them is built. It also settles how the comment shows a cost, the prices' rules, and the points that earlier reviews left open.
+- [B-007: The tool's requirements, corrected before the build](backlog/B-007-the-tools-requirements-corrected-before-the-build.md) - Planned, last changed 2026-11-14. The change's requirements, corrected with what the items above find, before any of them is built. It also settles how the comment shows a cost, the prices' rules, a ledger and a price table that fit more than one provider, and the points that earlier reviews left open.
 
 Then the build itself, by the change's [proposal](../openspec/changes/add-pr-cost-calculator/proposal.md) and [tasks](../openspec/changes/add-pr-cost-calculator/tasks.md), in pull requests of its own: verification first, the capture step, pricing, the report, review, releases and compatibility, and integration, in which the tool reports the cost of its own pull requests.
 
@@ -34,9 +35,9 @@ Work on an item here that is open to feedback and contributions starts with an i
 
 - [B-015: The cost of AI review](backlog/B-015-the-cost-of-ai-review.md) - Planned, last changed 2026-11-13. The cost of AI review by an app or a job in CI, which the first version leaves out.
 - [B-016: An organization mode](backlog/B-016-an-organization-mode.md) - Open to feedback and contributions, last changed 2026-11-13. An organization mode, in which an organization turns its members' capture on and they cannot turn it off. Nothing in the first version rules it out.
-- [B-017: Agents other than Claude Code](backlog/B-017-agents-other-than-claude-code.md) - Open to feedback and contributions, last changed 2026-11-13. Agents other than Claude Code, such as Gemini or Codex.
+- [B-017: Agents other than Claude Code](backlog/B-017-agents-other-than-claude-code.md) - Planned, last changed 2026-11-14. Agents other than Claude Code, such as GitHub Copilot, Codex or Gemini, each in a change of its own after the first version.
 - [B-018: The PowerShell tool](backlog/B-018-the-powershell-tool.md) - Open to feedback and contributions, last changed 2026-11-13. Commands sent through Claude Code's PowerShell tool, which capture does not see.
-- [B-019: GitHub Enterprise Server](backlog/B-019-github-enterprise-server.md) - Open to feedback and contributions, last changed 2026-11-13. GitHub Enterprise Server.
+- [B-019: GitHub Enterprise Server](backlog/B-019-github-enterprise-server.md) - Open to feedback and contributions, last changed 2026-11-14. GitHub Enterprise Server.
 - [B-020: Other repository and CI services](backlog/B-020-other-repository-and-ci-services.md) - Open to feedback and contributions, last changed 2026-11-13. Repository and CI services other than GitHub, such as GitLab or Gitea.
 
 ## Known limitations
