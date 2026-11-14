@@ -1,10 +1,10 @@
-# DR-227: A walking skeleton comes before the remaining pull requests that prepare the build
+# DR-233: A walking skeleton comes before the remaining pull requests that prepare the build
 
 - **Type:** process
 - **Status:** accepted
 - **Decided by:** the owner, 2026-11-12
 - **Requirements:** none
-- **Threats:** T168, T170
+- **Threats:** T172, T174
 - **Replaces:** none
 - **Closed by:** none
 
@@ -14,7 +14,7 @@ On 2026-11-12 the change's specs on the default branch hold 210 requirements and
 
 ## Decision
 
-The pull request after the one that adds the patterns page builds a walking skeleton: the thinnest path from a session's calls through capture and a ledger file in a commit to the report's figure, run once in a real Claude Code session. It comes before the risk register and the other pull requests that prepare the build, and what it finds goes into the specs and the assumptions first (DR-226). It is a pull request of its own, whose design the owner approves before it is built, as for every other.
+The pull request after the one that adds the patterns page builds a walking skeleton: the thinnest path from a session's calls through capture and a ledger file in a commit to the report's figure, run once in a real Claude Code session. It comes before the risk register and the other pull requests that prepare the build, and what it finds goes into the specs and the assumptions first (DR-232). It is a pull request of its own, whose design the owner approves before it is built, as for every other.
 
 ## Alternatives
 
@@ -25,13 +25,13 @@ The pull request after the one that adds the patterns page builds a walking skel
 
 - The roadmap's Now lists it after the patterns page.
 - Facts about Claude Code's transcripts and hooks can be observed before the requirements are corrected, and the specs and the assumptions take what it shows.
-- What the skeleton builds, how it is tested, and what of it the build keeps, are for its own pull request to propose, within the bounds that DR-230 sets on where its real run happens and what it records (T168, T170).
+- What the skeleton builds, how it is tested, and what of it the build keeps, are for its own pull request to propose, within the bounds that DR-236 sets on where its real run happens and what it records (T172, T174).
 - The README's status, which says that none of the tool's code exists yet and that code starts once the design is approved, changes with the skeleton's pull request.
 
 ## Scope
 
-This covers when a walking skeleton comes. What it builds is for its own pull request, where it runs and what it records is DR-230 (The walking skeleton runs apart from this repository and records only with the switch and the opt-in), and which document states what the tool does is DR-226 (The specs are the single source of what the tool does).
+This covers when a walking skeleton comes. What it builds is for its own pull request, where it runs and what it records is DR-236 (The walking skeleton runs apart from this repository and records only with the switch and the opt-in), and which document states what the tool does is DR-232 (The specs are the single source of what the tool does).
 
 ## What reversing it would change
 
-The roadmap's Now would change, with the order of the pull requests that prepare the build, and so would the anti-pattern on the patterns page that rests on this record, the README's status once the skeleton's pull request has changed it, and the answers of T168 and T170.
+The roadmap's Now would change, with the order of the pull requests that prepare the build, and so would the anti-pattern on the patterns page that rests on this record, the README's status once the skeleton's pull request has changed it, and the answers of T172 and T174.
