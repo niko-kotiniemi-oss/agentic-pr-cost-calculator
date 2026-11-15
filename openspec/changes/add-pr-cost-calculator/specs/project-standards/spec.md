@@ -1357,3 +1357,83 @@ For each ledger format that a release's capture step wrote, the golden set SHALL
 
 - **WHEN** a pull request removes the last golden session of a ledger format that a release wrote and the report still reads
 - **THEN** a test fails and names the format
+
+### Requirement: Nothing here registers the walking skeleton
+
+No tracked file of this repository SHALL register the walking skeleton's capture: no settings file under `.claude/` SHALL name a path under `skeleton/`, no marketplace file SHALL list a plugin under `skeleton/`, and no file under `.github/workflows/` SHALL name `skeleton/`, so that no session or workflow here runs it. A test SHALL fail and name the file otherwise.
+
+#### Scenario: A registration of the skeleton here fails a test
+
+- **WHEN** a tracked settings file under `.claude/`, a tracked marketplace file or a tracked file under `.github/workflows/` names a path under `skeleton/`
+- **THEN** a test fails and names the file
+
+#### Scenario: The skeleton's own files pass
+
+- **WHEN** only files under `skeleton/` and the tests name paths under `skeleton/`
+- **THEN** that test passes
+
+### Requirement: The walking skeleton records only with the switch and the opt-in
+
+The walking skeleton's capture SHALL record a call, and stage a ledger file, only while the repository where it runs holds a `.pr-cost.json` with `enabled` set to `true` and the person's git configuration gives `pr-cost.capture` as `true`, as `switch-and-opt-in` gives them, and SHALL otherwise write nothing, print nothing on standard output and exit with success. Tests SHALL drive it both ways.
+
+#### Scenario: No switch means the skeleton records nothing
+
+- **WHEN** the skeleton's capture runs in a repository that holds no `.pr-cost.json`, or one whose `enabled` is not `true`, and the person has opted in
+- **THEN** it writes no store, stages no ledger file and exits with success
+
+#### Scenario: No opt-in means the skeleton records nothing
+
+- **WHEN** the skeleton's capture runs in a repository whose `.pr-cost.json` turns the tool on, and the person's git configuration does not give `pr-cost.capture` as `true`
+- **THEN** it writes no store, stages no ledger file and exits with success
+
+#### Scenario: Both on, the skeleton records the session's calls
+
+- **WHEN** the skeleton's capture runs with the switch and the opt-in on, and a plain `git commit` follows calls in the session's transcript
+- **THEN** the commit holds one ledger file with those calls' counts by model, and no text of the transcript
+
+### Requirement: The kept transcript shape holds no values
+
+The transcript shape that this repository keeps from the walking skeleton's run, `tests/fixtures/transcript-shape.json`, SHALL hold only paths of field names, each name of letters, digits and underscores, and the JSON type found at each, and no path below a tool's input, a tool's result or a message's text, so that no value of a real session is kept. A test SHALL fail and name the entry otherwise.
+
+#### Scenario: A value in the kept shape fails a test
+
+- **WHEN** an entry of the kept shape gives anything but a field path and a JSON type name, or a field name with a character other than a letter, a digit or an underscore
+- **THEN** a test fails and names the entry
+
+#### Scenario: A path below a tool's input fails a test
+
+- **WHEN** an entry of the kept shape gives a path below a tool's input, a tool's result or a message's text
+- **THEN** a test fails and names the entry
+
+#### Scenario: A shape of names and types passes
+
+- **WHEN** every entry of the kept shape gives a field path of names and a JSON type name, and none lies below a tool's input, a tool's result or a message's text
+- **THEN** that test passes
+
+### Requirement: The skeleton's workflow can do no more than post its comment
+
+The workflow that the walking skeleton gives a scratch repository, `skeleton/workflow.yml`, SHALL run only on a push to the default branch, SHALL ask only for permission to read contents and to write pull requests, SHALL pin each action that it uses to a full commit, and SHALL check out no ref but the pushed commit. A test SHALL fail and name what differs otherwise.
+
+#### Scenario: Another event or permission in the skeleton's workflow fails a test
+
+- **WHEN** `skeleton/workflow.yml` runs on an event other than a push to the default branch, asks for a permission other than reading contents and writing pull requests, or uses an action that a full commit does not pin
+- **THEN** a test fails and names what differs
+
+#### Scenario: The skeleton's workflow as designed passes
+
+- **WHEN** `skeleton/workflow.yml` runs only on a push to the default branch, with those two permissions and each action pinned to a full commit
+- **THEN** that test passes
+
+### Requirement: No release holds the walking skeleton
+
+The release workflow SHALL refuse a tag whose tree holds a `skeleton/` folder, so that the build removes the walking skeleton before the first release and no adopter takes it for the tool.
+
+#### Scenario: A tag that holds the skeleton is refused
+
+- **WHEN** a tag's tree holds a `skeleton/` folder
+- **THEN** the release workflow refuses it and names the folder
+
+#### Scenario: A tag without the skeleton passes this check
+
+- **WHEN** a tag's tree holds no `skeleton/` folder
+- **THEN** this check of the release workflow passes it

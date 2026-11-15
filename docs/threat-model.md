@@ -2,7 +2,7 @@
 
 What could go wrong with the tool, for the people who use it and for this repository, and what answers each threat. Every change revisits this file (see `CLAUDE.md`).
 
-It was written for the first change, `add-pr-cost-calculator`, before any code, so the answers are requirements and tasks rather than code. It holds 184 threats across 9 trust boundaries. T38 to T69 were found by the design-stage review, T70 to T78 by the design-stage review of the decision records in `docs/decisions/`, T79 to T81 by the implementation-stage review of those records and their checks, T82 to T100 by the design-stage review of the assumptions, the glossary and the golden set, T101 by the implementation-stage review of the assumptions, T102 and T103 by the implementation-stage review of the glossary, T104 to T116 at the design of the revision of consent, the store and the ledger's format, T117 and T118 by the design-stage review of that revision, T119 to T122 by the review of that revision after its approval, T123 with the owner's answer to a question that the check of that review's fixes raised, T124 to T126 by the design-stage review of the test of the specs' form, T127 by the implementation-stage review of that test, T128 to T135 at the design of the plugin that brings capture to a project's cloud threads, T136 to T142 by the design-stage review of that plugin, T143 by its implementation-stage review, T144 by its security review, T145 to T147 at the design of the README's short start, T148 to T156 by the design-stage review of that short start, T157 and T158 by its implementation-stage review, T159 to T162 at the design of the roadmap, T163 to T165 by the design-stage review of the roadmap, T166 to T168 at the design of the backlog, T169 by the design-stage review of the backlog, T170 at the design of the guide, T171 to T174 by the design-stage review of the guide, T175 and T176 by the design-stage review of one opt-in for every agent, T177 to T182 by the second design-stage review of the guide, T183 by the final review of its build and T184 by its implementation-stage review; they follow T37, each under a heading for its boundary, so that the numbers stay in order, and a threat that a change removes keeps its ID out of use (see Retired IDs). Where an answer can be a scenario in a spec, it is one, so that an acceptance test holds it. `tests/test_threat_model.py` checks that every citation below names a scenario, task, decision, decision record or file that exists.
+It was written for the first change, `add-pr-cost-calculator`, before any code, so the answers are requirements and tasks rather than code. It holds 189 threats across 9 trust boundaries. T38 to T69 were found by the design-stage review, T70 to T78 by the design-stage review of the decision records in `docs/decisions/`, T79 to T81 by the implementation-stage review of those records and their checks, T82 to T100 by the design-stage review of the assumptions, the glossary and the golden set, T101 by the implementation-stage review of the assumptions, T102 and T103 by the implementation-stage review of the glossary, T104 to T116 at the design of the revision of consent, the store and the ledger's format, T117 and T118 by the design-stage review of that revision, T119 to T122 by the review of that revision after its approval, T123 with the owner's answer to a question that the check of that review's fixes raised, T124 to T126 by the design-stage review of the test of the specs' form, T127 by the implementation-stage review of that test, T128 to T135 at the design of the plugin that brings capture to a project's cloud threads, T136 to T142 by the design-stage review of that plugin, T143 by its implementation-stage review, T144 by its security review, T145 to T147 at the design of the README's short start, T148 to T156 by the design-stage review of that short start, T157 and T158 by its implementation-stage review, T159 to T162 at the design of the roadmap, T163 to T165 by the design-stage review of the roadmap, T166 to T168 at the design of the backlog, T169 by the design-stage review of the backlog, T170 at the design of the guide, T171 to T174 by the design-stage review of the guide, T175 and T176 by the design-stage review of one opt-in for every agent, T177 to T182 by the second design-stage review of the guide, T183 by the final review of its build, T184 by its implementation-stage review, and T185 to T189 at the design of the walking skeleton; they follow T37, each under a heading for its boundary, so that the numbers stay in order, and a threat that a change removes keeps its ID out of use (see Retired IDs). Where an answer can be a scenario in a spec, it is one, so that an acceptance test holds it. `tests/test_threat_model.py` checks that every citation below names a scenario, task, decision, decision record or file that exists.
 
 ## How it was built
 
@@ -2357,15 +2357,85 @@ The trust boundaries:
 - **Held by:** `project-standards`: "A checkbox that the checks do not read as a task fails a test"; `project-standards`: "Text that GitHub does not show in a task list fails a test"; `project-standards`: "A task given twice fails a test"; `project-standards`: "An attribute that hides a change's tasks' diff fails CI"; `add-pr-cost-calculator` task 1.30
 - **Assumptions:** A15
 
+## Boundary 9, continued: found at the design of the walking skeleton
+
+### T185. The skeleton's plugin loads in sessions outside its scratch project
+
+- **Kind:** information disclosure
+- **Impact:** 2 (medium)
+- **Likelihood:** 1 (unlikely)
+- **Risk:** 2
+- **What could happen:** the walking skeleton's capture runs as a plugin in a project that holds only its scratch repository (DR-245). Added to the owner's account instead of to that project's settings, it loads in every thread of every project, this repository's among them, where the owner's environment already opts in, and records the calls made in any repository there whose switch is on.
+- **Answer:** DR-245, by which the owner adds the plugin in the scratch project's settings only and removes it once the run is recorded; R235 in `project-standards`, by which the skeleton records nothing where a repository holds no switch; and R223, by which this repository holds none before task 7.1.
+- **Residual:** whether the owner's other repositories hold a switch is not something that a test here reads, and whether a project's settings take a plugin that is not on the account is observed only at the run (A69).
+- **Held by:** `project-standards`: "No switch means the skeleton records nothing"; `project-standards`: "A switch or a ledger file here before task 7.1 fails a test"; DR-245
+- **Assumptions:** A16, A69
+
+## Boundary 7, continued: found at the design of the walking skeleton
+
+### T186. A value of a real session reaches this repository through the kept transcript shape
+
+- **Kind:** information disclosure
+- **Impact:** 3 (high)
+- **Likelihood:** 1 (unlikely)
+- **Risk:** 3
+- **What could happen:** this repository keeps the shape of the skeleton's run's transcripts as a fixture (DR-244). A shape recorder that keeps a value, or the keys of a tool's input, whose names can be a file's path or a server's name, would publish text of the owner's session here.
+- **Answer:** DR-244, by which only paths of field names and JSON type names are kept, and R236 in `project-standards`, whose scenarios have a test fail on any other entry and on any path below a tool's input, a tool's result or a message's text.
+- **Residual:** a field name that is itself telling, outside those paths, rests on the review of the pull request that adds the shape (A15).
+- **Held by:** `project-standards`: "A value in the kept shape fails a test"; `project-standards`: "A path below a tool's input fails a test"; DR-244
+- **Assumptions:** A15
+
+## Boundary 4, continued: found at the design of the walking skeleton
+
+### T187. The skeleton's workflow runs a pull request's code with a write token
+
+- **Kind:** elevation of privilege
+- **Impact:** 2 (medium)
+- **Likelihood:** 1 (unlikely)
+- **Risk:** 2
+- **What could happen:** the walking skeleton gives its scratch repository a workflow that posts a comment, so it holds a token that can write to pull requests. Run on a pull request's event, or checking out a pull request's head, it would run code that the pull request brings with that token. The scratch repository is private and throwaway, so what it could reach is that repository alone.
+- **Answer:** DR-243, and R237 in `project-standards`, by which a test fails unless the workflow runs only on a push to the default branch, asks only to read contents and to write pull requests, pins each action to a full commit and checks out only the pushed commit.
+- **Residual:** a change to the copy in the scratch repository after it was copied, which no test here reads (A15).
+- **Held by:** `project-standards`: "Another event or permission in the skeleton's workflow fails a test"; DR-243
+- **Assumptions:** A15
+
+## Boundary 6, continued: found at the design of the walking skeleton
+
+### T188. Someone takes the walking skeleton for the tool
+
+- **Kind:** information disclosure
+- **Impact:** 2 (medium)
+- **Likelihood:** 1 (unlikely)
+- **Risk:** 2
+- **What could happen:** the walking skeleton's code sits on the default branch until the build removes it (DR-242). Someone who clones the repository, or an agent that finds no release, could copy it as the tool and run capture that lacks most of what the design asks, such as the checks of where a call was made.
+- **Answer:** DR-242, by which its files say that they are not a release and nothing here registers it (R234); R235, by which it records nothing without the switch and the opt-in; and R238, by which no release holds it.
+- **Residual:** a copy made by hand, which the files' own words and the README's status answer (A15).
+- **Held by:** `project-standards`: "A registration of the skeleton here fails a test"; `project-standards`: "No opt-in means the skeleton records nothing"; `project-standards`: "A tag that holds the skeleton is refused"; DR-242
+- **Assumptions:** A15
+
+## Boundary 2, continued: found at the design of the walking skeleton
+
+### T189. The skeleton's thin staging disturbs the agent's commits in the scratch repository
+
+- **Kind:** reliability
+- **Impact:** 1 (low)
+- **Likelihood:** 2 (possible)
+- **Risk:** 2
+- **What could happen:** the walking skeleton stages a ledger file only for a plain `git commit` (DR-246). A commit command in another form gets none, and its calls wait for a later commit, or reach none, so the run's figure is low; a file staged for a commit that then fails is left in the working tree.
+- **Answer:** DR-246, by which the skeleton stages only for the one form, takes a file back when the commit does not hold it, and the run's observations say which commands the agent ran; R235's scenario, by which a plain commit holds one ledger file.
+- **Residual:** a low figure in the scratch repository, which is the run's own finding, not a published cost (A6).
+- **Held by:** `project-standards`: "Both on, the skeleton records the session's calls"; DR-246
+- **Assumptions:** A6
+
 ## Risk matrix
 
 Generated from the ratings above. Each cell lists the threats whose impact and likelihood it names.
 
 | Impact \ Likelihood | 1 unlikely | 2 possible | 3 likely |
 |---|---|---|---|
-| 3 high | T1, T12, T14, T15, T23, T24, T28, T29, T35, T43, T46, T58, T59, T63, T64, T66, T67, T68, T73, T77, T82, T83, T92, T93, T94, T95, T103, T107, T108, T119, T125, T133, T138, T140, T141, T142, T144, T147, T148, T150, T151, T160, T163, T164, T165, T167, T169, T174, T175, T177, T178, T180, T183, T184 | T2, T32, T33, T34, T61, T62, T65, T132, T137 |  |
-| 2 medium | T4, T6, T11, T13, T18, T25, T26, T38, T41, T42, T53, T55, T56, T57, T60, T69, T70, T76, T78, T79, T80, T81, T84, T85, T86, T87, T88, T89, T90, T91, T97, T98, T99, T100, T101, T102, T104, T105, T109, T112, T115, T124, T126, T127, T135, T139, T146, T149, T152, T153, T155, T156, T157, T162, T172, T173, T179, T181, T182 | T3, T9, T10, T17, T19, T20, T21, T22, T27, T30, T39, T40, T44, T45, T47, T48, T49, T50, T51, T52, T54, T71, T72, T74, T75, T96, T111, T116, T120, T121, T122, T123, T129, T130, T131, T134, T136, T143, T145, T154, T158, T159, T161, T166, T168, T170, T171, T176 | T7, T8, T16, T128 |
-| 1 low | T113 | T31, T36, T37, T110, T114, T118 | T5, T106, T117 |
+| 3 high | T1, T12, T14, T15, T23, T24, T28, T29, T35, T43, T46, T58, T59, T63, T64, T66, T67, T68, T73, T77, T82, T83, T92, T93, T94, T95, T103, T107, T108, T119, T125, T133, T138, T140, T141, T142, T144, T147, T148, T150, T151, T160, T163, T164, T165, T167, T169, T174, T175, T177, T178, T180, T183, T184, T186 | T2, T32, T33, T34, T61, T62, T65, T132, T137 |  |
+| 2 medium | T4, T6, T11, T13, T18, T25, T26, T38, T41, T42, T53, T55, T56, T57, T60, T69, T70, T76, T78, T79, T80, T81, T84, T85, T86, T87, T88, T89, T90, T91, T97, T98, T99, T100, T101, T102, T104, T105, T109, T112, T115, T124, T126, T127, T135, T139, T146, T149, T152, T153, T155, T156, T157, T162, T172, T173, T179, T181, T182, T185, T187, T188 | T3, T9, T10, T17, T19, T20, T21, T22, T27, T30, T39, T40, T44, T45, T47, T48, T49, T50, T51, T52, T54, T71, T72, T74, T75, T96, T111, T116, T120, T121, T122, T123, T129, T130, T131, T134, T136, T143, T145, T154, T158, T159, T161, T166, T168, T170, T171, T176 | T7, T8, T16, T128 |
+| 1 low | T113 | T31, T36, T37, T110, T114, T118, T189 | T5, T106, T117 |
 
 The threats with a risk of 6 or more:
 
