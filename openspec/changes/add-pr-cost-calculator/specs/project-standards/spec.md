@@ -1412,7 +1412,7 @@ Each hook command of the walking skeleton's plugin SHALL run its capture script 
 
 ### Requirement: The walking skeleton stages only for a commit it recognises
 
-The walking skeleton SHALL stage a ledger file only before a command whose parts, joined by two ampersands, are `cd` to a written path or `git add` with written paths, then a `git commit` with only `-m` and a quoted message, `-a` or `-q`, and only when that commit would commit something without the file; and after a command that did not commit the file SHALL remove it from the index and the working tree and keep its calls waiting.
+The walking skeleton SHALL stage a ledger file only before a command whose parts, joined by two ampersands, are `cd` to a written path or `git add` with written paths, then a `git commit` with only `-m` and a quoted message, `-a` or `-q`, each git with at most one written `-C`, and only when that commit would commit something without the file; and after a command that did not commit the file SHALL remove it from the index and the working tree and keep its calls waiting.
 
 #### Scenario: A recognised commit after calls holds one ledger file
 
