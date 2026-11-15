@@ -4,7 +4,7 @@
 - **Status:** accepted
 - **Decided by:** the owner, 2026-11-14
 - **Requirements:** R236
-- **Threats:** T186
+- **Threats:** T186, T190
 - **Replaces:** none
 - **Closed by:** none
 
@@ -14,7 +14,7 @@
 
 ## Decision
 
-This repository keeps from the run two things only: the shape of the run's transcripts, `tests/fixtures/transcript-shape.json`, which gives paths of field names and the JSON type at each and no path below a tool's input, a tool's result or a message's text (R236), and what was observed, written into the assumptions and the specs. It keeps no count, no cost, no identifier and no text from the run. The shape is the one exception that `CLAUDE.md`'s privacy section names to its rule against transcripts.
+This repository keeps from the run two things only: the shape of the run's transcripts, `tests/fixtures/transcript-shape.json`, which gives the paths of the field names of each kind of line at its top level, in its `message` object and in `message.usage`, with the JSON type at each, and every other object and array as its type alone (R236), and what was observed, written in words into the assumptions and the specs. It keeps no value, count, cost, identifier, time or text from the run, in its files or in its pull request's text. A fact that the run observed becomes `observed` only through a test whose fixture is written by hand to the kept shape; otherwise it keeps its check and its statement says what the run saw and when. The owner reads the shape and the observations in the scratch repository before they come here. The shape is the one exception that `CLAUDE.md`'s privacy section names to its rule against transcripts.
 
 ## Alternatives
 
@@ -24,8 +24,8 @@ This repository keeps from the run two things only: the shape of the run's trans
 ## Consequences
 
 - `CLAUDE.md`'s privacy section names the shape as its one exception, in the same pull request (DR-244).
-- A test fails on an entry of the shape that gives a value or a path below a tool's input, a tool's result or a message's text (R236, task 1.31).
-- Whether a field name itself tells something private rests on review (T186).
+- A test fails on an entry of any kept shape that gives a value, a name below another object than the line, its `message` and `message.usage`, or a name of an identifier's form, and fails when no shape exists once the run is recorded (R236, task 1.31), and the private-reference check knows the identifiers that a transcript carries (task 1.31, T190).
+- Whether a field name itself, or an observation's words, tells something private rests on the owner's reading and on review (T186, T190).
 
 ## Scope
 

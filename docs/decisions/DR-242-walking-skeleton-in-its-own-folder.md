@@ -3,7 +3,7 @@
 - **Type:** architecture
 - **Status:** accepted
 - **Decided by:** the owner, 2026-11-14
-- **Requirements:** R234, R238
+- **Requirements:** R234, R238, R242
 - **Threats:** T188
 - **Replaces:** none
 - **Closed by:** none
@@ -14,7 +14,7 @@ The owner approved on 2026-11-14 a plan for the walking skeleton (B-021) whose f
 
 ## Decision
 
-The walking skeleton's code, its capture script, its report script, its plugin's files, its workflow for a scratch repository and its shape recorder, lives in `skeleton/` of this repository, with tests written before it under `tests/`. Nothing here registers it (R234), and the build grows the tool from it and removes the folder before the first release, which the release workflow refuses while a tag's tree holds it (R238).
+The walking skeleton's code, its capture script, its report script, its plugin's files, its workflow for a scratch repository and its shape recorder, lives in `skeleton/` of this repository, with tests written before it under `tests/`. Each of its files that can hold a comment opens with one that says it is the walking skeleton and not the tool or a release, its plugin's manifest says so, and the README's status names it while it exists (R242). Nothing here registers it: no tracked file under `.claude/`, `.claude-plugin/` or `.github/` holds the word `skeleton` (R234). The build grows the tool from it and removes the folder before the first release, which the release workflow refuses while a tag's tree holds it (R238).
 
 ## Alternatives
 
@@ -24,7 +24,7 @@ The walking skeleton's code, its capture script, its report script, its plugin's
 ## Consequences
 
 - Tasks 1.31 to 1.35 of `add-pr-cost-calculator` build `skeleton/` test-first, and its tests run in this repository's CI.
-- Anyone who clones the repository sees code that is not the tool, so its files open by saying that they are the walking skeleton and not a release (T188).
+- Anyone who clones the repository sees code that is not the tool, so its files and the README say what it is (R242), and its own switch key keeps a switch written for the tool from turning it on (R235, T188).
 - Task 6.1's release check refuses a tag whose tree holds `skeleton/` (R238).
 
 ## Scope
@@ -33,4 +33,4 @@ This covers where the skeleton's code lives and when it goes. Where it runs is D
 
 ## What reversing it would change
 
-How hard it is to reverse: reversible, until the build starts. One pull request can move or remove the folder. R234 and R238 in `project-standards` would change, with their scenarios, and so would design decision 18, tasks 1.31 to 1.35 and 6.1, and the answer of T188.
+How hard it is to reverse: reversible, until the build starts. One pull request can move or remove the folder. R234, R238 and R242 in `project-standards` would change, with their scenarios, and so would design decision 18, tasks 1.31 to 1.35 and 6.1, and the answer of T188.

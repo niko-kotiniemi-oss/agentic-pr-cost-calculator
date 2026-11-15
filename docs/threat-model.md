@@ -2,7 +2,7 @@
 
 What could go wrong with the tool, for the people who use it and for this repository, and what answers each threat. Every change revisits this file (see `CLAUDE.md`).
 
-It was written for the first change, `add-pr-cost-calculator`, before any code, so the answers are requirements and tasks rather than code. It holds 189 threats across 9 trust boundaries. T38 to T69 were found by the design-stage review, T70 to T78 by the design-stage review of the decision records in `docs/decisions/`, T79 to T81 by the implementation-stage review of those records and their checks, T82 to T100 by the design-stage review of the assumptions, the glossary and the golden set, T101 by the implementation-stage review of the assumptions, T102 and T103 by the implementation-stage review of the glossary, T104 to T116 at the design of the revision of consent, the store and the ledger's format, T117 and T118 by the design-stage review of that revision, T119 to T122 by the review of that revision after its approval, T123 with the owner's answer to a question that the check of that review's fixes raised, T124 to T126 by the design-stage review of the test of the specs' form, T127 by the implementation-stage review of that test, T128 to T135 at the design of the plugin that brings capture to a project's cloud threads, T136 to T142 by the design-stage review of that plugin, T143 by its implementation-stage review, T144 by its security review, T145 to T147 at the design of the README's short start, T148 to T156 by the design-stage review of that short start, T157 and T158 by its implementation-stage review, T159 to T162 at the design of the roadmap, T163 to T165 by the design-stage review of the roadmap, T166 to T168 at the design of the backlog, T169 by the design-stage review of the backlog, T170 at the design of the guide, T171 to T174 by the design-stage review of the guide, T175 and T176 by the design-stage review of one opt-in for every agent, T177 to T182 by the second design-stage review of the guide, T183 by the final review of its build, T184 by its implementation-stage review, and T185 to T189 at the design of the walking skeleton; they follow T37, each under a heading for its boundary, so that the numbers stay in order, and a threat that a change removes keeps its ID out of use (see Retired IDs). Where an answer can be a scenario in a spec, it is one, so that an acceptance test holds it. `tests/test_threat_model.py` checks that every citation below names a scenario, task, decision, decision record or file that exists.
+It was written for the first change, `add-pr-cost-calculator`, before any code, so the answers are requirements and tasks rather than code. It holds 194 threats across 9 trust boundaries. T38 to T69 were found by the design-stage review, T70 to T78 by the design-stage review of the decision records in `docs/decisions/`, T79 to T81 by the implementation-stage review of those records and their checks, T82 to T100 by the design-stage review of the assumptions, the glossary and the golden set, T101 by the implementation-stage review of the assumptions, T102 and T103 by the implementation-stage review of the glossary, T104 to T116 at the design of the revision of consent, the store and the ledger's format, T117 and T118 by the design-stage review of that revision, T119 to T122 by the review of that revision after its approval, T123 with the owner's answer to a question that the check of that review's fixes raised, T124 to T126 by the design-stage review of the test of the specs' form, T127 by the implementation-stage review of that test, T128 to T135 at the design of the plugin that brings capture to a project's cloud threads, T136 to T142 by the design-stage review of that plugin, T143 by its implementation-stage review, T144 by its security review, T145 to T147 at the design of the README's short start, T148 to T156 by the design-stage review of that short start, T157 and T158 by its implementation-stage review, T159 to T162 at the design of the roadmap, T163 to T165 by the design-stage review of the roadmap, T166 to T168 at the design of the backlog, T169 by the design-stage review of the backlog, T170 at the design of the guide, T171 to T174 by the design-stage review of the guide, T175 and T176 by the design-stage review of one opt-in for every agent, T177 to T182 by the second design-stage review of the guide, T183 by the final review of its build, T184 by its implementation-stage review, and T185 to T189 at the design of the walking skeleton and T190 to T194 by its design-stage review; they follow T37, each under a heading for its boundary, so that the numbers stay in order, and a threat that a change removes keeps its ID out of use (see Retired IDs). Where an answer can be a scenario in a spec, it is one, so that an acceptance test holds it. `tests/test_threat_model.py` checks that every citation below names a scenario, task, decision, decision record or file that exists.
 
 ## How it was built
 
@@ -2197,8 +2197,8 @@ The trust boundaries:
 - **Risk:** 2
 - **What could happen:** the walking skeleton builds the thinnest path from a session's calls to the report's figure before the build (DR-233), and a thinnest path could check neither the repository's configuration nor the person's opt-in, which an agent may not set. Registered in this repository's settings or served from its marketplace, it would reach someone who clones the repository to try the tool, or an adopter's agent that finds no release and takes the default branch's hook file, and record their calls into their commits with no switch and no opt-in, published when they push.
 - **Answer:** DR-236, by which the skeleton records nothing unless the repository's configuration turns the tool on and the person's own opt-in is on, as the scenarios that the field Held by names give them, runs in a repository made for it, and is reached through none of this repository's settings, its marketplace or a release; and DR-233, by which the owner approves its design before it is built.
-- **Residual:** the skeleton's code does not exist yet, so its own pull request's tests and review hold this (A15, A16).
-- **Held by:** `switch-and-opt-in`: "A person who has not opted in is not recorded"; `switch-and-opt-in`: "No configuration file means no capture"; DR-233; DR-236
+- **Residual:** the skeleton's code is not built yet, so its pull request's tests and review hold this, by the scenarios of R234 and R235 that the field Held by names (A15, A16).
+- **Held by:** `switch-and-opt-in`: "A person who has not opted in is not recorded"; `switch-and-opt-in`: "No configuration file means no capture"; `project-standards`: "No opt-in means the skeleton records nothing"; `project-standards`: "A switch without the skeleton's key records nothing"; `project-standards`: "A file that names the skeleton where it could register it fails a test"; DR-233; DR-236
 - **Assumptions:** A15, A16
 
 ## Boundary 7, continued: found at the design-stage review of the guide
@@ -2277,8 +2277,8 @@ The trust boundaries:
 - **Risk:** 3
 - **What could happen:** the walking skeleton builds the thinnest path to the report's figure before the build (DR-233), and its item's postponed points name a scratch repository that calls the reusable workflow once (B-021). A thinnest path that adds here a workflow that declares `workflow_call`, merged before task 4.3 makes the report refuse every event but a push to the default branch, can be called from another repository, at the default branch's commit or another, from an event such as `pull_request_target` that gives it a write token, and could then run a pull request's code with that token (T23, T29).
 - **Answer:** while task 4.3 of `add-pr-cost-calculator` is not ticked, no tracked workflow under `.github/workflows/` declares `workflow_call`, and a test fails and names the file otherwise (R229); and the skeleton is reached through none of this repository's settings, its marketplace, a release or a workflow here that another repository calls (DR-236).
-- **Residual:** a workflow in the skeleton's own repository, which its pull request's review holds, and a workflow that another repository copies rather than calls, which the owner's review of the diff catches (A15).
-- **Held by:** `project-standards`: "A reusable workflow here before task 4.3 fails a test"; DR-236; `add-pr-cost-calculator` task 1.29
+- **Residual:** a workflow in the skeleton's own repository, which R237 holds as `skeleton/workflow.yml` here and its pull request's review holds as copied, and a workflow that another repository copies rather than calls, which the owner's review of the diff catches (A15).
+- **Held by:** `project-standards`: "A reusable workflow here before task 4.3 fails a test"; `project-standards`: "Another event, permission or action in the skeleton's workflow fails a test"; DR-236; `add-pr-cost-calculator` task 1.29
 - **Assumptions:** A15
 
 ## Boundary 7, continued: found at the second design-stage review of the guide
@@ -2365,11 +2365,11 @@ The trust boundaries:
 - **Impact:** 2 (medium)
 - **Likelihood:** 1 (unlikely)
 - **Risk:** 2
-- **What could happen:** the walking skeleton's capture runs as a plugin in a project that holds only its scratch repository (DR-245). Added to the owner's account instead of to that project's settings, it loads in every thread of every project, this repository's among them, where the owner's environment already opts in, and records the calls made in any repository there whose switch is on.
-- **Answer:** DR-245, by which the owner adds the plugin in the scratch project's settings only and removes it once the run is recorded; R235 in `project-standards`, by which the skeleton records nothing where a repository holds no switch; and R223, by which this repository holds none before task 7.1.
-- **Residual:** whether the owner's other repositories hold a switch is not something that a test here reads, and whether a project's settings take a plugin that is not on the account is observed only at the run (A69).
-- **Held by:** `project-standards`: "No switch means the skeleton records nothing"; `project-standards`: "A switch or a ledger file here before task 7.1 fails a test"; DR-245
-- **Assumptions:** A16, A69
+- **What could happen:** the walking skeleton's capture runs as a plugin, and uploading its zip adds it to the owner's account (A72), so it loads in every thread of every project and in the owner's terminal sessions until it is removed. With an opt-in in force there, it would record into any repository that turns it on, and a skeleton that kept every call of a session would commit calls made in other repositories there. The design-stage review found that the first design rested on the plugin staying in one project's settings and on the opt-in of the owner's Default environment, neither of which holds.
+- **Answer:** DR-245 and R235 in `project-standards`: the skeleton records only where a repository's `.pr-cost.json` holds its own key, `walking_skeleton`, which the tool's reader refuses, so that neither the tool's switch nor any repository without that key turns it on, and keeps only the calls whose working directory lies in that repository; the run's opt-in is in an environment that only the scratch project uses, never the Default one (DR-210); and once the run is recorded the owner removes the plugin from the account and the project and the opt-in's line from the environment, which task 7.1 checks.
+- **Residual:** a scratch repository cloned elsewhere still holds the skeleton's key until the owner deletes it; and the removal reaches new threads only, so the run's own thread is not used again (A69).
+- **Held by:** `project-standards`: "A switch without the skeleton's key records nothing"; `project-standards`: "A call made in another repository is not recorded"; DR-245; `add-pr-cost-calculator` task 1.36; `add-pr-cost-calculator` task 7.1
+- **Assumptions:** A15, A16, A69, A71, A72
 
 ## Boundary 7, continued: found at the design of the walking skeleton
 
@@ -2379,24 +2379,24 @@ The trust boundaries:
 - **Impact:** 3 (high)
 - **Likelihood:** 1 (unlikely)
 - **Risk:** 3
-- **What could happen:** this repository keeps the shape of the skeleton's run's transcripts as a fixture (DR-244). A shape recorder that keeps a value, or the keys of a tool's input, whose names can be a file's path or a server's name, would publish text of the owner's session here.
-- **Answer:** DR-244, by which only paths of field names and JSON type names are kept, and R236 in `project-standards`, whose scenarios have a test fail on any other entry and on any path below a tool's input, a tool's result or a message's text.
-- **Residual:** a field name that is itself telling, outside those paths, rests on the review of the pull request that adds the shape (A15).
-- **Held by:** `project-standards`: "A value in the kept shape fails a test"; `project-standards`: "A path below a tool's input fails a test"; DR-244
+- **What could happen:** this repository keeps the shape of the skeleton's run's transcripts as a fixture (DR-244). Real transcripts hold objects whose keys are data, such as a map keyed by tool-use identifiers and tool schemas whose property names are a connected server's parameters, all of letters, digits and underscores, as the design-stage review found in a cloud session's own transcripts. A recorder that turned every key into a path would publish them, and a check that read one file name only would miss a shape kept under another.
+- **Answer:** DR-244 and R236 in `project-standards`: the recorder keeps names only at a line's top level, in its `message` object and in `message.usage`, gives every other object and array as its type alone, and checks its own output, writing nothing on a failure; a test reads every kept shape under `tests/`, fails on a name below another object, on a name of an identifier's form and on anything but a path and a type, and fails when no shape exists once the run is recorded; and the owner reads the shape in the scratch repository before it comes here.
+- **Residual:** a top-level field name that is itself telling, such as one naming a feature of the host by an internal name, rests on the owner's reading and the review (A15).
+- **Held by:** `project-standards`: "A value in the kept shape fails a test"; `project-standards`: "A name below another object fails a test"; `project-standards`: "A name of an identifier's form fails a test"; `project-standards`: "No kept shape after the run fails a test"; DR-244; `add-pr-cost-calculator` task 1.31; `add-pr-cost-calculator` task 1.35
 - **Assumptions:** A15
 
 ## Boundary 4, continued: found at the design of the walking skeleton
 
-### T187. The skeleton's workflow runs a pull request's code with a write token
+### T187. The skeleton's workflow runs code with a write token that it should not
 
 - **Kind:** elevation of privilege
-- **Impact:** 2 (medium)
+- **Impact:** 3 (high)
 - **Likelihood:** 1 (unlikely)
-- **Risk:** 2
-- **What could happen:** the walking skeleton gives its scratch repository a workflow that posts a comment, so it holds a token that can write to pull requests. Run on a pull request's event, or checking out a pull request's head, it would run code that the pull request brings with that token. The scratch repository is private and throwaway, so what it could reach is that repository alone.
-- **Answer:** DR-243, and R237 in `project-standards`, by which a test fails unless the workflow runs only on a push to the default branch, asks only to read contents and to write pull requests, pins each action to a full commit and checks out only the pushed commit.
-- **Residual:** a change to the copy in the scratch repository after it was copied, which no test here reads (A15).
-- **Held by:** `project-standards`: "Another event or permission in the skeleton's workflow fails a test"; DR-243
+- **Risk:** 3
+- **What could happen:** the walking skeleton gives its scratch repository a workflow that posts a comment, so it holds a token that can write to pull requests. Run on a pull request's event, checking out a pull request's head, using an action pinned to a commit that only a fork holds, or reading a personal access token stored as a secret after posting failed, it would run code that no one here read with a token that may reach beyond the scratch repository. Sitting outside `.github/workflows/`, the file is outside the workflow checks that `tests/test_repository.py` already makes.
+- **Answer:** DR-243, and R237 in `project-standards`, by which a test fails unless the workflow runs only on a push to `main`, asks only to read contents and to write pull requests, uses no action but `actions/checkout`, pinned to a full commit, with `persist-credentials: false`, fetches only the push's two commits, reads no secret, puts no `${{` inside a `run:` and sets `timeout-minutes`.
+- **Residual:** a pin to a full commit that a fork of `actions/checkout` holds, until task 1.15's check of tagged pins covers `skeleton/workflow.yml`, which the review of the build reads (A15); the reach is the scratch repository alone while the token is the workflow's own.
+- **Held by:** `project-standards`: "Another event, permission or action in the skeleton's workflow fails a test"; `project-standards`: "A secret, a kept credential, an expression in a command or no time limit fails a test"; DR-243; `add-pr-cost-calculator` task 1.31
 - **Assumptions:** A15
 
 ## Boundary 6, continued: found at the design of the walking skeleton
@@ -2404,13 +2404,13 @@ The trust boundaries:
 ### T188. Someone takes the walking skeleton for the tool
 
 - **Kind:** information disclosure
-- **Impact:** 2 (medium)
+- **Impact:** 3 (high)
 - **Likelihood:** 1 (unlikely)
-- **Risk:** 2
-- **What could happen:** the walking skeleton's code sits on the default branch until the build removes it (DR-242). Someone who clones the repository, or an agent that finds no release, could copy it as the tool and run capture that lacks most of what the design asks, such as the checks of where a call was made.
-- **Answer:** DR-242, by which its files say that they are not a release and nothing here registers it (R234); R235, by which it records nothing without the switch and the opt-in; and R238, by which no release holds it.
-- **Residual:** a copy made by hand, which the files' own words and the README's status answer (A15).
-- **Held by:** `project-standards`: "A registration of the skeleton here fails a test"; `project-standards`: "No opt-in means the skeleton records nothing"; `project-standards`: "A tag that holds the skeleton is refused"; DR-242
+- **Risk:** 3
+- **What could happen:** the walking skeleton's code, its plugin's manifest and the script that builds its zip sit on the default branch until the build removes them (DR-242), while no release exists. Someone who clones the repository, or an agent asked to set the tool up that finds no release, builds and installs it, turns on the tool's switch and opt-in, and runs capture that lacks most of what the design asks, publishing counts of their work.
+- **Answer:** DR-242; R242 in `project-standards`, by which every skeleton file that can hold a comment, the plugin's manifest and the README's status say that it is the walking skeleton and not the tool; R235, by which the tool's switch does not turn it on without the skeleton's own key, and it keeps only the calls made in its repository; R234, by which nothing here registers it; and R238, by which no release holds it.
+- **Residual:** a person who reads past those words and sets the skeleton's own key on purpose (A15).
+- **Held by:** `project-standards`: "A skeleton file that does not say what it is fails a test"; `project-standards`: "A README silent on the skeleton fails a test"; `project-standards`: "A switch without the skeleton's key records nothing"; `project-standards`: "A file that names the skeleton where it could register it fails a test"; `project-standards`: "A tag that holds the skeleton is refused"; DR-242
 - **Assumptions:** A15
 
 ## Boundary 2, continued: found at the design of the walking skeleton
@@ -2418,14 +2418,82 @@ The trust boundaries:
 ### T189. The skeleton's thin staging disturbs the agent's commits in the scratch repository
 
 - **Kind:** reliability
-- **Impact:** 1 (low)
-- **Likelihood:** 2 (possible)
+- **Impact:** 2 (medium)
+- **Likelihood:** 1 (unlikely)
 - **Risk:** 2
-- **What could happen:** the walking skeleton stages a ledger file only for a plain `git commit` (DR-246). A commit command in another form gets none, and its calls wait for a later commit, or reach none, so the run's figure is low; a file staged for a commit that then fails is left in the working tree.
-- **Answer:** DR-246, by which the skeleton stages only for the one form, takes a file back when the commit does not hold it, and the run's observations say which commands the agent ran; R235's scenario, by which a plain commit holds one ledger file.
-- **Residual:** a low figure in the scratch repository, which is the run's own finding, not a published cost (A6).
-- **Held by:** `project-standards`: "Both on, the skeleton records the session's calls"; DR-246
+- **What could happen:** the walking skeleton stages a ledger file only for a commit command that it recognises (DR-246). A commit with nothing staged would succeed with the ledger file alone, a commit in another form would get none, and a file staged for a commit that then fails would stay in the working tree for a later commit to take again.
+- **Answer:** R240 in `project-standards`: the skeleton recognises `cd` to a written path and `git add` before a `git commit` with only `-m`, `-a` or `-q`, stages nothing when the commit would commit nothing without the file, and after a command that did not commit the file, whether it failed or not, removes it from the index and the working tree and keeps its calls waiting; and task 1.36, by which the run commits in the recognised form.
+- **Residual:** a file left by a command that gets no run after it, as a cancelled one, which the report counts once (T191).
+- **Held by:** `project-standards`: "A recognised commit after calls holds one ledger file"; `project-standards`: "A commit in another form gets no ledger file"; `project-standards`: "A commit with nothing to commit stays empty"; `project-standards`: "A file that a commit did not take is taken back"; DR-246; `add-pr-cost-calculator` task 1.32
 - **Assumptions:** A6
+
+## Boundary 7, continued: found at the design-stage review of the walking skeleton
+
+### T190. The run's observations bring values of the session here
+
+- **Kind:** information disclosure
+- **Impact:** 3 (high)
+- **Likelihood:** 1 (unlikely)
+- **Risk:** 3
+- **What could happen:** the thread that runs the skeleton read the raw transcripts, the comment and the job summary, and writes what it saw into the assumptions, whose rule for `observed` asks for a file under `tests/` that reproduces what was seen. It copies, as that file or as evidence, transcript lines and hook input scrubbed by hand, or the run's counts and figure, into a fixture, an assumption or the pull request's text. Message, request and tool-call identifiers, timestamps and counts pass the private-reference checks, and the merge publishes them.
+- **Answer:** DR-244 and task 1.36: the observations are words that copy no value, count, cost, identifier, time or text of the run, and the pull request's text gives no figure of it; a fact becomes `observed` only through a test whose fixture is written by hand to the kept shape, and otherwise keeps its check; the owner reads the observations in the scratch repository before they come here; and task 1.31 extends the private-reference check with the identifiers that a transcript carries.
+- **Residual:** words that tell what the session worked on rest on the owner's reading and the review (A15).
+- **Held by:** DR-244; `add-pr-cost-calculator` task 1.31; `add-pr-cost-calculator` task 1.36
+- **Assumptions:** A15
+
+## Boundary 4, continued: found at the design-stage review of the walking skeleton
+
+### T191. The skeleton's report counts a call twice or reads the wrong files
+
+- **Kind:** reliability
+- **Impact:** 2 (medium)
+- **Likelihood:** 1 (unlikely)
+- **Risk:** 2
+- **What could happen:** a commit fails or is cancelled after its ledger file was staged, and the next commit holds the same calls in a second file; or the skeleton's files are committed straight to `main`, a push that merges no pull request; or the owner merges by rebase, so that two commits each add a file; or the workflow fetched only the pushed commit and the report read every ledger file in the tree. The figure is then high, low or charged to no pull request, and the observations written from it mislead the build.
+- **Answer:** R241 in `project-standards`: the report compares the push's `before` and `after`, goes on only when GitHub's API gives exactly one merged pull request and `before` is not all zeros, reads only the ledger files that the push added and counts each call's key once; otherwise it posts no comment and says why in the job summary.
+- **Residual:** a file left by a command that gets no run after it, as a cancelled one, which the skeleton leaves for the build (decision 18), and which the report's counting once answers for the figure.
+- **Held by:** `project-standards`: "One call in two ledger files is counted once"; `project-standards`: "A merge, a squash and a rebase give the figure of the files that the push added"; `project-standards`: "A push with no single merged pull request posts no comment"; DR-243; `add-pr-cost-calculator` task 1.33
+- **Assumptions:** A39
+
+## Boundary 6, continued: found at the design-stage review of the walking skeleton
+
+### T192. The run uses files that the reviews here did not read
+
+- **Kind:** tampering, elevation of privilege
+- **Impact:** 3 (high)
+- **Likelihood:** 1 (unlikely)
+- **Risk:** 3
+- **What could happen:** the zip that the owner uploads is built from a branch tip that no review read, or declares an MCP server, a monitor or an HTTP hook, so that its declarations run in every thread that loads it with the owner's credentials; or the session under test edits the copied report, the test price or the workflow in its pull request, and the merge runs the edited code with the write token, so that the observations rest on code that no one here read.
+- **Answer:** design decision 18, DR-245 and task 1.36: the run names one commit of this pull request's branch that the reviews of the build read, an agent builds the zip from it and gives its SHA-256 on the pull request, the owner checks that before uploading, the skeleton's files reach the scratch repository's `main` in a commit of their own before any branch, and the run checks by SHA-256 that they are unchanged at the merge, or is not used; and R243 in `project-standards`, by which the plugin declares nothing but its command hooks.
+- **Residual:** a change to the scratch repository's files outside the run, which no test here reads (A15).
+- **Held by:** `project-standards`: "A plugin that declares more fails a test"; `project-standards`: "Two builds of one commit give the same zip"; DR-245; `add-pr-cost-calculator` task 1.36
+- **Assumptions:** A15, A72
+
+## Boundary 2, continued: found at the design-stage review of the walking skeleton
+
+### T193. A defect of the skeleton is written down as a fact about Claude Code
+
+- **Kind:** reliability
+- **Impact:** 2 (medium)
+- **Likelihood:** 1 (unlikely)
+- **Risk:** 2
+- **What could happen:** the run ends with no ledger file or a low figure, because a project's thread starts in a folder that is in no repository (A70), because the agent committed in a form that the skeleton does not recognise, because a subagent's calls give no line with a stop reason (A36), or because a run was cut short. The thread cannot tell these apart and writes into the assumptions that the plugin's hooks did not run, or that subagents' calls are missing, and the build rests on it.
+- **Answer:** design decision 18 and DR-246: each run of the capture looks in each repository directly inside a folder that is in none, and appends one log line of names and counts, saying what it found, read and kept and why it staged or did not; the run commits in the recognised form, a run whose merge holds no ledger file is not done, and the observations rest on the log.
+- **Residual:** a fact that the log cannot show, which the observations then say they did not see (A15).
+- **Held by:** DR-246; `add-pr-cost-calculator` task 1.32; `add-pr-cost-calculator` task 1.36
+- **Assumptions:** A15, A70
+
+### T194. The skeleton's hook stalls or steers the agent
+
+- **Kind:** denial of service
+- **Impact:** 2 (medium)
+- **Likelihood:** 1 (unlikely)
+- **Risk:** 2
+- **What could happen:** a hook command names a path that the installed zip does not hold, or the script raises; Python exits with code 2, which at `PreToolUse` blocks every git command and at `Stop` sends the agent back to work with the error as its instruction, or a stray print reaches Claude as context.
+- **Answer:** R239 in `project-standards`: each hook command runs the script with `python3 -I` and ends in `; exit 0`, and the script prints nothing on standard output, which tests drive with the script missing and raising.
+- **Residual:** a hook that runs past its timeout, which the skeleton's runs on a short session do not meet (A3).
+- **Held by:** `project-standards`: "A missing or failing capture script still exits with success"; `project-standards`: "A hook command without its guard fails a test"; DR-246; `add-pr-cost-calculator` task 1.34
+- **Assumptions:** A3
 
 ## Risk matrix
 
@@ -2433,9 +2501,9 @@ Generated from the ratings above. Each cell lists the threats whose impact and l
 
 | Impact \ Likelihood | 1 unlikely | 2 possible | 3 likely |
 |---|---|---|---|
-| 3 high | T1, T12, T14, T15, T23, T24, T28, T29, T35, T43, T46, T58, T59, T63, T64, T66, T67, T68, T73, T77, T82, T83, T92, T93, T94, T95, T103, T107, T108, T119, T125, T133, T138, T140, T141, T142, T144, T147, T148, T150, T151, T160, T163, T164, T165, T167, T169, T174, T175, T177, T178, T180, T183, T184, T186 | T2, T32, T33, T34, T61, T62, T65, T132, T137 |  |
-| 2 medium | T4, T6, T11, T13, T18, T25, T26, T38, T41, T42, T53, T55, T56, T57, T60, T69, T70, T76, T78, T79, T80, T81, T84, T85, T86, T87, T88, T89, T90, T91, T97, T98, T99, T100, T101, T102, T104, T105, T109, T112, T115, T124, T126, T127, T135, T139, T146, T149, T152, T153, T155, T156, T157, T162, T172, T173, T179, T181, T182, T185, T187, T188 | T3, T9, T10, T17, T19, T20, T21, T22, T27, T30, T39, T40, T44, T45, T47, T48, T49, T50, T51, T52, T54, T71, T72, T74, T75, T96, T111, T116, T120, T121, T122, T123, T129, T130, T131, T134, T136, T143, T145, T154, T158, T159, T161, T166, T168, T170, T171, T176 | T7, T8, T16, T128 |
-| 1 low | T113 | T31, T36, T37, T110, T114, T118, T189 | T5, T106, T117 |
+| 3 high | T1, T12, T14, T15, T23, T24, T28, T29, T35, T43, T46, T58, T59, T63, T64, T66, T67, T68, T73, T77, T82, T83, T92, T93, T94, T95, T103, T107, T108, T119, T125, T133, T138, T140, T141, T142, T144, T147, T148, T150, T151, T160, T163, T164, T165, T167, T169, T174, T175, T177, T178, T180, T183, T184, T186, T187, T188, T190, T192 | T2, T32, T33, T34, T61, T62, T65, T132, T137 |  |
+| 2 medium | T4, T6, T11, T13, T18, T25, T26, T38, T41, T42, T53, T55, T56, T57, T60, T69, T70, T76, T78, T79, T80, T81, T84, T85, T86, T87, T88, T89, T90, T91, T97, T98, T99, T100, T101, T102, T104, T105, T109, T112, T115, T124, T126, T127, T135, T139, T146, T149, T152, T153, T155, T156, T157, T162, T172, T173, T179, T181, T182, T185, T189, T191, T193, T194 | T3, T9, T10, T17, T19, T20, T21, T22, T27, T30, T39, T40, T44, T45, T47, T48, T49, T50, T51, T52, T54, T71, T72, T74, T75, T96, T111, T116, T120, T121, T122, T123, T129, T130, T131, T134, T136, T143, T145, T154, T158, T159, T161, T166, T168, T170, T171, T176 | T7, T8, T16, T128 |
+| 1 low | T113 | T31, T36, T37, T110, T114, T118 | T5, T106, T117 |
 
 The threats with a risk of 6 or more:
 
@@ -2467,6 +2535,7 @@ These are settings of the repository on GitHub, and two rules that the owner kee
 - **A tag ruleset on every tag**, restricting their creation, update and deletion, whose only bypass is a deploy key kept for releases on the owner's own machine, not the owner's account (T67).
 - **Immutable releases**, so that a published release cannot be changed or its tag moved (T67).
 - **Code-owner review off**, with 0 approvals required, while the only code owner's account also opens pull requests here (T62).
+- **The walking skeleton's run**: the scratch project's own environment holds the opt-in, never the Default one, and once the run is recorded the owner removes the `pr-cost-skeleton` plugin from the account and the project, and the opt-in's line from that environment (DR-245, T185).
 - **Actions' default workflow permissions read-only**, as a backstop for any workflow that declares none (T68).
 - **Private vulnerability reporting on**, which `SECURITY.md` sends reporters to (T61).
 - **The account's and the repository's names kept**, so that the address from which people add the marketplace keeps naming this repository, since someone who took a name that was given up could serve another plugin of the same name from it (T142).

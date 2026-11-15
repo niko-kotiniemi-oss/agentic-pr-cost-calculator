@@ -83,10 +83,10 @@ The assumptions about Claude Code: what its transcripts hold, when its hooks run
 
 ## A3. Hooks get enough time to finish, and every adopter's Claude Code has the hook events and the condition that the tool registers.
 
-- **Rests on it:** R7, R10, R11, R13, R44, R87, R90, R181, T8, T10, T13, T14, T19, T42, T130, DR-014, DR-030, DR-036, DR-127, DR-172, DR-197, DR-206
+- **Rests on it:** R7, R10, R11, R13, R44, R87, R90, R181, T8, T10, T13, T14, T19, T42, T130, T194, DR-014, DR-030, DR-036, DR-127, DR-172, DR-197, DR-206
 - **If it is wrong:** Runs cut short would leave calls unrecorded, stores torn and ledger files staged, for the design's whole-file writes and take-backs to absorb (T42, T8, T10), and a run that blocked its command would stall the agent (T14). A Claude Code that lacks an event or the condition would skip it, and calls would wait or never be recorded, with nothing to say why (T8). If the plugin's runs and the hook file's did not run side by side as the design expects, two copies in one session would still share the store, each run within its own budget (T130).
 - **Fact:** Claude Code runs the hooks that match an event in parallel.
-  - **Relied on:** R10, R11, R181, T13, T130, DR-036, DR-127, DR-206
+  - **Relied on:** R10, R11, R181, T13, T130, T194, DR-036, DR-127, DR-206
   - **Checked:** documented: <https://code.claude.com/docs/en/hooks>, read 2026-11-01
 - **Fact:** A command hook's default timeout is 600 seconds on `PreToolUse`, `PostToolUse` and `Stop`, and a `PreToolUse` command hook that times out does not block the tool call unless it sets `onFailure` to `block`.
   - **Relied on:** R13, R90, T14, T42, DR-036
@@ -234,10 +234,10 @@ The assumptions about Claude Code: what its transcripts hold, when its hooks run
 
 ## A72. A person adds the plugin on claude.ai by uploading a zip or by adding a GitHub repository as a marketplace, whose plugins then update from its default branch when the person checks for updates or turns on syncing, with nothing to accept.
 
-- **Rests on it:** R183, R184, R187, R190, T132, T133, T136, T138, T140, T143, DR-203, DR-204, DR-205
+- **Rests on it:** R183, R184, R187, R190, T132, T133, T136, T138, T140, T143, T185, T192, DR-203, DR-204, DR-205
 - **If it is wrong:** If claude.ai read a marketplace from another file or another branch than the one that CI checks, the check would hold one folder while the marketplace served another (T132, DR-204, DR-205). If the marketplace's updates waited for the person to accept them, the README's account of the two ways to install the plugin would be wrong (R187), and if an uploaded zip were not what runs, the checksum that the person checked would not be of what runs (T133). If an entry's fields acted otherwise than the documentation says, the check of the root file would hold less than it claims (R190, T140), and if a pinned ref did, the README's account of a pin would be wrong (R187, T138), and if a person's plugin did not update as described, the release that writes their ledger files would not be the one that the README describes (T136). If Claude Code cloned a marketplace otherwise than with the person's own git, the line endings that the person's git writes would not reach the plugin's folder, and T143 would have one route fewer.
 - **Fact:** On claude.ai a person adds a plugin to their account by uploading a `.zip` that holds one `.claude-plugin/plugin.json`, or by adding a GitHub repository as a marketplace by its address.
-  - **Relied on:** R183, R187, T133, DR-203
+  - **Relied on:** R183, R187, T133, T185, T192, DR-203
   - **Checked:** not yet: `add-pr-cost-calculator` task 7.2 checks it, since the pages that say so are claude.ai's own, on a host that the assumptions' test does not list
 - **Fact:** A marketplace's file is `.claude-plugin/marketplace.json` at its repository's root, unless a settings entry names another path.
   - **Relied on:** R184, T132, DR-205
@@ -346,10 +346,10 @@ The assumptions about Claude Code: what its transcripts hold, when its hooks run
 
 ## A39. Claude Code's hooks behave as its documentation describes.
 
-- **Rests on it:** R7, R9, R42, R49, R51, R75, R82, R87, R113, R116, R148, T8, T10, T19, T38, DR-013, DR-014, DR-030, DR-034, DR-138, DR-172
+- **Rests on it:** R7, R9, R42, R49, R51, R75, R82, R87, R113, R116, R148, T8, T10, T19, T38, T191, DR-013, DR-014, DR-030, DR-034, DR-138, DR-172
 - **If it is wrong:** Runs that came at other moments, or not at all, would leave calls waiting for a later run, so they could reach no commit (T8), and a ledger file staged for a commit that was refused at a permission prompt or by a permission rule, blocked, cancelled or failed could stay staged while the person's git commands meet it (T10). A condition that matched fewer git commands would miss commits and changes of branch, so calls would wait or go to the wrong branch (T19).
 - **Fact:** `Stop` runs when the main agent finishes responding, `SessionEnd` runs when a session ends, as when the person exits or runs `/clear`, and `PostToolUse` or `PostToolUseFailure` runs after each Bash call that ran.
-  - **Relied on:** R7, R87, T8, T10, DR-014, DR-172
+  - **Relied on:** R7, R87, T8, T10, T191, DR-014, DR-172
   - **Checked:** documented: <https://code.claude.com/docs/en/hooks>, read 2026-11-01
 - **Fact:** `SessionStart` runs when a session starts, is resumed or forked, and when it is cleared or compacted. At a session's start its hooks run in the background while the person can already type, Claude's first response waits for them, and a prompt sent meanwhile reaches Claude only once they have finished, what such a hook prints on standard output becomes context for Claude, and it cannot block the session.
   - **Relied on:** R148, T38, DR-172
@@ -393,10 +393,10 @@ The assumptions about Claude Code: what its transcripts hold, when its hooks run
 
 ## A70. A project's cloud thread starts in a folder that holds each of its clones directly inside it, and its machine pauses after a turn and resumes with its files.
 
-- **Rests on it:** R180, T120, T128, T131, DR-197, DR-198, DR-199
+- **Rests on it:** R180, T120, T128, T131, T193, DR-197, DR-198, DR-199
 - **If it is wrong:** If a thread's clones lay deeper in its folder, a plugin's start run would meet none of them, so a thread's first calls in a clone would be left out and flagged for consent until a run met that clone (R180, DR-198). If more of a thread's calls named its folder than the design expects, its figure would be lower still (T128). If a pause rebuilt the machine instead of resuming it, every pause would lose the calls that wait for a commit (T131), and if a resume changed what the fingerprint of the opt-in's files holds, every pause would end the session's interval and drop those calls, with a flag for consent (T120).
 - **Fact:** A cloud session with several repositories starts in a folder above its clones.
-  - **Relied on:** R180, DR-198
+  - **Relied on:** R180, T193, DR-198
   - **Checked:** documented: <https://code.claude.com/docs/en/settings>, read 2026-11-09
 - **Fact:** A project's cloud thread, with one repository or several, starts in a folder that holds each clone directly inside it and is in no repository, and that folder is the project directory that its hooks get.
   - **Relied on:** R180, T128, DR-198, DR-199
@@ -419,10 +419,10 @@ The assumptions about Claude Code: what its transcripts hold, when its hooks run
 
 ## A71. A line in a cloud environment's setup script reaches the global git configuration of each new session in that environment, and an organization can share an environment with its members.
 
-- **Rests on it:** R1, R185, R186, R194, R199, T3, T4, T116, T134, T145, T154, T155, DR-201, DR-202, DR-212
+- **Rests on it:** R1, R185, R186, R194, R199, T3, T4, T116, T134, T145, T154, T155, T185, DR-201, DR-202, DR-212
 - **If it is wrong:** If the line did not reach a session's global git configuration, or Claude Code's own setup of a session wrote over it, a person who added it would record nothing, with nothing to say why (R185, DR-201). If a shared environment's setup script did not run in each member's session there, the organization's option would opt no one in (R186, T134). If an environment's variables did not reach a running session's hooks, or the `GIT_CONFIG_` variables that a cloud session sets for itself replaced them, the opt-out that the README gives for an environment would not turn capture off there (R194, T3, T134). If `/hooks` did not run in a cloud session, a person there could not see the hooks that run, as the README says they can (R186, R194). If a restored machine ran the setup script again, an opt-out made in a running session would last only until its next restore (T154). If a member could change a shared environment, or a shared personal environment changed its ID, the README's section on organizations would say what does not hold (R186, T134), and if `CLAUDE_CODE_REMOTE` were `true` on a person's own computer, the organization's hook that the README gives would write the opt-in there too (T155), and if a `SessionStart` hook did not run again after `/clear` or a compaction, an opt-out in a running session would hold longer than the README says (R194, T3, T134, T155). If a cloud session's pushes and pull requests were not the person's, what a session spends would be traced to the person by less than the README's short start says (R199, T4, T116, T145, DR-212).
 - **Fact:** A cloud environment's setup script runs as root, before Claude Code starts, the first time a session starts in the environment, and the files that it writes are the starting point of the environment's later sessions until the script or the allowed hosts change or that snapshot expires after about seven days, and it does not run again when an idle machine is restored.
-  - **Relied on:** R1, R185, T154, DR-201
+  - **Relied on:** R1, R185, T154, T185, DR-201
   - **Checked:** documented: <https://code.claude.com/docs/en/cloud-environments>, read 2026-11-09
 - **Fact:** `git config --global` in the setup script writes the global git configuration of the user who runs the session, and Claude Code's own setup of a session leaves the line there.
   - **Relied on:** R1, R185, T3, DR-201
