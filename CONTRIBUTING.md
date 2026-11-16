@@ -39,4 +39,4 @@ This repository is public. Never commit session transcripts, session identifiers
 
 ## Licence
 
-By contributing you agree that your contribution is licensed under the [MIT licence](LICENSE) of this repository.
+By contributing you agree that your contribution is licensed under this repository's [licence](LICENSE), the Fair Core License, version 1.0, with MIT as its future licence. Before a contribution from outside the project is merged, its author will also be asked to agree to a contributor licence agreement, which backlog item [B-023](docs/backlog/B-023-a-contributor-licence-agreement.md) describes.

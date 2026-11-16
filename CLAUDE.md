@@ -1,6 +1,6 @@
 # CLAUDE.md: Agentic PR cost calculator
 
-A public, MIT-licensed tool that estimates what a pull request cost in model tokens and CI minutes. Read `README.md` for what it does, and its section on working on this repository for how to set up a clone.
+A public, fair-source tool, under the Fair Core License with MIT as its future licence, that estimates what a pull request cost in model tokens and CI minutes. Read `README.md` for what it does, and its section on working on this repository for how to set up a clone.
 
 ## Rules
 

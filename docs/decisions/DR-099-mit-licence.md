@@ -1,12 +1,12 @@
 # DR-099: The licence is MIT
 
 - **Type:** process
-- **Status:** accepted
+- **Status:** closed
 - **Decided by:** the owner, 2026-10-17
 - **Requirements:** R28
 - **Threats:** none
 - **Replaces:** none
-- **Closed by:** none
+- **Closed by:** DR-242
 
 ## Context
 

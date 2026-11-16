@@ -150,7 +150,7 @@ Each release SHALL carry a CycloneDX JSON software bill of materials, written by
 #### Scenario: The bill of materials describes the release
 
 - **WHEN** a release is published
-- **THEN** a CycloneDX JSON file is attached that names the tool, the release's version and commit, the MIT licence, the oldest supported Python, the hook file's checksum, the plugin zip's checksum, each action the reusable workflow uses, and the development-only components
+- **THEN** a CycloneDX JSON file is attached that names the tool, the release's version and commit, the tool's licence, FCL-1.0-MIT, the oldest supported Python, the hook file's checksum, the plugin zip's checksum, each action the reusable workflow uses, and the development-only components
 
 ### Requirement: A release is not published when its bill of materials is missing or fails a check
 

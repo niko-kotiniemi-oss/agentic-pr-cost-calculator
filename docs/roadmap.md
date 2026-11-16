@@ -28,6 +28,7 @@ What follows the first build.
 - [B-012: Windows home folder variables](backlog/B-012-windows-home-folder-variables.md) - Planned, last changed 2026-11-13. A check, on Windows, of whether a project's Claude Code settings can set the variables that name the home folder, from which the opt-in is read.
 - [B-013: When the marketplace moves to a new major release](backlog/B-013-when-the-marketplace-moves-to-a-new-major-release.md) - Planned, last changed 2026-11-13. A decision on when the marketplace moves to a new major release, so that repositories can move their pins first.
 - [B-014: An unknown model counted as unknown](backlog/B-014-an-unknown-model-counted-as-unknown.md) - Open to feedback and contributions, last changed 2026-11-13. A ledger line whose model the report's price table does not list counted under `unknown`, in tokens and not in cost, instead of being refused.
+- [B-023: A contributor licence agreement](backlog/B-023-a-contributor-licence-agreement.md) - Open to feedback and contributions, last changed 2026-11-16. Terms that each outside contributor agrees to, which let the licensor also offer their contribution under other licences, such as in a paid version, while the contributor keeps their copyright.
 
 ## Later
 
