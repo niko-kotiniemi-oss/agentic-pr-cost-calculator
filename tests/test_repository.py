@@ -63,6 +63,8 @@ PRIVATE_PATTERNS = [
     re.compile("chan" + r"_[0-9A-Za-z]{8,}"),
     re.compile(re.escape("/mnt/" + "project-files")),
     re.compile("Claude-" + "Session:"),
+    # The identifiers that a transcript carries, of a message, a request and a tool call (T186).
+    re.compile(r"\b(?:msg|req|toolu)" + r"_[0-9A-Za-z]{8,}"),
 ]
 
 
@@ -167,10 +169,16 @@ def test_the_privacy_patterns_catch_what_they_are_for() -> None:
         "project chan" + "_01ABCDEFGHJKMNPQ",
         "/mnt/" + "project-files/example/",
         "Claude-" + "Session: x",
+        # The identifiers that a transcript carries: of a message, a request and a tool call.
+        '"id": "msg' + '_01ABCDEFGHJKMNPQRS"',
+        "requestId req" + "_011CABCDEFGHJKMNPQ",
+        "tool_use_id toolu" + "_01ABCDEFGHJKMNPQRS",
     ]
     for sample in samples:
         assert any(p.search(sample) for p in PRIVATE_PATTERNS), sample
-    assert not any(p.search("an ordinary sentence about pull requests") for p in PRIVATE_PATTERNS)
+    ordinary = ["an ordinary sentence about pull requests", "the field stop_sequence", "msg_short"]
+    for text in ordinary:
+        assert not any(p.search(text) for p in PRIVATE_PATTERNS), text
 
 
 def test_the_private_name_check_matches_the_name_however_it_is_written() -> None:

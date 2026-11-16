@@ -1450,7 +1450,7 @@ Each transcript shape kept from the walking skeleton's run, a tracked file under
 
 #### Scenario: A name of an identifier's form fails a test
 
-- **WHEN** an entry of a kept shape gives a name that is a lower-case prefix, an underscore and a token of 8 or more letters and digits
+- **WHEN** an entry of a kept shape gives a name that is a lower-case prefix, an underscore and a token of 8 or more letters and digits that holds a digit or an upper-case letter, so that a field name such as `stop_sequence` is not taken for one
 - **THEN** a test fails and names the file and the entry
 
 #### Scenario: A shape of names and types passes

@@ -3,7 +3,10 @@
 An open-source tool to estimate what a GitHub pull request cost when it was built with an AI coding agent.
 
 **Status: proposal.** None of the tool's code exists yet. The design is an OpenSpec change under
-[`openspec/changes/`](openspec/changes/), and code starts once it is approved.
+[`openspec/changes/`](openspec/changes/), and code starts once it is approved. The folder
+`skeleton/` holds the walking skeleton, which is not the tool: a thin path, run once in a scratch
+repository to check the design's facts about Claude Code, that the build replaces before the first
+release. Do not install or run it.
 
 ## What it will do
 

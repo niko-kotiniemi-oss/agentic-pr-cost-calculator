@@ -1,0 +1,5 @@
+{
+  "name": "pr-cost-skeleton",
+  "version": "0.0.0",
+  "description": "The walking skeleton of the agentic PR cost calculator, not the tool or a release: it records calls only in a scratch repository whose switch holds walking_skeleton, for one run that checks the design. Remove it after that run."
+}
