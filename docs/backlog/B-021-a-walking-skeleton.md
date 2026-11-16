@@ -1,11 +1,11 @@
 # B-021: A walking skeleton
 
 - **Status:** Planned
-- **Last changed:** 2026-11-14
+- **Last changed:** 2026-11-15
 - **Brief:** The thinnest path from a session's calls through capture and a ledger file in a commit to the report's figure, run once in a real Claude Code session. It comes right after the guide and before the other items that prepare the build.
 - **Rests on:** DR-233, DR-236, R223
 - **Issue:** none
-- **Pull requests:** none
+- **Pull requests:** 31
 
 ## Problem
 

@@ -129,10 +129,10 @@ The assumptions about GitHub: this repository's settings there, and its workflow
 
 ## A18. A merge into the default branch makes one push, and that push starts the adopter's calling workflow.
 
-- **Rests on it:** R19, R27, R58, R62, R68, R69, R93, R120, R129, T19, T20, T21, T22, T23, T50, T67, T68, T70, T88, DR-005, DR-017, DR-018, DR-019, DR-051, DR-061, DR-073, DR-092, DR-121, DR-122, DR-133, DR-147, DR-148, DR-186
+- **Rests on it:** R19, R27, R58, R62, R68, R69, R93, R120, R129, T19, T20, T21, T22, T23, T50, T67, T68, T70, T88, T191, DR-005, DR-017, DR-018, DR-019, DR-051, DR-061, DR-073, DR-092, DR-121, DR-122, DR-133, DR-147, DR-148, DR-186
 - **If it is wrong:** A merge that makes no push, or whose push starts no workflow, would get no report, and nothing would say why (T21, T23). A push that named another commit as the one it replaced would make the report count the wrong ledger files as the merge's own (T19, T20), and a run that a merge starts through another event, created before the merge time, would be counted as the pull request's, so the CI figure would be too high without saying so (T22, T88).
 - **Fact:** Every merge into the default branch, by hand, by auto-merge or through a merge queue, makes a push to that branch, and that push starts the adopter's calling workflow.
-  - **Relied on:** R19, R58, R68, R69, T19, T21, T23, DR-005, DR-018, DR-061, DR-092, DR-133, DR-147
+  - **Relied on:** R19, R58, R68, R69, T19, T21, T23, T191, DR-005, DR-018, DR-061, DR-092, DR-133, DR-147
   - **Checked:** not yet: `add-pr-cost-calculator` task 7.1 meets it once, at the merge of that task's own pull request
 - **Fact:** An event that `GITHUB_TOKEN` causes, such as the push of a merge that a workflow makes, creates no new workflow run, apart from `workflow_dispatch`, `repository_dispatch` and some `pull_request` events, so such a merge gets no report.
   - **Relied on:** R68, T50, DR-018
@@ -260,10 +260,10 @@ The assumptions about GitHub: this repository's settings there, and its workflow
 
 ## A49. GitHub's lookup of the pull requests associated with a commit behaves as documented: for a commit on the default branch, it gives the merged pull request that introduced the commit.
 
-- **Rests on it:** R69, R70, T19, T88, DR-018, DR-133
+- **Rests on it:** R69, R70, R241, T19, T88, T191, DR-018, DR-133
 - **If it is wrong:** The report's rule that a push whose commits do not all belong to one pull request gets no comment rests on it (T19). If the lookup gave another pull request, or none, a push could be charged to the wrong pull request or lose its comment, while a test that replays GitHub's answer still passes (T19, T88).
 - **Fact:** For a commit that the default branch holds, GitHub's "List pull requests associated with a commit" returns the merged pull request that introduced it.
-  - **Relied on:** R69, R70, T19, T88, DR-018, DR-133
+  - **Relied on:** R69, R70, R241, T19, T88, T191, DR-018, DR-133
   - **Checked:** documented: <https://github.com/github/docs/blob/33b1f4a6fec2d9b6fd3d374afa56bcd9f0875b57/src/rest/data/fpt-2022-11-28/commits.json>, read 2026-11-01
 - **Fact:** GitHub's lookup of the pull requests associated with a commit finds the pull request for the commits that every merge method puts on the default branch: a merge commit, a squash, a rebase merge and a fast-forward.
   - **Relied on:** R69, T19, DR-133

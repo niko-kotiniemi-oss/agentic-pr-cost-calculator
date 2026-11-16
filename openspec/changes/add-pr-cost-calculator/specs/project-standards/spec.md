@@ -1357,3 +1357,208 @@ For each ledger format that a release's capture step wrote, the golden set SHALL
 
 - **WHEN** a pull request removes the last golden session of a ledger format that a release wrote and the report still reads
 - **THEN** a test fails and names the format
+
+### Requirement: Nothing here registers the walking skeleton
+
+No tracked file under `.claude/`, `.claude-plugin/` or `.github/` SHALL hold the word `skeleton`, whatever the case of its letters, so that no setting, hook script, marketplace or workflow here registers, installs or runs the walking skeleton, whatever way it names `skeleton/`. A test SHALL fail and name the file otherwise.
+
+#### Scenario: A file that names the skeleton where it could register it fails a test
+
+- **WHEN** a tracked file under `.claude/`, `.claude-plugin/` or `.github/`, such as a settings file, the session-start hook script, a marketplace file or a workflow, holds `skeleton` in any case, as `./skeleton`, `skeleton/` or `Skeleton`
+- **THEN** a test fails and names the file
+
+#### Scenario: The skeleton's own files pass
+
+- **WHEN** only files outside `.claude/`, `.claude-plugin/` and `.github/` name `skeleton/`
+- **THEN** that test passes
+
+### Requirement: The walking skeleton records only with its own switch and the opt-in
+
+The walking skeleton's capture SHALL record a call only for a repository whose top-level `.pr-cost.json` holds `enabled` and `walking_skeleton` both `true`, while git gives its own opt-in, `pr-cost-skeleton.capture`, never the tool's, as `true` from the person's global files alone, read without the session's git variables or `XDG_CONFIG_HOME`, never a repository's own; and SHALL keep a call only when its line's working directory lies in that repository's working tree. Tests SHALL drive each way.
+
+#### Scenario: A switch without the skeleton's key records nothing
+
+- **WHEN** the skeleton's capture runs in a repository whose `.pr-cost.json` holds `enabled` set to `true` and no `walking_skeleton` set to `true`, and the person has opted in
+- **THEN** it writes no store, stages no ledger file and exits with success
+
+#### Scenario: No switch means the skeleton records nothing
+
+- **WHEN** the skeleton's capture runs where no repository holds a `.pr-cost.json`, or where one's `enabled` is not `true`, and the person has opted in
+- **THEN** it writes no store, stages no ledger file and exits with success
+
+#### Scenario: No opt-in means the skeleton records nothing
+
+- **WHEN** the skeleton's switch is on, and git, reading the person's global configuration files, does not give `pr-cost-skeleton.capture` as `true`, though the repository's own configuration does, or the session's `GIT_CONFIG_` or `XDG_CONFIG_HOME` variables do, or though the tool's own opt-in, `pr-cost.capture`, is `true`
+- **THEN** it writes no store, stages no ledger file and exits with success
+
+#### Scenario: A call made in another repository is not recorded
+
+- **WHEN** the switch and the opt-in are on, and the transcript holds a call whose line gives a working directory outside the repository's working tree, or in another repository inside it, or none
+- **THEN** no ledger file that the skeleton stages holds that call
+
+### Requirement: The walking skeleton never stalls or steers the agent
+
+Each hook command of the walking skeleton's plugin SHALL run its capture script with `python3 -I` and end in `; exit 0`, and the script SHALL print nothing on standard output, whatever it meets, so that no run of it blocks a command, sends the agent back to work or gives Claude text. A test SHALL fail otherwise.
+
+#### Scenario: A missing or failing capture script still exits with success
+
+- **WHEN** a hook command of the skeleton's plugin runs while its capture script is missing, or while the script raises an error
+- **THEN** the command exits with success and prints nothing on standard output
+
+#### Scenario: A hook command without its guard fails a test
+
+- **WHEN** a hook command in the skeleton's plugin does not run `python3 -I` or does not end in `; exit 0`
+- **THEN** a test fails and names the hook
+
+### Requirement: The walking skeleton stages only for a commit it recognises
+
+The walking skeleton SHALL stage a ledger file only before a command whose parts, joined by two ampersands, are `cd` to a written path or `git add` with written paths, then a `git commit` with only `-m` and a quoted message, which may repeat, `-a` or `-q`, in the repository of each `git add`, each git with at most one written `-C`, and only when the commit would commit something without the file; and SHALL take back a file that the command did not commit, its calls waiting.
+
+#### Scenario: A recognised commit after calls holds one ledger file
+
+- **WHEN** the switch and the opt-in are on, calls made in the repository wait, and the agent runs `cd` to the clone, `git add` with a path and `git commit -m` with a message, joined by two ampersands
+- **THEN** the commit holds the agent's change and one ledger file with those calls' counts by model, and no text of the transcript but the model's name
+
+#### Scenario: A commit in another form gets no ledger file
+
+- **WHEN** the agent commits with any other command, such as one with `--amend`, a pathspec, a pipe or a semicolon
+- **THEN** the skeleton stages nothing, and the calls wait
+
+#### Scenario: A commit with nothing to commit stays empty
+
+- **WHEN** the agent runs a recognised `git commit` with no `git add` before it, no `-a`, and nothing staged
+- **THEN** the skeleton stages nothing, and the commit fails as it would without it
+
+#### Scenario: A commit in another repository than its adds gets no ledger file
+
+- **WHEN** the agent runs `git add` in one repository and, in the same command, `git commit` in another
+- **THEN** the skeleton stages nothing, and the calls wait
+
+#### Scenario: A commit with repeated messages gets its ledger file
+
+- **WHEN** the agent's recognised commit gives `-m` with a quoted message more than once, as for trailer lines
+- **THEN** the commit holds one ledger file
+
+#### Scenario: A file that a commit did not take is taken back
+
+- **WHEN** the skeleton staged a ledger file and the command then failed, or succeeded without committing the file
+- **THEN** the file is gone from the index and the working tree, and its calls wait for a later commit
+
+### Requirement: The kept transcript shape holds no values
+
+Each transcript shape kept from the walking skeleton's run, a tracked file under `tests/` whose name begins with `transcript-shape`, SHALL hold only field names at a line's top level that the recorder's list names, in its `message` and in `message.usage`, each with its JSON type, and every other object and array as its type alone; each name of letters, digits and underscores, at most 40 long and not of an identifier's form. A test SHALL fail and name the entry otherwise.
+
+#### Scenario: A value in the kept shape fails a test
+
+- **WHEN** an entry of a kept shape gives anything but a field path and a JSON type name, or a name with a character other than a letter, a digit or an underscore, or longer than 40 characters
+- **THEN** a test fails and names the file and the entry
+
+#### Scenario: A name below another object fails a test
+
+- **WHEN** an entry of a kept shape gives a field name below an object other than the line, its `message` object and `message.usage`, as below `message.content`, a tool's input, a tool's result or a map keyed by identifiers
+- **THEN** a test fails and names the file and the entry
+
+#### Scenario: A top-level name outside the recorder's list fails a test
+
+- **WHEN** an entry of a kept shape gives a name at a line's top level that the list shared by the shape recorder and its check does not name
+- **THEN** a test fails and names the file and the entry
+
+#### Scenario: A name of an identifier's form fails a test
+
+- **WHEN** an entry of a kept shape gives a name that is a lower-case prefix, an underscore and a token of 8 or more letters and digits that holds a digit or an upper-case letter, so that a field name such as `stop_sequence` is not taken for one
+- **THEN** a test fails and names the file and the entry
+
+#### Scenario: A shape of names and types passes
+
+- **WHEN** every entry of each kept shape gives a path of names at those levels only, and a JSON type name
+- **THEN** that test passes
+
+#### Scenario: No kept shape after the run fails a test
+
+- **WHEN** task 1.36 of `add-pr-cost-calculator` is ticked, and no tracked file under `tests/` has a name that begins with `transcript-shape`
+- **THEN** a test fails and says that the shape is missing
+
+### Requirement: The skeleton's workflow can do no more than post its comment
+
+The skeleton's workflow, `skeleton/workflow.yml`, SHALL run only on a push to `main`, ask only to read contents and write pull requests, use no action but `actions/checkout` pinned to a full commit with `persist-credentials: false`, fetch no commit but the push's `before` and `after`, read no secret, put no `${{` inside a `run:`, and set `timeout-minutes`. A test SHALL fail and name what differs otherwise.
+
+#### Scenario: Another event, permission or action in the skeleton's workflow fails a test
+
+- **WHEN** `skeleton/workflow.yml` runs on an event other than a push to `main`, asks for a permission other than reading contents and writing pull requests, or uses an action other than `actions/checkout` or one that a full commit does not pin
+- **THEN** a test fails and names what differs
+
+#### Scenario: A secret, a kept credential, an expression in a command or no time limit fails a test
+
+- **WHEN** `skeleton/workflow.yml` reads a secret, checks out without `persist-credentials: false`, puts `${{` inside a `run:`, fetches a ref other than the push's `before` and `after`, or sets no `timeout-minutes`
+- **THEN** a test fails and names what differs
+
+#### Scenario: The skeleton's workflow as designed passes
+
+- **WHEN** `skeleton/workflow.yml` runs only on a push to `main`, with those two permissions, `actions/checkout` alone pinned to a full commit without kept credentials, the push's two commits fetched by SHA, no secret, no expression in a command and a time limit
+- **THEN** that test passes
+
+### Requirement: The skeleton's report counts one merged pull request's calls once, at a test price
+
+Only when GitHub's API gives exactly one merged pull request for a push and its `before` is not all zeros, the skeleton's report SHALL read the ledger files that the push added, count each call's key once, sum each model's tokens at the test price that `skeleton/` holds, and write the figure, saying that it is at a test price and not a real cost, to the job summary and as one comment; otherwise it SHALL post no comment and say why in the job summary.
+
+#### Scenario: One call in two ledger files is counted once
+
+- **WHEN** two ledger files that the push added hold the same call's key
+- **THEN** the report counts that call once
+
+#### Scenario: A merge, a squash and a rebase give the figure of the files that the push added
+
+- **WHEN** a pull request is merged by a merge commit, by squash, or by rebase of two commits that each add a ledger file
+- **THEN** the report reads every ledger file that the push added and none that the default branch held before it
+
+#### Scenario: A push with no single merged pull request posts no comment
+
+- **WHEN** the push's `before` is all zeros, or GitHub's API gives no merged pull request for `after`, or more than one
+- **THEN** the report posts no comment, and its job summary says why
+
+#### Scenario: The comment says that its figure is not a real cost
+
+- **WHEN** the report posts its figure
+- **THEN** the comment and the job summary say that it is at a test price and is not a real cost
+
+### Requirement: The walking skeleton says what it is
+
+Each file under `skeleton/` that can hold a comment SHALL open with one that says it is the walking skeleton and not the tool or a release, the plugin's manifest SHALL say so in its `description`, and while `skeleton/` exists the README's status SHALL name it as the walking skeleton and say that it is not the tool. A test SHALL fail and name the file otherwise.
+
+#### Scenario: A skeleton file that does not say what it is fails a test
+
+- **WHEN** a Python or YAML file under `skeleton/` does not open with a comment that says that it is the walking skeleton and not the tool, or the plugin's manifest's `description` does not say so
+- **THEN** a test fails and names the file
+
+#### Scenario: A README silent on the skeleton fails a test
+
+- **WHEN** `skeleton/` exists, and the README's status does not name it as the walking skeleton
+- **THEN** a test fails
+
+### Requirement: The skeleton's plugin declares nothing but its command hooks
+
+The walking skeleton's plugin manifest SHALL hold only its name, `pr-cost-skeleton`, a version and a description, and its hooks SHALL all be command hooks; its zip SHALL hold only the manifest, the hooks file and the capture script, and SHALL be built the same, byte for byte, from the same commit. A test SHALL fail and name what differs otherwise.
+
+#### Scenario: A plugin that declares more fails a test
+
+- **WHEN** the skeleton's manifest holds another key, as one naming an MCP server, or a hook of another type than a command, or the zip holds another file, as an `.mcp.json`
+- **THEN** a test fails and names it
+
+#### Scenario: Two builds of one commit give the same zip
+
+- **WHEN** the skeleton's zip is built twice from one commit
+- **THEN** the two zips are the same, byte for byte
+
+### Requirement: No release holds the walking skeleton
+
+The release workflow SHALL refuse a tag whose tree holds a `skeleton/` folder, so that the build removes the walking skeleton before the first release and no adopter takes it for the tool.
+
+#### Scenario: A tag that holds the skeleton is refused
+
+- **WHEN** a tag's tree holds a `skeleton/` folder
+- **THEN** the release workflow refuses it and names the folder
+
+#### Scenario: A tag without the skeleton passes this check
+
+- **WHEN** a tag's tree holds no `skeleton/` folder
+- **THEN** this check of the release workflow passes it

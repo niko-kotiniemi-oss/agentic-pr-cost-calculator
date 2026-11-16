@@ -245,6 +245,16 @@ The capability names the spec that holds the requirement. Each capability is one
 | R231 | non-functional | `project-standards` | A gap given to an agreed item changes that item |
 | R232 | non-functional | `project-standards` | Each change's tasks are read as GitHub shows them |
 | R233 | non-functional | `project-standards` | A gap of the guide closes only with its item |
+| R234 | non-functional | `project-standards` | Nothing here registers the walking skeleton |
+| R235 | behavioural | `project-standards` | The walking skeleton records only with its own switch and the opt-in |
+| R236 | non-functional | `project-standards` | The kept transcript shape holds no values |
+| R237 | non-functional | `project-standards` | The skeleton's workflow can do no more than post its comment |
+| R238 | non-functional | `project-standards` | No release holds the walking skeleton |
+| R239 | behavioural | `project-standards` | The walking skeleton never stalls or steers the agent |
+| R240 | behavioural | `project-standards` | The walking skeleton stages only for a commit it recognises |
+| R241 | functional | `project-standards` | The skeleton's report counts one merged pull request's calls once, at a test price |
+| R242 | non-functional | `project-standards` | The walking skeleton says what it is |
+| R243 | non-functional | `project-standards` | The skeleton's plugin declares nothing but its command hooks |
 
 IDs are stable: a requirement keeps its ID while it exists, and a new one takes the next free number, so the rows follow the order in which requirements were added rather than the order of the specs. A requirement that a later change removes leaves the table, and its ID is listed below with the change that removed it, never to be used again.
 
