@@ -14,7 +14,7 @@ import json
 import re
 import subprocess
 import tomllib
-from collections.abc import Hashable, Iterable, Iterator
+from collections.abc import Callable, Hashable, Iterable, Iterator
 from pathlib import Path
 from typing import Any
 
@@ -104,9 +104,76 @@ def test_every_required_file_exists() -> None:
     assert not missing, f"missing: {missing}"
 
 
-def test_the_licence_is_mit() -> None:
-    text = (ROOT / "LICENSE").read_text(encoding="utf-8")
-    assert text.startswith("MIT License")
+# The Fair Core License, version 1.0, with MIT as its future licence, as keygen-sh/fcl.dev
+# publishes it in FCL-1.0-MIT.md: the SHA-256 of that text with its notice left blank, so that
+# any other change to the licence's words fails (DR-242).
+FCL_TEMPLATE_SHA256 = "7f96651038a80c680bb67a11e9e9e6007e5b1cb6ef02660b5fe5fb60daa3ad05"
+FCL_BLANK_NOTICE = "Copyright ${year} ${licensor name}"
+FCL_NOTICE_LINE = re.compile(r"(?m)^Copyright .*$")
+# The notice that DR-242 gives, word for word, so that nothing is added on its line.
+NOTICE = "Copyright 2026 Niko Kotiniemi"
+# FCL is not on the SPDX list, so pyproject.toml names it by a reference of its own.
+LICENCE_ID = "LicenseRef-FCL-1.0-MIT"
+
+
+def licence_problems(licence: str, declared: object, notice: str = NOTICE) -> list[str]:
+    """What keeps a licence text and a declared licence from being DR-242's."""
+    problems = []
+    notices = FCL_NOTICE_LINE.findall(licence)
+    if notices != [notice]:
+        problems.append(f"LICENSE's notices are {notices}, not [{notice!r}]")
+    blank = FCL_NOTICE_LINE.sub(FCL_BLANK_NOTICE, licence)
+    if hashlib.sha256(blank.encode()).hexdigest() != FCL_TEMPLATE_SHA256:
+        problems.append("LICENSE is not the text of FCL-1.0-MIT with its notice filled in")
+    if declared != LICENCE_ID:
+        problems.append(f"pyproject.toml declares the licence {declared!r}, not {LICENCE_ID!r}")
+    return problems
+
+
+def licence_text() -> str:
+    return (ROOT / "LICENSE").read_text(encoding="utf-8")
+
+
+def test_the_licence_is_the_fair_core_license_with_mit_as_its_future_licence() -> None:
+    assert licence_problems(licence_text(), pyproject()["project"].get("license")) == []
+
+
+@pytest.mark.parametrize(
+    ("plant", "declared", "problem"),
+    [
+        (lambda _: "MIT License\n\nCopyright (c) 2026 Someone\n", LICENCE_ID, "LICENSE is not"),
+        (
+            lambda t: t.replace("second anniversary", "tenth anniversary"),
+            LICENCE_ID,
+            "LICENSE is not",
+        ),
+        (lambda t: t.replace(NOTICE, FCL_BLANK_NOTICE), LICENCE_ID, "LICENSE's notices are ["),
+        (
+            lambda t: t.replace(NOTICE, "Copyright 2026 Someone Else"),
+            LICENCE_ID,
+            "LICENSE's notices",
+        ),
+        (
+            lambda t: t.replace(NOTICE, NOTICE + ". Any Competing Use is also permitted."),
+            LICENCE_ID,
+            "LICENSE's notices",
+        ),
+        (lambda t: t + "\n" + NOTICE + "\n", LICENCE_ID, "LICENSE's notices"),
+        (lambda t: t, "MIT", "pyproject.toml declares the licence 'MIT'"),
+        (lambda t: t, None, "pyproject.toml declares the licence None"),
+    ],
+)
+def test_another_licence_notice_or_reference_is_reported(
+    plant: Callable[[str], str], declared: object, problem: str
+) -> None:
+    problems = licence_problems(plant(licence_text()), declared)
+    assert any(p.startswith(problem) for p in problems), problems
+
+
+def test_the_licence_check_passes_the_text_that_it_holds() -> None:
+    assert licence_problems(licence_text(), LICENCE_ID) == []
+    other = licence_text().replace(NOTICE, "Copyright 2026 Someone")
+    assert licence_problems(other, LICENCE_ID, "Copyright 2026 Someone") == []
 
 
 def private_references(

@@ -2,7 +2,7 @@
 name = "agentic-pr-cost-calculator"
 version = "0.0.0"
 description = "Estimate what an agentic coding pull request cost in model tokens and CI minutes."
-license = "MIT"
+license = "LicenseRef-FCL-1.0-MIT"
 requires-python = ">=3.11"
 
 [tool.ruff]

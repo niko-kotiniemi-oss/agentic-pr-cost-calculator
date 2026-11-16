@@ -1,12 +1,12 @@
 # DR-115: Outside contributions are welcome
 
 - **Type:** process
-- **Status:** accepted
+- **Status:** closed
 - **Decided by:** the owner, 2026-10-18
 - **Requirements:** none
 - **Threats:** T33, T34, T37, T61
 - **Replaces:** none
-- **Closed by:** none
+- **Closed by:** DR-244
 
 ## Context
 

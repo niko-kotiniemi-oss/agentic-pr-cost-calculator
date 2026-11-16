@@ -1,6 +1,6 @@
 # Agentic PR cost calculator
 
-An open-source tool to estimate what a GitHub pull request cost when it was built with an AI coding agent.
+A fair-source tool to estimate what a GitHub pull request cost when it was built with an AI coding agent.
 
 **Status: proposal.** None of the tool's code exists yet. The design is an OpenSpec change under
 [`openspec/changes/`](openspec/changes/), and code starts once it is approved. The folder
@@ -90,4 +90,4 @@ See [`SECURITY.md`](SECURITY.md) for reporting a vulnerability, and [`docs/threa
 
 ## Licence
 
-[MIT](LICENSE).
+The [Fair Core License, version 1.0, with MIT as its future licence](LICENSE) (FCL-1.0-MIT). You may use, copy, change and share the tool for any purpose except a competing commercial product or service, and each version also becomes available under the MIT licence two years after it is published. All of its source is public here. The tool is fair source, not open source. Commits published before this licence took effect stay available under the MIT licence to anyone who has a copy of them. The vendored [Superpowers](vendor/superpowers/) and OpenSpec's generated skills under `.claude/skills/` keep their own MIT licences.

@@ -4,13 +4,13 @@ The assumptions about GitHub: this repository's settings there, and its workflow
 
 ## A7. The repository's settings on GitHub are applied, and stay applied, as the threat model's section on the settings the owner keeps lists them.
 
-- **Rests on it:** R27, T28, T33, T35, T37, T61, T62, T64, T67, T68, T76, T100, T132, T133, T142, DR-072, DR-073, DR-074, DR-075, DR-076, DR-077, DR-078, DR-084, DR-089, DR-114, DR-115, DR-119, DR-122, DR-140, DR-141, DR-144, DR-161, DR-203
+- **Rests on it:** R27, T28, T33, T35, T37, T61, T62, T64, T67, T68, T76, T100, T132, T133, T142, DR-072, DR-073, DR-074, DR-075, DR-076, DR-077, DR-078, DR-084, DR-089, DR-119, DR-122, DR-140, DR-141, DR-144, DR-161, DR-203, DR-243, DR-244
 - **If it is wrong:** Each answer that rests on a setting would fail without any sign: a change could reach `main` without a pull request or `ci`, also from an agent session acting as the owner's account (T62, T64), a release or its tag could change after adopters took it (T67), a workflow that declares no permissions could get a write token (T68), a fork's pull request could run CI before the owner looked at it (T37), two pull requests could take one record's number (T76), a reporter could find no private route (T61), a published release's zip could change after people checked it (T133), and someone could serve another plugin from the address that people added the marketplace by (T142). No test reads a setting on GitHub, so nothing would show that one changed (T100).
 - **Fact:** A ruleset that requires branches to be up to date before merging makes a pull request's CI run on what the default branch holds before the pull request merges.
   - **Relied on:** T76, DR-119
   - **Checked:** not yet: none will, since no test may reach GitHub
 - **Fact:** **Approval for running fork pull request workflows from contributors** is set as the threat model's section on the settings the owner keeps says, and stays so.
-  - **Relied on:** T37, T100, DR-078, DR-115, `docs/threat-model.md`
+  - **Relied on:** T37, T100, DR-078, DR-244, `docs/threat-model.md`
   - **Checked:** not yet: none will, since no test may read a setting on GitHub
 - **Fact:** **The ruleset on `main`** is set as the threat model's section on the settings the owner keeps says, and stays so.
   - **Relied on:** T28, T33, T35, T62, T64, T100, T132, DR-072, DR-084, DR-089, DR-140, `docs/threat-model.md`
@@ -31,7 +31,7 @@ The assumptions about GitHub: this repository's settings there, and its workflow
   - **Relied on:** T68, T100, DR-076, `docs/threat-model.md`
   - **Checked:** not yet: none will, since no test may read a setting on GitHub
 - **Fact:** **Private vulnerability reporting on** is set as the threat model's section on the settings the owner keeps says, and stays so.
-  - **Relied on:** T61, T100, DR-077, DR-114, `docs/threat-model.md`
+  - **Relied on:** T61, T100, DR-077, DR-243, `docs/threat-model.md`
   - **Checked:** not yet: none will, since no test may read a setting on GitHub
 - **Fact:** **The account's and the repository's names kept** is set as the threat model's section on the settings the owner keeps says, and stays so.
   - **Relied on:** T100, T142, DR-203, `docs/threat-model.md`
@@ -42,7 +42,7 @@ The assumptions about GitHub: this repository's settings there, and its workflow
 
 ## A8. Workflows and required checks run when the design expects them to.
 
-- **Rests on it:** R33, R129, T28, T35, T65, T70, T76, DR-043, DR-072, DR-114, DR-119
+- **Rests on it:** R33, R129, T28, T35, T65, T70, T76, DR-043, DR-072, DR-119, DR-243
 - **If it is wrong:** A failed, cancelled or skipped job might not block a merge, so the `ci` check would not stand for the jobs before it (T28, T35). A change of a pull request's base, title or body that sends no event, or whose event carries stale text, would go unchecked until the next event (T70, T65).
 - **Fact:** A required check that never runs never reports, so a pull request that requires it waits for good.
   - **Relied on:** DR-043, DR-072
@@ -57,12 +57,12 @@ The assumptions about GitHub: this repository's settings there, and its workflow
   - **Relied on:** R129, T70
   - **Checked:** not yet: none will, since no test may reach GitHub
 - **Fact:** A pull request's `opened`, `edited`, `reopened` and `synchronize` events carry its current title and body, and a change to the title or body sends one of them.
-  - **Relied on:** R33, T65, DR-114
+  - **Relied on:** R33, T65, DR-243
   - **Checked:** not yet: none will, since no test may reach GitHub; `add-pr-cost-calculator` task 1.14 tests only what this repository does with it
 
 ## A9. GitHub shows text as the checks expect, and text posted on GitHub is public at once.
 
-- **Rests on it:** R21, R33, R97, R98, R128, R134, R176, R198, R200, R210, T26, T52, T61, T65, T73, T79, T81, T125, T126, T145, T147, T151, T165, DR-044, DR-108, DR-114, DR-115, DR-152, DR-195, DR-213, DR-227
+- **Rests on it:** R21, R33, R97, R98, R128, R134, R176, R198, R200, R210, T26, T52, T61, T65, T73, T79, T81, T125, T126, T145, T147, T151, T165, DR-044, DR-108, DR-152, DR-195, DR-213, DR-227, DR-243, DR-244
 - **If it is wrong:** Text shown as code could still render as a link, an image or a mention, and a log line could be read as a workflow command (T26, T52). A decision record could read one way to a reviewer and another way to an agent, or be collapsed and merged unread (T73, T79, T81), and a bug report opened without the form would never meet its privacy checkbox (T61, T65). A spec could read one way to its reviewers and another to an agent (T125), and the check of the specs' form could print a line that CI reads as a command (T126). The README's detail could show in full, so that its short start no longer comes first, or stay out of a reader's reach (T145), and if GitHub showed an HTML comment, or a drawn code block's text, as the raw file holds it, the README's test that refuses them would refuse more than it needs to (T151), and so would the roadmap's (T165). If GitHub showed the root's README on the repository's page where the `.github` folder holds one, the README's test that refuses such a file would refuse more than it needs to (R198, T147).
 - **Fact:** GitHub shows text inside inline code in a comment or a job summary as code, never as a link, an image or a mention.
   - **Relied on:** R21, T26, T52, DR-044
@@ -98,10 +98,10 @@ The assumptions about GitHub: this repository's settings there, and its workflow
   - **Relied on:** R134, T81, DR-108
   - **Checked:** not yet: none will, since no test may reach GitHub
 - **Fact:** Text posted on GitHub, such as a pull request's or an issue's, is public the moment it is posted, before any check can read it.
-  - **Relied on:** R33, T61, T65, DR-114, DR-115
+  - **Relied on:** R33, T61, T65, DR-243, DR-244
   - **Checked:** not yet: none will, since no test may reach GitHub
 - **Fact:** With blank issues turned off, every issue starts from a template, so every bug report meets the form's privacy checkbox.
-  - **Relied on:** T61, DR-115
+  - **Relied on:** T61, DR-244
   - **Checked:** not yet: none will, since no test may reach GitHub
 
 ## A27. Tags and releases can be protected from change.
@@ -206,13 +206,13 @@ The assumptions about GitHub: this repository's settings there, and its workflow
 
 ## A26. Runs for a pull request from a fork get no secrets, and run the code that its author chose.
 
-- **Rests on it:** R27, R34, R68, R201, T37, T58, T63, T95, T147, DR-018, DR-068, DR-078, DR-115, DR-122, DR-156, DR-215
+- **Rests on it:** R27, R34, R68, R201, T37, T58, T63, T95, T147, DR-018, DR-068, DR-078, DR-122, DR-156, DR-215, DR-244
 - **If it is wrong:** A secret added later could be read by a fork's pull request (T37), and pull requests from forks would get no report if their merge's push ran elsewhere. If GitHub did not run an action pinned to a commit that only a fork holds, or serve one under this repository's address, the defences against such commits, the README's refusal of a commit's ID among them, would be more than needed (T58, T63, T147), and if it served under a repository's address nothing else that others write, the README's test would refuse more addresses there than it needs to (R201, T147).
 - **Fact:** Apart from `GITHUB_TOKEN`, GitHub passes no secrets to a run that a pull request from a fork triggers.
   - **Relied on:** T37, DR-078
   - **Checked:** documented: <https://github.com/github/docs/blob/33b1f4a6fec2d9b6fd3d374afa56bcd9f0875b57/data/reusables/actions/forked-secrets.md>, read 2026-11-01
 - **Fact:** A pull request from a fork runs this repository's CI with code that its author chose.
-  - **Relied on:** T37, DR-078, DR-115
+  - **Relied on:** T37, DR-078, DR-244
   - **Checked:** not yet: none will, since no test may reach GitHub
 - **Fact:** The push that merging a fork's pull request makes belongs to the base repository and runs its workflows there.
   - **Relied on:** R68, DR-018
@@ -226,7 +226,7 @@ The assumptions about GitHub: this repository's settings there, and its workflow
 
 ## A28. GitHub, and this repository's place on it, stay as they are.
 
-- **Rests on it:** R24, R34, T63, T142, T147, T148, DR-068, DR-090, DR-092, DR-096, DR-114, DR-118, DR-132, DR-147, DR-157, DR-203, DR-217
+- **Rests on it:** R24, R34, T63, T142, T147, T148, DR-068, DR-090, DR-092, DR-096, DR-118, DR-132, DR-147, DR-157, DR-203, DR-217, DR-243
 - **If it is wrong:** The check of pins could not tell a tagged commit from one that only a fork holds (T63). A change in GitHub's API would skew the report in adopters' CI while every test passes, and a repository made private or renamed would break the adopters who call its workflow, and would leave the people who added the marketplace, and the README's addresses, on an address that someone else can take (T142, T147, T148).
 - **Fact:** CI can read the source of each action and container image that a workflow uses, to list the tags that name a pin.
   - **Relied on:** R34, T63, DR-068
@@ -235,7 +235,7 @@ The assumptions about GitHub: this repository's settings there, and its workflow
   - **Relied on:** DR-090, DR-092, DR-147
   - **Checked:** not yet: `add-pr-cost-calculator` task 7.1 meets it once, at the merge of that task's own pull request
 - **Fact:** This repository stays public, so any repository's workflow can call its reusable workflow and check out its code, and its whole history gives CI nothing it could not already read.
-  - **Relied on:** R24, DR-114, DR-132, DR-157, DR-217
+  - **Relied on:** R24, DR-132, DR-157, DR-217, DR-243
   - **Checked:** not yet: none will, since no test may reach GitHub
 - **Fact:** Renaming this repository would break adopters' references to its reusable workflow, since GitHub's redirect for a renamed repository is taken not to carry `uses:` references.
   - **Relied on:** DR-096, DR-118
@@ -246,13 +246,13 @@ The assumptions about GitHub: this repository's settings there, and its workflow
 
 ## A35. GitHub enforces the permissions a workflow declares, gives runs from forks a read-only token, and gives a reusable workflow its caller's event, as its documentation says.
 
-- **Rests on it:** R24, R68, T23, T24, T29, T37, DR-005, DR-016, DR-018, DR-061, DR-063, DR-067, DR-078, DR-115, DR-132
+- **Rests on it:** R24, R68, T23, T24, T29, T37, DR-005, DR-016, DR-018, DR-061, DR-063, DR-067, DR-078, DR-132, DR-244
 - **If it is wrong:** A token could hold more than the report declares, as through an adopter's broad grant (T24, T29), a fork's pull request could write through CI (T37), and the report's own check of the event would read the wrong event, so it could refuse every merge or let another event through (T23).
 - **Fact:** GitHub enforces the permissions that a workflow declares, setting each one that it does not declare to `none`, and a reusable workflow can narrow, but not widen, the permissions that its caller passes it.
   - **Relied on:** R24, T24, T29, DR-016, DR-063, DR-132
   - **Checked:** documented: <https://github.com/github/docs/blob/33b1f4a6fec2d9b6fd3d374afa56bcd9f0875b57/data/reusables/actions/github-token-scope-descriptions.md>, <https://github.com/github/docs/blob/33b1f4a6fec2d9b6fd3d374afa56bcd9f0875b57/content/actions/reference/workflows-and-actions/reusing-workflow-configurations.md>, read 2026-11-01
 - **Fact:** A workflow run for a pull request from a fork gets a `GITHUB_TOKEN` with read-only permissions.
-  - **Relied on:** T37, DR-018, DR-067, DR-078, DR-115
+  - **Relied on:** T37, DR-018, DR-067, DR-078, DR-244
   - **Checked:** documented: <https://github.com/github/docs/blob/33b1f4a6fec2d9b6fd3d374afa56bcd9f0875b57/data/reusables/developer-site/pull_request_forked_repos_link.md>, read 2026-11-01
 - **Fact:** A reusable workflow's `github` context is always its caller's, so it names the event that triggered the caller.
   - **Relied on:** R68, T23, T29, DR-005, DR-061, DR-132
