@@ -54,6 +54,7 @@ class Session:
             **session_free_environment(),
             "GIT_CONFIG_NOSYSTEM": "1",
             "HOME": str(root),
+            "XDG_CONFIG_HOME": str(root / "no-config-home"),
             "GIT_EDITOR": "false",
         }
         git(self.repo, self.env, "init", "-q", "-b", "main")
@@ -112,7 +113,7 @@ class Session:
         return message_id
 
     def hook(
-        self, event: str, cwd: Path | None = None, **extra: Any
+        self, event: str, cwd: Path | None = None, run_in: Path | None = None, **extra: Any
     ) -> subprocess.CompletedProcess[str]:
         payload = {
             "session_id": "planted-session-identifier",
@@ -124,6 +125,7 @@ class Session:
         done = subprocess.run(
             [sys.executable, "-I", str(CAPTURE)],
             input=json.dumps(payload),
+            cwd=run_in,
             env=self.env,
             capture_output=True,
             text=True,
@@ -889,3 +891,55 @@ def test_a_new_file_is_seen_whatever_the_person_shows_of_untracked_files(
     session.change()
     assert session.commit() == 0
     assert len(session.ledger_files()) == 1
+
+
+# ---- Found by the narrow review of the lanes' fixes ----
+
+
+def test_a_repositorys_value_never_reads_as_a_global_one(session: Session) -> None:
+    session.global_config.write_text("[user]\n\tname = Test\n\temail = test@example.invalid\n")
+    with (session.repo / ".git" / "config").open("a") as out:
+        out.write('[pr-cost-skeleton]\n\tcapture = "x\\nglobal\\ttrue"\n')
+    session.call()
+    session.hook("Stop")
+    assert not session.store.exists()
+
+
+@pytest.mark.parametrize("value", ["2", "-1"])
+def test_a_number_other_than_zero_opts_in_as_git_reads_it(tmp_path: Path, value: str) -> None:
+    session = Session(tmp_path, opt_in=False)
+    with session.global_config.open("a") as out:
+        out.write(f"[pr-cost-skeleton]\n\tcapture = {value}\n")
+    session.call()
+    session.hook("Stop")
+    assert session.waiting() == 1
+
+
+@pytest.mark.parametrize(
+    "command",
+    [
+        "cd - && git add a.txt && git commit -m 'x'",
+        "git add ~/a && git commit -m 'x'",
+        "git add a\r&& git commit -m 'x'",
+    ],
+)
+def test_a_form_left_out_is_not_recognised(session: Session, command: str) -> None:
+    session.call()
+    session.hook("Stop")
+    session.bash("PreToolUse", command)
+    assert session.log()[-1]["staged"] == "not_recognised"
+
+
+def test_a_relative_folder_in_a_line_is_not_kept_from_where_capture_runs(session: Session) -> None:
+    session.call(cwd=Path("clone"))
+    session.hook("Stop", run_in=session.root)
+    assert session.waiting() == 0
+
+
+def test_the_store_keeps_no_command_text(session: Session) -> None:
+    session.call()
+    session.hook("Stop")
+    session.change()
+    command = f"cd {session.repo} && git add change.txt && git commit -m 'private words here'"
+    session.bash("PreToolUse", command)
+    assert "private words" not in session.store.read_text()

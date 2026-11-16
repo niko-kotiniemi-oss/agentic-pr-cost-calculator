@@ -66,6 +66,17 @@ The four lanes, `/simplify`, `/security-review`, `/code-review` and `/verify`, r
 - The shape recorder refuses an output named like a transcript, and the check for a missing shape reads task 1.36 as the other checks do and fails when it cannot find it.
 - The tests of the report and the zip use the repository's shared isolated git environment.
 
+## Fixes after the narrow review of those fixes
+
+One `/code-review` read `a773eca` alone; its findings are a comment on the pull request. Each fix was written test-first, and the three points of the fixes that no test held were each undone once to see a new test fail.
+
+- The opt-in is read with git's values separated by NUL, so a repository's value that holds a line break is never read as a global one, and a number other than zero counts as true, as git reads it; a key written with no value is not taken.
+- Calls made in a worktree are kept by no repository, which decision 18 now says.
+- The workflow's check is an allowlist of the keys that the designed workflow uses, at each level, and a step's `env` may hold the token alone.
+- The capture tests shut out the developer's own XDG git configuration.
+- The store keeps the SHA-256 of the staged command, not its text; only the hook before a command resolves it; a carriage return is refused.
+- The pages say that `XDG_CONFIG_HOME` and `HOME` are guarded against should A5 not hold.
+
 ## Left for after the build
 
 - The threat review at implementation, which rates each of T185 to T194 again against the code.

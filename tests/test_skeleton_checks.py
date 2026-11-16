@@ -124,6 +124,10 @@ EVENT_REFS = {"${{ github.event.before }}": "before", "${{ github.event.after }}
 CHECKOUT_INPUTS = frozenset({"ref", "path", "persist-credentials"})
 REPORT_COMMAND = "python3 -I after/skeleton/report.py before after"
 FULL_COMMIT = re.compile(r"[0-9a-f]{40}")
+# The keys that the designed workflow uses, at each level; any other is refused.
+WORKFLOW_KEYS = frozenset({"name", "on", True, "permissions", "jobs"})
+JOB_KEYS = frozenset({"runs-on", "timeout-minutes", "steps"})
+STEP_KEYS = frozenset({"name", "uses", "if", "with", "env", "run"})
 
 
 def checkout_problems(where: str, step: dict[str, Any]) -> list[str]:
@@ -159,11 +163,15 @@ def workflow_problems(text: str) -> list[str]:
         problems.append(f"the workflow runs on another event: {event!r}")
     if data.get("permissions") != {"contents": "read", "pull-requests": "write"}:
         problems.append(f"the workflow asks for other permissions: {data.get('permissions')!r}")
+    for key in set(data) - WORKFLOW_KEYS:
+        problems.append(f"the workflow sets a key it does not need: {key!r}")
     if "defaults" in data:
         problems.append("the workflow sets defaults, which can change how a command runs")
     for name, job in data["jobs"].items():
         if "permissions" in job:
             problems.append(f"job {name} asks for permissions of its own")
+        for key in set(job) - JOB_KEYS:
+            problems.append(f"job {name} sets a key it does not need: {key!r}")
         if job.get("runs-on") != "ubuntu-latest":
             problems.append(f"job {name} runs on another runner: {job.get('runs-on')!r}")
         for key in ("defaults", "container", "services"):
@@ -175,6 +183,10 @@ def workflow_problems(text: str) -> list[str]:
             where = f"job {name}, step {number}"
             if "uses" in step:
                 problems += checkout_problems(where, step)
+            for key in set(step) - STEP_KEYS:
+                problems.append(f"{where} sets a key it does not need: {key!r}")
+            if "env" in step and set(step["env"] or {}) != {"GITHUB_TOKEN"}:
+                problems.append(f"{where} sets env other than the token: {step['env']!r}")
             if "shell" in step:
                 problems.append(f"{where} sets a shell, which can run more than its command")
             run = str(step.get("run", ""))
@@ -391,7 +403,7 @@ jobs:
           path: after
           persist-credentials: false
       - env:
-          AFTER: ${{{{ github.event.after }}}}
+          GITHUB_TOKEN: ${{{{ github.token }}}}
         run: python3 -I after/skeleton/report.py before after
 """
 
@@ -431,7 +443,24 @@ def test_the_workflow_as_designed_passes() -> None:
         ("    timeout-minutes: 5\n", "", "timeout-minutes"),
         ("path: after\n", "path: after\n          repository: someone/else\n", "other inputs"),
         ("run: python3", "run: echo '${{ toJSON(secrets) }}'; python3", "secret"),
-        ("AFTER: ${{ github.event.after }}", "AFTER: ${{ secrets['PAT'] }}", "secret"),
+        ("GITHUB_TOKEN: ${{ github.token }}", "GITHUB_TOKEN: ${{ secrets['PAT'] }}", "secret"),
+        (
+            "GITHUB_TOKEN: ${{ github.token }}",
+            "GITHUB_TOKEN: x\n          GITHUB_API_URL: x",
+            "env",
+        ),
+        ("jobs:\n", "env:\n  BASH_ENV: x\njobs:\n", "key"),
+        (
+            "    timeout-minutes: 5\n",
+            "    timeout-minutes: 5\n    env:\n      BASH_ENV: x\n",
+            "key",
+        ),
+        ("        run: python3", "        working-directory: x\n        run: python3", "key"),
+        (
+            "jobs:\n",
+            "jobs:\n  other:\n    uses: someone/else/.github/workflows/x.yml@main\n",
+            "key",
+        ),
         ("report.py before after", "report.py after before", "report"),
         ("path: before\n", "path: old\n", "path"),
         (

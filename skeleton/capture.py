@@ -77,27 +77,40 @@ def switch_on(repo: Path) -> bool:
 
 
 def opted_in(repo: Path) -> bool:
-    """The skeleton's opt-in, from the person's global files alone (R235): read without the
-    session's git variables or `XDG_CONFIG_HOME`, which a repository's settings could set, and
-    without asking git for a boolean, so that a repository's own value is never read as one."""
+    """The skeleton's opt-in, from the person's global files alone (R235). It is read without
+    the session's git variables or `XDG_CONFIG_HOME`, should a repository's settings reach them
+    (A5), with each value whole, so that a repository's own value is never read as a global
+    one, and without asking git for a boolean, which one bad value anywhere would stop. A key
+    written with no value, which git reads as true, is not taken: it fails toward not recording."""
     environment = {
         key: value
         for key, value in os.environ.items()
         if not key.startswith("GIT_") and key != "XDG_CONFIG_HOME"
     }
     done = subprocess.run(
-        ["git", "config", "--show-scope", "--get-all", OPT_IN],
+        ["git", "config", "--null", "--show-scope", "--get-all", OPT_IN],
         cwd=repo,
         env=environment,
         capture_output=True,
         text=True,
     )
+    fields = done.stdout.split("\0")
     values = [
         value.strip().lower()
-        for scope, _, value in (line.partition("\t") for line in done.stdout.splitlines())
+        for scope, value in zip(fields[0::2], fields[1::2], strict=False)
         if scope == "global"
     ]
-    return bool(values) and values[-1] in ("true", "yes", "on", "1")
+    return bool(values) and is_true(values[-1])
+
+
+def is_true(value: str) -> bool:
+    """Whether git reads a written value as true."""
+    if value in ("true", "yes", "on"):
+        return True
+    try:
+        return int(value) != 0
+    except ValueError:
+        return False
 
 
 # ---- The commands it recognises (R240) ----
@@ -148,7 +161,7 @@ def recognised(command: str, cwd: Path) -> Commit | None:
     # own text is left out of the search for a message that is not quoted.
     unquoted = re.sub(r"'[^']*'|\"[^\"]*\"", "''", command)
     if (
-        any(c in command for c in "$`\\\n")
+        any(c in command for c in "$`\\\n\r")
         or re.search(r"(^|\s)-m\s+(?![\s'\"])", unquoted)
         # A word that the shell would expand, which git would read as a pathspec of its own.
         or re.search(r"[*?\[{]|(^|\s)~", unquoted)
@@ -347,7 +360,9 @@ def stage(repo: Path, commit: Commit, store: dict[str, Any], command: str) -> st
     if git(repo, "add", "--", relative).returncode != 0:
         (repo / relative).unlink()
         return "add_failed"
-    store["staged"] = {"path": relative, "keys": sorted(store["waiting"]), "command": command}
+    # The command's hash, not its text, which may hold the commit's message.
+    digest = hashlib.sha256(command.encode()).hexdigest()
+    store["staged"] = {"path": relative, "keys": sorted(store["waiting"]), "command": digest}
     return "staged"
 
 
@@ -368,6 +383,11 @@ def settle(repo: Path, store: dict[str, Any]) -> str:
 def own_hash() -> str:
     """The SHA-256 of this script as it runs, so that the run can tell which copy ran."""
     return hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
+
+
+def ours(repo: Path, commit: Commit) -> bool:
+    """Whether the commit and each of its adds are in this repository."""
+    return all(toplevel(f) == repo for f in [commit.folder, *(f for f, _ in commit.adds)])
 
 
 def handle(repo: Path, payload: dict[str, Any], event: str, commit: Commit | None) -> None:
@@ -396,10 +416,8 @@ def handle(repo: Path, payload: dict[str, Any], event: str, commit: Commit | Non
             raise
         read_calls(transcripts(payload), repo, store, reading)
         command = str((payload.get("tool_input") or {}).get("command", ""))
-        ours = commit is not None and all(
-            toplevel(folder) == repo for folder in [commit.folder, *(f for f, _ in commit.adds)]
-        )
-        if event == "PreToolUse" and ours and commit:
+        digest = hashlib.sha256(command.encode()).hexdigest()
+        if event == "PreToolUse" and commit and ours(repo, commit):
             if store["staged"]:
                 settle(repo, store)
             entry["staged"] = stage(repo, commit, store, command)
@@ -408,7 +426,7 @@ def handle(repo: Path, payload: dict[str, Any], event: str, commit: Commit | Non
         # After the command, the hook's folder may be where the command moved to (A4), so the
         # command is matched as written, not resolved again.
         elif event in ("PostToolUse", "PostToolUseFailure") and (
-            store["staged"] and store["staged"].get("command") == command
+            store["staged"] and store["staged"].get("command") == digest
         ):
             entry["staged"] = settle(repo, store)
         save(state / "store.json", json.dumps(store, sort_keys=True))
@@ -447,7 +465,8 @@ def run(raw: str) -> None:
             return
         if not re.search(r"\bgit\b", command):
             return
-        commit = recognised(command, cwd)
+        # Only the hook before a command resolves it; the one after matches it as written.
+        commit = recognised(command, cwd) if event == "PreToolUse" else None
     for repo in repositories(cwd):
         handle(repo, payload, str(event), commit)
 
