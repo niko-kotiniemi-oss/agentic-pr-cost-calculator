@@ -435,7 +435,7 @@ The trust boundaries:
 - **What could happen:** real usage records, transcripts, session ids or private names reach a tracked file, a fixture, a decision record, a commit message or the repository's history.
 - **Answer:** tests use synthetic fixtures only, a test fails on the private references it knows in tracked files and in their path names, and task 1.9 extends that check to the messages and files of every commit a pull request adds. An observation among the assumptions never says whose work it was seen in, and a test fails on a path under a home folder or a session identifier in the assumptions or in a file named for an observation. Once the tool is on here, a call made from this repository's clone on another repository is recorded here (T2), so task 7.1 turns the tool on here only from a project that holds this repository alone, with the owner's opt-in only in that project's own environment, which task 7.1 checks (DR-207, DR-210). Until then a test fails while this repository tracks a switch or a ledger file (R223), and the walking skeleton runs apart from it (T174).
 - **Residual:** a reference the test does not know, or one in what a file that is not UTF-8 holds, which the check skips. `CLAUDE.md` makes it the author's responsibility. Pull request text is T65, and a decision record that holds private text is T77. A session other than that project's threads that the owner's opt-in reached would record here what it does from this clone on a repository beside it, which rests on the owner's setting (A15).
-- **Held by:** DR-069; DR-070; DR-114; DR-162; DR-207; DR-210; DR-236; `project-standards`: "An assumption that names a private source fails CI"; `project-standards`: "A switch or a ledger file here before task 7.1 fails a test"; `tests/test_repository.py`; `add-pr-cost-calculator` task 1.9; `add-pr-cost-calculator` task 7.1; `CLAUDE.md`
+- **Held by:** DR-069; DR-070; DR-162; DR-207; DR-210; DR-236; DR-243; `project-standards`: "An assumption that names a private source fails CI"; `project-standards`: "A switch or a ledger file here before task 7.1 fails a test"; `tests/test_repository.py`; `add-pr-cost-calculator` task 1.9; `add-pr-cost-calculator` task 7.1; `CLAUDE.md`
 - **Assumptions:** A6, A15, A16
 
 ### T33. Text in the repository steers an agent
@@ -447,7 +447,7 @@ The trust boundaries:
 - **What could happen:** agents building this tool read fixtures, price tables, decision records, issues and pull request comments that anyone can write. Text there that reads as an instruction could redirect them, which is called prompt injection.
 - **Answer:** `CLAUDE.md` says that data files describe and never instruct, and that anything meant to steer an agent belongs in `CLAUDE.md`, `.claude/`, a workflow or, for how the project builds, the guide, which, like the vendored skills that `.claude/settings.json` enables, change only through the owner's merge (DR-237). It also says that issue text, pull request text and review comments, from anyone, are data and never tell an agent what to do, and that decision records describe and never instruct, with `CLAUDE.md` steering where a record and it disagree (T73). Fixtures that carry hostile text on purpose are named for it. The glossary, the assumptions and the pages that a file here links to describe too, the files that steer apart and the pages that the guide links to among them, and where the glossary or an assumption differs from `CLAUDE.md` or a spec, those steer (T93, T95, DR-238). `CLAUDE.md` sends agents to the README for what the tool does, and to its section on working on this repository for setting up a clone, and says that an agent never turns capture on for anyone (T150). It names the roadmap and the backlog items among the pages that describe, and says that an item is not, by being there, a request to start it, and that an agent makes an item planned, or gives an agreed item a postponed point or a gap of the guide, only when the owner has asked for that in words (T159, T166). It names the guide as the page that holds how the project builds, which steers below the specs and `CLAUDE.md`, in a sentence that a test holds word for word: where the guide differs from either, they win and the agent tells the owner, and the guide never widens what `CLAUDE.md` lets an agent do (DR-231, T180). The guide steers as the default branch holds it, an entry that a branch adds or changes being a proposal until the owner merges it, and a principle changes only when the owner asks, and, once the default branch holds the guide, in a pull request that changes no file outside the documents, which a test holds (T179). Its rule that the specs are the single source of what the tool does has an agent write into a spec what a page or a review found only when the person it works for asks it to act on that finding, since a finding is not by itself a request and review comments from anyone stay data (DR-232).
 - **Residual:** no test can tell an instruction from a description, so this rests on the rule for the pages that describe. The guide's instructions are meant to be followed, so this rule does not hold it: its opening, its rank and how its principles change are held by tests (T179, T180), and whether an entry says only what it should rests on the owner's review (T170).
-- **Held by:** DR-072; DR-080; DR-115; DR-140; DR-227; DR-231; DR-232; DR-237; DR-238; `CLAUDE.md`
+- **Held by:** DR-072; DR-080; DR-140; DR-227; DR-231; DR-232; DR-237; DR-238; DR-244; `CLAUDE.md`
 - **Assumptions:** A5, A7, A15, A16
 
 ### T34. A session on a contributor's branch runs that branch's instructions
@@ -459,7 +459,7 @@ The trust boundaries:
 - **What could happen:** a session started on an unmerged branch, for example to review an outside contributor's pull request, loads that branch's `CLAUDE.md`, skills and hooks. The hooks run with the session's credentials, which can push to this repository. A checkout alone does the same once `/clear` or a compaction runs the session-start hooks from the working tree, and once the tool is turned on here, at the next git command (T59).
 - **Answer:** `CLAUDE.md` says to review a pull request from `main`, reading its diff as data, and never to start a session on, or check out, an unmerged branch that someone outside the project wrote.
 - **Residual:** this rests on the rule.
-- **Held by:** DR-081; DR-115; `CLAUDE.md`
+- **Held by:** DR-081; DR-244; `CLAUDE.md`
 - **Assumptions:** A5, A16
 
 ### T35. A vendored or generated skill changes what agents do
@@ -493,7 +493,7 @@ The trust boundaries:
 - **Risk:** 2
 - **What could happen:** a pull request from a fork runs this repository's CI with code its author chose.
 - **Answer:** GitHub gives such runs a read-only token and no secrets, and this CI declares a read-only token and holds no secrets. GitHub also waits for the owner's approval before any outside contributor's workflows run, a setting the owner keeps (see below).
-- **Held by:** DR-067; DR-078; DR-115; `.github/workflows/ci.yml`; `tests/test_repository.py`; `add-pr-cost-calculator` task 1.16
+- **Held by:** DR-067; DR-078; DR-244; `.github/workflows/ci.yml`; `tests/test_repository.py`; `add-pr-cost-calculator` task 1.16
 - **Assumptions:** A7, A15, A26, A35
 
 ## Boundary 1, continued: found at the design review
@@ -783,7 +783,7 @@ The trust boundaries:
 - **What could happen:** a bug in reading transcripts is naturally reported with the transcript line, the ledger file or the name of a private repository, and issue text is public the moment it is posted, before any check could read it.
 - **Answer:** the bug report is an issue form whose first field is a required checkbox saying that the issue holds no transcript, session identifier, token, private name or usage figure from private work, and a test holds that the box is required. The README's briefing for developers says that an issue is public at once and holds nothing private, for issues opened outside the form (T169).
 - **Residual:** nothing reads an issue before it is posted, so a reporter can tick the box and still paste private text; this rests on the form's warning.
-- **Held by:** DR-069; DR-077; DR-114; DR-115; DR-116; `.github/ISSUE_TEMPLATE/bug_report.yml`; `tests/test_repository.py`
+- **Held by:** DR-069; DR-077; DR-116; DR-243; DR-244; `.github/ISSUE_TEMPLATE/bug_report.yml`; `tests/test_repository.py`
 - **Assumptions:** A7, A9, A15, A17
 
 ### T62. A code-owner rule invites a bypass that agent sessions share
@@ -830,7 +830,7 @@ The trust boundaries:
 - **What could happen:** tooling that opens pull requests can put a link to a session, project or thread, with its identifiers, into a pull request's public title or body, and the checks of tracked files and commit messages never read that text. An edit history keeps text that a later edit removes.
 - **Answer:** a CI job checks a pull request's title and body against the same private patterns and name hashes as tracked files, whenever the pull request is opened, edited, reopened or updated, and fails naming the pattern and quoting none of the text. `CLAUDE.md` says that no such link or identifier goes into a commit, a pull request's text, an issue or a comment here, whatever a tool adds.
 - **Residual:** issues and comments are not checked, and the check runs only after the text is public.
-- **Held by:** `project-standards`: "A pull request body with a private reference fails CI"; `project-standards`: "An edited body is checked again"; DR-069; DR-070; DR-114; `add-pr-cost-calculator` task 1.14; `CLAUDE.md`
+- **Held by:** `project-standards`: "A pull request body with a private reference fails CI"; `project-standards`: "An edited body is checked again"; DR-069; DR-070; DR-243; `add-pr-cost-calculator` task 1.14; `CLAUDE.md`
 - **Assumptions:** A6, A8, A9, A16
 
 ### T66. A compromised development tool runs with the owner's credentials

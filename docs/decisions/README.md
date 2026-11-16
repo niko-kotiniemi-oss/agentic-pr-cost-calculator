@@ -104,7 +104,7 @@ A record that the default branch holds is accepted, and from then on it changes 
 | [DR-096](DR-096-semantic-versions.md) | Versions are semantic | process | accepted | the owner, 2026-10-20 | R27, R71, R123 | T44, T53, T56 |
 | [DR-097](DR-097-bill-of-materials.md) | Each release carries a bill of materials | process | accepted | the change `add-pr-cost-calculator`, as the owner asked on 2026-10-20 | R28, R72, R99 | T69 |
 | [DR-098](DR-098-changelog-by-hand.md) | The changelog is kept by hand | process | accepted | the change `add-pr-cost-calculator` | none | none |
-| [DR-099](DR-099-mit-licence.md) | The licence is MIT | process | accepted | the owner, 2026-10-17 | R28 | none |
+| [DR-099](DR-099-mit-licence.md) | The licence is MIT | process | closed | the owner, 2026-10-17 | R28 | none |
 | [DR-100](DR-100-requirements-register.md) | A register lists every requirement with its kind | process | accepted | the owner, 2026-10-20 | R29, R73, R100, R130 | none |
 | [DR-101](DR-101-feature-pages.md) | Each feature has a page | process | accepted | the owner, 2026-10-20 and 2026-10-25 | R29, R73, R100 | none |
 | [DR-102](DR-102-how-it-works-page.md) | A page explains how the tool works as a whole | process | accepted | the owner, 2026-10-20 | R29, R101 | T57 |
@@ -119,8 +119,8 @@ A record that the default branch holds is accepted, and from then on it changes 
 | [DR-111](DR-111-major-updates-wait.md) | Major updates wait for the owner's approval | technical | accepted | the change `add-pr-cost-calculator`, as the owner asked on 2026-10-20 | R26 | T64 |
 | [DR-112](DR-112-likelihood-with-the-answer-in-place.md) | Likelihood is rated with the answer in place | process | accepted | the change `add-pr-cost-calculator` | none | none |
 | [DR-113](DR-113-requirements-500-characters.md) | Each requirement is 500 characters or fewer | process | closed | the owner, 2026-10-26 | none | none |
-| [DR-114](DR-114-open-source.md) | The tool is open source, in a public repository | scope | accepted | the owner, 2026-10-17 | none | T32, T61, T65 |
-| [DR-115](DR-115-outside-contributions-welcome.md) | Outside contributions are welcome | process | accepted | the owner, 2026-10-18 | none | T33, T34, T37, T61 |
+| [DR-114](DR-114-open-source.md) | The tool is open source, in a public repository | scope | closed | the owner, 2026-10-17 | none | T32, T61, T65 |
+| [DR-115](DR-115-outside-contributions-welcome.md) | Outside contributions are welcome | process | closed | the owner, 2026-10-18 | none | T33, T34, T37, T61 |
 | [DR-116](DR-116-open-source-files.md) | The repository carries the usual open-source files | process | accepted | the change `add-pr-cost-calculator`, as the owner asked on 2026-10-20 | none | T61, T62 |
 | [DR-117](DR-117-nothing-undocumented.md) | The tool does nothing its documentation leaves out | scope | accepted | the owner, 2026-10-20 | R29, R30, R101 | T57 |
 | [DR-118](DR-118-tool-name.md) | The tool is named `agentic-pr-cost-calculator` | scope | accepted | the owner, 2026-10-17 | none | none |
@@ -247,3 +247,6 @@ A record that the default branch holds is accepted, and from then on it changes 
 | [DR-239](DR-239-agreed-items-widened-only-on-owner-words.md) | An agreed item gains a postponed point or a gap of the guide only on the owner's words | process | accepted | the change `add-pr-cost-calculator` | R231 | T166 |
 | [DR-240](DR-240-guide-steers-from-the-default-branch.md) | The guide steers as the default branch holds it, and a principle of it changes alone, when the owner asks | process | accepted | the change `add-pr-cost-calculator`, as the owner asked on 2026-11-14 | R228 | T179, T183 |
 | [DR-241](DR-241-where-the-guide-stands-held-true.md) | Where the guide says the project stands is held true, before the build and at each release | process | accepted | the change `add-pr-cost-calculator`, as the owner asked on 2026-10-29 and 2026-11-14 | R226, R227, R230, R233 | T170, T177, T182 |
+| [DR-242](DR-242-fair-core-licence.md) | The licence is the Fair Core License, with MIT as its future licence | process | accepted | the owner, 2026-11-16 | R28 | none |
+| [DR-243](DR-243-fair-source-in-a-public-repository.md) | The tool is fair source, in a public repository | scope | accepted | the owner, 2026-11-16 | none | T32, T61, T65 |
+| [DR-244](DR-244-outside-contributions-wait-for-a-contributor-agreement.md) | Outside contributions are welcome, and one merges only once its author has agreed to a contributor licence agreement | process | accepted | the change `add-pr-cost-calculator`, as the owner asked on 2026-11-16 | none | T33, T34, T37, T61 |

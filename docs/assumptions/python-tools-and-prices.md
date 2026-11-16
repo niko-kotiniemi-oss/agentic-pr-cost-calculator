@@ -209,13 +209,13 @@ The assumptions about Python, about the development tools of this repository, an
 
 ### A67. The licences allow what is kept here.
 
-- **Rests on it:** R28, DR-099
+- **Rests on it:** R28, DR-242
 - **If it is wrong:** A contribution's licence could be disputed, and the repository would hold files that it may not redistribute as they stand.
-- **Fact:** A sentence in `CONTRIBUTING.md` is enough to license each contribution under MIT.
-  - **Relied on:** R28, DR-099
+- **Fact:** A sentence in `CONTRIBUTING.md` is enough to license each contribution under the repository's licence, the Fair Core License with MIT as its future licence.
+  - **Relied on:** R28, DR-242
   - **Checked:** not yet: none will, since it is a question of law, which no test can settle
 - **Fact:** The licences of the vendored Superpowers and of OpenSpec, whose generated skills are kept here, allow them to be redistributed in this repository.
-  - **Relied on:** R28, DR-099
+  - **Relied on:** R28, DR-242
   - **Checked:** not yet: none will, since it is a question of law, which no test can settle
 
 ## Prices
