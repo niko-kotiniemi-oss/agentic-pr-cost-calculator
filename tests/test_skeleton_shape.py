@@ -81,7 +81,8 @@ def test_the_shape_holds_names_and_types_at_the_kept_levels_only(tmp_path: Path)
         assert planted not in text and planted not in done.stderr
     entries = json.loads(text)
     paths = {(entry["path"], entry["type"]) for entry in entries}
-    assert ("wireToolInputs", "object") in paths
+    assert not any(path.startswith("wireToolInputs") for path, _ in paths)
+    assert "1 other top-level names left out" in done.stderr
     assert ("toolUseResult", "object") in paths
     assert ("message.content", "array") in paths
     assert ("message.content", "string") in paths
@@ -99,7 +100,12 @@ def test_the_shape_holds_names_and_types_at_the_kept_levels_only(tmp_path: Path)
 
 
 def test_it_writes_nothing_when_its_own_check_fails(tmp_path: Path) -> None:
-    lines = [*planted_lines(), {IDENTIFIER: 1}, {"x" * 41: 1}, {"a-b": 1}]
+    lines = [
+        *planted_lines(),
+        {"message": {IDENTIFIER: 1}},
+        {"message": {"x" * 41: 1}},
+        {"message": {"usage": {"a-b": 1}}},
+    ]
     for number, line in enumerate(lines[-3:]):
         transcript = write_transcript(tmp_path / f"t{number}.jsonl", [lines[0], line])
         out = tmp_path / f"shape{number}.json"

@@ -195,9 +195,12 @@ def repository_with_skeleton(root: Path) -> tuple[Path, dict[str, str]]:
 def test_two_builds_of_one_commit_give_the_same_zip(tmp_path: Path) -> None:
     repo, env = repository_with_skeleton(tmp_path)
     outputs = []
+    commit = subprocess.run(
+        ["git", "rev-parse", "HEAD"], cwd=repo, env=env, capture_output=True, text=True, check=True
+    ).stdout.strip()
     for name in ("one.zip", "two.zip"):
         done = subprocess.run(
-            [sys.executable, "-I", str(SKELETON / "build_zip.py"), "HEAD", str(tmp_path / name)],
+            [sys.executable, "-I", str(SKELETON / "build_zip.py"), commit, str(tmp_path / name)],
             cwd=repo,
             env=env,
             capture_output=True,
@@ -207,9 +210,12 @@ def test_two_builds_of_one_commit_give_the_same_zip(tmp_path: Path) -> None:
         outputs.append(done.stdout)
     one, two = (tmp_path / "one.zip").read_bytes(), (tmp_path / "two.zip").read_bytes()
     assert one == two
-    assert outputs[0] == outputs[1] and len(outputs[0].strip()) == 64
+    assert outputs[0] == outputs[1]
+    named, digest = outputs[0].split()
+    assert named == commit and len(digest) == 64
     with zipfile.ZipFile(tmp_path / "one.zip") as built:
         assert zip_problems(built.namelist()) == []
+        assert all(info.compress_type == zipfile.ZIP_STORED for info in built.infolist())
         assert built.read("capture.py") == (SKELETON / "capture.py").read_bytes()
         assert json.loads(built.read(".claude-plugin/plugin.json")) == read("plugin.json")
         assert json.loads(built.read("hooks/hooks.json")) == read("hooks.json")
@@ -229,3 +235,17 @@ def test_a_commit_that_does_not_exist_builds_nothing(tmp_path: Path) -> None:
     repo, env = repository_with_skeleton(tmp_path)
     with pytest.raises(subprocess.CalledProcessError):
         build_zip.build(repo, "no-such-commit", env)
+
+
+@pytest.mark.parametrize("revision", ["HEAD", "main", "abc1234"])
+def test_a_revision_that_can_move_or_is_short_is_refused(tmp_path: Path, revision: str) -> None:
+    repo, env = repository_with_skeleton(tmp_path)
+    done = subprocess.run(
+        [sys.executable, "-I", str(SKELETON / "build_zip.py"), revision, str(tmp_path / "x.zip")],
+        cwd=repo,
+        env=env,
+        capture_output=True,
+        text=True,
+    )
+    assert done.returncode != 0 and not (tmp_path / "x.zip").exists()
+    assert "full commit" in done.stderr

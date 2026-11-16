@@ -8,6 +8,7 @@ transcript or uses the network. R235, R239 and R240 in `project-standards`.
 
 from __future__ import annotations
 
+import hashlib
 import json
 import re
 import subprocess
@@ -45,7 +46,7 @@ class Session:
         self.global_config = root / "global.gitconfig"
         lines = ["[user]", "\tname = Test", "\temail = test@example.invalid"]
         if opt_in:
-            lines += ["[pr-cost]", "\tcapture = true"]
+            lines += ["[pr-cost-skeleton]", "\tcapture = true"]
         self.global_config.write_text("\n".join(lines) + "\n")
         self.env = {
             **session_free_environment(),
@@ -219,7 +220,7 @@ def test_a_switch_that_is_not_json_records_nothing(tmp_path: Path) -> None:
 
 def test_without_the_opt_in_in_the_global_configuration_it_records_nothing(tmp_path: Path) -> None:
     session = Session(tmp_path, opt_in=False)
-    git(session.repo, session.env, "config", "pr-cost.capture", "true")
+    git(session.repo, session.env, "config", "pr-cost-skeleton.capture", "true")
     session.call()
     session.hook("Stop")
     session.change()
@@ -230,7 +231,7 @@ def test_without_the_opt_in_in_the_global_configuration_it_records_nothing(tmp_p
 def test_an_opt_in_that_is_not_true_records_nothing(tmp_path: Path) -> None:
     session = Session(tmp_path, opt_in=False)
     with session.global_config.open("a") as out:
-        out.write("[pr-cost]\n\tcapture = maybe\n")
+        out.write("[pr-cost-skeleton]\n\tcapture = maybe\n")
     session.call()
     session.hook("Stop")
     assert not session.store.exists()
@@ -241,7 +242,7 @@ def test_the_sessions_git_config_variables_opt_in(tmp_path: Path) -> None:
     session.env.update(
         {
             "GIT_CONFIG_COUNT": "1",
-            "GIT_CONFIG_KEY_0": "pr-cost.capture",
+            "GIT_CONFIG_KEY_0": "pr-cost-skeleton.capture",
             "GIT_CONFIG_VALUE_0": "true",
         }
     )
@@ -253,7 +254,7 @@ def test_the_sessions_git_config_variables_opt_in(tmp_path: Path) -> None:
 def test_a_later_global_false_turns_the_opt_in_off(tmp_path: Path) -> None:
     session = Session(tmp_path)
     with session.global_config.open("a") as out:
-        out.write("[pr-cost]\n\tcapture = false\n")
+        out.write("[pr-cost-skeleton]\n\tcapture = false\n")
     session.call()
     session.hook("Stop")
     assert not session.store.exists()
@@ -416,6 +417,7 @@ def test_a_commit_in_another_form_gets_no_ledger_file(session: Session, command:
     [
         "git add change.txt && git commit -m 'Change it'",
         "git add change.txt && git commit -q -m 'Change it'",
+        "git add change.txt && git commit -m 'Change it' -m 'Co-Authored-By: A <a@x.invalid>'",
         "git -C {repo} add change.txt && git -C {repo} commit -m 'Change it'",
         "cd {repo} && git commit -a -m 'Change it'",
         "cd sub && cd .. && git add change.txt && git commit -m 'Change it'",
@@ -511,14 +513,16 @@ def test_a_missing_transcript_is_counted_and_skipped(session: Session) -> None:
 
 LOG_KEYS = {
     "event",
-    "repository",
-    "switch",
+    "capture_sha256",
     "opt_in",
     "transcripts_read",
     "lines_read",
     "lines_unread",
     "calls_kept",
     "calls_without_stop_reason",
+    "calls_outside",
+    "calls_incomplete",
+    "calls_differing",
     "staged",
     "error",
 }
@@ -538,14 +542,15 @@ def test_each_runs_log_line_holds_names_and_counts_only(session: Session) -> Non
     for entry in entries:
         assert set(entry) == LOG_KEYS
         assert all(
-            isinstance(v, bool | int) or v is None or v.isidentifier() for v in entry.values()
+            isinstance(v, bool | int) or v is None or v.isidentifier()
+            for k, v in entry.items()
+            if k != "capture_sha256"
         )
+        assert entry["capture_sha256"] == hashlib.sha256(CAPTURE.read_bytes()).hexdigest()
     assert [e["staged"] for e in entries] == [None, "staged", "committed", "not_recognised", None]
     assert entries[0] == {
         **entries[0],
         "event": "Stop",
-        "repository": True,
-        "switch": True,
         "opt_in": True,
         "transcripts_read": 1,
         "lines_read": 1,
@@ -565,7 +570,7 @@ def test_without_the_opt_in_the_log_says_so_and_reads_no_transcript(tmp_path: Pa
     session.call()
     session.hook("Stop")
     entry = session.log()[-1]
-    assert entry["switch"] is True and entry["opt_in"] is False
+    assert entry["opt_in"] is False
     assert entry["transcripts_read"] == 0
 
 
@@ -671,3 +676,67 @@ def test_a_subagents_transcript_alone_is_read(session: Session) -> None:
     session.call(transcript=elsewhere)
     session.hook("SubagentStop", transcript_path=None, agent_transcript_path=str(elsewhere))
     assert session.waiting() == 1
+
+
+# ---- Found at the threat review at implementation ----
+
+
+def test_the_tools_own_opt_in_alone_records_nothing(tmp_path: Path) -> None:
+    session = Session(tmp_path, opt_in=False)
+    with session.global_config.open("a") as out:
+        out.write("[pr-cost]\n\tcapture = true\n")
+    session.call()
+    session.hook("Stop")
+    assert not session.store.exists()
+
+
+def test_an_opt_in_in_the_system_configuration_records_nothing(tmp_path: Path) -> None:
+    session = Session(tmp_path, opt_in=False)
+    system = tmp_path / "system.gitconfig"
+    system.write_text("[pr-cost-skeleton]\n\tcapture = true\n")
+    del session.env["GIT_CONFIG_NOSYSTEM"]
+    session.env["GIT_CONFIG_SYSTEM"] = str(system)
+    session.call()
+    session.hook("Stop")
+    assert not session.store.exists()
+
+
+def test_a_commit_in_another_repository_than_its_adds_gets_no_ledger_file(
+    session: Session,
+) -> None:
+    other = session.root / "other"
+    other.mkdir()
+    git(other, session.env, "init", "-q", "-b", "main")
+    (other / ".pr-cost.json").write_text(json.dumps(SWITCH_ON))
+    git(other, session.env, "add", "-A")
+    git(other, session.env, "commit", "-q", "-m", "Start")
+    session.call(cwd=other)
+    session.call()
+    session.change()
+    head = git(other, session.env, "rev-parse", "HEAD")
+    command = "cd clone && git add change.txt && cd ../other && git commit -m 'Change it'"
+    assert session.commit(command, cwd=session.root) != 0
+    assert git(other, session.env, "rev-parse", "HEAD") == head
+    command = "git -C clone add change.txt && git -C other commit -m 'Change it'"
+    assert session.commit(command, cwd=session.root) != 0
+    assert git(other, session.env, "rev-parse", "HEAD") == head
+    assert (
+        not list((other / ".pr-cost").rglob("*.jsonl")) if (other / ".pr-cost").exists() else True
+    )
+
+
+def test_the_log_counts_the_calls_it_leaves_out_and_why(session: Session) -> None:
+    session.call(cwd=session.root)
+    session.call(cwd=Path("/none"))
+    session.call(model="a model with spaces")
+    session.call(message_id=MESSAGE_ID + "D")
+    with session.transcript.open("a") as out:
+        line = json.loads(session.transcript.read_text().splitlines()[-1])
+        line["message"]["usage"]["output_tokens"] = 500
+        out.write(json.dumps(line) + "\n")
+    session.hook("Stop")
+    entry = session.log()[-1]
+    assert entry["calls_kept"] == 1
+    assert entry["calls_outside"] == 2
+    assert entry["calls_incomplete"] == 1
+    assert entry["calls_differing"] == 1

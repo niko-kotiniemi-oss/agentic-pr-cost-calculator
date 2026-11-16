@@ -30,6 +30,7 @@ HEADINGS = ("Input", "Output", "Cache write", "Cache read")
 MODEL = re.compile(r"[A-Za-z0-9][A-Za-z0-9._:@-]{0,99}")
 LEDGER = Path(".pr-cost") / "ledger"
 ZEROS = "0" * 40
+MAX_COUNT = 10**15
 NOT_A_COST = (
     "This is the walking skeleton's figure, at a test price: it is not a real cost, "
     "and the walking skeleton is not the tool."
@@ -59,6 +60,11 @@ def github_api(env: dict[str, str]) -> Api:
     return call
 
 
+def is_count(value: Any) -> bool:
+    """A token count: a whole number, not a boolean, from zero to below a bound."""
+    return isinstance(value, int) and not isinstance(value, bool) and 0 <= value < MAX_COUNT
+
+
 def ledger_files(folder: Path) -> set[Path]:
     root = folder / LEDGER
     return {path.relative_to(folder) for path in root.rglob("*.jsonl")} if root.is_dir() else set()
@@ -71,7 +77,15 @@ def calls_added(before: Path, after: Path) -> tuple[dict[str, dict[str, Any]], i
     added = sorted(ledger_files(after) - ledger_files(before))
     unread = 0
     for relative in added:
-        for raw in (after / relative).read_text(encoding="utf-8").splitlines():
+        path = after / relative
+        try:
+            if path.is_symlink():
+                raise ValueError("a ledger file that is a link is not followed")
+            text = path.read_text(encoding="utf-8")
+        except ValueError:
+            unread += 1
+            continue
+        for raw in text.splitlines():
             try:
                 line = json.loads(raw)
             except ValueError:
@@ -82,7 +96,7 @@ def calls_added(before: Path, after: Path) -> tuple[dict[str, dict[str, Any]], i
                 and isinstance(line.get("key"), str)
                 and isinstance(line.get("model"), str)
                 and MODEL.fullmatch(line["model"]) is not None
-                and all(isinstance(line.get(name), int) for name in COUNTS)
+                and all(is_count(line.get(name)) for name in COUNTS)
             )
             if not usable:
                 unread += 1

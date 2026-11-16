@@ -1374,7 +1374,7 @@ No tracked file under `.claude/`, `.claude-plugin/` or `.github/` SHALL hold the
 
 ### Requirement: The walking skeleton records only with its own switch and the opt-in
 
-The walking skeleton's capture SHALL record a call only for a repository whose top-level `.pr-cost.json` holds `enabled` and `walking_skeleton` both `true`, while git gives `pr-cost.capture` as `true` from the person's global configuration files and the session's `GIT_CONFIG_` variables, never from a repository's own; and SHALL keep a call only when its line's working directory lies in that repository's working tree. Tests SHALL drive each way.
+The walking skeleton's capture SHALL record a call only for a repository whose top-level `.pr-cost.json` holds `enabled` and `walking_skeleton` both `true`, while git gives its own opt-in, `pr-cost-skeleton.capture`, never the tool's, as `true` from the person's global files and the session's `GIT_CONFIG_` variables, never a repository's own; and SHALL keep a call only when its line's working directory lies in that repository's working tree. Tests SHALL drive each way.
 
 #### Scenario: A switch without the skeleton's key records nothing
 
@@ -1388,7 +1388,7 @@ The walking skeleton's capture SHALL record a call only for a repository whose t
 
 #### Scenario: No opt-in means the skeleton records nothing
 
-- **WHEN** the skeleton's switch is on, and git, reading the person's global configuration files, does not give `pr-cost.capture` as `true`, though the repository's own configuration does
+- **WHEN** the skeleton's switch is on, and git, reading the person's global configuration files, does not give `pr-cost-skeleton.capture` as `true`, though the repository's own configuration does, or though the tool's own opt-in, `pr-cost.capture`, is `true`
 - **THEN** it writes no store, stages no ledger file and exits with success
 
 #### Scenario: A call made in another repository is not recorded
@@ -1412,7 +1412,7 @@ Each hook command of the walking skeleton's plugin SHALL run its capture script 
 
 ### Requirement: The walking skeleton stages only for a commit it recognises
 
-The walking skeleton SHALL stage a ledger file only before a command whose parts, joined by two ampersands, are `cd` to a written path or `git add` with written paths, then a `git commit` with only `-m` and a quoted message, `-a` or `-q`, each git with at most one written `-C`, and only when that commit would commit something without the file; and after a command that did not commit the file SHALL remove it from the index and the working tree and keep its calls waiting.
+The walking skeleton SHALL stage a ledger file only before a command whose parts, joined by two ampersands, are `cd` to a written path or `git add` with written paths, then a `git commit` with only `-m` and a quoted message, which may repeat, `-a` or `-q`, in the repository of each `git add`, each git with at most one written `-C`, and only when the commit would commit something without the file; and SHALL take back a file that the command did not commit, its calls waiting.
 
 #### Scenario: A recognised commit after calls holds one ledger file
 
@@ -1429,6 +1429,16 @@ The walking skeleton SHALL stage a ledger file only before a command whose parts
 - **WHEN** the agent runs a recognised `git commit` with no `git add` before it, no `-a`, and nothing staged
 - **THEN** the skeleton stages nothing, and the commit fails as it would without it
 
+#### Scenario: A commit in another repository than its adds gets no ledger file
+
+- **WHEN** the agent runs `git add` in one repository and, in the same command, `git commit` in another
+- **THEN** the skeleton stages nothing, and the calls wait
+
+#### Scenario: A commit with repeated messages gets its ledger file
+
+- **WHEN** the agent's recognised commit gives `-m` with a quoted message more than once, as for trailer lines
+- **THEN** the commit holds one ledger file
+
 #### Scenario: A file that a commit did not take is taken back
 
 - **WHEN** the skeleton staged a ledger file and the command then failed, or succeeded without committing the file
@@ -1436,7 +1446,7 @@ The walking skeleton SHALL stage a ledger file only before a command whose parts
 
 ### Requirement: The kept transcript shape holds no values
 
-Each transcript shape kept from the walking skeleton's run, a tracked file under `tests/` whose name begins with `transcript-shape`, SHALL hold only field names at a line's top level, in its `message` and in `message.usage`, each with its JSON type, and every other object and array as its type alone; each name of letters, digits and underscores, at most 40 long and not of an identifier's form. A test SHALL fail and name the entry otherwise.
+Each transcript shape kept from the walking skeleton's run, a tracked file under `tests/` whose name begins with `transcript-shape`, SHALL hold only field names at a line's top level that the recorder's list names, in its `message` and in `message.usage`, each with its JSON type, and every other object and array as its type alone; each name of letters, digits and underscores, at most 40 long and not of an identifier's form. A test SHALL fail and name the entry otherwise.
 
 #### Scenario: A value in the kept shape fails a test
 
@@ -1446,6 +1456,11 @@ Each transcript shape kept from the walking skeleton's run, a tracked file under
 #### Scenario: A name below another object fails a test
 
 - **WHEN** an entry of a kept shape gives a field name below an object other than the line, its `message` object and `message.usage`, as below `message.content`, a tool's input, a tool's result or a map keyed by identifiers
+- **THEN** a test fails and names the file and the entry
+
+#### Scenario: A top-level name outside the recorder's list fails a test
+
+- **WHEN** an entry of a kept shape gives a name at a line's top level that the list shared by the shape recorder and its check does not name
 - **THEN** a test fails and names the file and the entry
 
 #### Scenario: A name of an identifier's form fails a test

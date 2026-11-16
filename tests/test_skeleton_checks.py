@@ -41,6 +41,29 @@ SHAPE_PREFIX = "transcript-shape"
 TYPE_NAMES = frozenset({"object", "array", "string", "number", "boolean", "null"})
 NAME = re.compile(r"[A-Za-z0-9_]{1,40}")
 IDENTIFIER_FORM = re.compile(r"[a-z]+_(?=[A-Za-z0-9]*[A-Z0-9])[A-Za-z0-9]{8,}")
+# The only names that a kept shape gives at a line's top level, the same list as the shape
+# recorder's: the fields that the design and the assumptions read, and no name of the host's own.
+TOP_LEVEL_NAMES = frozenset(
+    {
+        "agentId",
+        "cwd",
+        "gitBranch",
+        "isMeta",
+        "isSidechain",
+        "leafUuid",
+        "message",
+        "parentUuid",
+        "requestId",
+        "sessionId",
+        "summary",
+        "timestamp",
+        "toolUseResult",
+        "type",
+        "userType",
+        "uuid",
+        "version",
+    }
+)
 
 
 def entry_problem(entry: object) -> str | None:
@@ -56,6 +79,8 @@ def entry_problem(entry: object) -> str | None:
             return f"has a name that is not 1 to 40 letters, digits and underscores: {name!r}"
         if IDENTIFIER_FORM.fullmatch(name):
             return f"has a name of an identifier's form: {name!r}"
+    if len(names) == 1 and names[0] not in TOP_LEVEL_NAMES:
+        return f"gives a top-level name that the recorder's list does not name: {names[0]!r}"
     kept_levels = len(names) == 1 or (
         names[0] == "message" and (len(names) == 2 or (len(names) == 3 and names[1] == "usage"))
     )
@@ -92,7 +117,10 @@ def missing_shape_problems(tasks_text: str, shapes: list[str]) -> list[str]:
 
 
 # R237: the skeleton's workflow.
-EVENT_REFS = frozenset({"${{ github.event.before }}", "${{ github.event.after }}"})
+# Each checkout's ref and the folder it goes to, and the one command that reads them.
+EVENT_REFS = {"${{ github.event.before }}": "before", "${{ github.event.after }}": "after"}
+CHECKOUT_INPUTS = frozenset({"ref", "path", "persist-credentials"})
+REPORT_COMMAND = "python3 -I after/skeleton/report.py before after"
 FULL_COMMIT = re.compile(r"[0-9a-f]{40}")
 
 
@@ -107,6 +135,10 @@ def checkout_problems(where: str, step: dict[str, Any]) -> list[str]:
         problems.append(f"{where} keeps its credentials")
     if given.get("ref") not in EVENT_REFS:
         problems.append(f"{where} fetches a ref other than the push's before and after")
+    elif given.get("path") != EVENT_REFS[given["ref"]]:
+        problems.append(f"{where} checks out into another path than the report reads")
+    if set(given) - CHECKOUT_INPUTS:
+        problems.append(f"{where} gives other inputs: {sorted(set(given) - CHECKOUT_INPUTS)}")
     if given.get("fetch-depth", 1) != 1 or given.get("fetch-tags"):
         problems.append(f"{where} fetches more than its one commit")
     return problems
@@ -118,7 +150,7 @@ def workflow_problems(text: str) -> list[str]:
     if not isinstance(data, dict) or not data.get("jobs"):
         return ["the workflow has no jobs, so this check examined nothing"]
     problems = []
-    if "secrets." in text:
+    if re.search(r"\bsecrets\b", text):
         problems.append("the workflow reads a secret")
     event = data.get("on", data.get(True))
     if event != {"push": {"branches": ["main"]}}:
@@ -135,6 +167,8 @@ def workflow_problems(text: str) -> list[str]:
             if "uses" in step:
                 problems += checkout_problems(where, step)
             run = str(step.get("run", ""))
+            if "run" in step and run.strip() != REPORT_COMMAND:
+                problems.append(f"{where} runs another command than the report's: {run!r}")
             if "${{" in run:
                 problems.append(f"{where} puts an expression inside its command")
             if re.search(r"\bgit\b.*\bfetch\b", run):
@@ -287,6 +321,19 @@ def test_a_shape_that_holds_no_entries_fails(tmp_path: Path, text: str) -> None:
     assert shape_problems(path, "shape") != []
 
 
+def test_a_top_level_name_outside_the_list_fails(tmp_path: Path) -> None:
+    path = write_shape(tmp_path, [*GOOD_SHAPE, {"path": "hostFeatureState", "type": "object"}])
+    problems = shape_problems(path, "shape")
+    assert len(problems) == 1 and f"entry {len(GOOD_SHAPE)} " in problems[0]
+
+
+def test_the_check_and_the_recorder_share_one_list_of_top_level_names() -> None:
+    import shape
+
+    assert shape.TOP_LEVEL_NAMES == TOP_LEVEL_NAMES
+    assert {entry["path"] for entry in GOOD_SHAPE if "." not in entry["path"]} <= TOP_LEVEL_NAMES
+
+
 def test_kept_shapes_are_the_tracked_files_under_tests_that_begin_with_its_name() -> None:
     paths = ["tests/fixtures/transcript-shape.json", "tests/transcript-shape-2.json", "docs/x"]
     paths += ["tests/fixtures/a-transcript-shape.json", "transcript-shape.json"]
@@ -368,6 +415,11 @@ def test_the_workflow_as_designed_passes() -> None:
         ),
         ("run: python3", "run: git fetch origin dev && python3", "other than the push"),
         ("    timeout-minutes: 5\n", "", "timeout-minutes"),
+        ("path: after\n", "path: after\n          repository: someone/else\n", "other inputs"),
+        ("run: python3", "run: echo '${{ toJSON(secrets) }}'; python3", "secret"),
+        ("AFTER: ${{ github.event.after }}", "AFTER: ${{ secrets['PAT'] }}", "secret"),
+        ("report.py before after", "report.py after before", "report"),
+        ("path: before\n", "path: old\n", "path"),
     ],
 )
 def test_a_workflow_that_could_do_more_fails(old: str, new: str, named: str) -> None:

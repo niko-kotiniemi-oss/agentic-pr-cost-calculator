@@ -16,6 +16,30 @@ from typing import Any
 
 NAME = re.compile(r"[A-Za-z0-9_]{1,40}")
 IDENTIFIER_FORM = re.compile(r"[a-z]+_(?=[A-Za-z0-9]*[A-Z0-9])[A-Za-z0-9]{8,}")
+# The only names kept at a line's top level: the fields that the design and the assumptions read.
+# Any other top-level name, such as one of the host's own features, is counted and left out, and
+# the check in `tests/test_skeleton_checks.py` holds the same list (R236).
+TOP_LEVEL_NAMES = frozenset(
+    {
+        "agentId",
+        "cwd",
+        "gitBranch",
+        "isMeta",
+        "isSidechain",
+        "leafUuid",
+        "message",
+        "parentUuid",
+        "requestId",
+        "sessionId",
+        "summary",
+        "timestamp",
+        "toolUseResult",
+        "type",
+        "userType",
+        "uuid",
+        "version",
+    }
+)
 
 
 def type_name(value: Any) -> str:
@@ -30,13 +54,17 @@ def type_name(value: Any) -> str:
     return "null" if value is None else "string"
 
 
-def entries_of(line: Any) -> set[tuple[str, str]]:
-    """The paths and types of one line, at the kept levels only."""
+def entries_of(line: Any, left_out: set[str]) -> set[tuple[str, str]]:
+    """The paths and types of one line, at the kept levels only; other top-level names go to
+    `left_out`, to be counted."""
     found: set[tuple[str, str]] = set()
     if not isinstance(line, dict):
         return found
     for name, value in line.items():
-        found.add((name, type_name(value)))
+        if name in TOP_LEVEL_NAMES:
+            found.add((name, type_name(value)))
+        else:
+            left_out.add(name)
     message = line.get("message")
     if isinstance(message, dict):
         for name, value in message.items():
@@ -61,10 +89,11 @@ def main(argv: list[str]) -> int:
         return 2
     *sources, target = (Path(arg) for arg in argv)
     entries: set[tuple[str, str]] = set()
+    left_out: set[str] = set()
     for source in sources:
         for raw in source.read_bytes().split(b"\n")[:-1]:
             try:
-                entries |= entries_of(json.loads(raw.decode("utf-8")))
+                entries |= entries_of(json.loads(raw.decode("utf-8")), left_out)
             except ValueError:
                 continue
     bad = failing(entries)
@@ -76,6 +105,7 @@ def main(argv: list[str]) -> int:
         return 1
     shape = [{"path": path, "type": kind} for path, kind in sorted(entries)]
     target.write_text(json.dumps(shape, indent=2) + "\n", encoding="utf-8")
+    print(f"shape.py: {len(left_out)} other top-level names left out", file=sys.stderr)
     return 0
 
 

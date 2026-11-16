@@ -31,8 +31,22 @@ R236's scenario on a name of an identifier's form said "a lower-case prefix, an 
 ## Checks of the tests themselves
 
 - Planted defects: after each script passed, single changes were planted in it, such as reading the opt-in from any scope, keeping calls made outside the repository, reading a half-written line or never taking a file back, and the tests were run again. Each planted change failed a test except two, which led to two new assertions: that the log never says `staged` for a command in another form, and that the shape recorder never reads a line that has no line break yet.
-- Branch coverage was measured once, outside the repository, with `coverage` installed only in the session's virtual environment. Every line of the four scripts ran; the two branches not taken are the `if __name__ == "__main__"` checks of `capture.py` and `shape.py`, which are false only when a test imports the script, and the tests run both as scripts. No gate holds this until the build's coverage gate exists.
+- Branch coverage was measured once, outside the repository, with `coverage` installed only in the session's virtual environment. Every line of the four scripts ran; after the fixes below, the one branch not taken is the `if __name__ == "__main__"` check of `capture.py`, which is false only when a test imports the script, and the tests only run it as a script. No gate holds this until the build's coverage gate exists.
 - Property-based testing: `tests/test_skeleton_shape.py` searches random transcripts from a fixed seed for a value that reaches the shape, in place of Hypothesis, which the build brings (design decision 8).
+
+## Fixes after the threat review at implementation
+
+Seven reviewers, one per trust boundary, read the code at `7869896`; their findings are comments on the pull request. Each fix below was written test-first, the spec changing before the code where it changed a requirement.
+
+- The skeleton has its own opt-in, `pr-cost-skeleton.capture`, so that the tool's opt-in, which an environment may already hold, never turns it on (R235).
+- A recognised commit may give `-m` more than once, as for trailer lines, and only in the repository of each `git add` before it (R240).
+- The log counts the calls it leaves out and why, and the calls whose lines that give a stop reason differ, and gives the SHA-256 of the capture script that ran; it no longer gives fields that could only be true.
+- The shape keeps top-level names only from a list that the recorder and its check share (R236).
+- The report follows no link and takes as a count only a whole number from zero to below a bound.
+- The workflow's check also refuses other checkout inputs, another folder, another command and the word `secrets` anywhere.
+- The zip is built only from a full commit id, printed beside its hash, with its files stored rather than compressed.
+- The private-reference check knows a session's and a line's identifier.
+- Task 1.36 and design decision 18 now check the files at the pull request's head before the merge, check that log lines appear before reading their absence, and run the privacy checks before the results come here.
 
 ## Left for after the build
 

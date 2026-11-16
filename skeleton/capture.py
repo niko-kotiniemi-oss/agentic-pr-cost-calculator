@@ -26,6 +26,8 @@ TOOL_EVENTS = frozenset({"PreToolUse", "PostToolUse", "PostToolUseFailure"})
 COUNTS = ("input_tokens", "output_tokens", "cache_creation_input_tokens", "cache_read_input_tokens")
 MODEL = re.compile(r"[A-Za-z0-9][A-Za-z0-9._:@-]{0,99}")
 STATE = "pr-cost-skeleton"
+# The skeleton's own opt-in, which the tool's opt-in, `pr-cost.capture`, never stands in for.
+OPT_IN = "pr-cost-skeleton.capture"
 LEDGER = ".pr-cost/ledger"
 
 
@@ -74,8 +76,8 @@ def switch_on(repo: Path) -> bool:
 
 
 def opted_in(repo: Path) -> bool:
-    """`pr-cost.capture` as git gives it from global files and `GIT_CONFIG_` variables (R235)."""
-    done = git(repo, "config", "--show-scope", "--type=bool", "--get-all", "pr-cost.capture")
+    """The skeleton's opt-in, from global files and `GIT_CONFIG_` variables only (R235)."""
+    done = git(repo, "config", "--show-scope", "--type=bool", "--get-all", OPT_IN)
     if done.returncode != 0:
         return False
     values = [
@@ -113,7 +115,7 @@ def commit_options(args: list[str]) -> bool | None:
     all_tracked, message, index = False, False, 0
     while index < len(args):
         option = args[index]
-        if option == "-m" and index + 1 < len(args) and not message:
+        if option == "-m" and index + 1 < len(args):
             message, index = True, index + 2
             continue
         if option not in ("-a", "-q"):
@@ -168,6 +170,9 @@ class Reading:
     unread: int = 0
     kept: int = 0
     without_stop_reason: int = 0
+    outside: int = 0
+    incomplete: int = 0
+    differing: int = 0
 
 
 def transcripts(payload: dict[str, Any]) -> list[Path]:
@@ -188,22 +193,21 @@ def count(usage: dict[str, Any], name: str) -> int:
     return value if isinstance(value, int) and not isinstance(value, bool) and value >= 0 else 0
 
 
-def call_of(
-    line: dict[str, Any], message: dict[str, Any], repo: Path
-) -> tuple[str, dict[str, Any]] | None:
-    """A call's key and its kept fields, from a line that gives a stop reason, in the repository."""
+def call_of(line: dict[str, Any], message: dict[str, Any], repo: Path) -> tuple[str, Any]:
+    """A call's key and its kept fields, from a line that gives a stop reason, in the repository;
+    or, for a call it leaves out, why: `outside` the repository or `incomplete`."""
     cwd, model, usage = line.get("cwd"), message.get("model"), message.get("usage")
     if not isinstance(cwd, str) or not Path(cwd).is_absolute():
-        return None
+        return "outside", None
     if not Path(cwd).resolve().is_relative_to(repo):
-        return None
+        return "outside", None
     if not isinstance(model, str) or not MODEL.fullmatch(model) or not isinstance(usage, dict):
-        return None
+        return "incomplete", None
     try:
         stamp = datetime.fromisoformat(str(line.get("timestamp")).replace("Z", "+00:00"))
         day = stamp.astimezone(UTC).date().isoformat()
     except ValueError:
-        return None
+        return "incomplete", None
     key = hashlib.sha256(str(message["id"]).encode()).hexdigest()
     return key, {"model": model, "day": day, **{name: count(usage, name) for name in COUNTS}}
 
@@ -211,6 +215,9 @@ def call_of(
 def read_calls(paths: list[Path], repo: Path, store: dict[str, Any], reading: Reading) -> None:
     """Add each new call in the transcripts to the calls waiting, from complete lines only."""
     with_stop, without_stop = set(), set()
+    left_out: dict[str, set[str]] = {"outside": set(), "incomplete": set()}
+    usages: dict[str, Any] = {}
+    differing = set()
     known = set(store["recorded"]) | set(store["waiting"])
     for path in paths:
         try:
@@ -232,12 +239,19 @@ def read_calls(paths: list[Path], repo: Path, store: dict[str, Any], reading: Re
                 without_stop.add(message["id"])
                 continue
             with_stop.add(message["id"])
-            call = call_of(line, message, repo)
-            if call and call[0] not in known:
-                known.add(call[0])
-                store["waiting"][call[0]] = call[1]
+            if usages.setdefault(message["id"], message.get("usage")) != message.get("usage"):
+                differing.add(message["id"])
+            key, call = call_of(line, message, repo)
+            if call is None:
+                left_out[key].add(message["id"])
+            elif key not in known:
+                known.add(key)
+                store["waiting"][key] = call
                 reading.kept += 1
     reading.without_stop_reason = len(without_stop - with_stop)
+    reading.outside = len(left_out["outside"])
+    reading.incomplete = len(left_out["incomplete"])
+    reading.differing = len(differing)
 
 
 # ---- The store, the ledger file and the log ----
@@ -306,13 +320,19 @@ def settle(repo: Path, store: dict[str, Any]) -> str:
     return "taken_back"
 
 
+def own_hash() -> str:
+    """The SHA-256 of this script as it runs, so that the run can tell which copy ran."""
+    return hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
+
+
 def handle(repo: Path, payload: dict[str, Any], event: str, commit: Commit | None) -> None:
     """Capture for one repository, with one line in its log."""
     if not switch_on(repo):
         return
     common = Path(git(repo, "rev-parse", "--git-common-dir").stdout.strip())
     state = (repo / common).resolve() / STATE
-    reading, entry = Reading(), {"event": event, "repository": True, "switch": True}
+    reading = Reading()
+    entry: dict[str, Any] = {"event": event, "capture_sha256": own_hash()}
     entry.update(opt_in=opted_in(repo), staged=None, error=None)
     try:
         if not entry["opt_in"]:
@@ -324,7 +344,9 @@ def handle(repo: Path, payload: dict[str, Any], event: str, commit: Commit | Non
             raise
         read_calls(transcripts(payload), repo, store, reading)
         command = str((payload.get("tool_input") or {}).get("command", ""))
-        ours = commit is not None and toplevel(commit.folder) == repo
+        ours = commit is not None and all(
+            toplevel(folder) == repo for folder in [commit.folder, *(f for f, _ in commit.adds)]
+        )
         if event == "PreToolUse" and ours and commit:
             if store["staged"]:
                 settle(repo, store)
@@ -345,6 +367,9 @@ def handle(repo: Path, payload: dict[str, Any], event: str, commit: Commit | Non
             lines_unread=reading.unread,
             calls_kept=reading.kept,
             calls_without_stop_reason=reading.without_stop_reason,
+            calls_outside=reading.outside,
+            calls_incomplete=reading.incomplete,
+            calls_differing=reading.differing,
         )
         state.mkdir(parents=True, exist_ok=True)
         with (state / "log.jsonl").open("a", encoding="utf-8") as log:

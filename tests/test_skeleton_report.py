@@ -308,3 +308,45 @@ def test_the_script_runs_as_the_workflow_runs_it(tmp_path: Path) -> None:
     )
     assert done.returncode == 0, done.stderr
     assert "No comment" in summary.read_text()
+
+
+# ---- Found at the threat review at implementation ----
+
+
+def test_a_count_that_is_negative_a_boolean_or_too_large_is_not_counted(tmp_path: Path) -> None:
+    repository = Repository(tmp_path)
+    before = repository.git("rev-parse", "HEAD")
+    bad = [
+        {**line("k8"), "input_tokens": -5},
+        {**line("k9"), "output_tokens": True},
+        {**line("k10"), "input_tokens": 10**400},
+        line("k11"),
+    ]
+    folder = repository.path / ".pr-cost" / "ledger" / "2026-11"
+    (folder / "bad.jsonl").write_text("".join(json.dumps(item) + "\n" for item in bad))
+    (folder / "latin.jsonl").write_bytes(b"\xff\xfe not utf-8\n")
+    repository.git("add", "-A")
+    repository.git("commit", "-q", "-m", "Bad")
+    after = repository.git("rev-parse", "HEAD")
+    github = GitHub([MERGED])
+    summary = run(
+        tmp_path, before, after, repository.tree(before, "b"), repository.tree(after, "a"), github
+    )
+    comment = github.comments[0]
+    assert (
+        "| model-a | 1 |" in comment and "**3.00**" in comment and "-" not in comment.split("**")[1]
+    )
+    assert "4 ledger lines could not be read" in comment and summary.endswith(comment)
+
+
+def test_a_ledger_file_that_is_a_link_is_not_followed(tmp_path: Path) -> None:
+    repository = Repository(tmp_path)
+    before_tree = repository.tree(repository.git("rev-parse", "HEAD"), "b")
+    after_tree = repository.tree(repository.git("rev-parse", "HEAD"), "a")
+    outside = tmp_path / "outside.jsonl"
+    outside.write_text(json.dumps(line("k12", "model-outside")) + "\n")
+    (after_tree / ".pr-cost" / "ledger" / "2026-11" / "link.jsonl").symlink_to(outside)
+    github = GitHub([MERGED])
+    run(tmp_path, "b" * 40, "c" * 40, before_tree, after_tree, github)
+    assert "model-outside" not in github.comments[0]
+    assert "1 ledger lines could not be read" in github.comments[0]
