@@ -1,6 +1,6 @@
 """The walking skeleton's capture script, task 1.32 of `add-pr-cost-calculator`.
 
-Driven through the seam that design decision 18 names (DR-246): a hook's input on standard
+Driven through the seam that design decision 18 names (DR-249): a hook's input on standard
 input, transcript files that the test writes, and a real git repository in a temporary folder,
 with a global git configuration of the test's own for the opt-in. Nothing here reads a real
 transcript or uses the network. R235, R239 and R240 in `project-standards`.

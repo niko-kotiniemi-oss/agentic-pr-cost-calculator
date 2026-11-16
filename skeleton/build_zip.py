@@ -2,7 +2,7 @@
 # The walking skeleton of the agentic PR cost calculator: not the tool or a release.
 # Builds the skeleton's plugin zip from git's objects of one commit, never from the working
 # tree, the same bytes each time, and prints its SHA-256 for the owner to check before the
-# upload (R243, DR-245, T192). Run from a clone: `build_zip.py <full commit id> <out.zip>`; it
+# upload (R243, DR-248, T192). Run from a clone: `build_zip.py <full commit id> <out.zip>`; it
 # prints the commit beside the hash, so that the hash names what it was built from.
 """Build the walking skeleton's plugin zip, byte for byte the same from the same commit."""
 

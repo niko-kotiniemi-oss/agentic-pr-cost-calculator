@@ -1,5 +1,5 @@
 """The walking skeleton's plugin, its hooks and the build of its zip, task 1.34 of
-`add-pr-cost-calculator`. R239 and R243 in `project-standards`, and DR-245.
+`add-pr-cost-calculator`. R239 and R243 in `project-standards`, and DR-248.
 """
 
 from __future__ import annotations

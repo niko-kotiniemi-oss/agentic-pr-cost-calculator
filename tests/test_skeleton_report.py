@@ -2,7 +2,7 @@
 
 Driven with ledger files in a temporary git repository, whose commits the test checks out into
 two folders as the workflow does, and recorded responses of GitHub's API. Nothing here uses the
-network. R241 in `project-standards` and DR-243.
+network. R241 in `project-standards` and DR-246.
 """
 
 from __future__ import annotations

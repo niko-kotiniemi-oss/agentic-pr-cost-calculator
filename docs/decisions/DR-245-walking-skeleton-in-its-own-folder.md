@@ -1,4 +1,4 @@
-# DR-242: The walking skeleton's code lives in its own folder here, under tests, and the build grows from it
+# DR-245: The walking skeleton's code lives in its own folder here, under tests, and the build grows from it
 
 - **Type:** architecture
 - **Status:** accepted
@@ -29,7 +29,7 @@ The walking skeleton's code, its capture script, its report script, its plugin's
 
 ## Scope
 
-This covers where the skeleton's code lives and when it goes. Where it runs is DR-236 (The walking skeleton runs apart from this repository and records only with the switch and the opt-in) and DR-245 (The walking skeleton runs as a plugin of its own, in a project that holds only its scratch repository).
+This covers where the skeleton's code lives and when it goes. Where it runs is DR-236 (The walking skeleton runs apart from this repository and records only with the switch and the opt-in) and DR-248 (The walking skeleton runs as a plugin of its own, in a project that holds only its scratch repository).
 
 ## What reversing it would change
 

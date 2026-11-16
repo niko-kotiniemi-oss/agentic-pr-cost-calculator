@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # The walking skeleton of the agentic PR cost calculator: not the tool or a release.
-# Its figure is at a test price and is not a real cost (DR-243). Run by `workflow.yml` on the
+# Its figure is at a test price and is not a real cost (DR-246). Run by `workflow.yml` on the
 # push that a merge makes to `main`, with the push's `before` and `after` commits checked out
 # into two folders, it reads the ledger files that the push added and writes one figure to the
 # job summary and as one comment (R241). Python's standard library only.
@@ -18,7 +18,7 @@ from typing import Any
 from urllib.request import Request, urlopen
 
 # The test price, in a currency of no one's, per million tokens of each kind. It is not a real
-# price, so the figure it gives is not a real cost (DR-243).
+# price, so the figure it gives is not a real cost (DR-246).
 TEST_PRICE_PER_MILLION_TOKENS = {
     "input_tokens": 1.0,
     "output_tokens": 2.0,

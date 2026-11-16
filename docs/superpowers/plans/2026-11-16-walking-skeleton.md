@@ -4,11 +4,11 @@
 
 **Goal:** Build tasks 1.31 to 1.35 of `add-pr-cost-calculator`: the walking skeleton in `skeleton/`, the checks that hold it, and its tests, as design decision 18 gives it.
 
-**Architecture:** Four standard-library scripts in `skeleton/`, each opening with a comment that says it is the walking skeleton and not the tool: `capture.py`, which the plugin's hooks run; `report.py`, which `workflow.yml` runs in the scratch repository; `build_zip.py`, which builds the plugin's zip from a commit; `shape.py`, which records the value-free shape of the run's transcripts; and the plugin's `plugin.json` and `hooks.json`. The checks live in `tests/test_skeleton_checks.py`, as the other document checks of this repository do, and each is shown to fail on a planted defect. The scripts are driven through the seam that DR-246 names: capture through a hook's input on standard input, transcript files that the test writes and a real git repository in a temporary folder; the report through ledger files in such a repository, checked out into two folders as the workflow does, and recorded responses of GitHub's API.
+**Architecture:** Four standard-library scripts in `skeleton/`, each opening with a comment that says it is the walking skeleton and not the tool: `capture.py`, which the plugin's hooks run; `report.py`, which `workflow.yml` runs in the scratch repository; `build_zip.py`, which builds the plugin's zip from a commit; `shape.py`, which records the value-free shape of the run's transcripts; and the plugin's `plugin.json` and `hooks.json`. The checks live in `tests/test_skeleton_checks.py`, as the other document checks of this repository do, and each is shown to fail on a planted defect. The scripts are driven through the seam that DR-249 names: capture through a hook's input on standard input, transcript files that the test writes and a real git repository in a temporary folder; the report through ledger files in such a repository, checked out into two folders as the workflow does, and recorded responses of GitHub's API.
 
 **Tech Stack:** Python 3.11 standard library; pytest and PyYAML for the tests, which `requirements-dev.txt` pins.
 
-**Spec:** R234 to R243 in `openspec/changes/add-pr-cost-calculator/specs/project-standards/spec.md`, design decision 18, DR-242 to DR-246.
+**Spec:** R234 to R243 in `openspec/changes/add-pr-cost-calculator/specs/project-standards/spec.md`, design decision 18, DR-245 to DR-249.
 
 ## Global Constraints
 

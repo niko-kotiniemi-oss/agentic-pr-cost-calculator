@@ -2,7 +2,7 @@
 # The walking skeleton of the agentic PR cost calculator: not the tool or a release.
 # Records the shape of the run's transcripts: the field names at a line's top level, in its
 # `message` and in `message.usage`, each with its JSON type, and every other object and array as
-# its type alone, with no value (R236, DR-244). It checks its own output and writes nothing when
+# its type alone, with no value (R236, DR-247). It checks its own output and writes nothing when
 # the check fails. Run in the scratch repository: `shape.py <transcript>... <out.json>`.
 """Record the value-free shape of transcripts, for the walking skeleton's run."""
 

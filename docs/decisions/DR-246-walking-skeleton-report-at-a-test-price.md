@@ -1,4 +1,4 @@
-# DR-243: The walking skeleton's report prices at a fixed test price and posts to the job summary and one comment
+# DR-246: The walking skeleton's report prices at a fixed test price and posts to the job summary and one comment
 
 - **Type:** architecture
 - **Status:** accepted

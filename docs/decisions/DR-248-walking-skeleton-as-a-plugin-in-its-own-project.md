@@ -1,4 +1,4 @@
-# DR-245: The walking skeleton runs as a plugin of its own, in a project that holds only its scratch repository
+# DR-248: The walking skeleton runs as a plugin of its own, in a project that holds only its scratch repository
 
 - **Type:** security and privacy
 - **Status:** accepted
@@ -30,7 +30,7 @@ The skeleton's capture runs as a plugin named `pr-cost-skeleton`, apart from the
 
 ## Scope
 
-This covers how and from where the skeleton's run happens. What the run keeps here is DR-244, and the bounds on the run are DR-236.
+This covers how and from where the skeleton's run happens. What the run keeps here is DR-247, and the bounds on the run are DR-236.
 
 ## What reversing it would change
 

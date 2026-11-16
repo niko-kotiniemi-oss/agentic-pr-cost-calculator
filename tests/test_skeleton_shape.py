@@ -1,7 +1,7 @@
 """The walking skeleton's shape recorder, task 1.35 of `add-pr-cost-calculator`.
 
 Transcripts here are written by the test, with values planted in every field. R236 in
-`project-standards` and DR-244.
+`project-standards` and DR-247.
 """
 
 from __future__ import annotations

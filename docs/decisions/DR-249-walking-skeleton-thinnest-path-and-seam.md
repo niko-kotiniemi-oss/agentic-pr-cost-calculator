@@ -1,4 +1,4 @@
-# DR-246: The walking skeleton builds only the thinnest path, and its tests drive it through the seam that the build keeps
+# DR-249: The walking skeleton builds only the thinnest path, and its tests drive it through the seam that the build keeps
 
 - **Type:** architecture
 - **Status:** accepted
@@ -29,7 +29,7 @@ The skeleton's capture reads a session's transcript and its subagents' transcrip
 
 ## Scope
 
-This covers what the skeleton builds and how its tests drive it. Where its code lives is DR-242.
+This covers what the skeleton builds and how its tests drive it. Where its code lives is DR-245.
 
 ## What reversing it would change
 

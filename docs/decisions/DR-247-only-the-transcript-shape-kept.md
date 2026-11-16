@@ -1,4 +1,4 @@
-# DR-244: This repository keeps from the skeleton's run only a transcript's shape with no values, and what was observed
+# DR-247: This repository keeps from the skeleton's run only a transcript's shape with no values, and what was observed
 
 - **Type:** security and privacy
 - **Status:** accepted
@@ -23,13 +23,13 @@ This repository keeps from the run two things only: the shape of the run's trans
 
 ## Consequences
 
-- `CLAUDE.md`'s privacy section names the shape as its one exception, in the same pull request (DR-244).
+- `CLAUDE.md`'s privacy section names the shape as its one exception, in the same pull request (DR-247).
 - A test fails on an entry of any kept shape that gives a value, a name below another object than the line, its `message` and `message.usage`, or a name of an identifier's form, and fails when no shape exists once the run is recorded (R236, task 1.31), and the private-reference check knows the identifiers that a transcript carries (task 1.31, T190).
 - Whether a field name itself, or an observation's words, tells something private rests on the owner's reading and on review (T186, T190).
 
 ## Scope
 
-This covers what this repository keeps from the skeleton's run. Where the run happens is DR-236 and DR-245.
+This covers what this repository keeps from the skeleton's run. Where the run happens is DR-236 and DR-248.
 
 ## What reversing it would change
 
