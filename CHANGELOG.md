@@ -28,4 +28,4 @@ A release's entry lists any breaking change under `### Breaking`, and the releas
 
 ### Changed
 
-- The licence: the repository's work is now under the Fair Core License, version 1.0, with MIT as its future licence (FCL-1.0-MIT), in place of the MIT licence. Anyone may use, change and share the tool for any purpose other than a competing commercial product or service, each version also becomes available under MIT two years after it is published, and all of its source stays public. The tool is fair source, not open source. Commits published before this change stay available under MIT to anyone who has a copy of them (DR-242, DR-243).
+- The licence moves from MIT to the Fair Core License, version 1.0, with MIT as its future licence (FCL-1.0-MIT): the tool is fair source, not open source, as the README's section on the licence says (DR-242, DR-243).

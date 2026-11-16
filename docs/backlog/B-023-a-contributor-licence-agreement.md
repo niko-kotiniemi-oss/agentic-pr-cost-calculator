@@ -13,7 +13,7 @@ The repository's work is under the Fair Core License with MIT as its future lice
 
 ## What done looks like
 
-Before the first contribution from outside the project is merged, its author has agreed to terms that let the licensor also offer it under other licences while the author keeps their copyright, the terms were read by a lawyer, `CONTRIBUTING.md` says what they are, and a check on each pull request shows whether its author has agreed.
+Before the first contribution from outside the project is merged, its author has agreed to terms that let the licensor also offer it under other licences while the author keeps their copyright, the terms were read by a lawyer, `CONTRIBUTING.md` says what they are, and a check on each pull request shows whether its author has agreed, and covers work copied in from outside, not only a pull request's author. The check adds its threats to `docs/threat-model.md`, keeps CI's token read-only with no secrets (T37), and keeps no personal data of contributors, such as a list of who signed, in the repository.
 
 ## Postponed points
 
