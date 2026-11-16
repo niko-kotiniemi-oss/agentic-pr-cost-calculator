@@ -8,6 +8,7 @@
 
 from __future__ import annotations
 
+import functools
 import hashlib
 import json
 import os
@@ -76,16 +77,27 @@ def switch_on(repo: Path) -> bool:
 
 
 def opted_in(repo: Path) -> bool:
-    """The skeleton's opt-in, from global files and `GIT_CONFIG_` variables only (R235)."""
-    done = git(repo, "config", "--show-scope", "--type=bool", "--get-all", OPT_IN)
-    if done.returncode != 0:
-        return False
+    """The skeleton's opt-in, from the person's global files alone (R235): read without the
+    session's git variables or `XDG_CONFIG_HOME`, which a repository's settings could set, and
+    without asking git for a boolean, so that a repository's own value is never read as one."""
+    environment = {
+        key: value
+        for key, value in os.environ.items()
+        if not key.startswith("GIT_") and key != "XDG_CONFIG_HOME"
+    }
+    done = subprocess.run(
+        ["git", "config", "--show-scope", "--get-all", OPT_IN],
+        cwd=repo,
+        env=environment,
+        capture_output=True,
+        text=True,
+    )
     values = [
-        value
+        value.strip().lower()
         for scope, _, value in (line.partition("\t") for line in done.stdout.splitlines())
-        if scope in ("global", "command")
+        if scope == "global"
     ]
-    return bool(values) and values[-1] == "true"
+    return bool(values) and values[-1] in ("true", "yes", "on", "1")
 
 
 # ---- The commands it recognises (R240) ----
@@ -98,15 +110,21 @@ class Commit:
     all_tracked: bool = False
 
 
+def written(folder: Path, path: str) -> Path | None:
+    """A folder as a command writes it, or None for a form the skeleton leaves out."""
+    return None if path.startswith(("-", "~")) else Path(os.path.normpath(folder / path))
+
+
 def git_part(tokens: list[str], folder: Path) -> tuple[Path, str, list[str]] | None:
     """A git command's folder, with at most one written `-C`, its subcommand and its arguments."""
     if not tokens or tokens[0] != "git":
         return None
     rest = tokens[1:]
     if rest[:1] == ["-C"]:
-        if len(rest) < 2 or rest[1].startswith(("-", "~")):
+        given = written(folder, rest[1]) if len(rest) > 1 else None
+        if given is None:
             return None
-        folder, rest = Path(os.path.normpath(folder / rest[1])), rest[2:]
+        folder, rest = given, rest[2:]
     return (folder, rest[0], rest[1:]) if rest else None
 
 
@@ -126,7 +144,15 @@ def commit_options(args: list[str]) -> bool | None:
 
 def recognised(command: str, cwd: Path) -> Commit | None:
     """The commit that a command makes, when the skeleton recognises its form, or None."""
-    if any(c in command for c in "$`\\\n") or re.search(r"(^|\s)-m\s+(?!['\"])", command):
+    # With no `$`, backtick or backslash, a quoted span ends at its next quote, so a message's
+    # own text is left out of the search for a message that is not quoted.
+    unquoted = re.sub(r"'[^']*'|\"[^\"]*\"", "''", command)
+    if (
+        any(c in command for c in "$`\\\n")
+        or re.search(r"(^|\s)-m\s+(?![\s'\"])", unquoted)
+        # A word that the shell would expand, which git would read as a pathspec of its own.
+        or re.search(r"[*?\[{]|(^|\s)~", unquoted)
+    ):
         return None
     try:
         lexer = shlex.shlex(command, posix=True, punctuation_chars=True)
@@ -146,8 +172,11 @@ def recognised(command: str, cwd: Path) -> Commit | None:
         return None
     folder, adds = cwd, []
     for part in parts[:-1]:
-        if part[0] == "cd" and len(part) == 2 and not part[1].startswith(("-", "~")):
-            folder = Path(os.path.normpath(folder / part[1]))
+        if part[0] == "cd" and len(part) == 2:
+            given = written(folder, part[1])
+            if given is None:
+                return None
+            folder = given
             continue
         add = git_part(part, folder)
         if not add or add[1] != "add" or not add[2] or any(p.startswith("-") for p in add[2]):
@@ -193,13 +222,27 @@ def count(usage: dict[str, Any], name: str) -> int:
     return value if isinstance(value, int) and not isinstance(value, bool) and value >= 0 else 0
 
 
+@functools.cache
+def in_working_tree(cwd: str, repo: Path) -> bool:
+    """Whether an absolute folder lies in the repository's working tree, and in no repository
+    inside it; asked once for each folder that a session's lines give."""
+    if not Path(cwd).is_absolute():
+        return False
+    folder = Path(cwd).resolve()
+    if not folder.is_relative_to(repo):
+        return False
+    return not any(
+        (above / ".git").exists()
+        for above in [folder, *folder.parents]
+        if above != repo and above.is_relative_to(repo)
+    )
+
+
 def call_of(line: dict[str, Any], message: dict[str, Any], repo: Path) -> tuple[str, Any]:
     """A call's key and its kept fields, from a line that gives a stop reason, in the repository;
     or, for a call it leaves out, why: `outside` the repository or `incomplete`."""
     cwd, model, usage = line.get("cwd"), message.get("model"), message.get("usage")
-    if not isinstance(cwd, str) or not Path(cwd).is_absolute():
-        return "outside", None
-    if not Path(cwd).resolve().is_relative_to(repo):
+    if not isinstance(cwd, str) or not in_working_tree(cwd, repo):
         return "outside", None
     if not isinstance(model, str) or not MODEL.fullmatch(model) or not isinstance(usage, dict):
         return "incomplete", None
@@ -281,18 +324,20 @@ def would_commit(commit: Commit) -> bool:
     if commit.all_tracked and git(commit.folder, "diff", "--quiet").returncode == 1:
         return True
     return any(
-        git(folder, "status", "--porcelain", "--", *paths).stdout.strip()
+        git(folder, "status", "--porcelain", "--untracked-files=all", "--", *paths).stdout.strip()
         for folder, paths in commit.adds
     )
 
 
-def stage(repo: Path, commit: Commit, store: dict[str, Any]) -> str:
+def stage(repo: Path, commit: Commit, store: dict[str, Any], command: str) -> str:
     """Write the calls waiting into one new ledger file and stage it; say what was done."""
     if not store["waiting"]:
         return "nothing_waiting"
     if not would_commit(commit):
         return "nothing_to_commit"
     month = datetime.now(UTC).strftime("%Y-%m")
+    if (repo / LEDGER / month).resolve() != repo / LEDGER / month:
+        return "ledger_is_a_link"
     relative = f"{LEDGER}/{month}/{secrets.token_hex(16)}.jsonl"
     lines = [
         json.dumps({"key": key, **call}, sort_keys=True, separators=(",", ":"))
@@ -302,7 +347,7 @@ def stage(repo: Path, commit: Commit, store: dict[str, Any]) -> str:
     if git(repo, "add", "--", relative).returncode != 0:
         (repo / relative).unlink()
         return "add_failed"
-    store["staged"] = {"path": relative, "keys": sorted(store["waiting"])}
+    store["staged"] = {"path": relative, "keys": sorted(store["waiting"]), "command": command}
     return "staged"
 
 
@@ -329,11 +374,18 @@ def handle(repo: Path, payload: dict[str, Any], event: str, commit: Commit | Non
     """Capture for one repository, with one line in its log."""
     if not switch_on(repo):
         return
-    common = Path(git(repo, "rev-parse", "--git-common-dir").stdout.strip())
-    state = (repo / common).resolve() / STATE
+    common = (repo / git(repo, "rev-parse", "--git-common-dir").stdout.strip()).resolve()
+    if not common.is_relative_to(repo):
+        return
+    state = common / STATE
     reading = Reading()
-    entry: dict[str, Any] = {"event": event, "capture_sha256": own_hash()}
-    entry.update(opt_in=opted_in(repo), staged=None, error=None)
+    entry: dict[str, Any] = {
+        "event": event,
+        "capture_sha256": own_hash(),
+        "opt_in": opted_in(repo),
+        "staged": None,
+        "error": None,
+    }
     try:
         if not entry["opt_in"]:
             return
@@ -350,10 +402,14 @@ def handle(repo: Path, payload: dict[str, Any], event: str, commit: Commit | Non
         if event == "PreToolUse" and ours and commit:
             if store["staged"]:
                 settle(repo, store)
-            entry["staged"] = stage(repo, commit, store)
+            entry["staged"] = stage(repo, commit, store, command)
         elif event == "PreToolUse" and not commit and re.search(r"\bcommit\b", command):
             entry["staged"] = "not_recognised"
-        elif event in ("PostToolUse", "PostToolUseFailure") and ours and store["staged"]:
+        # After the command, the hook's folder may be where the command moved to (A4), so the
+        # command is matched as written, not resolved again.
+        elif event in ("PostToolUse", "PostToolUseFailure") and (
+            store["staged"] and store["staged"].get("command") == command
+        ):
             entry["staged"] = settle(repo, store)
         save(state / "store.json", json.dumps(store, sort_keys=True))
     except Exception as error:  # noqa: BLE001 - the skeleton never stalls the agent (R239)

@@ -66,8 +66,11 @@ def is_count(value: Any) -> bool:
 
 
 def ledger_files(folder: Path) -> set[Path]:
+    """The ledger files in a checked-out tree, through no linked folder."""
     root = folder / LEDGER
-    return {path.relative_to(folder) for path in root.rglob("*.jsonl")} if root.is_dir() else set()
+    if root.parent.is_symlink() or root.is_symlink() or not root.is_dir():
+        return set()
+    return {path.relative_to(folder) for path in root.rglob("*.jsonl")}
 
 
 def calls_added(before: Path, after: Path) -> tuple[dict[str, dict[str, Any]], int, int]:
@@ -82,7 +85,7 @@ def calls_added(before: Path, after: Path) -> tuple[dict[str, dict[str, Any]], i
             if path.is_symlink():
                 raise ValueError("a ledger file that is a link is not followed")
             text = path.read_text(encoding="utf-8")
-        except ValueError:
+        except (OSError, ValueError):
             unread += 1
             continue
         for raw in text.splitlines():
@@ -134,7 +137,8 @@ def figure(calls: dict[str, dict[str, Any]], files: int, unread: int) -> str:
             )
             total += price
             counts = " | ".join(f"{value:,}" for value in row[1:])
-            lines.append(f"| {model} | {row[0]} | {counts} | {price:.2f} |")
+            # In a code span, which a model name cannot close, so it is never a link or a mention.
+            lines.append(f"| `{model}` | {row[0]} | {counts} | {price:.2f} |")
     lines += ["", f"In all, **{total:.2f}** at the test price, which is not a real cost."]
     if unread:
         lines.append(f"{unread} ledger lines could not be read and are not counted.")

@@ -1374,7 +1374,7 @@ No tracked file under `.claude/`, `.claude-plugin/` or `.github/` SHALL hold the
 
 ### Requirement: The walking skeleton records only with its own switch and the opt-in
 
-The walking skeleton's capture SHALL record a call only for a repository whose top-level `.pr-cost.json` holds `enabled` and `walking_skeleton` both `true`, while git gives its own opt-in, `pr-cost-skeleton.capture`, never the tool's, as `true` from the person's global files and the session's `GIT_CONFIG_` variables, never a repository's own; and SHALL keep a call only when its line's working directory lies in that repository's working tree. Tests SHALL drive each way.
+The walking skeleton's capture SHALL record a call only for a repository whose top-level `.pr-cost.json` holds `enabled` and `walking_skeleton` both `true`, while git gives its own opt-in, `pr-cost-skeleton.capture`, never the tool's, as `true` from the person's global files alone, read without the session's git variables or `XDG_CONFIG_HOME`, never a repository's own; and SHALL keep a call only when its line's working directory lies in that repository's working tree. Tests SHALL drive each way.
 
 #### Scenario: A switch without the skeleton's key records nothing
 
@@ -1388,12 +1388,12 @@ The walking skeleton's capture SHALL record a call only for a repository whose t
 
 #### Scenario: No opt-in means the skeleton records nothing
 
-- **WHEN** the skeleton's switch is on, and git, reading the person's global configuration files, does not give `pr-cost-skeleton.capture` as `true`, though the repository's own configuration does, or though the tool's own opt-in, `pr-cost.capture`, is `true`
+- **WHEN** the skeleton's switch is on, and git, reading the person's global configuration files, does not give `pr-cost-skeleton.capture` as `true`, though the repository's own configuration does, or the session's `GIT_CONFIG_` or `XDG_CONFIG_HOME` variables do, or though the tool's own opt-in, `pr-cost.capture`, is `true`
 - **THEN** it writes no store, stages no ledger file and exits with success
 
 #### Scenario: A call made in another repository is not recorded
 
-- **WHEN** the switch and the opt-in are on, and the transcript holds a call whose line gives a working directory outside the repository's working tree, or none
+- **WHEN** the switch and the opt-in are on, and the transcript holds a call whose line gives a working directory outside the repository's working tree, or in another repository inside it, or none
 - **THEN** no ledger file that the skeleton stages holds that call
 
 ### Requirement: The walking skeleton never stalls or steers the agent

@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import io
 import json
+import shutil
 import subprocess
 import sys
 import tarfile
@@ -17,7 +18,8 @@ from typing import Any
 
 import pytest
 import report
-from test_roadmap import session_free_environment
+from test_backlog import AUTHOR
+from test_roadmap import isolated_environment, session_free_environment
 
 ZEROS = "0" * 40
 REPOSITORY = "someone/scratch"
@@ -42,15 +44,7 @@ class Repository:
         self.root = root
         self.path = root / "repo"
         self.path.mkdir()
-        self.env = {
-            **session_free_environment(),
-            "GIT_CONFIG_GLOBAL": str(root / "none"),
-            "GIT_CONFIG_NOSYSTEM": "1",
-            "GIT_AUTHOR_NAME": "Test",
-            "GIT_AUTHOR_EMAIL": "test@example.invalid",
-            "GIT_COMMITTER_NAME": "Test",
-            "GIT_COMMITTER_EMAIL": "test@example.invalid",
-        }
+        self.env = {**isolated_environment(self.path), **AUTHOR}
         self.git("init", "-q", "-b", "main")
         self.add_ledger("old", [line("k-old", "model-old")])
         self.git("commit", "-q", "-m", "Before")
@@ -165,8 +159,8 @@ def test_a_merge_a_squash_and_a_rebase_give_the_files_that_the_push_added(
     assert github.requests[0] == ("GET", f"/repos/{REPOSITORY}/commits/{after}/pulls", None)
     assert github.requests[1][1] == f"/repos/{REPOSITORY}/issues/7/comments"
     for text in (comment, summary):
-        assert "| model-a | 2 | 2,000,000 | 2,000,000 | 0 | 0 | 6.00 |" in text
-        assert "| model-b | 1 | 1,000,000 | 1,000,000 | 0 | 0 | 3.00 |" in text
+        assert "| `model-a` | 2 | 2,000,000 | 2,000,000 | 0 | 0 | 6.00 |" in text
+        assert "| `model-b` | 1 | 1,000,000 | 1,000,000 | 0 | 0 | 3.00 |" in text
         assert "model-old" not in text
         assert "**9.00** at the test price" in text
 
@@ -177,7 +171,7 @@ def test_one_call_in_two_ledger_files_is_counted_once(tmp_path: Path) -> None:
     before, after = merged_by(repository, "merge")
     github = GitHub([MERGED])
     run(tmp_path, before, after, repository.tree(before, "b"), repository.tree(after, "a"), github)
-    assert "| model-b | 1 |" in github.comments[0]
+    assert "| `model-b` | 1 |" in github.comments[0]
 
 
 def test_the_comment_says_that_its_figure_is_not_a_real_cost(tmp_path: Path) -> None:
@@ -245,7 +239,7 @@ def test_a_line_it_cannot_read_and_a_model_name_it_does_not_take_are_counted(
     github = GitHub([MERGED])
     run(tmp_path, before, after, repository.tree(before, "b"), repository.tree(after, "a"), github)
     comment = github.comments[0]
-    assert "example.invalid" not in comment and "| model-a | 1 |" in comment
+    assert "example.invalid" not in comment and "| `model-a` | 1 |" in comment
     assert "4 ledger lines could not be read" in comment
 
 
@@ -334,7 +328,9 @@ def test_a_count_that_is_negative_a_boolean_or_too_large_is_not_counted(tmp_path
     )
     comment = github.comments[0]
     assert (
-        "| model-a | 1 |" in comment and "**3.00**" in comment and "-" not in comment.split("**")[1]
+        "| `model-a` | 1 |" in comment
+        and "**3.00**" in comment
+        and "-" not in comment.split("**")[1]
     )
     assert "4 ledger lines could not be read" in comment and summary.endswith(comment)
 
@@ -350,3 +346,67 @@ def test_a_ledger_file_that_is_a_link_is_not_followed(tmp_path: Path) -> None:
     run(tmp_path, "b" * 40, "c" * 40, before_tree, after_tree, github)
     assert "model-outside" not in github.comments[0]
     assert "1 ledger lines could not be read" in github.comments[0]
+
+
+# ---- Found by the review lanes ----
+
+
+@pytest.mark.parametrize("link", [".pr-cost", ".pr-cost/ledger"])
+def test_a_ledger_folder_that_is_a_link_is_not_followed(tmp_path: Path, link: str) -> None:
+    repository = Repository(tmp_path)
+    before_tree = repository.tree(repository.git("rev-parse", "HEAD"), "b")
+    after_tree = repository.tree(repository.git("rev-parse", "HEAD"), "a")
+    outside = tmp_path / "outside"
+    (outside / "ledger" / "2026-11").mkdir(parents=True)
+    (outside / "2026-11").mkdir()
+    for folder in (outside / "ledger" / "2026-11", outside / "2026-11"):
+        (folder / "x.jsonl").write_text(json.dumps(line("k13", "model-outside")) + "\n")
+    shutil.rmtree(after_tree / ".pr-cost")
+    if link == ".pr-cost":
+        (after_tree / ".pr-cost").symlink_to(outside, target_is_directory=True)
+    else:
+        (after_tree / ".pr-cost").mkdir()
+        (after_tree / ".pr-cost" / "ledger").symlink_to(outside, target_is_directory=True)
+    github = GitHub([MERGED])
+    run(tmp_path, "b" * 40, "c" * 40, before_tree, after_tree, github)
+    assert "model-outside" not in github.comments[0]
+
+
+def test_a_folder_named_like_a_ledger_file_is_counted_as_unread(tmp_path: Path) -> None:
+    repository = Repository(tmp_path)
+    before_tree = repository.tree(repository.git("rev-parse", "HEAD"), "b")
+    after_tree = repository.tree(repository.git("rev-parse", "HEAD"), "a")
+    folder = after_tree / ".pr-cost" / "ledger" / "2026-11" / "x.jsonl"
+    folder.mkdir()
+    (folder / "inside.txt").write_text("text\n")
+    github = GitHub([MERGED])
+    summary = run(tmp_path, "b" * 40, "c" * 40, before_tree, after_tree, github)
+    assert "1 ledger lines could not be read" in github.comments[0]
+    assert summary.endswith(github.comments[0])
+
+
+def test_a_model_name_is_written_as_code_so_that_it_is_never_a_link(tmp_path: Path) -> None:
+    repository = Repository(tmp_path)
+    before = repository.git("rev-parse", "HEAD")
+    repository.add_ledger("named", [line("k14", "www.example.com"), line("k15", "a.@someone")])
+    repository.git("commit", "-q", "-m", "Named")
+    github = GitHub([MERGED])
+    run(
+        tmp_path,
+        before,
+        repository.git("rev-parse", "HEAD"),
+        repository.tree(before, "b"),
+        repository.tree("HEAD", "a"),
+        github,
+    )
+    assert "| `www.example.com` | 1 |" in github.comments[0]
+    assert "| `a.@someone` | 1 |" in github.comments[0]
+
+
+def test_capture_and_the_report_agree_on_the_ledgers_form() -> None:
+    """Each script runs alone, so each keeps its own copy of what the other writes or reads."""
+    import capture
+
+    assert capture.COUNTS == report.COUNTS
+    assert capture.MODEL.pattern == report.MODEL.pattern
+    assert Path(capture.LEDGER) == report.LEDGER

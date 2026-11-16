@@ -43,14 +43,15 @@ class Session:
         self.root = root
         self.repo = root / "clone"
         self.repo.mkdir()
-        self.global_config = root / "global.gitconfig"
+        # The person's global file, where git finds it from `HOME` alone: capture reads the opt-in
+        # without the session's git variables (R235).
+        self.global_config = root / ".gitconfig"
         lines = ["[user]", "\tname = Test", "\temail = test@example.invalid"]
         if opt_in:
             lines += ["[pr-cost-skeleton]", "\tcapture = true"]
         self.global_config.write_text("\n".join(lines) + "\n")
         self.env = {
             **session_free_environment(),
-            "GIT_CONFIG_GLOBAL": str(self.global_config),
             "GIT_CONFIG_NOSYSTEM": "1",
             "HOME": str(root),
             "GIT_EDITOR": "false",
@@ -237,15 +238,45 @@ def test_an_opt_in_that_is_not_true_records_nothing(tmp_path: Path) -> None:
     assert not session.store.exists()
 
 
-def test_the_sessions_git_config_variables_opt_in(tmp_path: Path) -> None:
+@pytest.mark.parametrize("variables", ["count", "global file", "config home"])
+def test_the_sessions_variables_never_give_the_opt_in(tmp_path: Path, variables: str) -> None:
+    """A repository's settings can set a session's variables, so they never opt anyone in."""
     session = Session(tmp_path, opt_in=False)
+    elsewhere = tmp_path / "elsewhere"
+    (elsewhere / "git").mkdir(parents=True)
+    opt_in = "[pr-cost-skeleton]\n\tcapture = true\n"
+    (elsewhere / "gitconfig").write_text(opt_in)
+    (elsewhere / "git" / "config").write_text(opt_in)
     session.env.update(
         {
-            "GIT_CONFIG_COUNT": "1",
-            "GIT_CONFIG_KEY_0": "pr-cost-skeleton.capture",
-            "GIT_CONFIG_VALUE_0": "true",
-        }
+            "count": {
+                "GIT_CONFIG_COUNT": "1",
+                "GIT_CONFIG_KEY_0": "pr-cost-skeleton.capture",
+                "GIT_CONFIG_VALUE_0": "true",
+            },
+            "global file": {"GIT_CONFIG_GLOBAL": str(elsewhere / "gitconfig")},
+            "config home": {"XDG_CONFIG_HOME": str(elsewhere)},
+        }[variables]
     )
+    session.call()
+    session.hook("Stop")
+    assert not session.store.exists()
+    assert session.log()[-1]["opt_in"] is False
+
+
+def test_the_global_file_under_the_default_config_home_opts_in(tmp_path: Path) -> None:
+    session = Session(tmp_path, opt_in=False)
+    (tmp_path / ".config" / "git").mkdir(parents=True)
+    (tmp_path / ".config" / "git" / "config").write_text("[pr-cost-skeleton]\n\tcapture = true\n")
+    session.call()
+    session.hook("Stop")
+    assert session.waiting() == 1
+
+
+def test_a_repositorys_value_that_is_not_a_boolean_leaves_the_opt_in_as_it_is(
+    session: Session,
+) -> None:
+    git(session.repo, session.env, "config", "pr-cost-skeleton.capture", "maybe")
     session.call()
     session.hook("Stop")
     assert session.waiting() == 1
@@ -740,3 +771,121 @@ def test_the_log_counts_the_calls_it_leaves_out_and_why(session: Session) -> Non
     assert entry["calls_outside"] == 2
     assert entry["calls_incomplete"] == 1
     assert entry["calls_differing"] == 1
+
+
+# ---- Found by the review lanes ----
+
+
+def test_a_call_made_in_a_repository_inside_the_repository_is_not_kept(session: Session) -> None:
+    inner = session.repo / "vendor" / "inner"
+    inner.mkdir(parents=True)
+    git(inner, session.env, "init", "-q", "-b", "main")
+    session.call(cwd=inner / "src")
+    session.call(cwd=session.repo / "vendor")
+    session.hook("Stop")
+    assert session.waiting() == 1
+    assert session.log()[-1]["calls_outside"] == 1
+
+
+def test_a_quoted_message_that_holds_a_message_option_is_recognised(session: Session) -> None:
+    session.call()
+    session.hook("Stop")
+    session.change()
+    command = f"cd {session.repo} && git add change.txt && git commit -m 'explain the -m flag'"
+    assert session.commit(command) == 0
+    assert len(session.ledger_files()) == 1
+
+
+@pytest.mark.parametrize("value", ["yes", "on", "1", "TRUE"])
+def test_each_way_git_writes_true_opts_in(tmp_path: Path, value: str) -> None:
+    session = Session(tmp_path, opt_in=False)
+    with session.global_config.open("a") as out:
+        out.write(f"[pr-cost-skeleton]\n\tcapture = {value}\n")
+    session.call()
+    session.hook("Stop")
+    assert session.waiting() == 1
+
+
+def test_a_worktree_whose_common_directory_lies_outside_it_gets_no_state(
+    session: Session,
+) -> None:
+    """A folder whose git directory names a common directory elsewhere, as a worktree or an
+    unpacked archive's `.git` does, never makes capture write there (design decision 18)."""
+    tree = session.root / "tree"
+    git(session.repo, session.env, "worktree", "add", "-q", str(tree))
+    session.call(cwd=tree)
+    assert (tree / ".pr-cost.json").exists()
+    session.hook("Stop", cwd=tree)
+    assert not (session.common_dir / "pr-cost-skeleton").exists()
+
+
+def test_a_linked_ledger_folder_leaves_nothing_outside_the_repository(session: Session) -> None:
+    outside = session.root / "outside"
+    outside.mkdir()
+    (session.repo / ".pr-cost").symlink_to(outside, target_is_directory=True)
+    session.call()
+    session.hook("Stop")
+    session.change()
+    session.commit()
+    assert list(outside.iterdir()) == []
+    assert session.ledger_files() == []
+    assert session.log()[-2]["staged"] == "ledger_is_a_link"
+
+
+@pytest.mark.parametrize("hook", ["refuses", "accepts"])
+def test_a_relative_cd_settles_after_the_command_from_where_it_moved(
+    session: Session, hook: str
+) -> None:
+    """Claude Code gives the hook after a command the folder the command moved to (A4)."""
+    session.call()
+    session.hook("Stop", cwd=session.root)
+    session.change()
+    if hook == "refuses":
+        pre_commit = session.repo / ".git" / "hooks" / "pre-commit"
+        pre_commit.write_text("#!/bin/sh\nexit 1\n")
+        pre_commit.chmod(0o755)
+    command = "cd clone && git add change.txt && git commit -m 'Change it'"
+    session.bash("PreToolUse", command, session.root)
+    done = subprocess.run(["bash", "-c", command], cwd=session.root, env=session.env)
+    event = "PostToolUse" if done.returncode == 0 else "PostToolUseFailure"
+    session.bash(event, command, session.repo)
+    if hook == "refuses":
+        assert session.log()[-1]["staged"] == "taken_back"
+        assert session.staged() == ["change.txt"] and session.untracked_ledger() == []
+        assert session.waiting() == 1
+    else:
+        assert session.log()[-1]["staged"] == "committed"
+        assert len(session.ledger_files()) == 1 and session.waiting() == 0
+
+
+@pytest.mark.parametrize("words", ["*.txt", "chan?e.txt", "[c]hange.txt", "{change,x}.txt"])
+def test_a_word_that_the_shell_expands_is_not_recognised(session: Session, words: str) -> None:
+    session.call()
+    session.hook("Stop")
+    session.change()
+    session.commit(f"cd {session.repo} && git add {words} && git commit -m 'Change it'")
+    assert session.log()[-2]["staged"] == "not_recognised"
+    assert session.ledger_files() == []
+
+
+def test_a_message_after_two_blanks_is_recognised(session: Session) -> None:
+    session.call()
+    session.hook("Stop")
+    session.change()
+    assert (
+        session.commit(f"cd {session.repo} && git add change.txt && git commit -m  'Change it'")
+        == 0
+    )
+    assert len(session.ledger_files()) == 1
+
+
+def test_a_new_file_is_seen_whatever_the_person_shows_of_untracked_files(
+    session: Session,
+) -> None:
+    with session.global_config.open("a") as out:
+        out.write("[status]\n\tshowUntrackedFiles = no\n")
+    session.call()
+    session.hook("Stop")
+    session.change()
+    assert session.commit() == 0
+    assert len(session.ledger_files()) == 1

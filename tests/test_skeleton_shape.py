@@ -126,6 +126,15 @@ def test_it_needs_a_transcript_and_an_output(tmp_path: Path) -> None:
     assert record(tmp_path / "only.json").returncode == 2
 
 
+def test_a_transcript_given_where_the_output_goes_is_never_written(tmp_path: Path) -> None:
+    """With the output left out, the last transcript would take its place and be lost."""
+    first = write_transcript(tmp_path / "main.jsonl", planted_lines())
+    second = write_transcript(tmp_path / "agent.jsonl", planted_lines())
+    before = second.read_bytes()
+    assert record(first, second).returncode == 2
+    assert second.read_bytes() == before
+
+
 def random_value(rng: random.Random, depth: int) -> Any:
     kind = rng.choice(
         ["str", "int", "float", "bool", "none", "list", "dict"] if depth < 3 else ["str"]

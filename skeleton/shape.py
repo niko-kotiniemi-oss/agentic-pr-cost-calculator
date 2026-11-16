@@ -84,7 +84,8 @@ def failing(entries: set[tuple[str, str]]) -> int:
 
 
 def main(argv: list[str]) -> int:
-    if len(argv) < 2:
+    # An output named like a transcript is refused, so that one is never written over.
+    if len(argv) < 2 or argv[-1].endswith(".jsonl"):
         print("usage: shape.py <transcript>... <out.json>", file=sys.stderr)
         return 2
     *sources, target = (Path(arg) for arg in argv)

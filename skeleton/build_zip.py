@@ -32,7 +32,7 @@ def build(repo: Path, commit: str, env: dict[str, str]) -> io.BytesIO:
     with zipfile.ZipFile(out, "w") as archive:
         for name, source in sorted(FILES.items()):
             content = subprocess.run(
-                ["git", "show", f"{commit}:{source}"],
+                ["git", "--no-replace-objects", "show", f"{commit}:{source}"],
                 cwd=repo,
                 env=env,
                 check=True,

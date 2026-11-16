@@ -64,8 +64,13 @@ PRIVATE_PATTERNS = [
     re.compile(re.escape("/mnt/" + "project-files")),
     re.compile("Claude-" + "Session:"),
     # The identifiers that a transcript carries, of a message, a request and a tool call (T186).
-    re.compile(r"\b(?:msg|req|toolu)" + r"_[0-9A-Za-z]{8,}"),
-    # A session's or a line's identifier, a UUID in lower case (T190).
+    # A server tool call's too, and a message's with a platform's infix.
+    # Its value holds a digit, which an ordinary name such as a field's does not.
+    re.compile(
+        r"\b(?:msg|req|toolu|srvtoolu)" + r"_(?:(?:bdrk|vrtx)_)?(?=[A-Za-z]*[0-9])[0-9A-Za-z]{8,}"
+    ),
+    # A session's or a line's identifier, a UUID in lower case (T190), as Claude Code writes it;
+    # not in upper case, which fixed identifiers that protocols publish are written in.
     re.compile(r"\b[0-9a-f]{8}-[0-9a-f]{4}" + r"-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b"),
 ]
 
@@ -175,12 +180,17 @@ def test_the_privacy_patterns_catch_what_they_are_for() -> None:
         '"id": "msg' + '_01ABCDEFGHJKMNPQRS"',
         "requestId req" + "_011CABCDEFGHJKMNPQ",
         "tool_use_id toolu" + "_01ABCDEFGHJKMNPQRS",
+        "a server tool call srvtoolu" + "_01ABCDEFGHJKMNPQRS",
+        '"id": "msg' + '_bdrk_01ABCDEFGHJKMNPQRS"',
+        '"id": "msg' + '_vrtx_01ABCDEFGHJKMNPQRS"',
         # A session's or a line's identifier, as a transcript and its file name carry it.
         "sessionId 0f1e2d3c" + "-4b5a-6978-8a9b-0c1d2e3f4a5b",
     ]
     for sample in samples:
         assert any(p.search(sample) for p in PRIVATE_PATTERNS), sample
     ordinary = ["an ordinary sentence about pull requests", "the field stop_sequence", "msg_short"]
+    ordinary += ["msg" + "_template", "req" + "_received", "toolu" + "_synthetic"]
+    ordinary += ["msg" + "_send_callback", "req" + "_per_interval"]
     ordinary.append("a protocol's fixed GUID 258EAFA5" + "-E914-47DA-95CA-C5AB0DC85B11")
     for text in ordinary:
         assert not any(p.search(text) for p in PRIVATE_PATTERNS), text

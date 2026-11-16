@@ -4,7 +4,7 @@
 
 **Goal:** Build tasks 1.31 to 1.35 of `add-pr-cost-calculator`: the walking skeleton in `skeleton/`, the checks that hold it, and its tests, as design decision 18 gives it.
 
-**Architecture:** Five standard-library scripts in `skeleton/`, each opening with a comment that says it is the walking skeleton and not the tool: `capture.py`, which the plugin's hooks run; `report.py`, which `workflow.yml` runs in the scratch repository; `build_zip.py`, which builds the plugin's zip from a commit; `shape.py`, which records the value-free shape of the run's transcripts; and the plugin's `plugin.json` and `hooks.json`. The checks live in `tests/test_skeleton_checks.py`, as the other document checks of this repository do, and each is shown to fail on a planted defect. The scripts are driven through the seam that DR-246 names: capture through a hook's input on standard input, transcript files that the test writes and a real git repository in a temporary folder; the report through ledger files in such a repository, checked out into two folders as the workflow does, and recorded responses of GitHub's API.
+**Architecture:** Four standard-library scripts in `skeleton/`, each opening with a comment that says it is the walking skeleton and not the tool: `capture.py`, which the plugin's hooks run; `report.py`, which `workflow.yml` runs in the scratch repository; `build_zip.py`, which builds the plugin's zip from a commit; `shape.py`, which records the value-free shape of the run's transcripts; and the plugin's `plugin.json` and `hooks.json`. The checks live in `tests/test_skeleton_checks.py`, as the other document checks of this repository do, and each is shown to fail on a planted defect. The scripts are driven through the seam that DR-246 names: capture through a hook's input on standard input, transcript files that the test writes and a real git repository in a temporary folder; the report through ledger files in such a repository, checked out into two folders as the workflow does, and recorded responses of GitHub's API.
 
 **Tech Stack:** Python 3.11 standard library; pytest and PyYAML for the tests, which `requirements-dev.txt` pins.
 
@@ -47,6 +47,24 @@ Seven reviewers, one per trust boundary, read the code at `7869896`; their findi
 - The zip is built only from a full commit id, printed beside its hash, with its files stored rather than compressed.
 - The private-reference check knows a session's and a line's identifier.
 - Task 1.36 and design decision 18 now check the files at the pull request's head before the merge, check that log lines appear before reading their absence, and run the privacy checks before the results come here.
+
+## Fixes after the review lanes
+
+The four lanes, `/simplify`, `/security-review`, `/code-review` and `/verify`, read the code at `c23f7d0`; their findings are comments on the pull request. Each fix below was written test-first, and seen to fail before the code changed; the spec changed before the code where a requirement changed.
+
+- The opt-in comes from the person's global files alone, read without the session's git variables or `XDG_CONFIG_HOME`, which a repository's settings can set, and without asking git for a boolean, so that a repository's own value that is not one never turns it off (R235).
+- A call made in a repository inside the repository is not kept (R235), and a quoted message that holds `-m` is recognised.
+- A folder whose git common directory lies outside it, as a worktree's, gets no log, and a ledger folder that is a link gets no file.
+- The report follows no linked ledger folder, counts a folder named like a ledger file as unread, and writes a model name as code.
+- The zip is built with `--no-replace-objects`.
+- The private-reference check knows a server tool call's identifier and a message's with a platform's infix.
+- A test holds the ledger's form equal in capture and the report, and the command recogniser's path step is written once.
+- After the command, a staged ledger file is settled by the command as written, not by resolving it again from the folder that the command moved to (A4).
+- A word that the shell would expand is not recognised, a message after two blanks is, and a new file is seen whatever the person's `status.showUntrackedFiles` says.
+- The private-reference pattern asks for a digit in an identifier's value, so that ordinary names pass, and names the platforms' infixes.
+- The workflow's check also refuses a step's `shell`, `defaults`, a `container`, `services` and another runner.
+- The shape recorder refuses an output named like a transcript, and the check for a missing shape reads task 1.36 as the other checks do and fails when it cannot find it.
+- The tests of the report and the zip use the repository's shared isolated git environment.
 
 ## Left for after the build
 

@@ -14,8 +14,9 @@ from typing import Any
 
 import build_zip
 import pytest
+from test_backlog import AUTHOR
 from test_repository import ROOT
-from test_roadmap import session_free_environment
+from test_roadmap import isolated_environment, session_free_environment
 
 SKELETON = ROOT / "skeleton"
 COMMAND = 'python3 -I "${CLAUDE_PLUGIN_ROOT}/capture.py"; exit 0'
@@ -178,15 +179,7 @@ def test_the_real_capture_script_under_its_hook_prints_nothing(tmp_path: Path) -
 def repository_with_skeleton(root: Path) -> tuple[Path, dict[str, str]]:
     repo = root / "repo"
     shutil.copytree(SKELETON, repo / "skeleton", ignore=shutil.ignore_patterns("__pycache__"))
-    env = {
-        **session_free_environment(),
-        "GIT_CONFIG_GLOBAL": str(root / "none"),
-        "GIT_CONFIG_NOSYSTEM": "1",
-        "GIT_AUTHOR_NAME": "Test",
-        "GIT_AUTHOR_EMAIL": "test@example.invalid",
-        "GIT_COMMITTER_NAME": "Test",
-        "GIT_COMMITTER_EMAIL": "test@example.invalid",
-    }
+    env = {**isolated_environment(repo), **AUTHOR}
     for args in (["init", "-q", "-b", "main"], ["add", "-A"], ["commit", "-q", "-m", "Skeleton"]):
         subprocess.run(["git", *args], cwd=repo, env=env, check=True, capture_output=True)
     return repo, env
@@ -249,3 +242,23 @@ def test_a_revision_that_can_move_or_is_short_is_refused(tmp_path: Path, revisio
     )
     assert done.returncode != 0 and not (tmp_path / "x.zip").exists()
     assert "full commit" in done.stderr
+
+
+def test_a_replace_ref_never_changes_what_the_zip_holds(tmp_path: Path) -> None:
+    """The zip holds the named commit's own bytes, whatever the clone's replace refs say."""
+    repo, env = repository_with_skeleton(tmp_path)
+    other = tmp_path / "other.py"
+    other.write_text("# not the reviewed script\n")
+
+    def git(*args: str) -> str:
+        return subprocess.run(
+            ["git", *args], cwd=repo, env=env, capture_output=True, text=True, check=True
+        ).stdout.strip()
+
+    git(
+        "replace",
+        git("rev-parse", "HEAD:skeleton/capture.py"),
+        git("hash-object", "-w", str(other)),
+    )
+    with zipfile.ZipFile(build_zip.build(repo, git("rev-parse", "HEAD"), env)) as archive:
+        assert archive.read("capture.py") == (SKELETON / "capture.py").read_bytes()
