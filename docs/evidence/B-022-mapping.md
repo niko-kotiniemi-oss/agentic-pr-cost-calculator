@@ -3799,7 +3799,7 @@ Old:
 New:
 
 ~~~~text
-- **Answer:** a record's number, the records' folder, the index's table and the links in a record each take only the form that the checks read (R124, R125, R128, R133).
+- **Answer:** a record's number, padded to three, the records' folder, the index's table and the links in a record each take only the form that the checks read (R124, R125, R128, R133).
 ~~~~
 
 Clause, the new unit:
@@ -3811,7 +3811,19 @@ Clause, the new unit:
 Clause, R124:
 
 ~~~~text
-a record's number is written in ASCII digits, padded to three and no further.
+a record's number is written in ASCII digits,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+padded to three
+~~~~
+
+Clause, R124:
+
+~~~~text
+and no further.
 ~~~~
 
 Clause, R133:
@@ -3881,7 +3893,7 @@ Old:
 New:
 
 ~~~~text
-- **Answer:** CI fails on an attribute that hides the diff of a file that the review reads, and reads none of a person's own attributes (R134). The line that sets such an attribute shows in the pull request's own diff. An attribute that changes what git's checkout of the hook file or of the marketplace's plugin folder writes, rather than how its diff shows, is T143.
+- **Answer:** CI fails on an attribute that hides the diff of a file that R134 names, among them the records, the README, `CLAUDE.md`, a change's tasks and what the marketplace serves, and reads none of a person's own attributes (R134). The line that sets such an attribute shows in the pull request's own diff. An attribute that changes what git's checkout of the hook file or of the marketplace's plugin folder writes, rather than how its diff shows, is T143.
 ~~~~
 
 Clause, the new unit:
@@ -14577,67 +14589,31 @@ Old:
 New:
 
 ~~~~text
-- **What it shows.** What R20, R94 and R95 give, and, as R65 and R202 give it, when the repository's hook file or its registration does not run the report's own hook file, as when it was copied from the README of another release.
+- **What it shows.** The total cost; the cost by model, by token type and by activity type; the CI minutes and their cost; the price table's date; the tool's version; how many ledger entries were counted, and how many were not, for each reason; how many calls capture refused; how many it read without a stop reason, with a note that the token cost is then a lower bound, and how many carried a usage field that capture does not know, with a note that the token cost may be low, counting those marks only on the entries that it counts (R20, R94, R95). It also says when the hook file at the merged commit differs from the one at the report's own commit, and when the hook's registration in that commit's `.claude/settings.json` or `.claude/settings.local.json` carries a checksum other than that commit's hook file's, so that the registration runs nothing, as when it was copied from the README of another release, quoting nothing from either file, and leaves out, without stopping, a settings file that it cannot read (R65, R202).
 ~~~~
 
 Clause, the new unit:
 
 ~~~~text
-- **What it shows.**
-~~~~
-
-Clause, R20:
-
-~~~~text
-The total cost; the cost by model, by token type and by activity type; the CI minutes and their cost;
-~~~~
-
-Clause, R94:
-
-~~~~text
-the price table's date; the tool's version;
-~~~~
-
-Clause, R20:
-
-~~~~text
-how many ledger entries were counted, and how many were not, for each reason;
-~~~~
-
-Clause, R95:
-
-~~~~text
-how many calls capture refused; how many it read without a stop reason, with a note that the token cost is then a lower bound, and how many carried a usage field that capture does not know, with a note that the token cost may be low,
+- **What it shows.** The total cost; the cost by model, by token type and by activity type; the CI minutes and their cost; the price table's date; the tool's version; how many ledger entries were counted, and how many were not, for each reason; how many calls capture refused; how many it read without a stop reason, with a note that the token cost is then a lower bound, and how many carried a usage field that capture does not know, with a note that the token cost may be low, counting those marks only on the entries that it
 ~~~~
 
 Clause, `report-comment`: "A mark on an entry that is not counted is not counted":
 
 ~~~~text
-counting those marks only on the entries that it counts.
-~~~~
-
-Clause, R65:
-
-~~~~text
-It also says when the hook file at the merged commit differs from the one at the report's own commit,
-~~~~
-
-Clause, R202:
-
-~~~~text
-and when the hook's registration in that commit's `.claude/settings.json` or `.claude/settings.local.json` carries a checksum other than that commit's hook file's, so that the registration runs nothing,
+counts.
 ~~~~
 
 Clause, the new unit:
 
 ~~~~text
-as when it was copied from the README of another release
+It also says when the hook file at the merged commit differs from the one at the report's own commit, and when the hook's registration in that commit's `.claude/settings.json` or `.claude/settings.local.json` carries a checksum other than that commit's hook file's, so that the registration runs nothing, as when it was copied from the README of another release, quoting nothing from either file, and leaves out, without stopping, a settings file that it cannot
 ~~~~
 
 Clause, R202:
 
 ~~~~text
-quoting nothing from either file, and leaves out, without stopping, a settings file that it cannot read.
+read.
 ~~~~
 
 ### Entry
@@ -14651,37 +14627,55 @@ Old:
 New:
 
 ~~~~text
-- **Calls left out.** R157 gives what the comment says when the pull request's ledger files flag calls left out, and R95 that a restored or copied ledger file adds no counts and no flags.
+- **Calls left out.** When the pull request's ledger files say that calls were left out, for consent, for their age or because their repository could not be told, the comment says so for each reason, as what those files say, with no count, and says that the token cost, each of its parts and the total are then lower bounds (R157). For consent, it says that capture could not show that some calls were made while it was on, and nothing of capture being off (R157). It always says that calls that no ledger file holds are neither counted nor flagged (R157). A restored ledger file, or one that holds at least one entry, each of which the default branch already held, adds no counts and no flags (R95).
 ~~~~
 
 Clause, the new unit:
 
 ~~~~text
-- **Calls left out.**
+- **Calls left out.** When the pull request's ledger files say that calls were left out, for consent, for their age or because their repository could not be told, the comment says so for each reason, as what those files say, with no count, and says that the token cost, each of its parts and the total are then lower
 ~~~~
 
 Clause, R157:
 
 ~~~~text
-When the pull request's ledger files say that calls were left out, for consent, for their age or because their repository could not be told, the comment says so for each reason, as what those files say, with no count, and says that the token cost, each of its parts and the total are then lower bounds.
+bounds.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+For consent, it says that capture could not show that some calls were made while it was on, and nothing of capture being
 ~~~~
 
 Clause, `report-comment`: "Calls left out for consent are flagged in the comment":
 
 ~~~~text
-For consent, it says that capture could not show that some calls were made while it was on, and nothing of capture being off.
+off.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+It always says that calls that no ledger file holds are neither counted nor
 ~~~~
 
 Clause, `report-comment`: "A comment with no flag still says what it does not count":
 
 ~~~~text
-It always says that calls that no ledger file holds are neither counted nor flagged.
+flagged.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+A restored ledger file, or one that holds at least one entry, each of which the default branch already held, adds no counts and no
 ~~~~
 
 Clause, `report-comment`: "A restored or copied ledger file adds no counts or flags":
 
 ~~~~text
-A restored ledger file, or one that holds at least one entry, each of which the default branch already held, adds no counts and no flags.
+flags.
 ~~~~
 
 ### Entry
@@ -14695,19 +14689,19 @@ Old:
 New:
 
 ~~~~text
-- **What it says about itself.** R94 gives what the comment says of its figure. Calls that Claude Code's own tools make to a model, such as a web fetch's summary, are counted only where the transcript holds them.
+- **What it says about itself.** That the figure is an API-equivalent estimate, not a bill, and that it counts the usage that the pull request's commits carry and the CI runs on those commits (R94). Calls that Claude Code's own tools make to a model, such as a web fetch's summary, are counted only where the transcript holds them.
 ~~~~
 
 Clause, the new unit:
 
 ~~~~text
-- **What it says about itself.**
+- **What it says about itself.** That the figure is an API-equivalent estimate, not a bill, and that it counts the usage that the pull request's commits carry and the CI runs on those
 ~~~~
 
 Clause, R94:
 
 ~~~~text
-That the figure is an API-equivalent estimate, not a bill, and that it counts the usage that the pull request's commits carry and the CI runs on those commits.
+commits.
 ~~~~
 
 Clause, the new unit:
@@ -15393,13 +15387,19 @@ Old:
 New:
 
 ~~~~text
-- **The person's opt-in.** A person turns capture on for themselves by setting `pr-cost.capture` to `true` in their global git configuration: `~/.gitconfig`, or git's file in their XDG configuration folder, and `~/.gitconfig` decides where both set it. In a cloud environment of Claude Code, the global git configuration is the session machine's own, so a person opts in there with one line in the environment's setup script, `git config --global pr-cost.capture true`, which opts in each session in that environment (DR-201). Removing that line, or using another environment, reaches only the sessions that start, or whose machines are rebuilt, afterwards: in a session that is running, `git config --global pr-cost.capture false` turns capture off until something writes the opt-in again, as the setup script does on a machine that is rebuilt and an organization's hook can at a session's start or resume, or after `/clear` or a compaction, and on an environment the variables `GIT_CONFIG_COUNT=1`, `GIT_CONFIG_KEY_0=pr-cost.capture` and `GIT_CONFIG_VALUE_0=false` do, from each of its sessions' next restore, since git's own reading of them can turn capture off, never on, unless a settings file that the session loads sets `GIT_CONFIG_COUNT` itself. `git config --global --get pr-cost.capture` shows a session's opt-in, and `git config --show-origin --get-all pr-cost.capture` where each value comes from. R37, R38, R103 and R104 give how capture reads those two files itself. So nothing in a repository can turn capture on for anyone, whether through its own git configuration, a variable that its Claude Code settings set, or a file that a configuration includes, and an outside contributor's usage is never committed because a repository's owner turned the tool on.
+- **The person's opt-in.** A person turns capture on for themselves by setting `pr-cost.capture` to `true` in their global git configuration: `~/.gitconfig`, or git's file in their XDG configuration folder, and `~/.gitconfig` decides where both set it. In a cloud environment of Claude Code, the global git configuration is the session machine's own, so a person opts in there with one line in the environment's setup script, `git config --global pr-cost.capture true`, which opts in each session in that environment (DR-201). Removing that line, or using another environment, reaches only the sessions that start, or whose machines are rebuilt, afterwards: in a session that is running, `git config --global pr-cost.capture false` turns capture off until something writes the opt-in again, as the setup script does on a machine that is rebuilt and an organization's hook can at a session's start or resume, or after `/clear` or a compaction, and on an environment the variables `GIT_CONFIG_COUNT=1`, `GIT_CONFIG_KEY_0=pr-cost.capture` and `GIT_CONFIG_VALUE_0=false` do, from each of its sessions' next restore, since git's own reading of them can turn capture off, never on, unless a settings file that the session loads sets `GIT_CONFIG_COUNT` itself. `git config --show-origin --get-all pr-cost.capture` shows each value of a session's opt-in and where it comes from, and `git config --global --get pr-cost.capture` only the global file's value (R194). R37, R38, R103 and R104 give how capture reads those two files itself. So nothing in a repository can turn capture on for anyone, whether through its own git configuration, a variable that its Claude Code settings set, or a file that a configuration includes, and an outside contributor's usage is never committed because a repository's owner turned the tool on.
 ~~~~
 
 Clause, the new unit:
 
 ~~~~text
-- **The person's opt-in.** A person turns capture on for themselves by setting `pr-cost.capture` to `true` in their global git configuration: `~/.gitconfig`, or git's file in their XDG configuration folder, and `~/.gitconfig` decides where both set it. In a cloud environment of Claude Code, the global git configuration is the session machine's own, so a person opts in there with one line in the environment's setup script, `git config --global pr-cost.capture true`, which opts in each session in that environment (DR-201). Removing that line, or using another environment, reaches only the sessions that start, or whose machines are rebuilt, afterwards: in a session that is running, `git config --global pr-cost.capture false` turns capture off until something writes the opt-in again, as the setup script does on a machine that is rebuilt and an organization's hook can at a session's start or resume, or after `/clear` or a compaction, and on an environment the variables `GIT_CONFIG_COUNT=1`, `GIT_CONFIG_KEY_0=pr-cost.capture` and `GIT_CONFIG_VALUE_0=false` do, from each of its sessions' next restore, since git's own reading of them can turn capture off, never on, unless a settings file that the session loads sets `GIT_CONFIG_COUNT` itself. `git config --global --get pr-cost.capture` shows a session's opt-in, and `git config --show-origin --get-all pr-cost.capture` where each value comes from.
+- **The person's opt-in.** A person turns capture on for themselves by setting `pr-cost.capture` to `true` in their global git configuration: `~/.gitconfig`, or git's file in their XDG configuration folder, and `~/.gitconfig` decides where both set it. In a cloud environment of Claude Code, the global git configuration is the session machine's own, so a person opts in there with one line in the environment's setup script, `git config --global pr-cost.capture true`, which opts in each session in that environment (DR-201). Removing that line, or using another environment, reaches only the sessions that start, or whose machines are rebuilt, afterwards: in a session that is running, `git config --global pr-cost.capture false` turns capture off until something writes the opt-in again, as the setup script does on a machine that is rebuilt and an organization's hook can at a session's start or resume, or after `/clear` or a compaction, and on an environment the variables `GIT_CONFIG_COUNT=1`, `GIT_CONFIG_KEY_0=pr-cost.capture` and `GIT_CONFIG_VALUE_0=false` do, from each of its sessions' next restore, since git's own reading of them can turn capture off, never on, unless a settings file that the session loads sets `GIT_CONFIG_COUNT` itself.
+~~~~
+
+Clause, changed, corrected to agree with R194's scenario, by which `--global --get` shows only the global file's value:
+
+~~~~text
+`git config --global --get pr-cost.capture` shows a session's opt-in, and `git config --show-origin --get-all pr-cost.capture` where each value comes from.
 ~~~~
 
 Clause, R37:
@@ -15807,31 +15807,31 @@ Old:
 New:
 
 ~~~~text
-- **What is recorded.** For each model call, once, the fields that R2 gives, and only when it was made while both switches were on, as the [opt-in's page](switch-and-opt-in.md) says.
+- **What is recorded.** For each model call, once: its UTC day, its model, a hash of its message id, whether the main agent or a subagent made it, and its input, output, cache-write and cache-read tokens. Where the transcript gives them, it also records the attributes that change the price: service tier, speed, inference region and server-side tool requests (R2). A call is recorded only when it was made while both switches were on, as the [opt-in's page](switch-and-opt-in.md) says (R40).
 ~~~~
 
 Clause, the new unit:
 
 ~~~~text
-- **What is recorded.** For each model call, once
+- **What is recorded.** For each model call, once: its UTC day, its model, a hash of its message id, whether the main agent or a subagent made it, and its input, output, cache-write and cache-read tokens. Where the transcript gives them, it also records the attributes that change the price: service tier, speed, inference region and server-side tool
 ~~~~
 
 Clause, R2:
 
 ~~~~text
-: its UTC day, its model, a hash of its message id, whether the main agent or a subagent made it, and its input, output, cache-write and cache-read tokens. Where the transcript gives them, it also records the attributes that change the price: service tier, speed, inference region and server-side tool requests.
-~~~~
-
-Clause, R40:
-
-~~~~text
-A call is recorded only
+requests.
 ~~~~
 
 Clause, the new unit:
 
 ~~~~text
-when it was made while both switches were on, as the [opt-in's page](switch-and-opt-in.md) says.
+A call is recorded only when it was made while both switches were on, as the [opt-in's page](switch-and-opt-in.md)
+~~~~
+
+Clause, R40:
+
+~~~~text
+says.
 ~~~~
 
 ### Entry
@@ -16157,7 +16157,7 @@ Old:
 New:
 
 ~~~~text
-- **A removed store.** R153 gives what a store that the person removes, or that does not parse, as when a sync or a power loss cut it short, takes with it, and when a store does not parse. So before removing the store, look for a staged ledger file with `git status` in every worktree that `git worktree list` names. A session resumed in a fresh clone at the same path, which holds no store, records none of the calls that answer a line written before its first run there.
+- **A removed store.** R153 gives what a store that the person removes, or that does not parse, as when a sync or a power loss cut it short, takes with it, and when a store does not parse. A ledger file staged before the removal stays staged, left to git, so that the next commit takes it (R153). So before removing the store, look for a staged ledger file with `git status` in every worktree that `git worktree list` names. A session resumed in a fresh clone at the same path, which holds no store, records none of the calls that answer a line written before its first run there.
 ~~~~
 
 Clause, the new unit:
@@ -17433,6 +17433,7 @@ and each ledger format that a release wrote keeps sessions with its figures for 
 ## For B-007
 
 - `docs/threat-model.md`: the configuration is read only as a blob at each commit (T49: R19's requirement states it, but none of its scenarios does)
+- `docs/threat-model.md`: padded to three (T79: R124 asks for a record named for its number in ASCII digits; no scenario says that the number is padded to three digits, while R124's scenario holds that it is padded no further.)
 - `docs/threat-model.md`: the bill of materials is written from the tagged tree, never from a working tree, (T69: R28's requirement states it, but its scenario does not)
 - `docs/threat-model.md`: A test fails when the configuration's reader takes a key or a value that the manifest does not name, or refuses a key or a value of the configuration that it names, (T53: no scenario holds this test; R122's scenario holds only what the manifest names)
 - `docs/threat-model.md`: It skips only while no base's tree holds `docs/decisions/`, (T70: no scenario of R129 says when the check skips)
