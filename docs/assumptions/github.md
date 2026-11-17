@@ -267,7 +267,7 @@ The assumptions about GitHub: this repository's settings there, and its workflow
   - **Checked:** documented: <https://github.com/github/docs/blob/33b1f4a6fec2d9b6fd3d374afa56bcd9f0875b57/src/rest/data/fpt-2022-11-28/commits.json>, read 2026-11-01
 - **Fact:** GitHub's lookup of the pull requests associated with a commit finds the pull request for the commits that every merge method puts on the default branch: a merge commit, a squash, a rebase merge and a fast-forward.
   - **Relied on:** R69, T19, DR-133
-  - **Checked:** not yet: `add-pr-cost-calculator` task 7.1 meets it once, at the merge of that task's own pull request
+  - **Checked:** not yet: `add-pr-cost-calculator` task 7.1 meets it once, at the merge of that task's own pull request; the walking skeleton's run on 2026-11-17 saw it find the pull request for a merge commit, on the job's first run
 - **Fact:** One push to the default branch can merge several pull requests, as a merge queue can, or add commits that belong to no pull request.
   - **Relied on:** R69, T19, DR-133
   - **Checked:** not yet: none will, since no test may reach GitHub; `add-pr-cost-calculator` task 4.1 tests only what this repository does with it

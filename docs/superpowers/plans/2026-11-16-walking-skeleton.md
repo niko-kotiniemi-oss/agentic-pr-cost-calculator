@@ -81,4 +81,4 @@ One `/code-review` read `a773eca` alone; its findings are a comment on the pull 
 
 - The threat review at implementation, which rates each of T185 to T194 again against the code.
 - The four review lanes, before the owner merges.
-- Task 1.36, the run, from one commit that those reviews have read.
+- Task 1.36, the run, from one commit that those reviews have read: run on 2026-11-17, and kept in pull request 36.

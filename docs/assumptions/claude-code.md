@@ -8,22 +8,22 @@ The assumptions about Claude Code: what its transcripts hold, when its hooks run
 - **If it is wrong:** If the transcript were kept elsewhere or in another form, capture would find nothing it can read, and no usage would reach a pull request (T8). If a transcript moved, or lost its earlier calls, at a resume or a change of worktree, a later run would miss a command's result, so a staged ledger file would wait (T10), or would record again calls that the branch holds (T19).
 - **Fact:** Claude Code writes each session's transcript as JSON lines, one JSON object per line, in a file on the machine that runs the session.
   - **Relied on:** R2, T8, DR-003, DR-110, DR-172
-  - **Checked:** not yet: none will, since no test may reach Claude Code
+  - **Checked:** not yet: none will, since no test may reach Claude Code; the walking skeleton's run on 2026-11-17 saw it in a project's cloud thread, under `~/.claude/projects/` in a folder named after the thread's folder, with one JSON object on every line
 - **Fact:** A cloud session's machine is thrown away when the session ends, and the transcript goes with it.
   - **Relied on:** R7, T8, DR-008, DR-010, DR-172
-  - **Checked:** not yet: none will, since no test may reach Claude Code
+  - **Checked:** not yet: none will, since no test may reach Claude Code; the walking skeleton's run on 2026-11-17 could not tell, since its session had not ended when its observations were written
 - **Fact:** Reading transcripts after a session has ended is slow for a long pull request, and needs access that a CI job does not have.
   - **Relied on:** R7, DR-172
   - **Checked:** not yet: none will, since no test may reach Claude Code
 - **Fact:** A transcript stays at the path the capture step noted, so a later run in the same repository, from that session or another, can still read it there.
   - **Relied on:** R87, T10, DR-014, DR-053
-  - **Checked:** not yet: none will, since no test may reach Claude Code
+  - **Checked:** not yet: none will, since no test may reach Claude Code; the walking skeleton's run on 2026-11-17 saw each transcript stay where capture found it for the whole session, through its pauses and resumes
 - **Fact:** A session resumed in a fresh clone of its branch, at the same path, still has its earlier calls in its transcript, with the same message ids.
   - **Relied on:** R2, R52, T2, T19, T131, DR-033, DR-055, DR-184
-  - **Checked:** not yet: none will, since no test may reach Claude Code
+  - **Checked:** not yet: none will, since no test may reach Claude Code; the walking skeleton's run on 2026-11-17 could not tell, since it did not resume in a fresh clone
 - **Fact:** Claude Code moves a session's transcript when the session enters or leaves a worktree, so the path each run of that session receives is where the transcript is now.
   - **Relied on:** R87, T10, DR-014, DR-053
-  - **Checked:** not yet: none will, since no test may reach Claude Code
+  - **Checked:** not yet: none will, since no test may reach Claude Code; the walking skeleton's run on 2026-11-17 used no worktree, so could not tell
 
 ## A2. A transcript line gives its call's model, usage, time and current directory, in fields whose meaning stays put.
 
@@ -31,31 +31,31 @@ The assumptions about Claude Code: what its transcripts hold, when its hooks run
 - **If it is wrong:** Calls would be refused, priced wrongly or under-counted, and the comment would show it only as a count, if at all (T39, T9, T27). A line's time out of step with the step's clock would place calls in or out of an interval when both switches were on (T38), and a line that named another directory, or none, would sort calls to the wrong repository, so work in another one could be published here (T2, T82).
 - **Fact:** Each assistant line in a transcript carries the model's name and a usage block with input, output, cache-write and cache-read token counts.
   - **Relied on:** R2, R15, T6, T39, DR-003, DR-033, DR-110, DR-172
-  - **Checked:** not yet: none will, since no test may reach Claude Code
+  - **Checked:** not yet: none will, since no test may reach Claude Code; the walking skeleton's run on 2026-11-17 saw both on every assistant line, in the session's transcript and its subagent's
 - **Fact:** A call's cache-write tokens are split into two lifetimes, five minutes and one hour, where the transcript gives the split.
   - **Relied on:** R2, R15, T39, DR-155
-  - **Checked:** not yet: none will, since no test may reach Claude Code
+  - **Checked:** not yet: none will, since no test may reach Claude Code; the walking skeleton's run on 2026-11-17 saw the split on every assistant line, adding up to the cache-write total on each
 - **Fact:** A call's usage gives its service tier, speed, inference region and server-side tool requests, under field names the capture step can know in advance.
   - **Relied on:** R2, R16, R61, R77, T9
-  - **Checked:** not yet: none will, since no test may reach Claude Code
+  - **Checked:** not yet: none will, since no test may reach Claude Code; the walking skeleton's run on 2026-11-17 saw all four, as `service_tier`, `speed`, `inference_geo` and `server_tool_use`
 - **Fact:** A call whose line gives no price attribute is billed at the standard rate, so an attribute that is not recorded adds nothing to the call's cost.
   - **Relied on:** R16, R61, T9
   - **Checked:** not yet: none will, since no test may reach Claude Code
 - **Fact:** The usage a transcript holds for a call is the usage the provider bills for it.
   - **Relied on:** R2, R94, R95, T9, T27, DR-002, DR-032
-  - **Checked:** not yet: none will, since no test may reach Claude Code
+  - **Checked:** not yet: none will, since no test may reach Claude Code; the walking skeleton's run on 2026-11-17 could not tell, since it saw no bill
 - **Fact:** Claude Code adds fields to a call's usage over time, at its top level or nested in it, before the capture step knows them.
   - **Relied on:** R43, R95, T39, DR-135
-  - **Checked:** not yet: none will, since no test may reach Claude Code
+  - **Checked:** not yet: none will, since no test may reach Claude Code; the walking skeleton's run on 2026-11-17 saw usage fields that the specs do not name, `output_tokens_details`, `iterations` and `fallback_credit`, which `tests/fixtures/transcript-shape.json` keeps
 - **Fact:** The usage fields the capture step knows keep their meaning in later versions, and a field it does not know can only add to a call's cost.
   - **Relied on:** R43, R95, T39, DR-135
-  - **Checked:** not yet: none will, since no test may reach Claude Code
+  - **Checked:** not yet: none will, since no test may reach Claude Code; the walking skeleton's run on 2026-11-17 could not tell, from one run
 - **Fact:** The transcript shapes that the synthetic fixtures copy are the ones that Claude Code writes.
   - **Relied on:** DR-003, DR-092, DR-172
-  - **Checked:** not yet: `add-pr-cost-calculator` task 1.1 checks it in part
-- **Fact:** Every transcript line carries a timestamp, with its offset, in a form the capture step can read.
+  - **Checked:** not yet: `add-pr-cost-calculator` task 1.1 checks it in part; the walking skeleton's run on 2026-11-17 wrote transcripts whose field paths and types `tests/fixtures/transcript-shape.json` keeps, with Claude Code version `2.1.326`, read that day in the run's project but not in its own thread, whose version may differ
+- **Fact:** Every transcript line carries a timestamp, with its offset, in a form the capture step can read, except some that Claude Code writes for its own bookkeeping.
   - **Relied on:** R2, R14, R40, R108, T5, T38, DR-052, DR-168
-  - **Checked:** not yet: none will, since no test may reach Claude Code
+  - **Checked:** not yet: none will, since no test may reach Claude Code; the walking skeleton's run on 2026-11-17 saw every timestamp given in UTC with a `Z` suffix, and some bookkeeping line types in the session's transcript with none, though which types could not be told from its observations
 - **Fact:** A line's timestamp is the time its call was made, on a correct clock that is the same clock the capture step reads when it runs.
   - **Relied on:** R40, R108, R109, T17, T38, DR-052, DR-168
   - **Checked:** not yet: none will, since no test may reach Claude Code
@@ -67,16 +67,16 @@ The assumptions about Claude Code: what its transcripts hold, when its hooks run
   - **Checked:** not yet: none will, since no test may reach Claude Code
 - **Fact:** Claude Code's transcripts name each line's working directory, Claude's current directory at the time of the call, and write a call's usage on its lines, the final usage on a line that gives its stop reason wherever such a line is written.
   - **Relied on:** R3, R41, R76, R78, R147, T2, T7, T10, T82, T108, T128, DR-012, DR-057, DR-199
-  - **Checked:** not yet: none will, since no test may reach Claude Code
+  - **Checked:** not yet: none will, since no test may reach Claude Code; the walking skeleton's run on 2026-11-17 saw every assistant line name Claude's current directory at the time of its call, and every subagent's line name the clone it worked in
 - **Fact:** Claude Code keeps a `cd` from one command to the next only while it stays inside the project directory and the directories added to the session, resets it after a command that leaves them, and never keeps one for a subagent.
   - **Relied on:** R3, T2, T128, DR-057
-  - **Checked:** not yet: none will, since no test may reach Claude Code
+  - **Checked:** not yet: none will, since no test may reach Claude Code; the walking skeleton's run on 2026-11-17 saw Claude's current directory go back to the thread's folder after a command that left the project's folders, and after a pause and resume (A70)
 - **Fact:** The branch that a transcript line names can differ from the branch that is checked out when its call is made.
   - **Relied on:** R78, DR-012
-  - **Checked:** not yet: none will, since no test may reach Claude Code
+  - **Checked:** not yet: none will, since no test may reach Claude Code; the walking skeleton's run on 2026-11-17 saw every line of both transcripts name one branch, neither the default branch nor the work branch, though each was checked out in turn
 - **Fact:** Each tool call in a transcript names its tool, the names of the edit, write, read, search, shell and subagent tools are known in advance, and an MCP tool can be recognised from its name.
   - **Relied on:** R6, T1, DR-029
-  - **Checked:** not yet: none will, since no test may reach Claude Code
+  - **Checked:** not yet: none will, since no test may reach Claude Code; the walking skeleton's run on 2026-11-17 saw the shell, read, write, edit, subagent and search tools under their usual names, and each MCP tool by its `mcp__` prefix
 - **Fact:** A call's lines come in the order of its content blocks, so the first tool named on its lines is the first tool the call invoked.
   - **Relied on:** R6, DR-029
   - **Checked:** not yet: none will, since no test may reach Claude Code
@@ -99,10 +99,10 @@ The assumptions about Claude Code: what its transcripts hold, when its hooks run
   - **Checked:** documented: <https://code.claude.com/docs/en/hooks>, read 2026-11-09
 - **Fact:** One run's time budget is enough to read a session's transcripts to their end.
   - **Relied on:** R44, R90, T8, T19, T42, DR-172
-  - **Checked:** not yet: `add-pr-cost-calculator` task 4.5 checks it in part, at the fixtures' scale
+  - **Checked:** not yet: `add-pr-cost-calculator` task 4.5 checks it in part, at the fixtures' scale; the walking skeleton's run on 2026-11-17 saw every run read the transcripts, at that run's small scale, with no error and no line that it could not read
 - **Fact:** Every adopter's Claude Code supports all the hook events that the tool registers, and the `if` field.
   - **Relied on:** R7, T8, DR-030, DR-172
-  - **Checked:** not yet: none will, since no test may reach Claude Code
+  - **Checked:** not yet: none will, since no test may reach Claude Code; the walking skeleton's run on 2026-11-17 saw `PreToolUse`, `PostToolUse`, `Stop`, `SubagentStop` and `SessionEnd` run, did not reach `PostToolUseFailure`, and did not exercise the `if` field, which the skeleton's hooks do not use
 
 ## A4. A hook's input gives the directories, the paths and the command text that capture needs, and a hook that exits with success and prints nothing steers nothing.
 
@@ -113,13 +113,13 @@ The assumptions about Claude Code: what its transcripts hold, when its hooks run
   - **Checked:** documented: <https://code.claude.com/docs/en/hooks>, read 2026-11-01
 - **Fact:** A hook's input gives the transcript's path, and a `PreToolUse` input gives the Bash command's text, as the command will run, and the call's `tool_use_id`.
   - **Relied on:** R51, R82, T8, T10, DR-013, DR-128
-  - **Checked:** not yet: none will, since no test may reach Claude Code
+  - **Checked:** not yet: none will, since no test may reach Claude Code; the walking skeleton's run on 2026-11-17 saw the transcript's path reach every run, the subagent's own transcript reach the run at `SubagentStop`, and the command's text reach `PreToolUse`, while the skeleton reads no `tool_use_id`
 - **Fact:** Claude never sees the standard error of a hook that exits 0.
   - **Relied on:** R89, T14, DR-031
   - **Checked:** documented: <https://code.claude.com/docs/en/hooks>, read 2026-11-01
 - **Fact:** No one sees the standard error of a hook that succeeds, so only the ledger and the comment can show what the step refused or did not know.
   - **Relied on:** R43, R89, T6, T39, DR-031, DR-135
-  - **Checked:** not yet: none will, since no test may reach Claude Code
+  - **Checked:** not yet: none will, since no test may reach Claude Code; the walking skeleton's run on 2026-11-17 could not tell, since capture wrote nothing to standard error, though nothing from it reached the agent's view
 - **Fact:** A hook that exits with success and prints nothing on standard output does not steer the agent, while exit 2, or JSON on standard output, can block a call or send Claude back to work. A hook that fails otherwise lets the command and the session go on, unless it sets `onFailure` to `block`.
   - **Relied on:** R13, T14, DR-031
   - **Checked:** documented: <https://code.claude.com/docs/en/hooks>, read 2026-11-01
@@ -186,19 +186,19 @@ The assumptions about Claude Code: what its transcripts hold, when its hooks run
   - **Checked:** not yet: none will, since no test may reach Claude Code
 - **Fact:** The agent itself makes the pull request's commits, through the Bash tool, with a command whose text runs `git commit`.
   - **Relied on:** R7, R82, T8, DR-010, DR-013, DR-128
-  - **Checked:** not yet: none will, since no test may reach Claude Code
+  - **Checked:** not yet: none will, since no test may reach Claude Code; the walking skeleton's run on 2026-11-17 saw the agent and its subagent commit through the Bash tool, each with a command whose text ran `git commit`
 - **Fact:** Claude writes its commits in forms that capture recognises: `git` as a top-level command in the foreground, not behind a wrapper, an alias or another command's output.
   - **Relied on:** R82, T8, T10, T19, DR-013, DR-030, DR-034
-  - **Checked:** not yet: none will, since no test may reach Claude Code
+  - **Checked:** not yet: none will, since no test may reach Claude Code; the walking skeleton's run on 2026-11-17 saw the agent run git as a top-level command, with no alias or wrapper, often joined to a `cd` or another command by `&&` and sometimes inside a script that it wrote, and commit the skeleton's own files with `-F`, on purpose, in a form that capture does not recognise, while its subagent committed only in the recognised form that it was asked for
 - **Fact:** An agent that finds an unfamiliar `.pr-cost/` file staged, in its status or in its commit leaves it alone, and does not unstage, delete or clean it up.
   - **Relied on:** R52, R56, R87, T8, T10, DR-013, DR-014, DR-035, DR-055
-  - **Checked:** not yet: none will, since no test may reach Claude Code
+  - **Checked:** not yet: none will, since no test may reach Claude Code; the walking skeleton's run on 2026-11-17 saw the subagent report the ledger file in its commit and leave it alone
 - **Fact:** Agent sessions act on GitHub as the owner's own account, so GitHub cannot tell an agent's approval, merge, tag or settings change from the owner's.
   - **Relied on:** R26, T62, T64, DR-111, DR-140, DR-141, DR-144
-  - **Checked:** not yet: none will, since no test may reach Claude Code
+  - **Checked:** not yet: none will, since no test may reach Claude Code; the walking skeleton's run on 2026-11-17 saw the pull request opened through GitHub's API by the account that later merged it and that the workflow's runs named as their actor, with nothing on GitHub to tell the agent's actions from the owner's
 - **Fact:** Tools that Claude Code sessions use can add a link to a Claude session, or an identifier from one, to a commit or a pull request's text.
   - **Relied on:** R33, T32, T65, DR-070
-  - **Checked:** not yet: none will, since no test may reach Claude Code
+  - **Checked:** not yet: none will, since no test may reach Claude Code; the walking skeleton's run on 2026-11-17 saw session links added to the commit trailers that the agent wrote and to the pull request's text, and that text rewritten after it was opened with another footer that also linked to the session
 - **Fact:** An agent can read back the text it posted and remove such a link before it does harm.
   - **Relied on:** R33, T32, T65, DR-070
   - **Checked:** not yet: `add-pr-cost-calculator` task 1.9 and `add-pr-cost-calculator` task 1.14 check it in part
@@ -218,7 +218,7 @@ The assumptions about Claude Code: what its transcripts hold, when its hooks run
   - **Checked:** documented: <https://code.claude.com/docs/en/plugins/loading>, read 2026-11-09
 - **Fact:** The plugin's hooks run in a project's cloud thread, from the copy synced from the person's account, at the same events as a repository's hooks run elsewhere, with the condition `Bash(git *)` holding as it does there.
   - **Relied on:** R179, T8, DR-197
-  - **Checked:** not yet: `add-pr-cost-calculator` task 7.2 checks it
+  - **Checked:** not yet: `add-pr-cost-calculator` task 7.2 checks it; the walking skeleton's run on 2026-11-17 saw the uploaded plugin's hooks run in a project's cloud thread at each event that it registers and that the run reached, with one log line for each event, from the build whose capture script was, by SHA-256, that of the commit the run was made from, and did not exercise `Bash(git *)`, which the skeleton's hooks do not use
 - **Fact:** Claude Code registers the hooks of one enabled plugin of a given name, the copy that managed settings turn on or else the one that it loads first, and `/plugin` names that copy in a terminal session, while a cloud session offers no `/plugin` command.
   - **Relied on:** T130, T135, DR-197, DR-206
   - **Checked:** documented: <https://code.claude.com/docs/en/plugins/loading>, <https://code.claude.com/docs/en/claude-code-on-the-web>, read 2026-11-09
@@ -238,7 +238,7 @@ The assumptions about Claude Code: what its transcripts hold, when its hooks run
 - **If it is wrong:** If claude.ai read a marketplace from another file or another branch than the one that CI checks, the check would hold one folder while the marketplace served another (T132, DR-204, DR-205). If the marketplace's updates waited for the person to accept them, the README's account of the two ways to install the plugin would be wrong (R187), and if an uploaded zip were not what runs, the checksum that the person checked would not be of what runs (T133). If an entry's fields acted otherwise than the documentation says, the check of the root file would hold less than it claims (R190, T140), and if a pinned ref did, the README's account of a pin would be wrong (R187, T138), and if a person's plugin did not update as described, the release that writes their ledger files would not be the one that the README describes (T136). If Claude Code cloned a marketplace otherwise than with the person's own git, the line endings that the person's git writes would not reach the plugin's folder, and T143 would have one route fewer.
 - **Fact:** On claude.ai a person adds a plugin to their account by uploading a `.zip` that holds one `.claude-plugin/plugin.json`, or by adding a GitHub repository as a marketplace by its address.
   - **Relied on:** R183, R187, T133, T185, T192, DR-203
-  - **Checked:** not yet: `add-pr-cost-calculator` task 7.2 checks it, since the pages that say so are claude.ai's own, on a host that the assumptions' test does not list
+  - **Checked:** not yet: `add-pr-cost-calculator` task 7.2 checks it, since the pages that say so are claude.ai's own, on a host that the assumptions' test does not list; the walking skeleton's run on 2026-11-17 saw the owner add the plugin by uploading its zip, while adding it as a marketplace was not tried
 - **Fact:** A marketplace's file is `.claude-plugin/marketplace.json` at its repository's root, unless a settings entry names another path.
   - **Relied on:** R184, T132, DR-205
   - **Checked:** documented: <https://code.claude.com/docs/en/plugins/marketplace-reference>, read 2026-11-09
@@ -275,13 +275,13 @@ The assumptions about Claude Code: what its transcripts hold, when its hooks run
 - **If it is wrong:** A call could be counted more than once, merged with another, read from partial usage or refused, and the figure would drift with no clear warning (T7, T19). If message ids could be guessed, or were held by others, a public entry could be linked to a session or a person (T4).
 - **Fact:** Claude Code can write one call over several transcript lines that share its message id, and the earlier lines can give partial usage.
   - **Relied on:** R41, T7, DR-033
-  - **Checked:** not yet: none will, since no test may reach Claude Code
+  - **Checked:** not yet: none will, since no test may reach Claude Code; the walking skeleton's run on 2026-11-17 saw calls written over several lines that share one message id, in both transcripts, but no earlier line with partial usage
 - **Fact:** Every line of a call that gives a stop reason gives the same final usage.
   - **Relied on:** R41, T7, DR-032, DR-033
-  - **Checked:** not yet: none will, since no test may reach Claude Code
+  - **Checked:** not yet: none will, since no test may reach Claude Code; the walking skeleton's run on 2026-11-17 saw it on every call
 - **Fact:** Every call's lines follow one of three shapes: every line gives a stop reason, only the last line does, or no line does.
   - **Relied on:** R41, R42, R95, T7, DR-032, DR-033
-  - **Checked:** not yet: none will, since no test may reach Claude Code
+  - **Checked:** not yet: none will, since no test may reach Claude Code; the walking skeleton's run on 2026-11-17 saw only the shape in which every line gives a stop reason, since every call ended in a tool call
 - **Fact:** The lines of a call that give no stop reason only ever under-count it, never over-count it.
   - **Relied on:** R42, R95, T7, T27, DR-032
   - **Checked:** not yet: none will, since no test may reach Claude Code
@@ -290,13 +290,13 @@ The assumptions about Claude Code: what its transcripts hold, when its hooks run
   - **Checked:** not yet: none will, since no test may reach Claude Code
 - **Fact:** A call is over once a later call follows it in the same transcript, or once its agent has stopped, because the lines of different calls do not interleave.
   - **Relied on:** R42, T7, DR-032, DR-033
-  - **Checked:** not yet: none will, since no test may reach Claude Code
+  - **Checked:** not yet: none will, since no test may reach Claude Code; the walking skeleton's run on 2026-11-17 saw no lines of different calls interleave
 - **Fact:** A message id belongs to one call only: every line that carries it is part of that call.
   - **Relied on:** R2, R41, R59, T7, T19, DR-033, DR-131, DR-136
   - **Checked:** not yet: none will, since no test may reach Claude Code
 - **Fact:** A call that appears in more than one transcript carries the same message id, the same usage and the same facts in each.
   - **Relied on:** R11, R59, T7, T19, DR-033, DR-131
-  - **Checked:** not yet: none will, since no test may reach Claude Code
+  - **Checked:** not yet: none will, since no test may reach Claude Code; the walking skeleton's run on 2026-11-17 could not tell, since no message id was in both transcripts
 - **Fact:** Message ids are neither public nor guessable, so the SHA-256 hash of one links a public ledger entry to nothing for anyone who does not hold the transcript.
   - **Relied on:** R2, R4, T4, DR-053, DR-136
   - **Checked:** not yet: none will, since no test may reach Claude Code
@@ -307,16 +307,16 @@ The assumptions about Claude Code: what its transcripts hold, when its hooks run
 - **If it is wrong:** A run that reads on from where the last one stopped would skip, repeat or misread calls, or read a call from a partial line (T42, T7). A long lag would carry calls made just before a commit to the next commit or to none (T8), and calls made before a change of branch to the next branch (T19).
 - **Fact:** Claude Code only appends whole lines to a transcript and never rewrites or cuts earlier ones, so a run can read on from where the last one stopped.
   - **Relied on:** R44, R108, T7, T42, DR-168, DR-172
-  - **Checked:** not yet: none will, since no test may reach Claude Code
+  - **Checked:** not yet: none will, since no test may reach Claude Code; the walking skeleton's run on 2026-11-17 could not tell, since the skeleton reads each transcript whole at each run and keeps no position or hash of what it read
 - **Fact:** Claude Code ends every finished transcript line with a line break, so a line without one is still being written.
   - **Relied on:** R44, T7, T42, DR-172
-  - **Checked:** not yet: none will, since no test may reach Claude Code
+  - **Checked:** not yet: none will, since no test may reach Claude Code; the walking skeleton's run on 2026-11-17 saw both transcripts end with a line break, while the skeleton drops what follows the last line break without counting it, so whether a run met a partial line could not be told
 - **Fact:** Claude Code writes the transcript asynchronously, so the transcript can lag behind the conversation.
   - **Relied on:** R44, T42, DR-172
   - **Checked:** documented: <https://code.claude.com/docs/en/hooks>, read 2026-11-01
 - **Fact:** A finished call's lines are on disk by a later run of the capture step, though not always by the time the hooks that follow the call run.
   - **Relied on:** R7, R44, T8, T19, DR-172
-  - **Checked:** not yet: none will, since no test may reach Claude Code
+  - **Checked:** not yet: none will, since no test may reach Claude Code; the walking skeleton's run on 2026-11-17 could not tell whether a lag hid a finished call from the hooks that followed it
 
 ## A38. A subagent's calls are in a transcript of their own, and the transcripts leave out only the calls that Claude Code makes for its own tools.
 
@@ -324,10 +324,10 @@ The assumptions about Claude Code: what its transcripts hold, when its hooks run
 - **If it is wrong:** Calls that capture cannot find, or cannot tell from the main agent's, would be missing from the figure or counted under the wrong agent (T8). If the calls missing from the figure were more, or cost more, than those of Claude Code's own tools, the figure would be lower than the comment says by more than it suggests (T40).
 - **Fact:** Claude Code writes a subagent's calls to a transcript of its own, in a `subagents/` folder under the session's, marked so that they can be told from the main agent's calls.
   - **Relied on:** R2, R75, T8, DR-138
-  - **Checked:** not yet: none will, since no test may reach Claude Code
+  - **Checked:** not yet: none will, since no test may reach Claude Code; the walking skeleton's run on 2026-11-17 saw them in a `subagents/` folder under the session's folder, each line marked as a sidechain and carrying an agent id, which the main transcript's lines did not, and the subagent's calls kept and staged for its commit
 - **Fact:** Claude Code creates its worktrees under `.claude/worktrees/` inside the repository's folder, and a subagent may work in one of them.
   - **Relied on:** R3, R11, R78, T13, DR-012, DR-057
-  - **Checked:** not yet: none will, since no test may reach Claude Code
+  - **Checked:** not yet: none will, since no test may reach Claude Code; the walking skeleton's run on 2026-11-17 used no worktree, so could not tell
 - **Fact:** A line's working directory still exists when capture runs, except a worktree that Claude Code removes when a subagent finishes without changes.
   - **Relied on:** R78, T8, DR-012
   - **Checked:** not yet: none will, since no test may reach Claude Code
@@ -336,10 +336,10 @@ The assumptions about Claude Code: what its transcripts hold, when its hooks run
   - **Checked:** not yet: none will, since no test may reach Claude Code
 - **Fact:** Claude Code makes some model calls for its own tools, such as its WebFetch tool's, without writing them to the transcript.
   - **Relied on:** R94, T40, DR-172
-  - **Checked:** not yet: `add-pr-cost-calculator` task 1.1 checks it
+  - **Checked:** not yet: `add-pr-cost-calculator` task 1.1 checks it; the walking skeleton's run on 2026-11-17 could not tell, since it ran no web fetch or web search
 - **Fact:** The only model calls Claude Code leaves out of the transcript are those its own tools make.
   - **Relied on:** R94, T40, DR-172
-  - **Checked:** not yet: `add-pr-cost-calculator` task 1.1 checks it in part
+  - **Checked:** not yet: `add-pr-cost-calculator` task 1.1 checks it in part; the walking skeleton's run on 2026-11-17 could not tell, since it ran no web fetch or web search
 - **Fact:** The model calls that Claude Code makes for its own tools are a small part of a session's cost.
   - **Relied on:** R94, T40, DR-172
   - **Checked:** not yet: none will, since no test may reach Claude Code
@@ -365,7 +365,7 @@ The assumptions about Claude Code: what its transcripts hold, when its hooks run
   - **Checked:** documented: <https://code.claude.com/docs/en/hooks>, read 2026-11-01
 - **Fact:** `PreToolUse` runs, and finishes, before a Bash command starts and before any permission prompt.
   - **Relied on:** R7, R49, T10, T19, DR-013
-  - **Checked:** not yet: none will, since no test may reach Claude Code
+  - **Checked:** not yet: none will, since no test may reach Claude Code; the walking skeleton's run on 2026-11-17 saw `PreToolUse` and `PostToolUse` run before and after each Bash call that capture acted on, while whether `PreToolUse` comes before a permission prompt could not be told
 - **Fact:** A `Bash(git *)` condition is checked against each command a Bash input is made of, `$()` included, matches git only as Claude wrote it, and lets the hook run when Claude Code cannot tell what the input runs. On any other event, a hook with a condition never runs.
   - **Relied on:** R7, T8, T19, DR-030
   - **Checked:** documented: <https://code.claude.com/docs/en/hooks>, read 2026-11-01
@@ -374,16 +374,16 @@ The assumptions about Claude Code: what its transcripts hold, when its hooks run
   - **Checked:** documented: <https://code.claude.com/docs/en/hooks>, read 2026-11-01
 - **Fact:** Claude Code writes a result into the transcript for a Bash command that was refused at a permission prompt or by a permission rule, blocked or cancelled.
   - **Relied on:** R87, T10, DR-014
-  - **Checked:** not yet: `add-pr-cost-calculator` task 1.1 checks it
+  - **Checked:** not yet: `add-pr-cost-calculator` task 1.1 checks it; the walking skeleton's run on 2026-11-17 could not tell, since no call was refused, blocked or cancelled
 - **Fact:** A blocked call's reason comes back to Claude as the call's error, and a cancelled call's result carries the interruption message.
   - **Relied on:** R87, T10, DR-014
   - **Checked:** documented: <https://code.claude.com/docs/en/hooks>, read 2026-11-01
 - **Fact:** `PreToolUse` runs again, with the same `tool_use_id`, when a call that another hook deferred is resumed.
   - **Relied on:** R51, T10, DR-013
-  - **Checked:** not yet: none will, since no test may reach Claude Code
+  - **Checked:** not yet: none will, since no test may reach Claude Code; the walking skeleton's run on 2026-11-17 could not tell, since no call was deferred
 - **Fact:** When another hook's deferral of a call ends the Claude Code process, a session-end run follows and can take back the ledger file staged for that call.
   - **Relied on:** R87, T10, DR-014
-  - **Checked:** not yet: `add-pr-cost-calculator` task 1.1 checks it
+  - **Checked:** not yet: `add-pr-cost-calculator` task 1.1 checks it; the walking skeleton's run on 2026-11-17 could not tell, since no call was deferred
 - **Fact:** A Bash command that the agent runs in the background returns its result at once, while the command still runs.
   - **Relied on:** R82, T8, DR-034
   - **Checked:** not yet: none will, since no test may reach Claude Code
@@ -393,29 +393,32 @@ The assumptions about Claude Code: what its transcripts hold, when its hooks run
 
 ## A70. A project's cloud thread starts in a folder that holds each of its clones directly inside it, and its machine pauses after a turn and resumes with its files.
 
-- **Rests on it:** R180, T120, T128, T131, T193, DR-197, DR-198, DR-199
+- **Rests on it:** R180, R185, T120, T128, T131, T193, DR-197, DR-198, DR-199
 - **If it is wrong:** If a thread's clones lay deeper in its folder, a plugin's start run would meet none of them, so a thread's first calls in a clone would be left out and flagged for consent until a run met that clone (R180, DR-198). If more of a thread's calls named its folder than the design expects, its figure would be lower still (T128). If a pause rebuilt the machine instead of resuming it, every pause would lose the calls that wait for a commit (T131), and if a resume changed what the fingerprint of the opt-in's files holds, every pause would end the session's interval and drop those calls, with a flag for consent (T120).
 - **Fact:** A cloud session with several repositories starts in a folder above its clones.
   - **Relied on:** R180, T193, DR-198
   - **Checked:** documented: <https://code.claude.com/docs/en/settings>, read 2026-11-09
 - **Fact:** A project's cloud thread, with one repository or several, starts in a folder that holds each clone directly inside it and is in no repository, and that folder is the project directory that its hooks get.
   - **Relied on:** R180, T128, DR-198, DR-199
-  - **Checked:** not yet: `add-pr-cost-calculator` task 7.2 checks it
+  - **Checked:** not yet: `add-pr-cost-calculator` task 7.2 checks it; the walking skeleton's run on 2026-11-17 saw a thread start in a folder that held its clone directly inside it and was in no repository
 - **Fact:** A thread's calls name that folder as their working directory until Claude moves into a clone, and a subagent's calls name it too.
   - **Relied on:** T128, DR-199
-  - **Checked:** not yet: `add-pr-cost-calculator` task 7.2 checks it
+  - **Checked:** not yet: `add-pr-cost-calculator` task 7.2 checks it; the walking skeleton's run on 2026-11-17 saw its calls name that folder until Claude moved into the clone, and again whenever Claude's directory went back to it, while its subagent, started after the move, named the clone, so whether a subagent's calls name the folder could not be told
 - **Fact:** A new thread's start run comes before its first prompt is written to the transcript.
   - **Relied on:** R180, DR-198
-  - **Checked:** not yet: `add-pr-cost-calculator` task 7.2 checks it
+  - **Checked:** not yet: `add-pr-cost-calculator` task 7.2 checks it; the walking skeleton's run on 2026-11-17 could not tell, since the skeleton registers no start hook
 - **Fact:** A thread's sandbox pauses between turns and resumes when the thread continues, and one that cannot be resumed continues from a fresh clone.
   - **Relied on:** T131, DR-197
   - **Checked:** documented: <https://code.claude.com/docs/en/claude-projects>, read 2026-11-09
+- **Fact:** After a thread's machine pauses and resumes, Claude's current directory is the thread's folder again, whatever clone Claude had moved into, so the calls that follow name that folder until Claude moves into a clone again.
+  - **Relied on:** R185, T128, DR-199
+  - **Checked:** not yet: `add-pr-cost-calculator` task 7.2 checks it; the walking skeleton's run on 2026-11-17 saw it after a resume
 - **Fact:** A pause runs the session-end hooks and the resume runs the start hooks, with the same session and transcript, and a resumed machine keeps its files.
   - **Relied on:** T131, DR-197
-  - **Checked:** not yet: `add-pr-cost-calculator` task 7.2 checks it
+  - **Checked:** not yet: `add-pr-cost-calculator` task 7.2 checks it; the walking skeleton's run on 2026-11-17 saw the session-end hooks run while the thread waited between turns, as a pause runs them, and the machine resume with its files, while whether the resume ran start hooks could not be told, since the skeleton registers none
 - **Fact:** A resumed machine keeps the device and inode numbers, sizes and modification times of the person's global git configuration files, so that a pause and a resume change nothing that the fingerprint of the opt-in's files holds.
   - **Relied on:** T120, T131
-  - **Checked:** not yet: `add-pr-cost-calculator` task 7.2 checks it
+  - **Checked:** not yet: `add-pr-cost-calculator` task 7.2 checks it; the walking skeleton's run on 2026-11-17 could not tell, since it did not read those details of the files
 
 ## A71. A line in a cloud environment's setup script reaches the global git configuration of each new session in that environment, and an organization can share an environment with its members.
 
@@ -426,13 +429,13 @@ The assumptions about Claude Code: what its transcripts hold, when its hooks run
   - **Checked:** documented: <https://code.claude.com/docs/en/cloud-environments>, read 2026-11-09
 - **Fact:** `git config --global` in the setup script writes the global git configuration of the user who runs the session, and Claude Code's own setup of a session leaves the line there.
   - **Relied on:** R1, R185, T3, DR-201
-  - **Checked:** not yet: `add-pr-cost-calculator` task 7.2 checks it
+  - **Checked:** not yet: `add-pr-cost-calculator` task 7.2 checks it; the walking skeleton's run on 2026-11-17 saw the line reach the session's global git configuration from the file in the home folder, and Claude Code's own setup leave it there
 - **Fact:** An existing session reads an environment's variables again when its machine is restored or rebuilt, so that a change to them reaches it from then on, while a change to the setup script reaches it only when its machine is rebuilt.
   - **Relied on:** R194, T3, T134
   - **Checked:** documented: <https://code.claude.com/docs/en/cloud-environments>, read 2026-11-09
 - **Fact:** An environment's variables reach the hooks that its sessions run, and the `GIT_CONFIG_` variables that a cloud session sets for itself leave those that the environment sets in force, in a hook's environment and in the shell of the commands that the agent runs, so that git reads there the `GIT_CONFIG_` variables that the environment sets.
   - **Relied on:** R194, T3, T134
-  - **Checked:** not yet: `add-pr-cost-calculator` task 7.2 checks it; in a project's cloud thread on 2026-11-10, whose environment sets none, Claude Code started the agent's shell with the session's own pairs from the first index, while its own process started with no `GIT_CONFIG_` variable
+  - **Checked:** not yet: `add-pr-cost-calculator` task 7.2 checks it; in a project's cloud thread on 2026-11-10, whose environment sets none, Claude Code started the agent's shell with the session's own pairs from the first index, while its own process started with no `GIT_CONFIG_` variable; the walking skeleton's run on 2026-11-17 could not tell, since the skeleton does not look for them
 - **Fact:** An Owner of a Team or Enterprise organization can create an environment shared with every member, which appears in each member's selector, and an organization's default fills a member's selector until they pick another, while a project's threads use the project's environment.
   - **Relied on:** R186, T134, DR-202
   - **Checked:** documented: <https://code.claude.com/docs/en/cloud-environments>, read 2026-11-09
@@ -450,13 +453,13 @@ The assumptions about Claude Code: what its transcripts hold, when its hooks run
   - **Checked:** documented: <https://code.claude.com/docs/en/hooks>, read 2026-11-11
 - **Fact:** `/hooks` runs in a cloud session and lists the hooks that run there.
   - **Relied on:** R186, R194
-  - **Checked:** not yet: `add-pr-cost-calculator` task 7.2 checks it
+  - **Checked:** not yet: `add-pr-cost-calculator` task 7.2 checks it; the walking skeleton's run on 2026-11-17 could not tell, since its steps did not call for `/hooks`
 - **Fact:** Projects are not offered on Team or Enterprise plans yet.
   - **Relied on:** R186, DR-202
   - **Checked:** documented: <https://code.claude.com/docs/en/claude-projects>, read 2026-11-09
 - **Fact:** A cloud session's commits name the author that git's global configuration there gives, `Claude` with the address `noreply@anthropic.com`, while the pushes and the pull requests that carry them are made with the person's own GitHub account.
   - **Relied on:** R199, T4, T116, T145, DR-212
-  - **Checked:** not yet: `add-pr-cost-calculator` task 7.2 checks it; in a project's cloud thread on 2026-11-10, git's global configuration gave that name and address
+  - **Checked:** not yet: `add-pr-cost-calculator` task 7.2 checks it; in a project's cloud thread on 2026-11-10, git's global configuration gave that name and address, and the walking skeleton's run on 2026-11-17 saw its commits name that author, and its pushes and pull request made with the person's account
 - **Fact:** A cloud session reads neither the person's own Claude Code settings nor a plugin's options, which Claude Code keeps there.
   - **Relied on:** DR-201
   - **Checked:** documented: <https://code.claude.com/docs/en/settings>, <https://code.claude.com/docs/en/plugins/manifest-reference>, read 2026-11-09
