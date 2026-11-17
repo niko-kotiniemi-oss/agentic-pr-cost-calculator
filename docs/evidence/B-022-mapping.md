@@ -7370,6 +7370,2748 @@ Clause, R239:
 : each hook command runs the script with `python3 -I` and ends in `; exit 0`, and the script prints nothing on standard output, which tests drive with the script missing and raising.
 ~~~~
 
+## `openspec/changes/add-pr-cost-calculator/design.md`
+
+### Entry
+
+Old:
+
+~~~~text
+The run at `SessionStart`, a start run, reads no transcript, since Claude's first response waits for it (see Context), and writes nothing to standard output, which Claude Code gives Claude as context: it takes back and puts back what is due and, when it finds both switches on, begins the session's interval when both were on (decision 6).
+~~~~
+
+New:
+
+~~~~text
+The run at `SessionStart`, a start run, reads no transcript, since Claude's first response waits for it (see Context), and does the rest of what R148 says (decision 6).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+The run at `SessionStart`, a start run, reads no transcript, since Claude's first response waits for it (see Context), and
+~~~~
+
+Clause, R148:
+
+~~~~text
+writes nothing to standard output, which Claude Code gives Claude as context: it takes back and puts back what is due and, when it finds both switches on, begins the session's interval when both were on
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+(decision 6).
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+It keeps each call whose line gives a working directory in this repository: one whose git common directory, as git finds it from that directory when the run reads the call, without the session's `GIT_` variables (below), is this repository's, so that the repository's worktrees count and a separate repository nested in its folder does not.
+~~~~
+
+New:
+
+~~~~text
+It keeps each call whose line gives a working directory in this repository (R3, R147).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+It keeps each call whose line gives a working directory in this repository
+~~~~
+
+Clause, R147:
+
+~~~~text
+: one whose git common directory, as git finds it from that directory when the run reads the call, without the session's `GIT_` variables (below), is this repository's,
+~~~~
+
+Clause, R3:
+
+~~~~text
+so that the repository's worktrees count and a separate repository nested in its folder does not.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+That directory alone tells a call's repository and worktree, never what the call reads or writes, nor the branch.
+~~~~
+
+New:
+
+~~~~text
+That directory alone tells a call's repository and worktree (R147).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+That directory alone tells a call's repository and worktree
+~~~~
+
+Clause, R147:
+
+~~~~text
+, never what the call reads or writes, nor the branch.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+A call whose line gives no working directory, or whose directory no longer exists, as when a worktree is removed before a run reads its calls, or names no repository that git can tell, is left out.
+~~~~
+
+Clause, R147:
+
+~~~~text
+A call whose line gives no working directory, or whose directory no longer exists, as when a worktree is removed before a run reads its calls, or names no repository that git can tell, is left out.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+Because a run comes before every Bash command that the condition matches, a call that the transcript holds as over by then is recorded before that command can change its branch, unless that run reaches its time budget before it reads the call.
+~~~~
+
+New:
+
+~~~~text
+Because a run comes before every Bash command that the condition matches, a call that the transcript holds as over by then is recorded before that command can change its branch (R7).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+Because a run comes before every Bash command that the condition matches, a call that the transcript holds as over by then is recorded before that command can change its branch
+~~~~
+
+Clause, R7:
+
+~~~~text
+, unless that run reaches its time budget before it reads the call.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+Apart from staging a ledger file, taking it back and putting it back, as below, it changes nothing in the working tree or the index, so recording never blocks a change of branch or a rebase.
+~~~~
+
+New:
+
+~~~~text
+Recording changes the working tree and the index only as R47 allows, so recording never blocks a change of branch or a rebase.
+~~~~
+
+Clause, R47:
+
+~~~~text
+Apart from staging a ledger file, taking it back and putting it back, as below, it changes nothing in the working tree or the index,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+so recording never blocks a change of branch or a rebase.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+Where none does, as in one shape of subagent transcript, the call is read from its last line once it is over: once a later call follows it in the same transcript, or once its agent has stopped, which `Stop`, `StopFailure` and `SubagentStop` say.
+~~~~
+
+New:
+
+~~~~text
+Where none does, as in one shape of subagent transcript, the call is read as R42 says, its agent having stopped when `Stop`, `StopFailure` and `SubagentStop` say.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+Where none does, as in one shape of subagent transcript,
+~~~~
+
+Clause, R42:
+
+~~~~text
+the call is read from its last line once it is over: once a later call follows it in the same transcript, or once its agent has stopped,
+~~~~
+
+Clause, R42:
+
+~~~~text
+which
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+`Stop`, `StopFailure` and `SubagentStop` say.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+The ledger counts the calls read that way, because their lines give the usage of the call's start, and the comment gives that count and says that the token cost is then a lower bound.
+~~~~
+
+Clause, R42:
+
+~~~~text
+The ledger counts the calls read that way, because their lines give the usage of the call's start,
+~~~~
+
+Clause, R95:
+
+~~~~text
+and the comment gives that count and says that the token cost is then a lower bound.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+A call that is not over yet waits for a later run.
+~~~~
+
+Clause, R42:
+
+~~~~text
+A call that is not over yet waits for a later run.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+A call whose usage holds a field that the script does not know, at its top level or in a block nested in it, is recorded from the fields that the script knows, and the ledger counts such calls without naming the field, because a new field can carry a charge that the entry then leaves out, so the comment gives that count and says that the token cost may then be low.
+~~~~
+
+Clause, R43:
+
+~~~~text
+A call whose usage holds a field that the script does not know, at its top level or in a block nested in it, is recorded from the fields that the script knows, and the ledger counts such calls without naming the field, because a new field can carry a charge that the entry then leaves out,
+~~~~
+
+Clause, R95:
+
+~~~~text
+so the comment gives that count and says that the token cost may then be low.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+A run reads only the lines that end in a line break, because Claude Code can still be writing the last one, and a line that a run began with, or began as the first line that no earlier run read whole, and could not finish reading within its time budget is skipped by the next run and counted as one refused call, so that no one line, however long, holds capture back for good.
+~~~~
+
+New:
+
+~~~~text
+A run reads only the lines that end in a line break, because Claude Code can still be writing the last one, and treats a line too long for its time budget as R44 says.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+A run reads only the lines that end in a line break, because Claude Code can still be writing the last one, and
+~~~~
+
+Clause, R44:
+
+~~~~text
+a line that a run began with, or began as the first line that no earlier run read whole, and could not finish reading within its time budget is skipped by the next run and counted as one refused call, so that no one line, however long, holds capture back for good.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+A command runs `git commit` when one of the commands it is made of, split as the shell splits it, is `git`, then any of git's own options, then `commit`, and is not a dry run, which it is when any of `--dry-run`, `--short`, `--porcelain`, `--long`, `-z` and `--null` is in effect once git has read the commit's options, in any spelling that git accepts, such as `--dry` or `-qz`.
+~~~~
+
+New:
+
+~~~~text
+A command runs `git commit` as R79 and R80 say.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+A command runs `git commit`
+~~~~
+
+Clause, R79:
+
+~~~~text
+when one of the commands it is made of, split as the shell splits it, is `git`, then any of git's own options, then `commit`, and is not a dry run,
+~~~~
+
+Clause, R80:
+
+~~~~text
+which it is when any of `--dry-run`, `--short`, `--porcelain`, `--long`, `-z` and `--null` is in effect once git has read the commit's options, in any spelling that git accepts, such as `--dry` or `-qz`.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+For git, `--short`, `--porcelain` and `--long` are one setting, which the `--no-` form of any of them clears, so `git commit --porcelain --no-short` makes a commit.
+~~~~
+
+Clause, R80:
+
+~~~~text
+For git, `--short`, `--porcelain` and `--long` are one setting, which the `--no-` form of any of them clears, so `git commit --porcelain --no-short` makes a commit.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+So the script stages a ledger file only when the commit is a top-level command, joined to the rest by `&&`, `;` or line breaks and not part of a pipeline, whose other commands run beside it, runs in the foreground, which a commit followed by `&` does not, and comes after nothing but `cd` to a path written in the command and the git commands `add`, `rm`, `mv`, `status`, `diff`, `log` and `show`, with or without git's own options, which are what an agent runs before a commit and which do not change the branch themselves.
+~~~~
+
+New:
+
+~~~~text
+So the script stages a ledger file only for a commit that R82 names, and none in a pipeline, whose other commands run beside it, nor after any git command but those that R82 lists, which are what an agent runs before a commit and which do not change the branch themselves.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+So the script stages a ledger file only
+~~~~
+
+Clause, R82:
+
+~~~~text
+when the commit is a top-level command, joined to the rest by `&&`, `;` or line breaks and not part of a pipeline,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+whose other commands run beside it
+~~~~
+
+Clause, R82:
+
+~~~~text
+, runs in the foreground, which a commit followed by `&` does not, and comes after nothing but `cd` to a path written in the command and the git commands `add`, `rm`, `mv`, `status`, `diff`, `log` and `show`, with or without git's own options,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+which are what an agent runs before a commit and which do not change the branch themselves.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+So each counts as a command that comes before the commit, except one whose only command is `cat` reading a here-document whose delimiter is quoted, which is one way to pass a message of several lines, and in whose body the shell expands nothing.
+~~~~
+
+New:
+
+~~~~text
+So each counts as a command that comes before the commit, with the one exception that R48 gives, which is one way to pass a message of several lines.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+So each counts as a command that comes before the commit,
+~~~~
+
+Clause, R48:
+
+~~~~text
+except one whose only command is `cat` reading a here-document whose delimiter is quoted,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+which is one way to pass a message of several lines
+~~~~
+
+Clause, R48:
+
+~~~~text
+and in whose body the shell expands nothing.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+The shell runs any command substitution in the body of a here-document whose delimiter is not quoted, so when the commit or a command before it reads one, the script stages nothing.
+~~~~
+
+Clause, R112:
+
+~~~~text
+The shell runs any command substitution in the body of a here-document whose delimiter is not quoted, so when the commit or a command before it reads one, the script stages nothing.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+The worktree where the commit runs is the hook input's `cwd`, followed through each top-level `cd` before the commit and the `-C` options given to git before `commit` in the commit's own command, never the directory the hook runs in, which in a desktop worktree session is the main worktree (see Context), and the script stages nothing when such a `-C` option names a path that is not written in the command.
+~~~~
+
+New:
+
+~~~~text
+The worktree where the commit runs is the one that R49 gives, never the directory the hook runs in, which in a desktop worktree session is the main worktree (see Context).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+The worktree where the commit runs is
+~~~~
+
+Clause, R49:
+
+~~~~text
+the hook input's `cwd`, followed through each top-level `cd` before the commit and the `-C` options given to git before `commit` in the commit's own command,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+never the directory the hook runs in, which in a desktop worktree session is the main worktree (see Context)
+~~~~
+
+Clause, R49:
+
+~~~~text
+and the script stages nothing when such a `-C` option names a path that is not written in the command.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+It writes nothing when no call is waiting; when the command names the paths to commit, which leaves the rest of the index out; when the commit would commit nothing without the file, counting the changes to tracked files that `-a` adds, and no `git add`, `git rm` or `git mv` comes before it, so a commit that would fail still fails, and an empty commit asked for stays empty; when a `git rm` or `git mv` before the commit is given a `-C` path not written in the command, or names a path with a wildcard or other pathspec magic, a path not written in the command, or the folder that the file goes in or one above it, read from where that command runs, after the `cd`s before it and its own `-C` options, because `git rm` refuses to remove a newly staged file and fails the command, and `git mv` moves it where the script does not look for it; and when `git check-attr`, which reads every attribute file that git does, the repository's `.git/info/attributes` and the person's own among them, gives the ledger path a `filter` or a `working-tree-encoding`, because git can then commit a pointer, as Git LFS does, or the file decoded from another encoding, instead of the entries.
+~~~~
+
+New:
+
+~~~~text
+It writes nothing in the cases that R81, R83, R84, R85 and R86 give: for a command that names the paths to commit, which leaves the rest of the index out; for a `git rm` or `git mv` that may reach the ledger folder, because `git rm` refuses to remove a newly staged file and fails the command, and `git mv` moves it where the script does not look for it; and when `git check-attr`, which reads every attribute file that git does, the repository's `.git/info/attributes` and the person's own among them, gives the ledger path a `filter` or a `working-tree-encoding`, because git can then commit a pointer, as Git LFS does, or the file decoded from another encoding, instead of the entries.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+It writes nothing
+~~~~
+
+Clause, R81:
+
+~~~~text
+when no call is waiting;
+~~~~
+
+Clause, R83:
+
+~~~~text
+when the command names the paths to commit,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+which leaves the rest of the index out;
+~~~~
+
+Clause, R84:
+
+~~~~text
+when the commit would commit nothing without the file, counting the changes to tracked files that `-a` adds, and no `git add`, `git rm` or `git mv` comes before it, so a commit that would fail still fails, and an empty commit asked for stays empty;
+~~~~
+
+Clause, R85:
+
+~~~~text
+when a `git rm` or `git mv` before the commit is given a `-C` path not written in the command, or names a path with a wildcard or other pathspec magic, a path not written in the command, or the folder that the file goes in or one above it, read from where that command runs, after the `cd`s before it and its own `-C` options,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+because `git rm` refuses to remove a newly staged file and fails the command, and `git mv` moves it where the script does not look for it; and when `git check-attr`, which reads every attribute file that git does, the repository's `.git/info/attributes` and the person's own among them, gives the ledger path a `filter` or a `working-tree-encoding`, because git can then commit a pointer, as Git LFS does, or the file decoded from another encoding, instead of the entries.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+When git refuses to add the file, as it does where `core.safecrlf` is on and line endings are converted, the script removes the file it wrote and stages nothing.
+~~~~
+
+New:
+
+~~~~text
+When git refuses to add the file, as it does where `core.safecrlf` is on and line endings are converted, the script does what R50 says.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+When git refuses to add the file, as it does where `core.safecrlf` is on and line endings are converted,
+~~~~
+
+Clause, R50:
+
+~~~~text
+the script removes the file it wrote and stages nothing.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+If not, that run takes the file back, from the index and the working tree, and its calls wait for a later commit.
+~~~~
+
+New:
+
+~~~~text
+If not, that run takes the file back, as R9 says.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+If not, that run takes the file back,
+~~~~
+
+Clause, R9:
+
+~~~~text
+from the index and the working tree, and its calls wait for a later commit.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+Any later run of the step in the repository, from that session or another, takes the file back once it finds that command over: by the command's result in the transcript, by a later call of the agent that ran it, by that agent having stopped, or by its session having ended, which `SessionEnd` says.
+~~~~
+
+New:
+
+~~~~text
+Any later run of the step in the repository takes the file back as R87 says, a session having ended when `SessionEnd` says.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+Any later run of the step in the repository
+~~~~
+
+Clause, R87:
+
+~~~~text
+, from that session or another, takes the file back once it finds that command over: by the command's result in the transcript, by a later call of the agent that ran it, by that agent having stopped, or by its session having ended, which
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+`SessionEnd` says.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+A `PreToolUse` run that fires again for the same `tool_use_id`, as for a deferred call when it is resumed, stages nothing new while that command's file is still staged and the branch it was staged for is still checked out in that worktree.
+~~~~
+
+New:
+
+~~~~text
+A `PreToolUse` run that fires again for the same `tool_use_id`, as for a deferred call when it is resumed, does what R51 says.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+A `PreToolUse` run that fires again for the same `tool_use_id`, as for a deferred call when it is resumed,
+~~~~
+
+Clause, R51:
+
+~~~~text
+stages nothing new while that command's file is still staged and the branch it was staged for is still checked out in that worktree.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+A take-back never removes a file from a worktree whose checked-out commit holds it, and leaves the file while another git command holds that worktree's index lock, rather than waiting for the lock or removing it.
+~~~~
+
+New:
+
+~~~~text
+A take-back does what R113 and R114 say, rather than waiting for the lock or removing it.
+~~~~
+
+Clause, R113:
+
+~~~~text
+A take-back never removes a file from a worktree whose checked-out commit holds it,
+~~~~
+
+Clause, R114:
+
+~~~~text
+and leaves the file while another git command holds that worktree's index lock,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+rather than waiting for the lock or removing it.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+So every take-back notes the commit that it found checked out there, not holding the file, and whether it removed the file from the index, the working tree or both, and the first later run that finds another commit checked out in that worktree and the index free puts the file back, as that commit holds it, if that commit holds it: into the index, if the take-back removed it from there and the index lacks it, and then into the working tree, if the take-back removed it from there, the index holds it as that commit does and the working tree lacks it, before the agent's next git command could commit its deletion.
+~~~~
+
+New:
+
+~~~~text
+So every take-back is noted, and a later run puts the file back, as R115 and R116 say, before the agent's next git command could commit its deletion.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+So every take-back
+~~~~
+
+Clause, R115:
+
+~~~~text
+notes the commit that it found checked out there, not holding the file, and whether it removed the file from the index, the working tree or both,
+~~~~
+
+Clause, R116:
+
+~~~~text
+and the first later run that finds another commit checked out in that worktree and the index free puts the file back, as that commit holds it, if that commit holds it: into the index, if the take-back removed it from there and the index lacks it, and then into the working tree, if the take-back removed it from there, the index holds it as that commit does and the working tree lacks it,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+before the agent's next git command could commit its deletion.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+Then it forgets the note, whether it put the file back or not, so that a ledger file that the person removes later, or that the step never took back, is never put back.
+~~~~
+
+New:
+
+~~~~text
+Then it forgets the note, as R117 says, so that a ledger file that the person removes later, or that the step never took back, is never put back.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+Then it forgets the note,
+~~~~
+
+Clause, R117:
+
+~~~~text
+whether it put the file back or not,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+so that a ledger file that the person removes later, or that the step never took back, is never put back.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+A call is recorded once, by a SHA-256 hash of its message id.
+~~~~
+
+Clause, R2:
+
+~~~~text
+A call is recorded once,
+~~~~
+
+Clause, R163:
+
+~~~~text
+by a SHA-256 hash of its message id.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+An entry records whether the main agent or a subagent made the call, and no session value.
+~~~~
+
+Clause, R2:
+
+~~~~text
+An entry records whether the main agent or a subagent made the call,
+~~~~
+
+Clause, R4:
+
+~~~~text
+and no session value.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+Its standard error carries only its own words and numbers, never text from a transcript, from a ledger file or its name, or from what a git command printed.
+~~~~
+
+Clause, R89:
+
+~~~~text
+Its standard error carries only its own words and numbers, never text from a transcript, from a ledger file or its name, or from what a git command printed.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+The script is one file that imports only Python's standard library, because under `python3 -I` a script cannot import a module beside it, and adding its folder to the import path would undo what isolated mode is for.
+~~~~
+
+New:
+
+~~~~text
+The script is the one file that R12 gives, because under `python3 -I` a script cannot import a module beside it, and adding its folder to the import path would undo what isolated mode is for.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+The script is
+~~~~
+
+Clause, R12:
+
+~~~~text
+one file that imports only Python's standard library,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+because under `python3 -I` a script cannot import a module beside it, and adding its folder to the import path would undo what isolated mode is for.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+Its first line names the release that it comes from.
+~~~~
+
+Clause, R53:
+
+~~~~text
+Its first line names the release that it comes from.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+An update bot can still move the pin alone and leave the file behind, so the report says when the hook file in the merged commit is not the one at the commit that the report runs from (decision 7).
+~~~~
+
+New:
+
+~~~~text
+An update bot can still move the pin alone and leave the file behind, so the report says so, as R65 gives (decision 7).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+An update bot can still move the pin alone and leave the file behind, so the report says
+~~~~
+
+Clause, R65:
+
+~~~~text
+when the hook file in the merged commit is not the one at the commit that the report runs from
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+(decision 7).
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+The file carries the model names and price attribute values of the price table at its commit, and records any other value as `unknown`, so that a gateway's private alias is not published.
+~~~~
+
+New:
+
+~~~~text
+The file carries the model names and price attribute values of the price table at its commit, and records any other value as R77 says.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+The file carries the model names and price attribute values of the price table at its commit, and records any other value
+~~~~
+
+Clause, R77:
+
+~~~~text
+as `unknown`, so that a gateway's private alias is not published.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+When the hook and the report come from one commit, they share one price table, and the report refuses a line with a name that its table does not list.
+~~~~
+
+New:
+
+~~~~text
+When the hook and the report come from one commit, they share one price table, and the report refuses a line as R98 says.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+When the hook and the report come from one commit, they share one price table, and the report refuses a line
+~~~~
+
+Clause, R98:
+
+~~~~text
+with a name that its table does not list.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+The script starts no program but git, which it finds at an absolute path, in the folders that the absolute entries of `PATH` name, because Windows looks for a program named without a folder in the current directory before it looks in `PATH` (see Context), and Claude's current directory is usually in the repository.
+~~~~
+
+New:
+
+~~~~text
+The script starts no program but git, as R54 says, because Windows looks for a program named without a folder in the current directory before it looks in `PATH` (see Context), and Claude's current directory is usually in the repository.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+The script starts no program but git,
+~~~~
+
+Clause, R54:
+
+~~~~text
+which it finds at an absolute path, in the folders that the absolute entries of `PATH` name,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+because Windows looks for a program named without a folder in the current directory before it looks in `PATH` (see Context), and Claude's current directory is usually in the repository.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+Before it starts git, it moves its own current directory to a folder that only the system's administrator can write, such as `/` or Windows' system folder, and names each git command's folder with `-C`, so that a program planted in Claude's current directory, in the repository's folder or in a folder that a relative entry of `PATH` names is never the one that runs.
+~~~~
+
+New:
+
+~~~~text
+Before it starts git, it does what R54 says, naming each git command's folder with `-C`, so that a program planted in Claude's current directory, in the repository's folder or in a folder that a relative entry of `PATH` names is never the one that runs.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+Before it starts git, it
+~~~~
+
+Clause, R54:
+
+~~~~text
+moves its own current directory to a folder that only the system's administrator can write, such as `/` or Windows' system folder, and names
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+each git command's folder with `-C`,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+so that a program planted in Claude's current directory, in the repository's folder or in a folder that a relative entry of `PATH` names is never the one that runs.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+It reads both switches from their files before it starts any program.
+~~~~
+
+Clause, R118:
+
+~~~~text
+It reads both switches from their files before it starts any program.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+A run whose own reading finds either off starts git only to find its store and, where one exists, to do there what decision 6 says; one whose own reading finds both on also asks git for the opt-in, and when git's answer turns capture off, it starts git after that only as such a run.
+~~~~
+
+Clause, R118:
+
+~~~~text
+A run whose own reading finds either off starts git only to find its store and, where one exists, to do there what decision 6 says; one whose own reading finds both on also asks git for the opt-in, and when git's answer turns capture off, it starts git after that only as such a run.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+The store is written only by replacing it whole, under a lock that the operating system releases when the process that holds it ends, so that a run killed while it writes leaves the store as it was or as that write left it, and leaves no lock behind.
+~~~~
+
+Clause, R11:
+
+~~~~text
+The store is written only by replacing it whole, under a lock that the operating system releases when the process that holds it ends, so that a run killed while it writes leaves the store as it was or as that write left it, and leaves no lock behind.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+A ledger file is noted in the store before it is written, so that a later run takes back a file that a run killed while writing it left behind.
+~~~~
+
+Clause, R57:
+
+~~~~text
+A ledger file is noted in the store before it is written, so that a later run takes back a file that a run killed while writing it left behind.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+So the store carries the version of its format from the first release on, and a run that finds a version that it does not know records, stages, takes back and puts back nothing, leaves the store as it was, whatever the switches say, and exits with success.
+~~~~
+
+New:
+
+~~~~text
+So the store is versioned as R55 says.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+So the store
+~~~~
+
+Clause, R55:
+
+~~~~text
+carries the version of its format from the first release on, and a run that finds a version that it does not know records, stages, takes back and puts back nothing, leaves the store as it was, whatever the switches say, and exits with success.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+Copies of two releases that write the same version of the store take each other's notes as their own, so every release that writes a version keeps its path, its lock and its fields, and makes its fingerprint the same way, and a test holds the fingerprint that a fixed set of files gives for each version to the hash recorded for it, while the checks fail when a change alters the hash recorded for a version that a published release wrote, whatever the major number, since a copy that made it otherwise would take each of the other's runs for an opt-out.
+~~~~
+
+New:
+
+~~~~text
+Copies of two releases that write the same version of the store take each other's notes as their own, so every release that writes a version writes it as R192 says, since a copy that made it otherwise would take each of the other's runs for an opt-out.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+Copies of two releases that write the same version of the store take each other's notes as their own, so every release that writes a version
+~~~~
+
+Clause, R192:
+
+~~~~text
+keeps its path, its lock and its fields, and makes its fingerprint the same way, and a test holds the fingerprint that a fixed set of files gives for each version to the hash recorded for it, while the checks fail when a change alters the hash recorded for a version that a published release wrote, whatever the major number,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+since a copy that made it otherwise would take each of the other's runs for an opt-out.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+Two such releases can still differ in what they record, as when the configuration file holds a key that only the later one documents, so each run that finds both switches on notes, for its session, the latest release whose copy has run in it, and a run of an earlier release than that records, stages, takes back, puts back and ends nothing for that session there, and exits with success, leaving the session to the later release's copy, unless it finds the person's own capture off, which it acts on as any run does, taking back and putting back too, so that an opt-out is acted on even where the later copy no longer runs (DR-206).
+~~~~
+
+New:
+
+~~~~text
+Two such releases can still differ in what they record, as when the configuration file holds a key that only the later one documents, so an earlier release leaves a session to a later one as R191 says, so that an opt-out is acted on even where the later copy no longer runs (DR-206).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+Two such releases can still differ in what they record, as when the configuration file holds a key that only the later one documents, so
+~~~~
+
+Clause, R191:
+
+~~~~text
+each run that finds both switches on notes, for its session, the latest release whose copy has run in it, and a run of an earlier release than that records, stages, takes back, puts back and ends nothing for that session there, and exits with success, leaving the session to the later release's copy, unless it finds the person's own capture off, which it acts on as any run does, taking back and putting back too,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+so that an opt-out is acted on even where the later copy no longer runs (DR-206).
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+A run that finds a store that an earlier release wrote rewrites it in its own version, keeping its waiting calls, its notes of taken calls and its notes of staged and taken-back ledger files, and begins every session's interval anew, so that no call is placed inside an interval by an earlier release's rules, and the calls that answer lines written before that run are left out and flagged for consent, as a removed store's are (DR-187).
+~~~~
+
+New:
+
+~~~~text
+A run that finds a store that an earlier release wrote rewrites it as R55 says, so that no call is placed inside an interval by an earlier release's rules, and the calls that answer lines written before that run are left out and flagged for consent, as a removed store's are (DR-187).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+A run that finds a store that an earlier release wrote rewrites it
+~~~~
+
+Clause, R55:
+
+~~~~text
+in its own version, keeping its waiting calls, its notes of taken calls and its notes of staged and taken-back ledger files, and begins every session's interval anew,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+so that no call is placed inside an interval by an earlier release's rules, and the calls that answer lines written before that run are left out and flagged for consent, as a removed store's are (DR-187).
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+Because a ledger file is written once, under a random name, a pull request's usage is the ledger files its merge adds.
+~~~~
+
+New:
+
+~~~~text
+Because a ledger file is written once, under a random name, a pull request's usage is what R58 counts.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+Because a ledger file is written once, under a random name, a pull request's usage is
+~~~~
+
+Clause, R58:
+
+~~~~text
+the ledger files its merge adds.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+Files the default branch already held, such as those that a reused branch name still carries from an earlier pull request, are not added again, so they are not counted again.
+~~~~
+
+Clause, R58:
+
+~~~~text
+Files the default branch already held, such as those that a reused branch name still carries from an earlier pull request, are not added again, so they are not counted again.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+An added entry whose call a ledger file held at any commit of the default branch's first-parent history before the merge is not counted, so that a ledger file that leaves the default branch, as a revert takes it, and comes back, as a revert of that revert brings it, is not counted twice, and an added file at a path that this history held is counted as restored.
+~~~~
+
+Clause, R59:
+
+~~~~text
+An added entry whose call a ledger file held at any commit of the default branch's first-parent history before the merge is not counted, so that a ledger file that leaves the default branch, as a revert takes it, and comes back, as a revert of that revert brings it, is not counted twice,
+~~~~
+
+Clause, R119:
+
+~~~~text
+and an added file at a path that this history held is counted as restored.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+A change to an earlier ledger file is flagged, not counted.
+~~~~
+
+Clause, R119:
+
+~~~~text
+A change to an earlier ledger file is flagged, not counted.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+A change to a price or to such a statement is a pull request that adds a row dated after the rows already there, so history is never rewritten, and a change reprices nothing earlier.
+~~~~
+
+New:
+
+~~~~text
+A change to a price or to such a statement is a pull request that adds a row dated after the rows already there, so history is never rewritten (R14).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+A change to a price or to such a statement is a pull request that adds a row dated after the rows already there, so history is never rewritten
+~~~~
+
+Clause, R14:
+
+~~~~text
+, and a change reprices nothing earlier.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+The type comes from the first tool call in a message: edits and writes are code generation, reads and searches are file reading, shell commands are tooling, `mcp__` tools are MCP, starting a subagent is subagent, a tool the classification does not know is other, and no tool call is conversation.
+~~~~
+
+New:
+
+~~~~text
+The type comes from the first tool call in a message, as R6 gives it.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+The type comes from the first tool call in a message
+~~~~
+
+Clause, R6:
+
+~~~~text
+: edits and writes are code generation, reads and searches are file reading, shell commands are tooling, `mcp__` tools are MCP, starting a subagent is subagent, a tool the classification does not know is other, and no tool call is conversation.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+Capture reads it in the working tree, and the report reads it as a blob from the default branch before and after the merge (decision 7), so the pull request being reported cannot turn its own report off.
+~~~~
+
+New:
+
+~~~~text
+Capture and the report read it as R91 and R19 say (decision 7), so the pull request being reported cannot turn its own report off.
+~~~~
+
+Clause, R91:
+
+~~~~text
+Capture reads it in the working tree,
+~~~~
+
+Clause, R19:
+
+~~~~text
+and the report reads it as a blob from the default branch before and after the merge
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+(decision 7), so the pull request being reported cannot turn its own report off.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+Both read it only as a regular file no larger than the size bound that its format documents, and take a file that is missing, larger, not a regular file or not valid to leave the tool off, so that the file cannot stall a run, as a named pipe in the working tree could, and a pull request that breaks it still gets its report, flagged, when the file before the merge turned the tool on.
+~~~~
+
+New:
+
+~~~~text
+Both read it as R36 and R19 say, and leave the tool off for a file that R92 names, so that the file cannot stall a run, as a named pipe in the working tree could, and a pull request that breaks it still gets its report, flagged, when the file before the merge turned the tool on.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+Both read it
+~~~~
+
+Clause, R36:
+
+~~~~text
+only as a regular file no larger than the size bound that its format documents,
+~~~~
+
+Clause, R92:
+
+~~~~text
+and take a file that is missing, larger, not a regular file or not valid to leave the tool off,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+so that the file cannot stall a run, as a named pipe in the working tree could, and a pull request that breaks it still gets its report, flagged, when the file before the merge turned the tool on.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+A file that holds a key that its format does not document, in the version of the tool that reads it, is not valid, whatever that key's value and whatever `enabled` says, as the owner chose on 2026-11-03 over passing such a key over (DR-190), so that a misspelt key leaves the tool off, and the pull request that adds it is flagged, rather than the file doing what its author did not mean.
+~~~~
+
+New:
+
+~~~~text
+A file that holds a key that its format does not document is not valid (R171), as the owner chose on 2026-11-03 over passing such a key over (DR-190), so that a misspelt key leaves the tool off, and the pull request that adds it is flagged, rather than the file doing what its author did not mean.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+A file that holds a key that its format does not document
+~~~~
+
+Clause, R171:
+
+~~~~text
+,
+~~~~
+
+Clause, R171:
+
+~~~~text
+in the version of the tool that reads it, is not valid, whatever that key's value and whatever `enabled` says,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+as the owner chose on 2026-11-03 over passing such a key over (DR-190), so that a misspelt key leaves the tool off, and the pull request that adds it is flagged, rather than the file doing what its author did not mean.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+When the configuration before a merge turns the tool on and the one after it does not, the comment says so in the report's own words, and whether the file there is missing, disables the tool or cannot be read as a valid configuration, and when neither turns the tool on, the job summary says the same, so that a merge that leaves the tool off is seen, and so is a repository that adopts the tool with a file that is not valid (DR-191).
+~~~~
+
+New:
+
+~~~~text
+The report says what R172 gives, so that a merge that leaves the tool off is seen, and so is a repository that adopts the tool with a file that is not valid (DR-191).
+~~~~
+
+Clause, R172:
+
+~~~~text
+When the configuration before a merge turns the tool on and the one after it does not, the comment says so in the report's own words, and whether the file there is missing, disables the tool or cannot be read as a valid configuration, and when neither turns the tool on, the job summary says the same,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+so that a merge that leaves the tool off is seen, and so is a repository that adopts the tool with a file that is not valid (DR-191).
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+The script reads the person's opt-in from their global configuration files, `~/.gitconfig` and git's file in the XDG configuration folder, not from files that they include, which can lie anywhere, a repository's folder among them, and ignores the variables that point git at other files or add settings, because a repository's Claude Code settings can set those for everyone who works in it, though not `HOME` or the `XDG_*` variables.
+~~~~
+
+New:
+
+~~~~text
+The script reads the person's opt-in as R37 says, not from files that they include, which can lie anywhere, a repository's folder among them, and ignores the variables that point git at other files or add settings, because a repository's Claude Code settings can set those for everyone who works in it, though not `HOME` or the `XDG_*` variables.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+The script reads the person's opt-in
+~~~~
+
+Clause, R37:
+
+~~~~text
+from their global configuration files, `~/.gitconfig` and git's file in the XDG configuration folder,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+not from files that they include, which can lie anywhere, a repository's folder among them, and ignores the variables that point git at other files or add settings, because a repository's Claude Code settings can set those for everyone who works in it, though not `HOME` or the `XDG_*` variables.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+It takes the XDG folder from `XDG_CONFIG_HOME` only when that variable holds an absolute path, and reads `~/.config/git/config` otherwise, because git reads a relative one from its current directory, which can be in a repository's folder.
+~~~~
+
+New:
+
+~~~~text
+It takes the XDG folder as R103 says, because git reads a relative one from its current directory, which can be in a repository's folder.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+It takes the XDG folder
+~~~~
+
+Clause, R103:
+
+~~~~text
+from `XDG_CONFIG_HOME` only when that variable holds an absolute path, and reads `~/.config/git/config` otherwise,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+because git reads a relative one from its current directory, which can be in a repository's folder.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+It takes `~` from `HOME` only when that variable holds an absolute path, for the same reason, and never reads a configuration file from a relative path.
+~~~~
+
+New:
+
+~~~~text
+It takes `~` as R104 says, for the same reason.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+It takes `~`
+~~~~
+
+Clause, R104:
+
+~~~~text
+from `HOME` only when that variable holds an absolute path,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+for the same reason
+~~~~
+
+Clause, R104:
+
+~~~~text
+and never reads a configuration file from a relative path.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+On Windows, where `HOME` is not set or not absolute, it takes the folder that git takes when `HOME` is not set: `HOMEDRIVE` and `HOMEPATH` together where they name a folder that exists and is not Windows' system folder, and `USERPROFILE` otherwise.
+~~~~
+
+New:
+
+~~~~text
+On Windows, where `HOME` is not set or not absolute, it takes the folder that R104 gives from `HOMEDRIVE`, `HOMEPATH` and `USERPROFILE`.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+On Windows, where `HOME` is not set or not absolute, it takes the folder that
+~~~~
+
+Clause, R104:
+
+~~~~text
+git takes when `HOME` is not set: `HOMEDRIVE` and `HOMEPATH` together where they name a folder that exists and is not Windows' system folder, and `USERPROFILE` otherwise.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+Elsewhere, with no absolute `HOME`, it reads no file from `~`.
+~~~~
+
+Clause, R104:
+
+~~~~text
+Elsewhere, with no absolute `HOME`, it reads no file from `~`.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+Where both files set it, `~/.gitconfig` decides, as it does for git, which reads it after the other.
+~~~~
+
+Clause, R105:
+
+~~~~text
+Where both files set it, `~/.gitconfig` decides, as it does for git, which reads it after the other.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+The script reads these files itself, since it reads both switches before it starts any program (decision 1), and it reads them by git's rules for its configuration files: section and key names match in any case, a value loses its quotes and any comment after it, the last value in a file decides, and a key in a subsection, such as `[pr-cost "x"]`, or in a comment is not the opt-in key.
+~~~~
+
+New:
+
+~~~~text
+The script reads these files itself, since it reads both switches before it starts any program (decision 1), and it reads them by git's rules, as R38 gives them.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+The script reads these files itself, since it reads both switches before it starts any program (decision 1), and it reads them by git's rules
+~~~~
+
+Clause, R38:
+
+~~~~text
+for its configuration files: section and key names match in any case, a value loses its quotes and any comment after it, the last value in a file decides, and a key in a subsection, such as `[pr-cost "x"]`, or in a comment is not the opt-in key.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+The script stops a reading that has not finished by the end of the run's time budget, such as one held up by a named pipe that the session's environment names as git's global file, and takes capture to be off when either answer does not come within that budget or gives no value or a refusal, when its last value is not true, or when the last value of any one file in it other than the person's two global files, or of the variables, is not true.
+~~~~
+
+New:
+
+~~~~text
+The script stops a reading that has not finished by the end of the run's time budget, such as one held up by a named pipe that the session's environment names as git's global file, and takes capture to be off in the cases that R160 gives.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+The script stops a reading that has not finished by the end of the run's time budget, such as one held up by a named pipe that the session's environment names as git's global file, and takes capture to be off
+~~~~
+
+Clause, R160:
+
+~~~~text
+when either answer does not come within that budget or gives no value or a refusal, when its last value is not true, or when the last value of any one file in it other than the person's two global files, or of the variables, is not true.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+A run that finds both switches on, and no store whose version it does not know, notes in the store its time, read from the system's clock in UTC, and a fingerprint of the files that can turn the person's capture on or off: their two global configuration files, each other file that git reads the opt-in key from, which either of git's two answers names, and each link on the way to one, made of each one's device and inode numbers, size and modification times, and never of its contents or its path, and the store keeps only a hash of it, so that no configuration file's path, which can carry the home folder and the names that the person gives their files, reaches the store.
+~~~~
+
+New:
+
+~~~~text
+A run that finds both switches on, and no store whose version it does not know, notes its time and a fingerprint as R107 says, so that no configuration file's path, which can carry the home folder and the names that the person gives their files, reaches the store.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+A run that finds both switches on, and no store whose version it does not know, notes
+~~~~
+
+Clause, R107:
+
+~~~~text
+in the store its time, read from the system's clock in UTC, and a fingerprint of the files that can turn the person's capture on or off: their two global configuration files, each other file that git reads the opt-in key from, which either of git's two answers names, and each link on the way to one, made of each one's device and inode numbers, size and modification times, and never of its contents or its path, and the store keeps only a hash of it,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+so that no configuration file's path, which can carry the home folder and the names that the person gives their files, reaches the store.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+An interval begins at a run that finds both on while its session has no open interval, and ends at its last run before one that finds either off or notes another fingerprint than the last that the store notes, whichever session's run noted it, which then begins the next interval if it finds both on.
+~~~~
+
+Clause, R108:
+
+~~~~text
+An interval begins at a run that finds both on while its session has no open interval, and ends at its last run before one that finds either off or notes another fingerprint than the last that the store notes,
+~~~~
+
+Clause, R162:
+
+~~~~text
+whichever session's run noted it,
+~~~~
+
+Clause, R108:
+
+~~~~text
+which then begins the next interval if it finds both on.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+A call counts as made inside an interval only when, by each line's own time, read as an instant with its offset from UTC, the line it answers, which is the nearest line up the chain of parents that the call's first line names in the same transcript that gives the person's prompt, a tool's result or a compaction's summary, was written at or after the run that began the interval and no later than the call's first line, and its first line no later than the interval's last run.
+~~~~
+
+New:
+
+~~~~text
+A call counts as made inside an interval only as R144 says, by each line's own time, read as an instant with its offset from UTC.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+A call counts as made inside an interval only
+~~~~
+
+Clause, R144:
+
+~~~~text
+when,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+by each line's own time, read as an instant with its offset from UTC
+~~~~
+
+Clause, R144:
+
+~~~~text
+the line it answers, which is the nearest line up the chain of parents that the call's first line names in the same transcript that gives the person's prompt, a tool's result or a compaction's summary, was written at or after the run that began the interval and no later than the call's first line, and its first line no later than the interval's last run.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+A call that answers no line of its transcript, whose answered line comes before where runs read again or was skipped as too long, or that falls outside every interval, is left out.
+~~~~
+
+Clause, R144:
+
+~~~~text
+A call that answers no line of its transcript,
+~~~~
+
+Clause, R165:
+
+~~~~text
+whose answered line comes before where runs read again or was skipped as too long,
+~~~~
+
+Clause, R40:
+
+~~~~text
+or that falls outside every interval, is left out.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+Nothing depends on it: where no start run comes, as with a Claude Code that does not run that event, the interval begins at the session's first run that finds both on, and the calls before it are left out.
+~~~~
+
+New:
+
+~~~~text
+Nothing depends on it, as R148 says, as with a Claude Code that does not run that event.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+Nothing depends on it
+~~~~
+
+Clause, R148:
+
+~~~~text
+: where no start run comes,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+as with a Claude Code that does not run that event
+~~~~
+
+Clause, R148:
+
+~~~~text
+the interval begins at the session's first run that finds both on, and the calls before it are left out.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+So whenever a run leaves out a call made in this repository because it fell outside every interval, the next ledger file staged for that call's worktree and branch says so, with no count, time or other fact about the calls left out, and the comment says that the token cost is then a lower bound (decision 16).
+~~~~
+
+Clause, R155:
+
+~~~~text
+So whenever a run leaves out a call made in this repository because it fell outside every interval, the next ledger file staged for that call's worktree and branch says so, with no count, time or other fact about the calls left out,
+~~~~
+
+Clause, R157:
+
+~~~~text
+and the comment says that the token cost is then a lower bound (decision 16).
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+A run that finds either switch off creates no store and adds no note of its session to one, removes a store that does not parse, and in one of a version that it knows only ends its own session's interval, noting its time as above, and does what decision 15 says that every run does, so that someone who has never opted in leaves nothing in the git common directory, and a repository that turns the tool off keeps nothing past the window.
+~~~~
+
+New:
+
+~~~~text
+A run that finds either switch off does what R145 says, so that someone who has never opted in leaves nothing in the git common directory, and a repository that turns the tool off keeps nothing past the window.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+A run that finds either switch off
+~~~~
+
+Clause, R145:
+
+~~~~text
+creates no store and adds no note of its session to one, removes a store that does not parse, and in one of a version that it knows only ends its own session's interval, noting its time as above, and does what decision 15 says that every run does,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+so that someone who has never opted in leaves nothing in the git common directory, and a repository that turns the tool off keeps nothing past the window.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+A run holds the store's lock from when it reads the store until it has written it, and reads both switches again under that lock before it writes a call to the store or stages a ledger file, acting only on a store whose file is still the one that its lock holds, so that a run that began before an opt-out writes nothing after it, and a run that waited for the lock writes nothing into a store that an opt-out removed.
+~~~~
+
+Clause, R161:
+
+~~~~text
+A run holds the store's lock from when it reads the store until it has written it, and reads both switches again under that lock before it writes a call to the store or stages a ledger file, acting only on a store whose file is still the one that its lock holds, so that a run that began before an opt-out writes nothing after it, and a run that waited for the lock writes nothing into a store that an opt-out removed.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+A run that finds the person's own capture off, in their global configuration, in the repository's or as git reads it there, ends every session's interval and empties a store of a version that it knows (decision 1): it removes every call waiting to be staged, every flag due, every note of a taken call and every session's notes, keeping only the notes that a take-back or a put-back still needs, and a take-back after it returns that file's calls and flags to neither `waiting` nor `flags`, so the store removes itself once those are done (decision 15).
+~~~~
+
+New:
+
+~~~~text
+A run that finds the person's own capture off, in their global configuration, in the repository's or as git reads it there, does what R109 says (decision 1), and a take-back after it returns that file's calls and flags to neither `waiting` nor `flags`, so the store removes itself once those are done (decision 15).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+A run that finds the person's own capture off, in their global configuration, in the repository's or as git reads it there,
+~~~~
+
+Clause, R109:
+
+~~~~text
+ends every session's interval and empties a store of a version that it knows
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+(decision 1)
+~~~~
+
+Clause, R109:
+
+~~~~text
+: it removes every call waiting to be staged, every flag due, every note of a taken call and every session's notes, keeping only the notes that a take-back or a put-back still needs,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+and a take-back after it returns that file's calls and flags to neither `waiting` nor `flags`, so the store removes itself once those are done (decision 15).
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+So no call made before that run is staged after it, and turning capture on again reads every transcript afresh, through intervals that begin only at later runs.
+~~~~
+
+Clause, R109:
+
+~~~~text
+So no call made before that run is staged after it, and turning capture on again reads every transcript afresh, through intervals that begin only at later runs.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+Taking back and putting back ledger files does not wait on the switches, so a file staged before capture was turned off is still taken back.
+~~~~
+
+Clause, R110:
+
+~~~~text
+Taking back and putting back ledger files does not wait on the switches, so a file staged before capture was turned off is still taken back.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+A reusable workflow receives its caller's event, so the report checks the event itself and refuses anything but a push to the default branch: it goes on only when `github.event_name` is `push` and `github.ref` is `refs/heads/` followed by the default branch's name, so that no other event passes, even one whose `github.ref` names the default branch, and neither does a push of a tag named like the default branch, whose `github.ref_name` is that same name.
+~~~~
+
+New:
+
+~~~~text
+A reusable workflow receives its caller's event, so the report checks the event itself, as R68 says.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+A reusable workflow receives its caller's event, so the report checks the event itself
+~~~~
+
+Clause, R68:
+
+~~~~text
+and refuses anything but a push to the default branch: it goes on only when `github.event_name` is `push` and `github.ref` is `refs/heads/` followed by the default branch's name, so that no other event passes, even one whose `github.ref` names the default branch, and neither does a push of a tag named like the default branch, whose `github.ref_name` is that same name.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+It fetches what it reads, since `actions/checkout` fetches one commit unless it is asked for more: the default branch's history up to the push's commit, and the pull request's head as `refs/pull/<number>/head`.
+~~~~
+
+New:
+
+~~~~text
+It fetches what it reads, since `actions/checkout` fetches one commit unless it is asked for more, as R23 gives.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+It fetches what it reads, since `actions/checkout` fetches one commit unless it is asked for more
+~~~~
+
+Clause, R23:
+
+~~~~text
+: the default branch's history up to the push's commit, and the pull request's head as `refs/pull/<number>/head`.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+It looks up each commit that the push adds to the default branch's first-parent history, and when they do not all belong to one pull request, as when a merge queue merges several in one push, or belong to none, as when a commit is pushed straight to the default branch, it posts no comment and says why in its job summary, so that a push that gets no comment can be told from a push for which the report did not run.
+~~~~
+
+New:
+
+~~~~text
+It looks up each commit that the push adds to the default branch's first-parent history, and comments only as R69 says, so that a push that gets no comment can be told from a push for which the report did not run.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+It looks up each commit that the push adds to the default branch's first-parent history, and
+~~~~
+
+Clause, R69:
+
+~~~~text
+when they do not all belong to one pull request, as when a merge queue merges several in one push, or belong to none, as when a commit is pushed straight to the default branch, it posts no comment and says why in its job summary,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+so that a push that gets no comment can be told from a push for which the report did not run.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+It reads the ledger from git, comparing the push's commit before with the one after: the ledger files the merge adds, and the earlier ledger files it removes or changes, whose number the job summary gives when the push gets no comment.
+~~~~
+
+New:
+
+~~~~text
+It reads the ledger from git, comparing the push's commit before with the one after, as R58 and R60 say.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+It reads the ledger from git, comparing the push's commit before with the one after
+~~~~
+
+Clause, R58:
+
+~~~~text
+: the ledger files the merge adds,
+~~~~
+
+Clause, R60:
+
+~~~~text
+and the earlier ledger files it removes or changes, whose number the job summary gives when the push gets no comment.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+So that a call is counted once, it also reads the call ids of every ledger file that a commit of the default branch's first-parent history held before the merge, and counts as restored an added file at a path that this history held.
+~~~~
+
+New:
+
+~~~~text
+So that a call is counted once, it also reads the call ids of every ledger file that a commit of the default branch's first-parent history held before the merge, as R59 and R119 need.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+So that a call is counted once, it also reads the call ids of every ledger file that a commit of the default branch's first-parent history held before the merge
+~~~~
+
+Clause, R119:
+
+~~~~text
+, and counts as restored an added file at a path that this history held.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+It reads those earlier files by the rules that capture applies to the ledger files it reads: it skips a path that is not a regular file, a file above the size bound and a line that does not match the ledger format, and counts none of them against the pull request, since none of them is the pull request's, so that a ledger file that an earlier merge brought can neither stop nor slow every later report.
+~~~~
+
+New:
+
+~~~~text
+It reads those earlier files by the rules that R67 gives, since none of them is the pull request's, so that a ledger file that an earlier merge brought can neither stop nor slow every later report.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+It reads those earlier files by the rules that
+~~~~
+
+Clause, R67:
+
+~~~~text
+capture applies to the ledger files it reads: it skips a path that is not a regular file, a file above the size bound and a line that does not match the ledger format, and counts none of them against the pull request,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+since none of them is the pull request's, so that a ledger file that an earlier merge brought can neither stop nor slow every later report.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+It reads `.pr-cost.json` at both commits only as a blob within the size bound that its format documents, takes a file that is missing, not a regular file, too large or not valid to leave the tool off at that commit, and runs when either commit turns the tool on, so the pull request that turns the tool on gets its report too, and so does one that breaks the file, while a merge that finds the tool off at both commits gets no comment, and its job summary says why the file after the merge leaves the tool off (decision 6).
+~~~~
+
+Clause, R19:
+
+~~~~text
+It reads `.pr-cost.json` at both commits only as a blob within the size bound that its format documents,
+~~~~
+
+Clause, R92:
+
+~~~~text
+takes a file that is missing, not a regular file, too large or not valid to leave the tool off at that commit,
+~~~~
+
+Clause, R19:
+
+~~~~text
+and runs when either commit turns the tool on, so the pull request that turns the tool on gets its report too,
+~~~~
+
+Clause, R92:
+
+~~~~text
+and so does one that breaks the file,
+~~~~
+
+Clause, R172:
+
+~~~~text
+while a merge that finds the tool off at both commits gets no comment, and its job summary says why the file after the merge leaves the tool off (decision 6).
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+So the report keeps to a call budget that the README gives, and its job has a time limit, set with `timeout-minutes`.
+~~~~
+
+New:
+
+~~~~text
+So the report keeps to the call budget and time limit that R70 gives, set with `timeout-minutes`.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+So the report keeps to
+~~~~
+
+Clause, R70:
+
+~~~~text
+a call budget that the README gives, and its job has a time limit,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+set with `timeout-minutes`.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+It finds the runs on the pull request's commits with as few calls as it can: by listing each commit's runs, or, where fewer calls do it and GitHub returns the whole listing, by listing the repository's runs page by page, filtered by their event and by when they were created.
+~~~~
+
+Clause, R121:
+
+~~~~text
+It finds the runs on the pull request's commits with as few calls as it can: by listing each commit's runs, or, where fewer calls do it and GitHub returns the whole listing, by listing the repository's runs page by page, filtered by their event and by when they were created.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+When the budget runs out before the report can tell which pull request the push merges, it posts no comment and says so in its job summary.
+~~~~
+
+Clause, R70:
+
+~~~~text
+When the budget runs out before the report can tell which pull request the push merges, it posts no comment and says so in its job summary.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+When it runs out while the report reads the runs and jobs, or GitHub returns only part of a listing, the comment marks the CI cost as incomplete.
+~~~~
+
+Clause, R64:
+
+~~~~text
+When it runs out while the report reads the runs and jobs, or GitHub returns only part of a listing, the comment marks the CI cost as incomplete.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+It counts only the runs on those commits that no push to the default branch started, as the event and branch that each run names show, and that were created before the pull request merged.
+~~~~
+
+New:
+
+~~~~text
+It counts only the runs that R62 gives, as the event and branch that each run names show.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+It counts only the runs
+~~~~
+
+Clause, R62:
+
+~~~~text
+on those commits that no push to the default branch started,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+as the event and branch that each run names show
+~~~~
+
+Clause, R62:
+
+~~~~text
+and that were created before the pull request merged.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+So the runs that the merge's push starts, the report's own included, are not counted, even when they run on one of those commits, as after a fast-forward, and this does not depend on how their creation times fall around the merge time.
+~~~~
+
+Clause, R120:
+
+~~~~text
+So the runs that the merge's push starts, the report's own included, are not counted, even when they run on one of those commits, as after a fast-forward, and this does not depend on how their creation times fall around the merge time.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+A run counted that has not finished makes the CI cost incomplete, and a job on a runner that the price table does not list is counted in minutes and left out of the cost.
+~~~~
+
+Clause, R64:
+
+~~~~text
+A run counted that has not finished makes the CI cost incomplete,
+~~~~
+
+Clause, R63:
+
+~~~~text
+and a job on a runner that the price table does not list is counted in minutes and left out of the cost.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+It also says when the hook file in the merged commit is missing or differs from the hook file at `job.workflow_sha`, quoting nothing from it, because adopters' update bots can move the workflow's pin and leave the copied hook behind, so that the hook and the report come from different commits.
+~~~~
+
+New:
+
+~~~~text
+It also says what R65 gives, because adopters' update bots can move the workflow's pin and leave the copied hook behind, so that the hook and the report come from different commits.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+It also says
+~~~~
+
+Clause, R65:
+
+~~~~text
+when the hook file in the merged commit is missing or differs from the hook file at `job.workflow_sha`, quoting nothing from it,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+because adopters' update bots can move the workflow's pin and leave the copied hook behind, so that the hook and the report come from different commits.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+And since a person's plugin follows their account, not the repository's pin, it says when a ledger file that the merge adds names, on its first line, a later release of the capture step than the report's own, quoting nothing from it, so that a line or a file that the report refuses for a model name or a format that only a later release knows is explained (DR-208).
+~~~~
+
+New:
+
+~~~~text
+And since a person's plugin follows their account, not the repository's pin, it says what R193 gives, so that a line or a file that the report refuses for a model name or a format that only a later release knows is explained (DR-208).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+And since a person's plugin follows their account, not the repository's pin, it says
+~~~~
+
+Clause, R193:
+
+~~~~text
+when a ledger file that the merge adds names, on its first line, a later release of the capture step than the report's own, quoting nothing from it,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+so that a line or a file that the report refuses for a model name or a format that only a later release knows is explained (DR-208).
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+And it says when `.claude/settings.json` or `.claude/settings.local.json` at the merged commit registers the hook's command with a checksum other than the SHA-256 of the merged commit's hook file, with each CRLF taken as LF, quoting nothing from either, since a registration copied from another release's README runs nothing, prints nothing and exits with success (R88), so that the sessions there would record nothing through it with no sign of why (R202, DR-216).
+~~~~
+
+New:
+
+~~~~text
+And it says what R202 gives, since a registration copied from another release's README runs nothing, prints nothing and exits with success (R88), so that the sessions there would record nothing through it with no sign of why (R202, DR-216).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+And it says
+~~~~
+
+Clause, R202:
+
+~~~~text
+when `.claude/settings.json` or `.claude/settings.local.json` at the merged commit registers the hook's command with a checksum other than the SHA-256 of the merged commit's hook file, with each CRLF taken as LF, quoting nothing from either,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+since a registration copied from another release's README runs nothing, prints nothing and exits with success (R88), so that the sessions there would record nothing through it with no sign of why (R202, DR-216).
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+Ruff and mypy check against the oldest supported version that `requires-python` in `pyproject.toml` gives, CI runs the tests on it and on the newest release, which the matrix names as `3.x` so that it moves without an edit, and a test checks that every other copy of the version agrees with it: the CI matrix, the ruff and mypy settings, `.python-version`, the bill of materials, the hook's own guard, and the documents that state it.
+~~~~
+
+New:
+
+~~~~text
+Ruff and mypy check against the oldest supported version that `requires-python` in `pyproject.toml` gives, CI runs the tests on it and on the newest release, which the matrix names as `3.x` so that it moves without an edit, and a test checks that every other copy of the version agrees with it (R99).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+Ruff and mypy check against the oldest supported version that `requires-python` in `pyproject.toml` gives, CI runs the tests on it and on the newest release, which the matrix names as `3.x` so that it moves without an edit, and a test checks that every other copy of the version agrees with it
+~~~~
+
+Clause, R99:
+
+~~~~text
+: the CI matrix, the ruff and mypy settings, `.python-version`, the bill of materials, the hook's own guard, and the documents that state it.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+So its first statement checks the Python version, and its first git command the git version, against the floors: Python 3.11, and git 2.43, the oldest git that CI tests.
+~~~~
+
+New:
+
+~~~~text
+So its first statement checks the Python version, and its first git command the git version, against the floors that R32 gives.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+So its first statement checks the Python version, and its first git command the git version, against the floors
+~~~~
+
+Clause, R32:
+
+~~~~text
+: Python 3.11, and git 2.43, the oldest git that CI tests.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+Below either, it records, stages and prints nothing, and exits with success.
+~~~~
+
+Clause, R32:
+
+~~~~text
+Below either, it records, stages and prints nothing, and exits with success.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+A machine-readable manifest of the public surface (DR-154) is kept in the repository, and the release check compares it between the previous release's commit and the tag: a difference with no `### Breaking` section in the changelog entry, or without a raised major number, refuses the release and names what changed.
+~~~~
+
+New:
+
+~~~~text
+A machine-readable manifest of the public surface (DR-154) is kept in the repository, and the release check compares it as R123 says.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+A machine-readable manifest of the public surface (DR-154) is kept in the repository, and the release check compares it
+~~~~
+
+Clause, R123:
+
+~~~~text
+between the previous release's commit and the tag: a difference with no `### Breaking` section in the changelog entry, or without a raised major number, refuses the release and names what changed.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+It attaches the bill of materials and the plugin's zip, downloads each again and checks its size and SHA-256 against the file that it built, and only then publishes the release, so that no release is published without its files or with other files than those it built, since a published release cannot change under the immutable releases that DR-074 relies on (DR-209).
+~~~~
+
+New:
+
+~~~~text
+It publishes the release only as R189 says, so that no release is published without its files or with other files than those it built, since a published release cannot change under the immutable releases that DR-074 relies on (DR-209).
+~~~~
+
+Clause, R189:
+
+~~~~text
+It attaches the bill of materials and the plugin's zip, downloads each again and checks its size and SHA-256 against the file that it built, and only then publishes the release,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+so that no release is published without its files or with other files than those it built, since a published release cannot change under the immutable releases that DR-074 relies on (DR-209).
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+A release whose reusable workflow uses an action that the bill of materials does not list, or whose hook file's or plugin zip's checksum there differs from the file's or the README's, is not published.
+~~~~
+
+Clause, R72:
+
+~~~~text
+A release whose reusable workflow uses an action that the bill of materials does not list, or whose hook file's or plugin zip's checksum there differs from the file's or the README's, is not published.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+Each release also carries the plugin (decision 17) as a zip, built from the tag's files alone, as git's objects hold them, never from a checkout, whose line endings git can change, holding only the plugin's manifest, its hooks, the capture step and the licence, in a fixed order, each stored uncompressed with every header field fixed, its times, its modes and the system that made it among them, since Python writes into each entry the system that it runs on and compresses with whatever zlib it links, so that a build on Linux and one on Windows give the same bytes.
+~~~~
+
+New:
+
+~~~~text
+Each release also carries the plugin (decision 17) as a zip, as R183 gives it, never from a checkout, whose line endings git can change, in a fixed order, with each entry's header fields fixed, its times, its modes and the system that made it among them, since Python writes into each entry the system that it runs on and compresses with whatever zlib it links, so that a build on Linux and one on Windows give the same bytes.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+Each release also carries the plugin (decision 17) as a zip,
+~~~~
+
+Clause, R183:
+
+~~~~text
+built from the tag's files alone, as git's objects hold them,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+never from a checkout, whose line endings git can change,
+~~~~
+
+Clause, R183:
+
+~~~~text
+holding only the plugin's manifest, its hooks, the capture step and the licence,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+in a fixed order,
+~~~~
+
+Clause, R183:
+
+~~~~text
+each stored uncompressed with every header field fixed,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+its times, its modes and the system that made it among them, since Python writes into each entry the system that it runs on and compresses with whatever zlib it links, so that a build on Linux and one on Windows give the same bytes.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+The README gives the zip's SHA-256, and CI builds the zip from every pull request's tree, on Linux and on Windows, and fails when its SHA-256 differs from the README's, so that a checksum left behind is found before a tag is pushed, while the release workflow publishes no release whose zip differs (DR-203).
+~~~~
+
+New:
+
+~~~~text
+The README gives the zip's SHA-256, and CI builds the zip from every pull request's tree, on Linux and on Windows, and checks it as R183 says, so that a checksum left behind is found before a tag is pushed (DR-203).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+The README gives the zip's SHA-256, and CI builds the zip from every pull request's tree, on Linux and on Windows, and
+~~~~
+
+Clause, R183:
+
+~~~~text
+fails when its SHA-256 differs from the README's,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+so that a checksum left behind is found before a tag is pushed
+~~~~
+
+Clause, R183:
+
+~~~~text
+, while the release workflow publishes no release whose zip differs
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+(DR-203).
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+CI and the release workflow also hold the plugin to declaring nothing but its hooks (decision 17), and the zip's closed list of files keeps out the files in default places, such as `.mcp.json`, through which a plugin can declare more.
+~~~~
+
+New:
+
+~~~~text
+CI and the release workflow also hold the plugin to R188 (decision 17), and the zip's closed list of files keeps out the files in default places, such as `.mcp.json`, through which a plugin can declare more.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+CI and the release workflow also hold the plugin to
+~~~~
+
+Clause, R188:
+
+~~~~text
+declaring nothing but its hooks
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+(decision 17), and the zip's closed list of files keeps out the files in default places, such as `.mcp.json`, through which a plugin can declare more.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+The repository's root marketplace file holds only the marketplace's name, its owner and one entry that gives the tool's plugin's name and its folder, since an entry's other fields can add commands, agents and skills to the plugin, replace its hooks, stop it loading or start it turned off (see Context), and CI compares the parsed file with the one expected (DR-205).
+~~~~
+
+New:
+
+~~~~text
+The repository's root marketplace file holds only what R190 gives, since an entry's other fields can add commands, agents and skills to the plugin, replace its hooks, stop it loading or start it turned off (see Context), and CI compares the parsed file with the one expected (DR-205).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+The repository's root marketplace file holds only
+~~~~
+
+Clause, R190:
+
+~~~~text
+the marketplace's name, its owner and one entry that gives the tool's plugin's name and its folder,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+since an entry's other fields can add commands, agents and skills to the plugin, replace its hooks, stop it loading or start it turned off (see Context), and CI compares the parsed file with the one expected (DR-205).
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+The folder holds the plugin exactly as a published release's tag builds it, with that release's version in its manifest, and moves only in a pull request after a release.
+~~~~
+
+New:
+
+~~~~text
+The folder holds the plugin as R184 gives it, and moves only in a pull request after a release.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+The folder holds the plugin
+~~~~
+
+Clause, R184:
+
+~~~~text
+exactly as a published release's tag builds it, with that release's version in its manifest,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+and moves only in a pull request after a release.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+CI takes that tag by its full name, `refs/tags/v<version>`, since git takes a branch of the short name when no such tag exists, requires its commit in the default branch's first-parent history and a published release for it, so that a refused tag, which names no release, does not pass, and fails when the version is lower than at the pull request's base.
+~~~~
+
+New:
+
+~~~~text
+CI takes that tag by its full name, `refs/tags/v<version>`, since git takes a branch of the short name when no such tag exists, and checks it as R184 says, so that a refused tag, which names no release, does not pass.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+CI takes that tag by its full name, `refs/tags/v<version>`, since git takes a branch of the short name when no such tag exists,
+~~~~
+
+Clause, R184:
+
+~~~~text
+requires its commit in the default branch's first-parent history and a published release for it,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+so that a refused tag, which names no release, does not pass
+~~~~
+
+Clause, R184:
+
+~~~~text
+, and fails when the version is lower than at the pull request's base.
+~~~~
+
 ## For B-007
 
 - `docs/threat-model.md`: the configuration is read only as a blob at each commit (T49: R19's requirement states it, but none of its scenarios does)
@@ -7392,6 +10134,8 @@ Clause, R239:
 - `docs/threat-model.md`: the test also fails on a checkout input other than its ref, its path and `persist-credentials`, on a checkout into another folder than the report reads, on a command other than the report's, and on the word `secrets` anywhere in the file (T187: no scenario of R237 states these further cases of the test.)
 - `docs/threat-model.md`: it follows no ledger file that is a link, and takes as a count only a whole number from zero to below a bound, so that a line that gives another is counted as unread and the summary still says what it did (T191: no scenario of R241 states that the report follows no link or bounds a count.)
 - `docs/threat-model.md`: the recorder keeps names only at a line's top level, in its `message` object and in `message.usage`, gives every other object and array as its type alone, and checks its own output, writing nothing on a failure (T186: R236's scenarios hold the kept shape, not the recorder's own behaviour or its check of its output.)
+- `openspec/changes/add-pr-cost-calculator/design.md`: In a sparse checkout, too, the put-back puts the file into the working tree, where it would be had the step not taken it back. (No scenario of R116 or R117 states a put-back in a sparse checkout.)
+- `openspec/changes/add-pr-cost-calculator/design.md`: A run takes back and puts back what it can before it reads any transcript (Only the plugin's run at a session's end is held to take back first, by R90's scenario; no scenario holds it for every run, nor for a put-back.)
 
 ## Left as it is
 
