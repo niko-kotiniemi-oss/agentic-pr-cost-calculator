@@ -5689,13 +5689,13 @@ never as capture being off
 Clause, the new unit:
 
 ~~~~text
-The README's section on turning capture off gives `git config
+The README's section on turning capture off gives
 ~~~~
 
 Clause, changed, corrected to agree with R194's scenario, by which `--global --get` shows only the global file's value:
 
 ~~~~text
---global --get pr-cost.capture` to see a session's opt-in,
+`git config --global --get pr-cost.capture` to see a session's opt-in,
 ~~~~
 
 Clause, the new unit:
