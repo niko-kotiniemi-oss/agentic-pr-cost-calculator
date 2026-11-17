@@ -1,0 +1,182 @@
+[
+  {
+    "path": "agentId",
+    "type": "string"
+  },
+  {
+    "path": "cwd",
+    "type": "string"
+  },
+  {
+    "path": "gitBranch",
+    "type": "string"
+  },
+  {
+    "path": "isMeta",
+    "type": "boolean"
+  },
+  {
+    "path": "isSidechain",
+    "type": "boolean"
+  },
+  {
+    "path": "leafUuid",
+    "type": "string"
+  },
+  {
+    "path": "message",
+    "type": "object"
+  },
+  {
+    "path": "message.container",
+    "type": "null"
+  },
+  {
+    "path": "message.content",
+    "type": "array"
+  },
+  {
+    "path": "message.content",
+    "type": "string"
+  },
+  {
+    "path": "message.context_management",
+    "type": "null"
+  },
+  {
+    "path": "message.diagnostics",
+    "type": "null"
+  },
+  {
+    "path": "message.id",
+    "type": "string"
+  },
+  {
+    "path": "message.input_transformations",
+    "type": "array"
+  },
+  {
+    "path": "message.model",
+    "type": "string"
+  },
+  {
+    "path": "message.role",
+    "type": "string"
+  },
+  {
+    "path": "message.stop_details",
+    "type": "null"
+  },
+  {
+    "path": "message.stop_reason",
+    "type": "string"
+  },
+  {
+    "path": "message.stop_sequence",
+    "type": "null"
+  },
+  {
+    "path": "message.type",
+    "type": "string"
+  },
+  {
+    "path": "message.usage",
+    "type": "object"
+  },
+  {
+    "path": "message.usage.cache_creation",
+    "type": "object"
+  },
+  {
+    "path": "message.usage.cache_creation_input_tokens",
+    "type": "number"
+  },
+  {
+    "path": "message.usage.cache_read_input_tokens",
+    "type": "number"
+  },
+  {
+    "path": "message.usage.fallback_credit",
+    "type": "null"
+  },
+  {
+    "path": "message.usage.inference_geo",
+    "type": "string"
+  },
+  {
+    "path": "message.usage.input_tokens",
+    "type": "number"
+  },
+  {
+    "path": "message.usage.iterations",
+    "type": "array"
+  },
+  {
+    "path": "message.usage.output_tokens",
+    "type": "number"
+  },
+  {
+    "path": "message.usage.output_tokens_details",
+    "type": "object"
+  },
+  {
+    "path": "message.usage.server_tool_use",
+    "type": "object"
+  },
+  {
+    "path": "message.usage.service_tier",
+    "type": "string"
+  },
+  {
+    "path": "message.usage.speed",
+    "type": "string"
+  },
+  {
+    "path": "parentUuid",
+    "type": "null"
+  },
+  {
+    "path": "parentUuid",
+    "type": "string"
+  },
+  {
+    "path": "requestId",
+    "type": "string"
+  },
+  {
+    "path": "sessionId",
+    "type": "string"
+  },
+  {
+    "path": "timestamp",
+    "type": "string"
+  },
+  {
+    "path": "toolUseResult",
+    "type": "array"
+  },
+  {
+    "path": "toolUseResult",
+    "type": "object"
+  },
+  {
+    "path": "toolUseResult",
+    "type": "string"
+  },
+  {
+    "path": "type",
+    "type": "string"
+  },
+  {
+    "path": "userType",
+    "type": "string"
+  },
+  {
+    "path": "uuid",
+    "type": "string"
+  },
+  {
+    "path": "version",
+    "type": "string"
+  }
+]
