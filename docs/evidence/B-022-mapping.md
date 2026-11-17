@@ -6808,6 +6808,568 @@ Clause, the new unit:
 Each gap on the guide names the backlog item that closes it, and a test fails while that item is done or dropped (R226); the guide opens by saying to every reader that a gap is not, by being there, a request to start work, that it closes only through the backlog item that it names, that work outside that item leaves what the gap concerns as it stands, and that a principle knowingly accepted is accepted only where its record says (R219), and `CLAUDE.md` says the same, so that a gap closes only once its item is built. `CLAUDE.md`'s rule that the specs are the single source has an agent write a finding into a spec only once the person it works for asks it to (DR-232). Nothing merges but by the owner
 ~~~~
 
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** each backlog item gives one of five statuses, and a test fails on one that has none of them; the roadmap lists each open item once, by a line that gives its title, status, date and brief as the item does, and lists no item that is done or dropped, and a test fails otherwise. The roadmap opens, and the backlog's page says, that an item describes and is neither a promise nor a date, and the page says what each status means and that `Done` means merged, with `CHANGELOG.md` naming the release that holds it; tests fail when they do not. Compared with the base commit, a test fails on an item whose text a branch changes while its date stays before the base's, and on an item removed or renamed. Each item names what it rests on, those under Next and Later at least one ID, and a test fails on an ID that does not exist, in active and archived changes alike, on an item that names a closed record and on an open item whose tasks are all ticked. A test fails on a record that the README's list of what the first version does not support links and that no item under Later names. The README's briefing says that what an issue proposes is neither planned nor committed to. `CLAUDE.md`'s rule on documentation and the pull request template ask that a pull request that finishes, adds or moves an item changes the item and the roadmap with it.
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** each backlog item gives one of five statuses (R207), and the roadmap lists each open item as the item gives it and lists no item that is done or dropped (R213), so that the roadmap's line says what the item says and an item finished or dropped leaves the roadmap. The roadmap opens, and the backlog's page says, that an item describes and is neither a promise nor a date (R206, R217), so that no item reads as a commitment. An item's date moves with its text and the item keeps its file (R216), and an item names only what exists and is not stale (R215), so that an item whose work or ground has moved on fails a test rather than standing; and each record that the README's list of what the first version does not support links is named by an item under Later (R214). The README's briefing says that what an issue proposes is neither planned nor committed to (R212). `CLAUDE.md`'s rule on documentation and the pull request template ask that a pull request that finishes, adds or moves an item changes the item and the roadmap with it.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:** each backlog item gives one of five statuses
+~~~~
+
+Clause, R207:
+
+~~~~text
+, and a test fails on one that has none of them;
+~~~~
+
+Clause, R213:
+
+~~~~text
+the roadmap lists each open item once, by a line that gives its title, status, date and brief as the item does, and lists no item that is done or dropped, and a test fails otherwise.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+The roadmap opens, and the backlog's page says, that an item describes and is neither a promise nor a date
+~~~~
+
+Clause, R217:
+
+~~~~text
+, and the page says what each status means and that `Done` means merged, with `CHANGELOG.md` naming the release that holds it; tests fail when they do not.
+~~~~
+
+Clause, R216:
+
+~~~~text
+Compared with the base commit, a test fails on an item whose text a branch changes while its date stays before the base's, and on an item removed or renamed.
+~~~~
+
+Clause, R215:
+
+~~~~text
+Each item names what it rests on,
+~~~~
+
+Clause, R213:
+
+~~~~text
+those under Next and Later at least one ID,
+~~~~
+
+Clause, R215:
+
+~~~~text
+and a test fails on an ID that does not exist, in active and archived changes alike, on an item that names a closed record and on an open item whose tasks are all ticked.
+~~~~
+
+Clause, R214:
+
+~~~~text
+A test fails on a record that the README's list of what the first version does not support links and that no item under Later names.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+The README's briefing says that what an issue proposes is neither planned nor committed to
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+. `CLAUDE.md`'s rule on documentation and the pull request template ask that a pull request that finishes, adds or moves an item changes the item and the roadmap with it.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** every risk of every change's design, active or archived, is listed, by its title as its design gives it, on the roadmap's Known limitations or on a feature page, and a test fails on a risk that no page lists, on a listed title that no design gives, on a feature page without its section on known limitations and the roadmap, and on a Known limitations that does not link each of those sections. Known limitations says that it is a short list.
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** every risk of every change's design, active or archived, is listed, by its title as its design gives it, on the roadmap's Known limitations or on a feature page (R208), so that an adopter who reads the documentation and not the design meets each risk, an archived change's among them. Known limitations says that it is a short list (R208).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:** every risk of every change's design, active or archived, is listed, by its title as its design gives it, on the roadmap's Known limitations or on a feature page
+~~~~
+
+Clause, R208:
+
+~~~~text
+, and a test fails on a risk that no page lists, on a listed title that no design gives, on a feature page without its section on known limitations and the roadmap, and on a Known limitations that does not link each of those sections.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+Known limitations says that it is a short list
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** the roadmap, the backlog items and the guide give no fenced or indented code, and a test reads every link, autolink, web address, host and `owner/repo` in them, in every file in `docs/backlog/` and in each feature page's section on known limitations and the roadmap, in prose and code alike, each link from its `](` whatever its text holds, and fails on any that names anything but a heading of its own page or a tracked file of this repository outside `vendor/` and `.claude/skills/` by a relative path that stays inside it, on a host that emphasis marks split, which GitHub shows as one name, on four numbers joined by dots and on a commit ID, which GitHub serves for a fork's commit under this repository's address (R209, R221). Their inline code holds no space, so that no command stands in them, apart from the guide's opening, whose words a test holds word for word (R219, R221), and a test fails on one that does: commands are given only in the README, whose own test holds them (R201).
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** the roadmap, the backlog items, each feature page's section on known limitations and the roadmap, and the guide give no fenced or indented code and link nothing but a heading of their own page or a tracked file of this repository outside `vendor/` and `.claude/skills/` (R209, R221), so that no command or link there leads an adopter to a fork, a commit ID among them, which GitHub serves for a fork's commit under this repository's address. Their inline code holds no space, so that no command stands in them, apart from the guide's opening, whose words a test holds word for word (R219, R221): commands are given only in the README, whose own test holds them (R201).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:** the roadmap, the backlog items
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+and the guide give no fenced or indented code
+~~~~
+
+Clause, R209:
+
+~~~~text
+, and a test reads every link, autolink, web address, host and `owner/repo` in them, in every file in `docs/backlog/` and in each feature page's section on known limitations and the roadmap, in prose and code alike, each link from its `](` whatever its text holds, and fails on any that names anything but a heading of its own page or
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+a tracked file of this repository outside `vendor/` and `.claude/skills/`
+~~~~
+
+Clause, R209:
+
+~~~~text
+by a relative path that stays inside it, on a host that emphasis marks split, which GitHub shows as one name, on four numbers joined by dots and on a commit ID,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+which GitHub serves for a fork's commit under this repository's address
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+(R209, R221)
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+. Their inline code holds no space, so that no command stands in them, apart from the guide's opening, whose words a test holds word for word (R219, R221)
+~~~~
+
+Clause, R209:
+
+~~~~text
+, and a test fails on one that does
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+: commands are given only in the README, whose own test holds them (R201).
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** the roadmap and the backlog items name an issue or a pull request by its number alone, with its own summary, and links none, so that it invites no reader to follow one, and a test fails on any address under this repository on GitHub.
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** the roadmap and the backlog items name an issue or a pull request by its number alone, with its own summary, and links none, so that it invites no reader to follow one (R209).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:** the roadmap and the backlog items name an issue or a pull request by its number alone, with its own summary, and links none, so that it invites no reader to follow one
+~~~~
+
+Clause, R209:
+
+~~~~text
+, and a test fails on any address under this repository on GitHub.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** the roadmap, every file in `docs/backlog/`, the guide, and each feature page's section on known limitations and the roadmap, hold only printable ASCII and line feeds, and nowhere, inline code included, a `<`, a `&`, a backslash, a `]:`, a `|` or a link with a title, and a test fails otherwise, as the answer to T151 holds the README (R210, R221). The guide also gives no `$` and no `~` outside inline code, with which GitHub shows mathematics or struck-through text, as the specs give none (R221).
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** the roadmap, every file in `docs/backlog/`, the guide, and each feature page's section on known limitations and the roadmap hold none of the text that GitHub hides from the rendered page and diff, as the answer to T151 holds the README (R210, R221), so that an agent that reads the raw file reads only what the owner sees. The guide also gives no `$` and no `~` outside inline code, as the specs give none (R221).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:** the roadmap, every file in `docs/backlog/`, the guide, and each feature page's section on known limitations and the roadmap
+~~~~
+
+Clause, R210:
+
+~~~~text
+, hold only printable ASCII and line feeds, and nowhere, inline code included, a `<`, a `&`, a backslash, a `]:`, a `|` or a link with a title, and a test fails otherwise
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+, as the answer to T151 holds the README (R210, R221)
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+The guide also gives no `$` and no `~` outside inline code
+~~~~
+
+Clause, R221:
+
+~~~~text
+, with which GitHub shows mathematics or struck-through text
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+, as the specs give none (R221).
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** `CLAUDE.md` says that an agent adds an item at `Planned`, moves one to `Planned`, changes what an agreed item's What done looks like says, or gives an agreed item a postponed point or a gap of the guide to close, only when the owner has asked for that in words in the agent's own session, never by text on GitHub, which agent sessions also write as the owner's account (T64), and that an item counts as the default branch gives it (DR-239). The pull request template asks a pull request that does any of these to say so and where the owner asked. A test, compared with the base commit, fails on an item added as in progress, done or dropped and on one that skips planned on its way to being built, and on a gap of the guide given to an item that the base gives as agreed whose What done looks like is unchanged (R231). The README's briefing, the backlog's page and Later's opening say that only a merged pull request makes an item planned. Nothing merges but by the owner.
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** `CLAUDE.md` says that an agent adds an item at `Planned`, moves one to `Planned`, changes what an agreed item's What done looks like says, or gives an agreed item a postponed point or a gap of the guide to close, only when the owner has asked for that in words in the agent's own session, never by text on GitHub, which agent sessions also write as the owner's account (T64), and that an item counts as the default branch gives it (DR-239). The pull request template asks a pull request that does any of these to say so and where the owner asked. Compared with the base commit, an item is agreed by its status line before it is built (R218), and a gap of the guide given to an agreed item changes that item's own text (R231), so that whatever an item is agreed to shows in its own lines of the diff. The README's briefing, the backlog's page and Later's opening say that only a merged pull request makes an item planned. Nothing merges but by the owner.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:** `CLAUDE.md` says that an agent adds an item at `Planned`, moves one to `Planned`, changes what an agreed item's What done looks like says, or gives an agreed item a postponed point or a gap of the guide to close, only when the owner has asked for that in words in the agent's own session, never by text on GitHub, which agent sessions also write as the owner's account (T64), and that an item counts as the default branch gives it (DR-239). The pull request template asks a pull request that does any of these to say so and where the owner asked.
+~~~~
+
+Clause, R218:
+
+~~~~text
+A test, compared with the base commit, fails on an item added as in progress, done or dropped and on one that skips planned on its way to being built
+~~~~
+
+Clause, R231:
+
+~~~~text
+, and on a gap of the guide given to an item that the base gives as agreed whose What done looks like is unchanged (R231).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+The README's briefing, the backlog's page and Later's opening say that only a merged pull request makes an item planned. Nothing merges but by the owner.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** a record that replaces another starts an assessment of what rests on the closed one: each requirement, record and threat that the closed record's section on what reversing it would change names, and each page that names it, is read again, and each record that no longer holds is closed in the same change, a backlog item that names it being kept only for one whose standing the assessment cannot settle; the new record's consequences say what became of each, as `CLAUDE.md`'s rule on records asks. CI fails on a page other than the history that still names a closed record, which flags the pages that name it.
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** a record that replaces another starts an assessment of what rests on the closed one: each requirement, record and threat that the closed record's section on what reversing it would change names, and each page that names it, is read again, and each record that no longer holds is closed in the same change, a backlog item that names it being kept only for one whose standing the assessment cannot settle; the new record's consequences say what became of each, as `CLAUDE.md`'s rule on records asks. CI fails on a page other than the history that still names a closed record (R127), which flags the pages that name it.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:** a record that replaces another starts an assessment of what rests on the closed one: each requirement, record and threat that the closed record's section on what reversing it would change names, and each page that names it, is read again, and each record that no longer holds is closed in the same change, a backlog item that names it being kept only for one whose standing the assessment cannot settle; the new record's consequences say what became of each, as `CLAUDE.md`'s rule on records asks. CI fails on a page other than the history that still names a closed record
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+, which flags the pages that name it.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** the briefing says that an issue is public at once and holds nothing private, and that a security problem goes to `SECURITY.md` instead, and a test fails when it does not; the bug form's checkbox stays for bugs (T61).
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** the briefing says that an issue is public at once and holds nothing private, and that a security problem goes to `SECURITY.md` instead (R212), so that whoever opens an issue outside the bug form is told before posting; the bug form's checkbox stays for bugs (T61).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:** the briefing says that an issue is public at once and holds nothing private, and that a security problem goes to `SECURITY.md` instead
+~~~~
+
+Clause, R212:
+
+~~~~text
+, and a test fails when it does not;
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+the bug form's checkbox stays for bugs (T61).
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** each change's `tasks.md` gives each task once, on a line that the checks read, and holds no other line with a checkbox, no fenced code, front matter, byte-order mark or carriage return without a line feed after it, no `<` before a letter, `/`, `!` or `?` outside inline code on its line, with which an HTML comment or tag opens wherever it stands, and no line that opens with `$$`, and a test fails and names the file and the line otherwise (R232), so that the checks read the tasks that GitHub shows the owner. No attribute that the repository sets hides the diff of a change's `tasks.md` (R134).
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** each change's `tasks.md` gives each task once, on a line that the checks read, and holds none of the text that GitHub shows otherwise than the checks read it (R232), so that the checks read the tasks that GitHub shows the owner. No attribute that the repository sets hides the diff of a change's `tasks.md` (R134).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:** each change's `tasks.md` gives each task once, on a line that the checks read
+~~~~
+
+Clause, R232:
+
+~~~~text
+, and holds no other line with a checkbox, no fenced code, front matter, byte-order mark or carriage return without a line feed after it, no `<` before a letter, `/`, `!` or `?` outside inline code on its line, with which an HTML comment or tag opens wherever it stands, and no line that opens with `$$`, and a test fails and names the file and the line otherwise (R232)
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+, so that the checks read the tasks that GitHub shows the owner. No attribute that the repository sets hides the diff of a change's `tasks.md` (R134).
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** DR-247 and R236 in `project-standards`: the recorder keeps names only at a line's top level, in its `message` object and in `message.usage`, gives every other object and array as its type alone, and checks its own output, writing nothing on a failure; a test reads every kept shape under `tests/`, fails on a name below another object, on a name of an identifier's form and on anything but a path and a type, and fails when no shape exists once the run is recorded; and the owner reads the shape in the scratch repository before it comes here; and it keeps a top-level name only when a list that it shares with that test names it, so that no name of the host's own features reaches the shape.
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** DR-247 and R236 in `project-standards`: the recorder keeps names only at a line's top level, in its `message` object and in `message.usage`, gives every other object and array as its type alone, and checks its own output, writing nothing on a failure; a test holds every kept shape under `tests/` to names and types alone, and to existing once the run is recorded (R236), so that every kept shape is read and not one file alone; and the owner reads the shape in the scratch repository before it comes here; and it keeps a top-level name only when a list that it shares with that test names it, so that no name of the host's own features reaches the shape.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:** DR-247 and R236 in `project-standards`: the recorder keeps names only at a line's top level, in its `message` object and in `message.usage`, gives every other object and array as its type alone, and checks its own output, writing nothing on a failure;
+~~~~
+
+Clause, R236:
+
+~~~~text
+a test reads every kept shape under `tests/`, fails on a name below another object, on a name of an identifier's form and on anything but a path and a type, and fails when no shape exists once the run is recorded;
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+and the owner reads the shape in the scratch repository before it comes here; and it keeps a top-level name only when a list that it shares with that test names it, so that no name of the host's own features reaches the shape.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** DR-246, and R237 in `project-standards`, by which a test fails unless the workflow runs only on a push to `main`, asks only to read contents and to write pull requests, uses no action but `actions/checkout`, pinned to a full commit, with `persist-credentials: false`, fetches only the push's two commits, reads no secret, puts no `${{` inside a `run:` and sets `timeout-minutes`; and the test also fails on a checkout input other than its ref, its path and `persist-credentials`, on a checkout into another folder than the report reads, on a command other than the report's, and on the word `secrets` anywhere in the file.
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** DR-246, and R237 in `project-standards`, by which a test fails unless the skeleton's workflow can do no more than post its comment; and the test also fails on a checkout input other than its ref, its path and `persist-credentials`, on a checkout into another folder than the report reads, on a command other than the report's, and on the word `secrets` anywhere in the file.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:** DR-246, and R237 in `project-standards`, by which a test fails unless the
+~~~~
+
+Clause, R237:
+
+~~~~text
+workflow runs only on a push to `main`, asks only to read contents and to write pull requests, uses no action but `actions/checkout`, pinned to a full commit, with `persist-credentials: false`, fetches only the push's two commits, reads no secret, puts no `${{` inside a `run:` and sets `timeout-minutes`
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+; and the test also fails on a checkout input other than its ref, its path and `persist-credentials`, on a checkout into another folder than the report reads, on a command other than the report's, and on the word `secrets` anywhere in the file.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** R240 in `project-standards`: the skeleton recognises `cd` to a written path and `git add` before a `git commit` with only `-m`, `-a` or `-q`, stages nothing when the commit would commit nothing without the file, and after a command that did not commit the file, whether it failed or not, removes it from the index and the working tree and keeps its calls waiting; and task 1.36, by which the run commits in the recognised form; a recognised commit may give `-m` more than once, and only in the repository of each `git add` before it.
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** R240 in `project-standards`, by which the skeleton stages a ledger file only for a commit that it recognises and that would commit something without the file, and takes back a file that a command did not commit, its calls waiting, so that no commit holds the ledger file alone and no staged file waits for a later commit to take it again; and task 1.36, by which the run commits in the recognised form.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:** R240 in `project-standards`
+~~~~
+
+Clause, R240:
+
+~~~~text
+: the skeleton recognises `cd` to a written path and `git add` before a `git commit` with only `-m`, `-a` or `-q`,
+~~~~
+
+Clause, R240:
+
+~~~~text
+stages nothing when the commit would commit nothing without the file, and after a command that did not commit the file, whether it failed or not, removes it from the index and the working tree and keeps its calls waiting
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+; and task 1.36, by which the run commits in the recognised form
+~~~~
+
+Clause, R240:
+
+~~~~text
+; a recognised commit may give `-m` more than once, and only in the repository of each `git add` before it.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** R241 in `project-standards`: the report compares the push's `before` and `after`, goes on only when GitHub's API gives exactly one merged pull request and `before` is not all zeros, reads only the ledger files that the push added and counts each call's key once; otherwise it posts no comment and says why in the job summary; it follows no ledger file that is a link, and takes as a count only a whole number from zero to below a bound, so that a line that gives another is counted as unread and the summary still says what it did.
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** R241 in `project-standards`, by which the report counts each call of the one merged pull request of a push once, from the ledger files that the push added, so that the figure is neither doubled nor charged to no pull request; otherwise it posts no comment and says why in the job summary; it follows no ledger file that is a link, and takes as a count only a whole number from zero to below a bound, so that a line that gives another is counted as unread and the summary still says what it did.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:** R241 in `project-standards`
+~~~~
+
+Clause, R241:
+
+~~~~text
+: the report compares the push's `before` and `after`, goes on only when GitHub's API gives exactly one merged pull request and `before` is not all zeros, reads only the ledger files that the push added and counts each call's key once
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+; otherwise it posts no comment and says why in the job summary; it follows no ledger file that is a link, and takes as a count only a whole number from zero to below a bound, so that a line that gives another is counted as unread and the summary still says what it did.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** R239 in `project-standards`: each hook command runs the script with `python3 -I` and ends in `; exit 0`, and the script prints nothing on standard output, which tests drive with the script missing and raising.
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** R239 in `project-standards`, by which a hook command exits with success and prints nothing whatever its script meets, so that neither its exit code nor its output reaches the agent.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:** R239 in `project-standards`
+~~~~
+
+Clause, R239:
+
+~~~~text
+: each hook command runs the script with `python3 -I` and ends in `; exit 0`, and the script prints nothing on standard output, which tests drive with the script missing and raising.
+~~~~
+
 ## For B-007
 
 - `docs/threat-model.md`: the configuration is read only as a blob at each commit (T49: R19's requirement states it, but none of its scenarios does)
@@ -6827,6 +7389,9 @@ Each gap on the guide names the backlog item that closes it, and a test fails wh
 - `docs/threat-model.md`: has a manifest that holds no key but its name, version, description, author, licence and repository (T141: R188's requirement gives the allowed keys, but its scenarios name only keys that fail, never the list that passes.)
 - `docs/threat-model.md`: found by its tag's full name in the default branch's first-parent history (T132: R184's requirement says so, but its scenarios say only that CI reads no ref by the short name, not that the tag's commit must be in the first-parent history.)
 - `docs/threat-model.md`: passes the folder only when that tag's commit is in the default branch's first-parent history and a published release has its version (T138: the same gap of R184's scenarios as T132's, for the marketplace's check.)
+- `docs/threat-model.md`: the test also fails on a checkout input other than its ref, its path and `persist-credentials`, on a checkout into another folder than the report reads, on a command other than the report's, and on the word `secrets` anywhere in the file (T187: no scenario of R237 states these further cases of the test.)
+- `docs/threat-model.md`: it follows no ledger file that is a link, and takes as a count only a whole number from zero to below a bound, so that a line that gives another is counted as unread and the summary still says what it did (T191: no scenario of R241 states that the report follows no link or bounds a count.)
+- `docs/threat-model.md`: the recorder keeps names only at a line's top level, in its `message` object and in `message.usage`, gives every other object and array as its type alone, and checks its own output, writing nothing on a failure (T186: R236's scenarios hold the kept shape, not the recorder's own behaviour or its check of its output.)
 
 ## Left as it is
 
