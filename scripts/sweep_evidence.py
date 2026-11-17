@@ -2,13 +2,13 @@
 
     python3 scripts/sweep_evidence.py [DEFAULT]
 
-Run in the repository, it compares HEAD with its merge base with DEFAULT, which is
-`refs/remotes/origin/main` unless given, in every file that GitHub shows as Markdown, by
-the extensions that `scripts/wording.py` lists, that changed between them other than the
-mapping, `docs/evidence/B-022-mapping.md`, read from git and not from the working tree
-(design decision 19; T173, T195, T198, T199). It serves the one pull request that sweeps
-B-022 and finishes it: at a later head the mapping no longer describes the diff. It
-reads each file as units: a heading, a table row, a list item with the lines that
+Run anywhere in the repository, it compares HEAD with its merge base with DEFAULT, which
+is `refs/remotes/origin/main` unless given, in every file that GitHub shows as Markdown,
+by the extensions that `scripts/wording.py` lists, that changed between them other than
+the mapping, `docs/evidence/B-022-mapping.md`, read from git and not from the working
+tree (design decision 19; T173, T195, T198, T199). It serves the one pull request that
+sweeps B-022 and finishes it: at a later head the mapping no longer describes the diff.
+It reads each file as units: a heading, a table row, a list item with the lines that
 continue it, a fenced block taken whole, and each sentence of a paragraph. For each unit
 that the base holds and HEAD does not, the mapping, as HEAD holds it, must give an entry
 whose clauses, each quoted from the unit, cover every word of it, and each clause must
@@ -16,16 +16,19 @@ have a place that exists at HEAD: the entry's new unit, which HEAD's page must h
 page itself; a requirement of the register; a scenario of a spec, as `capability`:
 "name"; a decision record; a task of a change; or, for a clause that the pull request's
 own work changes rather than the sweep, such as a status or a count, `changed, ` and
-why, which the output lists apart for the review. It fails on a change to a spec, since
-the sweep writes none, on a changed file read as no units, on an entry for a unit that
-HEAD still holds, and on a mapping out of its form.
+why, which the output lists apart for the review, as it lists a clause of one word or
+none placed on a requirement, a record, a task or a scenario. It fails on a change to a
+spec, since the sweep writes none, on a changed file read as no units, on a run that
+compares no page, on an entry for a unit that HEAD still holds, and on a mapping out of
+its form.
 
 It prints Markdown for the pull request: both commits by their full hashes, each file
 with the units that it read at the base and at HEAD and its entries, and each problem.
 It exits 0 when there is none, 1 when there are problems, and 2, saying why, when it
-cannot compare. Run it after the pull request's last rebase or push, and have the
-review in a context other than the builder's run it again at the head that the owner
-is asked to merge (T198).
+cannot compare, as when git cannot list the changed files, cannot show a file that it
+lists, or gives output that is not UTF-8. Run it after the pull request's last rebase or
+push, and have the review in a context other than the builder's run it again at the head
+that the owner is asked to merge (T198).
 """
 
 from __future__ import annotations
@@ -34,13 +37,12 @@ import re
 import subprocess
 import sys
 from collections import Counter
-from collections.abc import Iterator, Sequence
+from collections.abc import Sequence
 from dataclasses import dataclass, field
 
-from wording import MARKDOWN
+from wording import DEFAULT_BRANCH, MARKDOWN
 
 MAPPING = "docs/evidence/B-022-mapping.md"
-DEFAULT = "refs/remotes/origin/main"
 SPEC = re.compile(r"^openspec/(?:.+/)?specs/")
 FENCE = re.compile(r"^( *)(`{3,}|~{3,})")
 LIST_ITEM = re.compile(r"^( *)(?:[-*+]|\d+[.)]) ")
@@ -64,7 +66,10 @@ def git(*args: str) -> str | None:
     done = subprocess.run(["git", *args], capture_output=True)
     if done.returncode != 0:
         return None
-    return done.stdout.decode("utf-8")
+    try:
+        return done.stdout.decode("utf-8")
+    except UnicodeDecodeError:
+        raise Unreadable("git's output is not UTF-8") from None
 
 
 def normal(text: str) -> str:
@@ -141,25 +146,29 @@ class Entry:
     clauses: list[tuple[str, str]] = field(default_factory=list)
 
 
-def blocks(lines: list[str], start: int) -> Iterator[tuple[str, str, int]]:
-    """Each label of an entry with its fenced text, from `start` to the next heading."""
+def blocks(lines: list[str], start: int) -> tuple[list[tuple[str, str, int]], int]:
+    """Each label of an entry with its fenced text, from `start` to the next heading, and
+    the line where that heading is."""
+    found: list[tuple[str, str, int]] = []
     index = start
     while index < len(lines) and not lines[index].startswith("#"):
         line = lines[index]
         if not line.strip():
             index += 1
             continue
-        if not line.endswith(":") or index + 2 >= len(lines):
-            raise Unreadable(f"the mapping is not in its form at line {index + 1}")
-        if lines[index + 1].strip() or lines[index + 2] != "~~~~text":
-            raise Unreadable(f"the mapping is not in its form at line {index + 1}")
         end = index + 3
         while end < len(lines) and lines[end] != "~~~~":
             end += 1
-        if end == len(lines):
+        if (
+            not line.endswith(":")
+            or end >= len(lines)
+            or lines[index + 1].strip()
+            or lines[index + 2] != "~~~~text"
+        ):
             raise Unreadable(f"the mapping is not in its form at line {index + 1}")
-        yield line[:-1], "\n".join(lines[index + 3 : end]), index + 1
+        found.append((line[:-1], "\n".join(lines[index + 3 : end]), index + 1))
         index = end + 1
+    return found, index
 
 
 def parse(text: str) -> dict[str, list[Entry]]:
@@ -180,7 +189,8 @@ def parse(text: str) -> dict[str, list[Entry]]:
             path = None
         elif line.startswith("### ") and path is not None:
             entry: Entry | None = None
-            for label, body, number in blocks(lines, index + 1):
+            labels, stop = blocks(lines, index + 1)
+            for label, body, number in labels:
                 if label == "Old" and entry is None:
                     entry = Entry(normal(body))
                 elif entry is None:
@@ -194,9 +204,7 @@ def parse(text: str) -> dict[str, list[Entry]]:
             if entry is None or not entry.clauses:
                 raise Unreadable(f"the mapping is not in its form at line {index + 1}")
             entries[path].append(entry)
-            index += 1
-            while index < len(lines) and not lines[index].startswith("#"):
-                index += 1
+            index = stop
             continue
         index += 1
     return entries
@@ -213,7 +221,7 @@ class Head:
 
 
 def head_places() -> Head:
-    files = (git("ls-tree", "-r", "--name-only", "HEAD") or "").split("\n")
+    files = (git("ls-tree", "-r", "--full-tree", "--name-only", "HEAD") or "").split("\n")
     register = git("show", "HEAD:docs/requirements.md") or ""
     requirements = set(re.findall(r"^\| (R\d+) \|", register, re.MULTILINE))
     records = {
@@ -234,12 +242,24 @@ def head_places() -> Head:
     return Head(requirements, records, tasks, scenarios)
 
 
+def changed_reason(place: str) -> str | None:
+    """The reason that a place `changed, ` gives, or None when it is not one."""
+    reason = place[len(CHANGED) :].strip() if place.startswith(CHANGED) else ""
+    return reason or None
+
+
+def holds_one_word(place: str, clause: str) -> bool:
+    """A clause of one word or none, placed on a requirement, record, task or scenario."""
+    holder = REQUIREMENT, RECORD, TASK, SCENARIO
+    return any(p.fullmatch(place) for p in holder) and len(WORD.findall(clause)) <= 1
+
+
 def place_problem(place: str, clause: str, entry: Entry, page: str, head: Head) -> str | None:
     if place == NEW_UNIT:
         if entry.new is None:
             return f"a clause placed in a new unit that the entry does not give: {clause}"
         return None if clause in entry.new else f"the new unit does not hold the clause: {clause}"
-    if place.startswith(CHANGED) and place[len(CHANGED) :].strip():
+    if changed_reason(place):
         return None
     if place == PAGE:
         return None if clause in page else f"HEAD's page does not hold the clause: {clause}"
@@ -274,7 +294,7 @@ def entry_problems(entry: Entry, page: str, head_units: Counter[str], head: Head
             problems.append(f"the old unit does not hold the clause: {clause}")
         else:
             covered[at : at + len(clause)] = [True] * len(clause)
-        problem = place_problem(place, clause, entry, " ".join(page.split()), head)
+        problem = place_problem(place, clause, entry, page, head)
         if problem:
             problems.append(problem)
     gap = [w.group(0) for w in WORD.finditer(entry.old) if not all(covered[w.start() : w.end()])]
@@ -286,80 +306,122 @@ def entry_problems(entry: Entry, page: str, head_units: Counter[str], head: Head
 Rows = list[tuple[str, int, int, int]]
 
 
-def compare(reference: str) -> tuple[str, str, Rows, list[str], list[str]]:
+@dataclass
+class Comparison:
+    """What the script found: both commits, a row for each file, the problems, and the
+    clauses that it lists apart for the review."""
+
+    base: str
+    head: str
+    rows: Rows = field(default_factory=list)
+    problems: list[str] = field(default_factory=list)
+    changes: list[str] = field(default_factory=list)
+    short: list[str] = field(default_factory=list)
+
+
+def side(commit: str, path: str, there: bool, name: str) -> str | None:
+    """The file at a commit, None where git says it is not there; Unreadable where git
+    says it is there and cannot show it."""
+    if not there:
+        return None
+    text = git("show", f"{commit}:{path}")
+    if text is None:
+        raise Unreadable(f"git cannot read `{path}` at {name}")
+    return text
+
+
+def compare(reference: str) -> Comparison:
     base = git("merge-base", "HEAD", reference)
     head = git("rev-parse", "HEAD")
     if base is None or head is None:
         raise Unreadable(f"cannot resolve the merge base with {reference}")
-    base, head = base.strip(), head.strip()
+    found = Comparison(base.strip(), head.strip())
     mapping_text = git("show", f"HEAD:{MAPPING}")
     if mapping_text is None:
         raise Unreadable(f"HEAD holds no {MAPPING}")
     entries = parse(mapping_text)
-    listed = git("diff", "-z", "--name-only", "--no-renames", base, head, "--", *MARKDOWN)
-    changed = [path for path in (listed or "").split("\0") if path]
+    listed = git(
+        "diff", "-z", "--name-status", "--no-renames", found.base, found.head, "--", *MARKDOWN
+    )
+    if listed is None:
+        raise Unreadable("git cannot list the files that changed")
+    fields = listed.split("\0")
+    changed = dict(zip(fields[1::2], fields[0::2], strict=False))
     places = head_places()
-    rows: Rows = []
-    problems: list[str] = []
-    changes: list[str] = []
-    for path in sorted(set(changed)):
+    for path in sorted(changed):
         if path == MAPPING:
             continue
         if SPEC.match(path):
-            problems.append(f"`{path}`: the sweep changes a spec")
+            found.problems.append(f"`{path}`: the sweep changes a spec")
             continue
-        before_text = git("show", f"{base}:{path}")
-        after_text = git("show", f"{head}:{path}")
+        status = changed[path]
+        before_text = side(found.base, path, status != "A", "the base")
+        after_text = side(found.head, path, status != "D", "HEAD")
         before = units(before_text) if before_text is not None else []
         after = units(after_text) if after_text is not None else []
-        for side, text, read in (("the base", before_text, before), ("HEAD", after_text, after)):
+        for name, text, read in (("the base", before_text, before), ("HEAD", after_text, after)):
             if text is not None and not read:
-                problems.append(f"`{path}`: read as no units at {side}")
+                found.problems.append(f"`{path}`: read as no units at {name}")
         gone = Counter(before) - Counter(after)
+        held = Counter(after)
+        page = " ".join((after_text or "").split())
         given = entries.get(path, [])
-        rows.append((path, len(before), len(after), len(given)))
+        found.rows.append((path, len(before), len(after), len(given)))
         for entry in given:
             if gone[entry.old] == 0:
-                problems.append(
+                found.problems.append(
                     f"`{path}`: an entry for a unit that HEAD still holds, or that the base"
                     f" does not: {entry.old}"
                 )
                 continue
             gone[entry.old] -= 1
             for clause, place in entry.clauses:
-                if place.startswith(CHANGED) and place[len(CHANGED) :].strip():
-                    changes.append(f"`{path}`: {clause} ({place[len(CHANGED) :].strip()})")
-            for problem in entry_problems(entry, after_text or "", Counter(after), places):
-                problems.append(f"`{path}`: {problem}")
+                reason = changed_reason(place)
+                if reason:
+                    found.changes.append(f"`{path}`: {clause} ({reason})")
+                elif holds_one_word(place, clause):
+                    found.short.append(f"`{path}`: {clause} ({place})")
+            for problem in entry_problems(entry, page, held, places):
+                found.problems.append(f"`{path}`: {problem}")
         for unit, count in gone.items():
             for _ in range(count):
-                problems.append(f"`{path}`: no entry for a unit that HEAD does not hold: {unit}")
-    for path in sorted(set(entries) - {row[0] for row in rows}):
-        problems.append(f"`{path}`: entries for a file that did not change")
-    return base, head, rows, problems, changes
+                found.problems.append(
+                    f"`{path}`: no entry for a unit that HEAD does not hold: {unit}"
+                )
+    if not found.rows:
+        found.problems.append("no changed page was compared")
+    for path in sorted(set(entries) - {row[0] for row in found.rows}):
+        found.problems.append(f"`{path}`: entries for a file that did not change")
+    return found
 
 
 def main(argv: Sequence[str]) -> int:
-    reference = argv[0] if argv else DEFAULT
+    reference = argv[0] if argv else DEFAULT_BRANCH
     try:
-        base, head, rows, problems, changes = compare(reference)
+        found = compare(reference)
     except Unreadable as reason:
         print(f"Cannot compare: {reason}.")
         return 2
-    print(f"Compared HEAD at `{head}` with `{base}`, its merge base with `{reference}`.\n")
+    print(
+        f"Compared HEAD at `{found.head}` with `{found.base}`, its merge base with `{reference}`.\n"
+    )
     print("| File | Units at the base | Units at HEAD | Entries |")
     print("|---|---|---|---|")
-    for path, before, after, given in rows:
+    for path, before, after, given in found.rows:
         print(f"| `{path}` | {before} | {after} | {given} |")
-    if changes:
-        print("\n## Changed by this pull request's own work\n")
-        for change in changes:
-            print(f"- {change}")
-    if not problems:
+    for title, listed in (
+        ("Changed by this pull request's own work", found.changes),
+        ("Clauses of one word placed on a holder", found.short),
+    ):
+        if listed:
+            print(f"\n## {title}\n")
+            for line in listed:
+                print(f"- {line}")
+    if not found.problems:
         print("\nNo problems.")
         return 0
     print("\n## Problems\n")
-    for problem in problems:
+    for problem in found.problems:
         print(f"- {problem}")
     return 1
 
