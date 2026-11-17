@@ -12,23 +12,24 @@ It reads each file as units: a heading, a table row, a list item with the lines 
 continue it, a fenced block taken whole, and each sentence of a paragraph. For each unit
 that the base holds and HEAD does not, the mapping, as HEAD holds it, must give an entry
 whose clauses, each quoted from the unit, cover every word of it, and each clause must
-have a place that exists at HEAD: the entry's new unit, which HEAD's page must hold; the
-page itself; a requirement of the register; a scenario of a spec, as `capability`:
-"name"; a decision record; a task of a change; or, for a clause that the pull request's
-own work changes rather than the sweep, such as a status or a count, `changed, ` and
-why, which the output lists apart for the review, as it lists a clause of one word or
-none placed on a requirement, a record, a task or a scenario. It fails on a change to a
-spec, since the sweep writes none, on a changed file read as no units, on a run that
-compares no page, on an entry for a unit that HEAD still holds, and on a mapping out of
-its form.
+have a place that exists at HEAD: the entry's new unit, which HEAD's page must hold, or
+the page itself, either holding the clause as whole words; a requirement of the
+register, which a rewritten unit's new unit cites, by its ID or in a range; a scenario
+of a spec, as `capability`: "name"; a decision record; a task of a change; or, for a
+clause that the pull request's own work changes rather than the sweep, such as a status
+or a count, `changed, ` and why, which the output lists apart for the review, as it
+lists a clause of one word or none placed anywhere but the new unit. It fails on a
+change to a spec, since the sweep writes none, on a changed file read as no units, on a
+run that compares no page, on an entry for a unit that HEAD still holds, and on a
+mapping out of its form.
 
 It prints Markdown for the pull request: both commits by their full hashes, each file
-with the units that it read at the base and at HEAD and its entries, and each problem.
-It exits 0 when there is none, 1 when there are problems, and 2, saying why, when it
-cannot compare, as when git cannot list the changed files, cannot show a file that it
-lists, or gives output that is not UTF-8. Run it after the pull request's last rebase or
-push, and have the review in a context other than the builder's run it again at the head
-that the owner is asked to merge (T198).
+with the number of units that it read at the base and at HEAD and of its entries, and
+each problem. It exits 0 when there is none, 1 when there are problems, and 2, saying
+why, when it cannot compare, as when git cannot list the changed files or the files at
+HEAD, cannot show a file that it lists, or gives output that is not UTF-8. Run it after
+the pull request's last rebase or push, and have the review in a context other than the
+builder's run it again at the head that the owner is asked to merge (T198).
 """
 
 from __future__ import annotations
@@ -52,6 +53,8 @@ REQUIREMENT = re.compile(r"R\d+")
 RECORD = re.compile(r"DR-\d{3,}")
 TASK = re.compile(r"task (\d+\.\d+)")
 SCENARIO = re.compile(r'`([a-z0-9-]+)`: "(.+)"')
+CITED = re.compile(r"\bR(\d+)\b")
+CITED_RANGE = re.compile(r"\bR(\d+) to R(\d+)\b")
 NEW_UNIT = "the new unit"
 PAGE = "the page"
 CHANGED = "changed, "
@@ -69,7 +72,7 @@ def git(*args: str) -> str | None:
     try:
         return done.stdout.decode("utf-8")
     except UnicodeDecodeError:
-        raise Unreadable("git's output is not UTF-8") from None
+        raise Unreadable(f"git's output is not UTF-8, from `git {' '.join(args)}`") from None
 
 
 def normal(text: str) -> str:
@@ -220,9 +223,23 @@ class Head:
     scenarios: set[tuple[str, str]]
 
 
+def side(commit: str, path: str, there: bool, name: str) -> str | None:
+    """The file at a commit, None where git says it is not there; Unreadable where git
+    says it is there and cannot show it."""
+    if not there:
+        return None
+    text = git("show", f"{commit}:{path}")
+    if text is None:
+        raise Unreadable(f"git cannot read `{path}` at {name}")
+    return text
+
+
 def head_places() -> Head:
-    files = (git("ls-tree", "-r", "--full-tree", "--name-only", "HEAD") or "").split("\n")
-    register = git("show", "HEAD:docs/requirements.md") or ""
+    listed = git("ls-tree", "-r", "-z", "--full-tree", "--name-only", "HEAD")
+    if listed is None:
+        raise Unreadable("git cannot list the files at HEAD")
+    files = listed.split("\0")
+    register = side("HEAD", "docs/requirements.md", "docs/requirements.md" in files, "HEAD") or ""
     requirements = set(re.findall(r"^\| (R\d+) \|", register, re.MULTILINE))
     records = {
         m.group(1) for f in files if (m := re.match(r"docs/decisions/(DR-\d{3,})-", f)) is not None
@@ -232,11 +249,11 @@ def head_places() -> Head:
     scenarios: set[tuple[str, str]] = set()
     for name in live:
         if name.endswith("/tasks.md"):
-            text = git("show", f"HEAD:{name}") or ""
+            text = side("HEAD", name, True, "HEAD") or ""
             tasks |= set(re.findall(r"^- \[[ x]\] (\d+\.\d+) ", text, re.MULTILINE))
         spec = re.search(r"specs/([a-z0-9-]+)/spec\.md$", name)
         if spec:
-            text = git("show", f"HEAD:{name}") or ""
+            text = side("HEAD", name, True, "HEAD") or ""
             for title in re.findall(r"^#### Scenario: (.+)$", text, re.MULTILINE):
                 scenarios.add((spec.group(1), title.strip()))
     return Head(requirements, records, tasks, scenarios)
@@ -248,23 +265,38 @@ def changed_reason(place: str) -> str | None:
     return reason or None
 
 
-def holds_one_word(place: str, clause: str) -> bool:
-    """A clause of one word or none, placed on a requirement, record, task or scenario."""
-    holder = REQUIREMENT, RECORD, TASK, SCENARIO
-    return any(p.fullmatch(place) for p in holder) and len(WORD.findall(clause)) <= 1
+def holds(text: str, clause: str) -> bool:
+    """Whether the text holds the clause, and not as a part of a longer word."""
+    before = r"(?<!\w)" if WORD.match(clause) else ""
+    after = r"(?!\w)" if WORD.match(clause[-1:]) else ""
+    return re.search(before + re.escape(clause) + after, text) is not None
+
+
+def cited(text: str) -> set[int]:
+    """The numbers of the requirements that a unit cites, each by its ID or in a range."""
+    numbers = {int(number) for number in CITED.findall(text)}
+    for first, last in CITED_RANGE.findall(text):
+        numbers |= set(range(int(first), int(last) + 1))
+    return numbers
 
 
 def place_problem(place: str, clause: str, entry: Entry, page: str, head: Head) -> str | None:
     if place == NEW_UNIT:
         if entry.new is None:
             return f"a clause placed in a new unit that the entry does not give: {clause}"
-        return None if clause in entry.new else f"the new unit does not hold the clause: {clause}"
+        if holds(entry.new, clause):
+            return None
+        return f"the new unit does not hold the clause: {clause}"
     if changed_reason(place):
         return None
     if place == PAGE:
-        return None if clause in page else f"HEAD's page does not hold the clause: {clause}"
+        return None if holds(page, clause) else f"HEAD's page does not hold the clause: {clause}"
     if REQUIREMENT.fullmatch(place):
-        return None if place in head.requirements else f"{place} is not in the register at HEAD"
+        if place not in head.requirements:
+            return f"{place} is not in the register at HEAD"
+        if entry.new is not None and int(place[1:]) not in cited(entry.new):
+            return f"the new unit does not cite {place}: {clause}"
+        return None
     if RECORD.fullmatch(place):
         return None if place in head.records else f"{place} is not a record at HEAD"
     task = TASK.fullmatch(place)
@@ -319,17 +351,6 @@ class Comparison:
     short: list[str] = field(default_factory=list)
 
 
-def side(commit: str, path: str, there: bool, name: str) -> str | None:
-    """The file at a commit, None where git says it is not there; Unreadable where git
-    says it is there and cannot show it."""
-    if not there:
-        return None
-    text = git("show", f"{commit}:{path}")
-    if text is None:
-        raise Unreadable(f"git cannot read `{path}` at {name}")
-    return text
-
-
 def compare(reference: str) -> Comparison:
     base = git("merge-base", "HEAD", reference)
     head = git("rev-parse", "HEAD")
@@ -341,7 +362,15 @@ def compare(reference: str) -> Comparison:
         raise Unreadable(f"HEAD holds no {MAPPING}")
     entries = parse(mapping_text)
     listed = git(
-        "diff", "-z", "--name-status", "--no-renames", found.base, found.head, "--", *MARKDOWN
+        "diff",
+        "-z",
+        "--name-status",
+        "--no-renames",
+        "--no-relative",
+        found.base,
+        found.head,
+        "--",
+        *MARKDOWN,
     )
     if listed is None:
         raise Unreadable("git cannot list the files that changed")
@@ -362,8 +391,8 @@ def compare(reference: str) -> Comparison:
         for name, text, read in (("the base", before_text, before), ("HEAD", after_text, after)):
             if text is not None and not read:
                 found.problems.append(f"`{path}`: read as no units at {name}")
-        gone = Counter(before) - Counter(after)
         held = Counter(after)
+        gone = Counter(before) - held
         page = " ".join((after_text or "").split())
         given = entries.get(path, [])
         found.rows.append((path, len(before), len(after), len(given)))
@@ -379,7 +408,7 @@ def compare(reference: str) -> Comparison:
                 reason = changed_reason(place)
                 if reason:
                     found.changes.append(f"`{path}`: {clause} ({reason})")
-                elif holds_one_word(place, clause):
+                elif place != NEW_UNIT and len(clause.split()) <= 1:
                     found.short.append(f"`{path}`: {clause} ({place})")
             for problem in entry_problems(entry, page, held, places):
                 found.problems.append(f"`{path}`: {problem}")
@@ -411,7 +440,7 @@ def main(argv: Sequence[str]) -> int:
         print(f"| `{path}` | {before} | {after} | {given} |")
     for title, listed in (
         ("Changed by this pull request's own work", found.changes),
-        ("Clauses of one word placed on a holder", found.short),
+        ("Clauses of one word or none placed outside the new unit", found.short),
     ):
         if listed:
             print(f"\n## {title}\n")

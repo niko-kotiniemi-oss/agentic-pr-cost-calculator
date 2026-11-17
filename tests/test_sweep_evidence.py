@@ -16,7 +16,7 @@ from collections.abc import Mapping
 from pathlib import Path
 
 import pytest
-from sweep_evidence import MAPPING, main, units
+from sweep_evidence import MAPPING, holds, main, units
 
 GIT_ENVIRONMENT = {
     "GIT_CONFIG_GLOBAL": os.devnull,
@@ -236,6 +236,53 @@ def test_a_clause_that_the_page_does_not_hold_is_reported(
     assert "`docs/page.md`: HEAD's page does not hold the clause: The ledger keeps counts." in out
 
 
+def test_a_clause_that_the_page_holds_only_inside_a_longer_word_is_reported(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    inside = COMPLETE.replace(
+        "Clause, R12:\n\n~~~~text\nThe ledger keeps counts.\n~~~~\n",
+        "Clause, R12:\n\n~~~~text\nThe ledger\n~~~~\n\n"
+        "Clause, the page:\n\n~~~~text\nkeep\n~~~~\n\n"
+        "Clause, R12:\n\n~~~~text\ns counts.\n~~~~\n",
+    )
+    assert inside != COMPLETE
+    history(tmp_path, {"docs/page.md": SWEPT, MAPPING: inside})
+    code, out = run(tmp_path, monkeypatch, capsys)
+    assert code == 1
+    assert "`docs/page.md`: HEAD's page does not hold the clause: keep" in out
+
+
+def test_a_clause_that_the_new_unit_holds_only_inside_a_longer_word_is_reported(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    inside = COMPLETE.replace(
+        "Clause, the new unit:\n\n~~~~text\nIt never keeps text\n~~~~\n",
+        "Clause, the new unit:\n\n~~~~text\nIt never keeps tex\n~~~~\n\n"
+        "Clause, the new unit:\n\n~~~~text\nt\n~~~~\n",
+    )
+    assert inside != COMPLETE
+    history(tmp_path, {"docs/page.md": SWEPT, MAPPING: inside})
+    code, out = run(tmp_path, monkeypatch, capsys)
+    assert code == 1
+    assert "`docs/page.md`: the new unit does not hold the clause: It never keeps tex\n" in out
+    assert "`docs/page.md`: the new unit does not hold the clause: t\n" in out
+
+
+@pytest.mark.parametrize(
+    ("text", "clause", "held"),
+    [
+        ("It keeps counts.", "keeps", True),
+        ("It keeps counts.", "keep", False),
+        ("It keeps counts.", "eeps", False),
+        ("It keeps counts, so text", ", so", True),
+        ("It keeps counts.Then", "counts.", True),
+        ("- **Answer:** so", "- **Answer:**", True),
+    ],
+)
+def test_a_clause_is_held_only_as_whole_words(text: str, clause: str, held: bool) -> None:
+    assert holds(text, clause) is held
+
+
 def test_a_rewritten_unit_that_head_does_not_hold_is_reported(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
@@ -387,12 +434,20 @@ def test_the_mapping_is_read_from_head_not_the_working_tree(
     assert code == 0, out
 
 
+@pytest.mark.parametrize(
+    "broken",
+    [
+        COMPLETE.replace(
+            "Old:\n\n~~~~text\nThe ledger keeps counts.\n~~~~", "Old:\n\nThe ledger keeps counts."
+        ),
+        COMPLETE.rstrip("\n").removesuffix("~~~~"),
+    ],
+    ids=["a label with no fence", "a last fence that never closes"],
+)
 def test_a_mapping_out_of_its_form_is_reported(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str], broken: str
 ) -> None:
-    broken = COMPLETE.replace(
-        "Old:\n\n~~~~text\nThe ledger keeps counts.\n~~~~", "Old:\n\nThe ledger keeps counts."
-    )
+    assert broken != COMPLETE
     history(tmp_path, {"docs/page.md": SWEPT, MAPPING: broken})
     code, out = run(tmp_path, monkeypatch, capsys)
     assert code == 2
@@ -532,6 +587,43 @@ def test_a_base_file_that_git_cannot_read_makes_the_script_unable_to_compare(
     assert "Cannot compare: git cannot read `docs/page.md` at the base." in out
 
 
+def test_a_list_of_changes_that_git_cannot_give_makes_the_script_unable_to_compare(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    history(tmp_path, {"docs/page.md": SWEPT, MAPPING: COMPLETE})
+    tree = git(tmp_path, "rev-parse", "main:docs")
+    (tmp_path / ".git" / "objects" / tree[:2] / tree[2:]).unlink()
+    code, out = run(tmp_path, monkeypatch, capsys)
+    assert code == 2
+    assert "Cannot compare: git cannot list the files that changed." in out
+
+
+def test_a_page_that_head_deletes_is_compared_as_holding_no_unit(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    record = "docs/decisions/DR-001-a-choice.md"
+    history(tmp_path, {"docs/page.md": SWEPT, MAPPING: COMPLETE, record: None})
+    code, out = run(tmp_path, monkeypatch, capsys)
+    assert code == 1
+    assert f"| `{record}` | 1 | 0 | 0 |" in out
+    assert f"`{record}`: no entry for a unit that HEAD does not hold: # DR-001: A choice" in out
+
+
+def test_a_run_from_a_folder_compares_every_page_whatever_git_s_diff_relative_says(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    history(tmp_path, {"docs/page.md": SWEPT, MAPPING: COMPLETE})
+    for name, value in {
+        "GIT_CONFIG_COUNT": "1",
+        "GIT_CONFIG_KEY_0": "diff.relative",
+        "GIT_CONFIG_VALUE_0": "true",
+    }.items():
+        monkeypatch.setenv(name, value)
+    code, out = run(tmp_path / "docs", monkeypatch, capsys)
+    assert code == 0, out
+    assert out == run(tmp_path, monkeypatch, capsys)[1]
+
+
 def test_an_entry_for_a_heading_is_read(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
@@ -618,18 +710,157 @@ def test_a_page_that_is_not_utf_8_makes_the_script_unable_to_compare(
     code, out = run(tmp_path, monkeypatch, capsys)
     assert code == 2
     assert "Cannot compare: git's output is not UTF-8" in out
+    assert ":docs/bytes.md" in out
 
 
-def test_a_clause_of_one_word_placed_on_a_requirement_is_listed_apart(
+def test_a_clause_of_one_word_placed_outside_the_new_unit_is_listed_apart(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
-    split = COMPLETE.replace(
-        "Clause, R12:\n\n~~~~text\nThe ledger keeps counts.\n~~~~\n",
-        "Clause, R12:\n\n~~~~text\nThe ledger keeps\n~~~~\n\n"
-        "Clause, R12:\n\n~~~~text\ncounts.\n~~~~\n",
+    split = (
+        COMPLETE.replace(
+            "Clause, R12:\n\n~~~~text\nThe ledger keeps counts.\n~~~~\n",
+            "Clause, DR-001:\n\n~~~~text\nThe\n~~~~\n\n"
+            "Clause, task 1.37:\n\n~~~~text\nledger\n~~~~\n\n"
+            "Clause, the page:\n\n~~~~text\nkeeps\n~~~~\n\n"
+            "Clause, R12:\n\n~~~~text\ncounts.\n~~~~\n",
+        )
+        .replace(
+            '`ledger`: "Counts are kept":\n\n~~~~text\nthe ledger keeps counts,\n~~~~\n',
+            '`ledger`: "Counts are kept":\n\n~~~~text\nthe ledger keeps\n~~~~\n\n'
+            'Clause, `ledger`: "Counts are kept":\n\n~~~~text\ncounts,\n~~~~\n',
+        )
+        .replace(
+            "Clause, the new unit:\n\n~~~~text\nIt never keeps text\n~~~~\n",
+            "Clause, the new unit:\n\n~~~~text\nIt\n~~~~\n\n"
+            "Clause, the new unit:\n\n~~~~text\nnever keeps text\n~~~~\n",
+        )
     )
-    assert split != COMPLETE
+    assert split.count("Clause, ") == COMPLETE.count("Clause, ") + 5
     history(tmp_path, {"docs/page.md": SWEPT, MAPPING: split})
     code, out = run(tmp_path, monkeypatch, capsys)
     assert code == 0, out
-    assert "## Clauses of one word placed on a holder\n\n- `docs/page.md`: counts. (R12)\n" in out
+    assert (
+        "## Clauses of one word or none placed outside the new unit\n\n"
+        "- `docs/page.md`: The (DR-001)\n"
+        "- `docs/page.md`: ledger (task 1.37)\n"
+        "- `docs/page.md`: keeps (the page)\n"
+        "- `docs/page.md`: counts. (R12)\n"
+        '- `docs/page.md`: counts, (`ledger`: "Counts are kept")\n'
+    ) in out
+    assert "the ledger keeps (" not in out
+    assert "(the new unit)" not in out
+
+
+def test_a_clause_of_one_word_with_an_apostrophe_is_listed_apart(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    clauses = [("It", "R12"), ("doesn't", "R12"), ("keep text.", "R12")]
+    history(
+        tmp_path,
+        {
+            "docs/other.md": "Nothing is kept (R12).\n",
+            MAPPING: mapping(("docs/other.md", [entry("It doesn't keep text.", clauses)])),
+        },
+        before={"docs/other.md": "It doesn't keep text.\n"},
+    )
+    code, out = run(tmp_path, monkeypatch, capsys)
+    assert code == 0, out
+    assert "- `docs/other.md`: It (R12)\n- `docs/other.md`: doesn't (R12)\n" in out
+    assert "keep text. (R12)" not in out
+
+
+def test_a_place_in_a_spec_whose_path_git_quotes_resolves(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    place = '`ledger`: "Only the quoted spec says so"'
+    quoted = "openspec/changes/d\u00e9mo/specs/ledger/spec.md"
+    history(
+        tmp_path,
+        {"docs/page.md": SWEPT, MAPPING: COMPLETE.replace('`ledger`: "Counts are kept"', place)},
+        before={quoted: SPEC.replace("Counts are kept", "Only the quoted spec says so")},
+    )
+    assert git(tmp_path, "ls-tree", "-r", "--name-only", "HEAD", "openspec").count('"') == 2
+    code, out = run(tmp_path, monkeypatch, capsys)
+    assert code == 0, out
+
+
+def test_a_clause_placed_on_a_requirement_that_its_new_unit_does_not_cite_is_reported(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    uncited = COMPLETE.replace(
+        "Clause, the new unit:\n\n~~~~text\nIt never keeps text\n~~~~\n",
+        "Clause, R13:\n\n~~~~text\nIt never keeps text\n~~~~\n",
+    )
+    assert uncited != COMPLETE
+    register = REGISTER + "| R13 | x | `ledger` | B |\n"
+    history(
+        tmp_path,
+        {"docs/page.md": SWEPT, MAPPING: uncited},
+        before={"docs/requirements.md": register},
+    )
+    code, out = run(tmp_path, monkeypatch, capsys)
+    assert code == 1
+    assert "`docs/page.md`: the new unit does not cite R13: It never keeps text\n" in out
+
+
+def test_a_requirement_that_the_new_unit_cites_alone_or_in_a_range_holds_its_clause(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    ranged = "It never keeps text (R12 to R14)."
+    placed = COMPLETE.replace("It never keeps text (R12).", ranged).replace(
+        "Clause, the new unit:\n\n~~~~text\nIt never keeps text\n~~~~\n",
+        "Clause, R13:\n\n~~~~text\nIt never keeps text\n~~~~\n",
+    )
+    placed = placed.replace(
+        "Clause, the new unit:\n\n~~~~text\nso text never leaks\n~~~~\n",
+        "Clause, R12:\n\n~~~~text\nso text never leaks\n~~~~\n",
+    )
+    assert placed.count("Clause, R1") == COMPLETE.count("Clause, R1") + 2
+    register = REGISTER + "| R13 | x | `ledger` | B |\n"
+    history(
+        tmp_path,
+        {"docs/page.md": SWEPT.replace("It never keeps text (R12).", ranged), MAPPING: placed},
+        before={"docs/requirements.md": register},
+    )
+    code, out = run(tmp_path, monkeypatch, capsys)
+    assert code == 0, out
+
+
+def test_a_head_without_the_register_reads_no_requirement(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    history(tmp_path, {"docs/page.md": SWEPT, MAPPING: COMPLETE, "docs/requirements.md": None})
+    code, out = run(tmp_path, monkeypatch, capsys)
+    assert code == 1
+    assert "`docs/page.md`: R12 is not in the register at HEAD" in out
+    assert "Cannot compare" not in out
+
+
+@pytest.mark.parametrize(
+    "path",
+    [
+        "docs/requirements.md",
+        "openspec/changes/demo/tasks.md",
+        "openspec/changes/demo/specs/ledger/spec.md",
+    ],
+)
+def test_a_file_that_git_cannot_read_at_head_makes_the_script_unable_to_compare(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str], path: str
+) -> None:
+    history(tmp_path, {"docs/page.md": SWEPT, MAPPING: COMPLETE})
+    blob = git(tmp_path, "rev-parse", f"HEAD:{path}")
+    (tmp_path / ".git" / "objects" / blob[:2] / blob[2:]).unlink()
+    code, out = run(tmp_path, monkeypatch, capsys)
+    assert code == 2
+    assert f"Cannot compare: git cannot read `{path}` at HEAD." in out
+
+
+def test_a_tree_that_git_cannot_list_at_head_makes_the_script_unable_to_compare(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    history(tmp_path, {"docs/page.md": SWEPT, MAPPING: COMPLETE})
+    tree = git(tmp_path, "rev-parse", "HEAD:openspec")
+    (tmp_path / ".git" / "objects" / tree[:2] / tree[2:]).unlink()
+    code, out = run(tmp_path, monkeypatch, capsys)
+    assert code == 2
+    assert "Cannot compare: git cannot list the files at HEAD." in out
