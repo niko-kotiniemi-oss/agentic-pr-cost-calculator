@@ -2,7 +2,7 @@
 
 What could go wrong with the tool, for the people who use it and for this repository, and what answers each threat. Every change revisits this file (see `CLAUDE.md`).
 
-It was written for the first change, `add-pr-cost-calculator`, before any code, so the answers are requirements and tasks rather than code. It holds 194 threats across 9 trust boundaries. T38 to T69 were found by the design-stage review, T70 to T78 by the design-stage review of the decision records in `docs/decisions/`, T79 to T81 by the implementation-stage review of those records and their checks, T82 to T100 by the design-stage review of the assumptions, the glossary and the golden set, T101 by the implementation-stage review of the assumptions, T102 and T103 by the implementation-stage review of the glossary, T104 to T116 at the design of the revision of consent, the store and the ledger's format, T117 and T118 by the design-stage review of that revision, T119 to T122 by the review of that revision after its approval, T123 with the owner's answer to a question that the check of that review's fixes raised, T124 to T126 by the design-stage review of the test of the specs' form, T127 by the implementation-stage review of that test, T128 to T135 at the design of the plugin that brings capture to a project's cloud threads, T136 to T142 by the design-stage review of that plugin, T143 by its implementation-stage review, T144 by its security review, T145 to T147 at the design of the README's short start, T148 to T156 by the design-stage review of that short start, T157 and T158 by its implementation-stage review, T159 to T162 at the design of the roadmap, T163 to T165 by the design-stage review of the roadmap, T166 to T168 at the design of the backlog, T169 by the design-stage review of the backlog, T170 at the design of the guide, T171 to T174 by the design-stage review of the guide, T175 and T176 by the design-stage review of one opt-in for every agent, T177 to T182 by the second design-stage review of the guide, T183 by the final review of its build, T184 by its implementation-stage review, and T185 to T189 at the design of the walking skeleton and T190 to T194 by its design-stage review; they follow T37, each under a heading for its boundary, so that the numbers stay in order, and a threat that a change removes keeps its ID out of use (see Retired IDs). Where an answer can be a scenario in a spec, it is one, so that an acceptance test holds it. `tests/test_threat_model.py` checks that every citation below names a scenario, task, decision, decision record or file that exists.
+It was written for the first change, `add-pr-cost-calculator`, before any code, so the answers are requirements and tasks rather than code. It holds 197 threats across 9 trust boundaries. T38 to T69 were found by the design-stage review, T70 to T78 by the design-stage review of the decision records in `docs/decisions/`, T79 to T81 by the implementation-stage review of those records and their checks, T82 to T100 by the design-stage review of the assumptions, the glossary and the golden set, T101 by the implementation-stage review of the assumptions, T102 and T103 by the implementation-stage review of the glossary, T104 to T116 at the design of the revision of consent, the store and the ledger's format, T117 and T118 by the design-stage review of that revision, T119 to T122 by the review of that revision after its approval, T123 with the owner's answer to a question that the check of that review's fixes raised, T124 to T126 by the design-stage review of the test of the specs' form, T127 by the implementation-stage review of that test, T128 to T135 at the design of the plugin that brings capture to a project's cloud threads, T136 to T142 by the design-stage review of that plugin, T143 by its implementation-stage review, T144 by its security review, T145 to T147 at the design of the README's short start, T148 to T156 by the design-stage review of that short start, T157 and T158 by its implementation-stage review, T159 to T162 at the design of the roadmap, T163 to T165 by the design-stage review of the roadmap, T166 to T168 at the design of the backlog, T169 by the design-stage review of the backlog, T170 at the design of the guide, T171 to T174 by the design-stage review of the guide, T175 and T176 by the design-stage review of one opt-in for every agent, T177 to T182 by the second design-stage review of the guide, T183 by the final review of its build, T184 by its implementation-stage review, T185 to T189 at the design of the walking skeleton and T190 to T194 by its design-stage review, and T195 to T197 at the design of the specs' citation sweep; they follow T37, each under a heading for its boundary, so that the numbers stay in order, and a threat that a change removes keeps its ID out of use (see Retired IDs). Where an answer can be a scenario in a spec, it is one, so that an acceptance test holds it. `tests/test_threat_model.py` checks that every citation below names a scenario, task, decision, decision record or file that exists.
 
 ## How it was built
 
@@ -2212,7 +2212,7 @@ The trust boundaries:
 - **What could happen:** the rule that the specs are the single source of what the tool does (DR-232) reaches agents through `CLAUDE.md`. An agent that touches a page that states behaviour, in a pull request about something else, replaces a threat's answer, a risk or a feature page's text with citations of the scenarios that it judges cover it, and drops a clause that no scenario holds, inside a diff that the owner reads for another purpose. Readers and agents then take a property as specified, or as held, when nothing holds it, and the pull request that brings the documents to the rule starts from pages partly converted, with nothing to compare.
 - **Answer:** `CLAUDE.md` says that a page that states behaviour today is brought to the rule only through backlog item B-022, and that a page that a requirement obliges to tell its readers something tells them and cites that requirement. That item's pull request shows, for each sentence that it removes, the scenario that holds it or the spec that it moved into, as the answer to T78 showed for the design's sentences, and the item rests on this threat (DR-232).
 - **Residual:** no test can tell a citation that covers a clause from one that does not, so this rests on agents following the rule (A16) and on the owner's review of that pull request (A15).
-- **Held by:** DR-232; `CLAUDE.md`; `add-pr-cost-calculator` task 1.28
+- **Held by:** DR-232; DR-250; DR-251; `CLAUDE.md`; `add-pr-cost-calculator` task 1.28; `add-pr-cost-calculator` task 1.37
 - **Assumptions:** A15, A16
 
 ### T174. The walking skeleton's real run records into this repository before its own capture is turned on
@@ -2495,6 +2495,46 @@ The trust boundaries:
 - **Held by:** `project-standards`: "A missing or failing capture script still exits with success"; `project-standards`: "A hook command without its guard fails a test"; DR-249; `add-pr-cost-calculator` task 1.34
 - **Assumptions:** A3
 
+## Boundary 7, continued: found at the design of the specs' citation sweep
+
+### T195. A clause moved into a spec changes what the tool must do
+
+- **Kind:** tampering, reliability
+- **Impact:** 2 (medium)
+- **Likelihood:** 1 (unlikely)
+- **Risk:** 2
+- **What could happen:** the sweep of B-022 moves into a spec a clause that no scenario held. Reworded on the way, or placed under a requirement whose other scenarios read it otherwise, it becomes a requirement that the build must meet, inside a diff that the owner reads as a move of text, and the change of intent is never decided.
+- **Answer:** design decision 19: a clause moves word for word, or not at all, and one that cannot move word for word, or that a scenario contradicts, stays on its page and is listed for B-007; the mapping gives each moved clause beside the spec that receives it, and the sweep's script fails on a moved clause that no spec holds word for word at the head.
+- **Residual:** a clause moved word for word under a requirement that reads it otherwise, which only the review and the owner's reading can tell (A15).
+- **Held by:** `add-pr-cost-calculator` task 1.37; DR-232
+- **Assumptions:** A15, A16
+
+### T196. The mapping that shows the sweep lost nothing keeps the copies that it removed, and is read as current
+
+- **Kind:** reliability
+- **Impact:** 1 (low)
+- **Likelihood:** 2 (possible)
+- **Risk:** 2
+- **What could happen:** the plan that gives the sweep's mapping quotes every sentence that the sweep removed. An agent or a reader who searches the repository for a behaviour finds it there, in a page under `docs/`, and takes it as what the tool does after the specs have changed it.
+- **Answer:** design decision 19: the plan opens by saying that its quoted sentences are those that the default branch held before the sweep, kept as the sweep's evidence, and that the specs say what the tool does; `CLAUDE.md` makes the specs the single source.
+- **Residual:** a reader who lands on a quoted sentence without reading the plan's opening (A16).
+- **Held by:** `add-pr-cost-calculator` task 1.37; DR-232; `CLAUDE.md`
+- **Assumptions:** A16
+
+## Boundary 6, continued: found at the design of the specs' citation sweep
+
+### T197. A page that adopters read loses what they need to know, once it cites instead of telling
+
+- **Kind:** information disclosure, reliability
+- **Impact:** 2 (medium)
+- **Likelihood:** 1 (unlikely)
+- **Risk:** 2
+- **What could happen:** the sweep replaces a feature page's or the page on how the tool works' account of what capture records, publishes or needs with citations of scenarios that an adopter does not read, so that a person opts in, or a repository turns the tool on, without knowing what it does, which those pages exist to tell them.
+- **Answer:** design decision 19: a page that a requirement obliges to tell its readers something keeps telling them and cites that requirement, among them the page on how the tool works (R29), the README's short start (R198, R199) and the pages that say where an opt-in applies and what an opt-out leaves published (R159, R164); the tests that hold R29 keep comparing that page with the workflows (DR-251).
+- **Residual:** a page that no requirement obliges, from which a reader learns less than before, which the review reads for (A15).
+- **Held by:** `project-standards`: "A flow without a diagram fails CI"; DR-232; DR-251; `add-pr-cost-calculator` task 1.37
+- **Assumptions:** A15
+
 ## Risk matrix
 
 Generated from the ratings above. Each cell lists the threats whose impact and likelihood it names.
@@ -2502,8 +2542,8 @@ Generated from the ratings above. Each cell lists the threats whose impact and l
 | Impact \ Likelihood | 1 unlikely | 2 possible | 3 likely |
 |---|---|---|---|
 | 3 high | T1, T12, T14, T15, T23, T24, T28, T29, T35, T43, T46, T58, T59, T63, T64, T66, T67, T68, T73, T77, T82, T83, T92, T93, T94, T95, T103, T107, T108, T119, T125, T133, T138, T140, T141, T142, T144, T147, T148, T150, T151, T160, T163, T164, T165, T167, T169, T174, T175, T177, T178, T180, T183, T184, T186, T187, T188, T190, T192 | T2, T32, T33, T34, T61, T62, T65, T132, T137 |  |
-| 2 medium | T4, T6, T11, T13, T18, T25, T26, T38, T41, T42, T53, T55, T56, T57, T60, T69, T70, T76, T78, T79, T80, T81, T84, T85, T86, T87, T88, T89, T90, T91, T97, T98, T99, T100, T101, T102, T104, T105, T109, T112, T115, T124, T126, T127, T135, T139, T146, T149, T152, T153, T155, T156, T157, T162, T172, T173, T179, T181, T182, T185, T189, T191, T193, T194 | T3, T9, T10, T17, T19, T20, T21, T22, T27, T30, T39, T40, T44, T45, T47, T48, T49, T50, T51, T52, T54, T71, T72, T74, T75, T96, T111, T116, T120, T121, T122, T123, T129, T130, T131, T134, T136, T143, T145, T154, T158, T159, T161, T166, T168, T170, T171, T176 | T7, T8, T16, T128 |
-| 1 low | T113 | T31, T36, T37, T110, T114, T118 | T5, T106, T117 |
+| 2 medium | T4, T6, T11, T13, T18, T25, T26, T38, T41, T42, T53, T55, T56, T57, T60, T69, T70, T76, T78, T79, T80, T81, T84, T85, T86, T87, T88, T89, T90, T91, T97, T98, T99, T100, T101, T102, T104, T105, T109, T112, T115, T124, T126, T127, T135, T139, T146, T149, T152, T153, T155, T156, T157, T162, T172, T173, T179, T181, T182, T185, T189, T191, T193, T194, T195, T197 | T3, T9, T10, T17, T19, T20, T21, T22, T27, T30, T39, T40, T44, T45, T47, T48, T49, T50, T51, T52, T54, T71, T72, T74, T75, T96, T111, T116, T120, T121, T122, T123, T129, T130, T131, T134, T136, T143, T145, T154, T158, T159, T161, T166, T168, T170, T171, T176 | T7, T8, T16, T128 |
+| 1 low | T113 | T31, T36, T37, T110, T114, T118, T196 | T5, T106, T117 |
 
 The threats with a risk of 6 or more:
 
