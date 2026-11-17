@@ -307,6 +307,346 @@ Clause, changed, the item is Done with this pull request, and the roadmap lists 
 Old:
 
 ~~~~text
+- **Held by:** `ledger`: "Content in the transcript does not reach the ledger"; `ledger`: "A planted string never reaches the ledger"; `ledger`: "The store's notes never reach the ledger"; `usage-capture`: "The store holds ids and paths only as hashes while no file is staged"; `usage-capture`: "The store holds only the fields that its format documents"; `switch-and-opt-in`: "The store holds no configuration file's path"; `usage-capture`: "Standard error carries nothing from the store"; `project-standards`: "The opt-in's pages say what stays published"; DR-045; DR-053; DR-088; DR-127; DR-136; DR-173; DR-174; DR-182
+~~~~
+
+New:
+
+~~~~text
+- **Held by:** `ledger`: "Content in the transcript does not reach the ledger"; `ledger`: "A planted string never reaches the ledger"; `ledger`: "The store's notes never reach the ledger"; `usage-capture`: "The store holds ids and paths only as hashes while no file is staged"; `usage-capture`: "The store holds only the fields that its format documents"; `switch-and-opt-in`: "The store holds no configuration file's path"; `usage-capture`: "Standard error carries nothing from the store"; `project-standards`: "The opt-in's pages say what stays published"; DR-045; DR-053; DR-088; DR-127; DR-136; DR-173; DR-174; DR-182; `usage-capture`: "Running again records nothing twice"; `ledger`: "A new file for every commit"; `usage-capture`: "A call written over several lines is recorded once"
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Held by:** `ledger`: "Content in the transcript does not reach the ledger"; `ledger`: "A planted string never reaches the ledger"; `ledger`: "The store's notes never reach the ledger"; `usage-capture`: "The store holds ids and paths only as hashes while no file is staged"; `usage-capture`: "The store holds only the fields that its format documents"; `switch-and-opt-in`: "The store holds no configuration file's path"; `usage-capture`: "Standard error carries nothing from the store"; `project-standards`: "The opt-in's pages say what stays published"; DR-045; DR-053; DR-088; DR-127; DR-136; DR-173; DR-174; DR-182
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Held by:** `usage-capture`: "A one-turn session's commit carries its calls"; `usage-capture`: "A commit carries the calls that another session recorded on its branch"; `usage-capture`: "A commit that stages its own files carries a ledger file"; `usage-capture`: "A commit of all changes with nothing staged carries a ledger file"; `usage-capture`: "A turn that ends in an API error is still recorded"; `usage-capture`: "A call still being written is recorded later"; `usage-capture`: "A commit with git's own options is still a commit"; `usage-capture`: "A dry-run option that a later option undoes is still a commit"; `usage-capture`: "An ignored ledger path is still committed"; `usage-capture`: "A sparse checkout still commits the ledger file"; `usage-capture`: "A commit message from a here-document still carries a ledger file"; `usage-capture`: "A squash with a plain reset keeps its ledger files"; `usage-capture`: "A soft reset back to a commit that its own command reset away leaves its ledger file out"; `usage-capture`: "The plugin records a session in a repository that registers no hook"; `usage-capture`: "The run before a git command in another repository records that repository's calls first"; DR-007; DR-010; DR-012; DR-013; DR-014; DR-030; DR-032; DR-034; DR-037; DR-055; DR-107; DR-128; DR-129; DR-130; DR-172; DR-197; `add-pr-cost-calculator` task 4.4
+~~~~
+
+New:
+
+~~~~text
+- **Held by:** `usage-capture`: "A one-turn session's commit carries its calls"; `usage-capture`: "A commit carries the calls that another session recorded on its branch"; `usage-capture`: "A commit that stages its own files carries a ledger file"; `usage-capture`: "A commit of all changes with nothing staged carries a ledger file"; `usage-capture`: "A turn that ends in an API error is still recorded"; `usage-capture`: "A call still being written is recorded later"; `usage-capture`: "A commit with git's own options is still a commit"; `usage-capture`: "A dry-run option that a later option undoes is still a commit"; `usage-capture`: "An ignored ledger path is still committed"; `usage-capture`: "A sparse checkout still commits the ledger file"; `usage-capture`: "A commit message from a here-document still carries a ledger file"; `usage-capture`: "A squash with a plain reset keeps its ledger files"; `usage-capture`: "A soft reset back to a commit that its own command reset away leaves its ledger file out"; `usage-capture`: "The plugin records a session in a repository that registers no hook"; `usage-capture`: "The run before a git command in another repository records that repository's calls first"; DR-007; DR-010; DR-012; DR-013; DR-014; DR-030; DR-032; DR-034; DR-037; DR-055; DR-107; DR-128; DR-129; DR-130; DR-172; DR-197; `add-pr-cost-calculator` task 4.4; `usage-capture`: "A run from another directory works on this repository"
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Held by:** `usage-capture`: "A one-turn session's commit carries its calls"; `usage-capture`: "A commit carries the calls that another session recorded on its branch"; `usage-capture`: "A commit that stages its own files carries a ledger file"; `usage-capture`: "A commit of all changes with nothing staged carries a ledger file"; `usage-capture`: "A turn that ends in an API error is still recorded"; `usage-capture`: "A call still being written is recorded later"; `usage-capture`: "A commit with git's own options is still a commit"; `usage-capture`: "A dry-run option that a later option undoes is still a commit"; `usage-capture`: "An ignored ledger path is still committed"; `usage-capture`: "A sparse checkout still commits the ledger file"; `usage-capture`: "A commit message from a here-document still carries a ledger file"; `usage-capture`: "A squash with a plain reset keeps its ledger files"; `usage-capture`: "A soft reset back to a commit that its own command reset away leaves its ledger file out"; `usage-capture`: "The plugin records a session in a repository that registers no hook"; `usage-capture`: "The run before a git command in another repository records that repository's calls first"; DR-007; DR-010; DR-012; DR-013; DR-014; DR-030; DR-032; DR-034; DR-037; DR-055; DR-107; DR-128; DR-129; DR-130; DR-172; DR-197; `add-pr-cost-calculator` task 4.4
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Held by:** `usage-capture`: "A turn's end leaves the working tree alone"; `usage-capture`: "A commit that does not happen leaves nothing staged"; `usage-capture`: "A commit refused at a permission prompt or by a permission rule leaves nothing staged"; `usage-capture`: "A session's end takes back what its commands left staged"; `usage-capture`: "The plugin's run at a session's end takes back first"; `usage-capture`: "A later session takes back what an earlier one left staged"; `usage-capture`: "A take-back waits while the index is in use"; `usage-capture`: "A take-back leaves a committed file in place"; `usage-capture`: "A ledger file that a commit takes while a take-back runs is put back"; `usage-capture`: "A commit after another command takes no ledger file"; `usage-capture`: "A commit whose message another command writes takes no ledger file"; `usage-capture`: "A substitution before the commit takes no ledger file"; `usage-capture`: "A here-document whose delimiter is not quoted takes no ledger file"; `usage-capture`: "A commit in the background takes no ledger file"; `usage-capture`: "A commit with nothing to commit stays empty"; `usage-capture`: "An empty commit asked for stays empty"; `usage-capture`: "A `git add` that stages nothing leaves the ledger file alone in the commit"; `usage-capture`: "A commit with nothing new to record takes no ledger file"; `usage-capture`: "A commit of named paths takes no ledger file"; `usage-capture`: "A command that only names a commit stages nothing"; `usage-capture`: "A dry run of a commit stages nothing"; `usage-capture`: "A commit in another repository stages nothing here"; `usage-capture`: "A commit stages in the worktree where it runs"; `usage-capture`: "A sparse checkout still commits the ledger file"; `usage-capture`: "A ledger path with a filter takes no ledger file"; `usage-capture`: "A ledger file that git refuses to add is not left behind"; `usage-capture`: "A run that comes again before a command stages that command's calls once"; `usage-capture`: "A run that comes again before a command after a change of branch takes that command's file back"; `usage-capture`: "Removing the ledger folder before a commit takes no ledger file"; `usage-capture`: "Moving the ledger folder before a commit takes no ledger file"; `usage-capture`: "Removing ledger files by a pattern before a commit takes no ledger file"; `usage-capture`: "A commit whose `-C` path is not written out takes no ledger file"; `usage-capture`: "A `-C` after `commit` is not a path"; `usage-capture`: "A file that a later commit deleted is not put back"; `usage-capture`: "A file removed from the index while its commit runs stays removed"; `usage-capture`: "A ledger file that a person removes stays removed"; `usage-capture`: "A ledger file that a person removes stays removed for another session"; `usage-capture`: "A ledger file that a removal leaves is left to git"; `usage-capture`: "A ledger file comes back with a commit that its own command reset away"; `usage-capture`: "A soft reset back to a commit that its own command reset away leaves its ledger file out"; `usage-capture`: "A put-back does not undo a staged removal"; `usage-capture`: "Calls go to the worktree and branch they were recorded on"; `usage-capture`: "Calls made with no branch checked out wait for a commit made the same way"; `usage-capture`: "A change of branch records nothing twice"; `usage-capture`: "A commit in a pipeline, a subshell, a group, joined by `||` or behind a wrapper takes no ledger file"; `usage-capture`: "A ledger file staged before the store was removed is left to git"; `usage-capture`: "Calls and notes follow a moved worktree"; `usage-capture`: "A run at a session's end starts no take-back that its budget cannot finish"; `project-standards`: "The README says how to find a ledger file left staged in a repository that a session left"; DR-010; DR-011; DR-012; DR-013; DR-014; DR-034; DR-035; DR-037; DR-055; DR-107; DR-128; DR-129; DR-130; DR-174; DR-177; `add-pr-cost-calculator` task 1.2; `add-pr-cost-calculator` task 2.2; `add-pr-cost-calculator` task 4.4; `add-pr-cost-calculator` decision 17
+~~~~
+
+New:
+
+~~~~text
+- **Held by:** `usage-capture`: "A turn's end leaves the working tree alone"; `usage-capture`: "A commit that does not happen leaves nothing staged"; `usage-capture`: "A commit refused at a permission prompt or by a permission rule leaves nothing staged"; `usage-capture`: "A session's end takes back what its commands left staged"; `usage-capture`: "The plugin's run at a session's end takes back first"; `usage-capture`: "A later session takes back what an earlier one left staged"; `usage-capture`: "A take-back waits while the index is in use"; `usage-capture`: "A take-back leaves a committed file in place"; `usage-capture`: "A ledger file that a commit takes while a take-back runs is put back"; `usage-capture`: "A commit after another command takes no ledger file"; `usage-capture`: "A commit whose message another command writes takes no ledger file"; `usage-capture`: "A substitution before the commit takes no ledger file"; `usage-capture`: "A here-document whose delimiter is not quoted takes no ledger file"; `usage-capture`: "A commit in the background takes no ledger file"; `usage-capture`: "A commit with nothing to commit stays empty"; `usage-capture`: "An empty commit asked for stays empty"; `usage-capture`: "A `git add` that stages nothing leaves the ledger file alone in the commit"; `usage-capture`: "A commit with nothing new to record takes no ledger file"; `usage-capture`: "A commit of named paths takes no ledger file"; `usage-capture`: "A command that only names a commit stages nothing"; `usage-capture`: "A dry run of a commit stages nothing"; `usage-capture`: "A commit in another repository stages nothing here"; `usage-capture`: "A commit stages in the worktree where it runs"; `usage-capture`: "A sparse checkout still commits the ledger file"; `usage-capture`: "A ledger path with a filter takes no ledger file"; `usage-capture`: "A ledger file that git refuses to add is not left behind"; `usage-capture`: "A run that comes again before a command stages that command's calls once"; `usage-capture`: "A run that comes again before a command after a change of branch takes that command's file back"; `usage-capture`: "Removing the ledger folder before a commit takes no ledger file"; `usage-capture`: "Moving the ledger folder before a commit takes no ledger file"; `usage-capture`: "Removing ledger files by a pattern before a commit takes no ledger file"; `usage-capture`: "A commit whose `-C` path is not written out takes no ledger file"; `usage-capture`: "A `-C` after `commit` is not a path"; `usage-capture`: "A file that a later commit deleted is not put back"; `usage-capture`: "A file removed from the index while its commit runs stays removed"; `usage-capture`: "A ledger file that a person removes stays removed"; `usage-capture`: "A ledger file that a person removes stays removed for another session"; `usage-capture`: "A ledger file that a removal leaves is left to git"; `usage-capture`: "A ledger file comes back with a commit that its own command reset away"; `usage-capture`: "A soft reset back to a commit that its own command reset away leaves its ledger file out"; `usage-capture`: "A put-back does not undo a staged removal"; `usage-capture`: "Calls go to the worktree and branch they were recorded on"; `usage-capture`: "Calls made with no branch checked out wait for a commit made the same way"; `usage-capture`: "A change of branch records nothing twice"; `usage-capture`: "A commit in a pipeline, a subshell, a group, joined by `||` or behind a wrapper takes no ledger file"; `usage-capture`: "A ledger file staged before the store was removed is left to git"; `usage-capture`: "Calls and notes follow a moved worktree"; `usage-capture`: "A run at a session's end starts no take-back that its budget cannot finish"; `project-standards`: "The README says how to find a ledger file left staged in a repository that a session left"; DR-010; DR-011; DR-012; DR-013; DR-014; DR-034; DR-035; DR-037; DR-055; DR-107; DR-128; DR-129; DR-130; DR-174; DR-177; `add-pr-cost-calculator` task 1.2; `add-pr-cost-calculator` task 2.2; `add-pr-cost-calculator` task 4.4; `add-pr-cost-calculator` decision 17; `usage-capture`: "A take-back notes the commit it found and what it removed"
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Held by:** `usage-capture`: "A turn's end leaves the working tree alone"; `usage-capture`: "A commit that does not happen leaves nothing staged"; `usage-capture`: "A commit refused at a permission prompt or by a permission rule leaves nothing staged"; `usage-capture`: "A session's end takes back what its commands left staged"; `usage-capture`: "The plugin's run at a session's end takes back first"; `usage-capture`: "A later session takes back what an earlier one left staged"; `usage-capture`: "A take-back waits while the index is in use"; `usage-capture`: "A take-back leaves a committed file in place"; `usage-capture`: "A ledger file that a commit takes while a take-back runs is put back"; `usage-capture`: "A commit after another command takes no ledger file"; `usage-capture`: "A commit whose message another command writes takes no ledger file"; `usage-capture`: "A substitution before the commit takes no ledger file"; `usage-capture`: "A here-document whose delimiter is not quoted takes no ledger file"; `usage-capture`: "A commit in the background takes no ledger file"; `usage-capture`: "A commit with nothing to commit stays empty"; `usage-capture`: "An empty commit asked for stays empty"; `usage-capture`: "A `git add` that stages nothing leaves the ledger file alone in the commit"; `usage-capture`: "A commit with nothing new to record takes no ledger file"; `usage-capture`: "A commit of named paths takes no ledger file"; `usage-capture`: "A command that only names a commit stages nothing"; `usage-capture`: "A dry run of a commit stages nothing"; `usage-capture`: "A commit in another repository stages nothing here"; `usage-capture`: "A commit stages in the worktree where it runs"; `usage-capture`: "A sparse checkout still commits the ledger file"; `usage-capture`: "A ledger path with a filter takes no ledger file"; `usage-capture`: "A ledger file that git refuses to add is not left behind"; `usage-capture`: "A run that comes again before a command stages that command's calls once"; `usage-capture`: "A run that comes again before a command after a change of branch takes that command's file back"; `usage-capture`: "Removing the ledger folder before a commit takes no ledger file"; `usage-capture`: "Moving the ledger folder before a commit takes no ledger file"; `usage-capture`: "Removing ledger files by a pattern before a commit takes no ledger file"; `usage-capture`: "A commit whose `-C` path is not written out takes no ledger file"; `usage-capture`: "A `-C` after `commit` is not a path"; `usage-capture`: "A file that a later commit deleted is not put back"; `usage-capture`: "A file removed from the index while its commit runs stays removed"; `usage-capture`: "A ledger file that a person removes stays removed"; `usage-capture`: "A ledger file that a person removes stays removed for another session"; `usage-capture`: "A ledger file that a removal leaves is left to git"; `usage-capture`: "A ledger file comes back with a commit that its own command reset away"; `usage-capture`: "A soft reset back to a commit that its own command reset away leaves its ledger file out"; `usage-capture`: "A put-back does not undo a staged removal"; `usage-capture`: "Calls go to the worktree and branch they were recorded on"; `usage-capture`: "Calls made with no branch checked out wait for a commit made the same way"; `usage-capture`: "A change of branch records nothing twice"; `usage-capture`: "A commit in a pipeline, a subshell, a group, joined by `||` or behind a wrapper takes no ledger file"; `usage-capture`: "A ledger file staged before the store was removed is left to git"; `usage-capture`: "Calls and notes follow a moved worktree"; `usage-capture`: "A run at a session's end starts no take-back that its budget cannot finish"; `project-standards`: "The README says how to find a ledger file left staged in a repository that a session left"; DR-010; DR-011; DR-012; DR-013; DR-014; DR-034; DR-035; DR-037; DR-055; DR-107; DR-128; DR-129; DR-130; DR-174; DR-177; `add-pr-cost-calculator` task 1.2; `add-pr-cost-calculator` task 2.2; `add-pr-cost-calculator` task 4.4; `add-pr-cost-calculator` decision 17
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Held by:** `ledger`: "A symbolic link in the ledger path is refused"; `ledger`: "A new file for every commit"; DR-127
+~~~~
+
+New:
+
+~~~~text
+- **Held by:** `ledger`: "A symbolic link in the ledger path is refused"; `ledger`: "A new file for every commit"; DR-127; `ledger`: "A planted string never reaches the ledger"
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Held by:** `ledger`: "A symbolic link in the ledger path is refused"; `ledger`: "A new file for every commit"; DR-127
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Held by:** `report-comment`: "A ledger file that is a link is refused"; `report-comment`: "Ledger files too large in total are refused"; `usage-capture`: "Capture reads no ledger file through a link"; `usage-capture`: "Capture does not read an oversized ledger file"; DR-044; DR-110
+~~~~
+
+New:
+
+~~~~text
+- **Held by:** `report-comment`: "A ledger file that is a link is refused"; `report-comment`: "Ledger files too large in total are refused"; `usage-capture`: "Capture reads no ledger file through a link"; `usage-capture`: "Capture does not read an oversized ledger file"; DR-044; DR-110; `usage-capture`: "A long transcript does not hold up the session"
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Held by:** `report-comment`: "A ledger file that is a link is refused"; `report-comment`: "Ledger files too large in total are refused"; `usage-capture`: "Capture reads no ledger file through a link"; `usage-capture`: "Capture does not read an oversized ledger file"; DR-044; DR-110
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Held by:** `ledger`: "A reused branch name is not double-counted"; `ledger`: "A copied entry is counted once"; `ledger`: "One call added twice is counted once"; `report-comment`: "A push that merges several pull requests gets no comment"; `report-comment`: "A push that adds other commits beside a merge gets no comment"; `usage-capture`: "A resumed session records nothing its branch already holds"; `usage-capture`: "A call made before a checkout stays with its branch"; `usage-capture`: "The run before a git command records the calls before the command can change the branch"; `report-comment`: "A push that merges no pull request gets no comment"; `usage-capture`: "The run before a git command in another repository records that repository's calls first"; DR-007; DR-012; DR-014; DR-017; DR-030; DR-034; DR-131; DR-133; DR-184; DR-198
+~~~~
+
+New:
+
+~~~~text
+- **Held by:** `ledger`: "A reused branch name is not double-counted"; `ledger`: "A copied entry is counted once"; `ledger`: "One call added twice is counted once"; `report-comment`: "A push that merges several pull requests gets no comment"; `report-comment`: "A push that adds other commits beside a merge gets no comment"; `usage-capture`: "A resumed session records nothing its branch already holds"; `usage-capture`: "A call made before a checkout stays with its branch"; `usage-capture`: "The run before a git command records the calls before the command can change the branch"; `report-comment`: "A push that merges no pull request gets no comment"; `usage-capture`: "The run before a git command in another repository records that repository's calls first"; DR-007; DR-012; DR-014; DR-017; DR-030; DR-034; DR-131; DR-133; DR-184; DR-198; `usage-capture`: "A thread that continues from a fresh clone records from its first run there"
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Held by:** `ledger`: "A reused branch name is not double-counted"; `ledger`: "A copied entry is counted once"; `ledger`: "One call added twice is counted once"; `report-comment`: "A push that merges several pull requests gets no comment"; `report-comment`: "A push that adds other commits beside a merge gets no comment"; `usage-capture`: "A resumed session records nothing its branch already holds"; `usage-capture`: "A call made before a checkout stays with its branch"; `usage-capture`: "The run before a git command records the calls before the command can change the branch"; `report-comment`: "A push that merges no pull request gets no comment"; `usage-capture`: "The run before a git command in another repository records that repository's calls first"; DR-007; DR-012; DR-014; DR-017; DR-030; DR-034; DR-131; DR-133; DR-184; DR-198
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Held by:** `ci-minutes`: "Every commit is counted, beyond what the API lists"; `ci-minutes`: "A squash merge counts the runs on the pull request's commits"; `ci-minutes`: "A rebase merge counts the runs on the pull request's commits"; `ci-minutes`: "Runs that the merge starts are not counted"; `ci-minutes`: "A fast-forward merge counts the pull request's runs, not the push's"; `ci-minutes`: "A run that the pull request's closing starts is not counted"; `ci-minutes`: "A re-run job counts every attempt"; `ci-minutes`: "An incomplete jobs listing is reported as incomplete"; `ci-minutes`: "A run that has not finished makes the cost incomplete"; DR-017; DR-019; DR-038; DR-110; `add-pr-cost-calculator` task 4.3
+~~~~
+
+New:
+
+~~~~text
+- **Held by:** `ci-minutes`: "Every commit is counted, beyond what the API lists"; `ci-minutes`: "A squash merge counts the runs on the pull request's commits"; `ci-minutes`: "A rebase merge counts the runs on the pull request's commits"; `ci-minutes`: "Runs that the merge starts are not counted"; `ci-minutes`: "A fast-forward merge counts the pull request's runs, not the push's"; `ci-minutes`: "A run that the pull request's closing starts is not counted"; `ci-minutes`: "A re-run job counts every attempt"; `ci-minutes`: "An incomplete jobs listing is reported as incomplete"; `ci-minutes`: "A run that has not finished makes the cost incomplete"; DR-017; DR-019; DR-038; DR-110; `add-pr-cost-calculator` task 4.3; `report-comment`: "The report fetches what it reads"
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Held by:** `ci-minutes`: "Every commit is counted, beyond what the API lists"; `ci-minutes`: "A squash merge counts the runs on the pull request's commits"; `ci-minutes`: "A rebase merge counts the runs on the pull request's commits"; `ci-minutes`: "Runs that the merge starts are not counted"; `ci-minutes`: "A fast-forward merge counts the pull request's runs, not the push's"; `ci-minutes`: "A run that the pull request's closing starts is not counted"; `ci-minutes`: "A re-run job counts every attempt"; `ci-minutes`: "An incomplete jobs listing is reported as incomplete"; `ci-minutes`: "A run that has not finished makes the cost incomplete"; DR-017; DR-019; DR-038; DR-110; `add-pr-cost-calculator` task 4.3
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Held by:** `usage-capture`: "A store of a format the step does not know is left alone"; `usage-capture`: "A store that an earlier release wrote is upgraded"; `usage-capture`: "A store that a later release wrote is left alone by a run with a switch off"; `usage-capture`: "A store version's fingerprint does not change"; `usage-capture`: "A released store version's recorded fingerprint does not change"; `usage-capture`: "An earlier copy whose release does not know a key leaves the session to the later copy"; DR-011; DR-096; DR-154; DR-187; DR-206; `add-pr-cost-calculator` task 2.1; `add-pr-cost-calculator` task 6.1
+~~~~
+
+New:
+
+~~~~text
+- **Held by:** `usage-capture`: "A store of a format the step does not know is left alone"; `usage-capture`: "A store that an earlier release wrote is upgraded"; `usage-capture`: "A store that a later release wrote is left alone by a run with a switch off"; `usage-capture`: "A store version's fingerprint does not change"; `usage-capture`: "A released store version's recorded fingerprint does not change"; `usage-capture`: "An earlier copy whose release does not know a key leaves the session to the later copy"; DR-011; DR-096; DR-154; DR-187; DR-206; `add-pr-cost-calculator` task 2.1; `add-pr-cost-calculator` task 6.1; `releases-and-compatibility`: "A breaking change raises the major version"; `releases-and-compatibility`: "The surface manifest names the whole public surface"
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Held by:** `usage-capture`: "A store of a format the step does not know is left alone"; `usage-capture`: "A store that an earlier release wrote is upgraded"; `usage-capture`: "A store that a later release wrote is left alone by a run with a switch off"; `usage-capture`: "A store version's fingerprint does not change"; `usage-capture`: "A released store version's recorded fingerprint does not change"; `usage-capture`: "An earlier copy whose release does not know a key leaves the session to the later copy"; DR-011; DR-096; DR-154; DR-187; DR-206; `add-pr-cost-calculator` task 2.1; `add-pr-cost-calculator` task 6.1
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Held by:** `releases-and-compatibility`: "A changed public surface needs a major version"; `releases-and-compatibility`: "The surface manifest names the hook's registration whole"; `releases-and-compatibility`: "The surface manifest names the configuration's keys"; `ledger`: "A released version's schema does not change"; `usage-capture`: "A store that an earlier release wrote is upgraded"; `releases-and-compatibility`: "A breaking change raises the major version"; `releases-and-compatibility`: "The surface manifest names the plugin whole"; `usage-capture`: "A store version's fingerprint does not change"; DR-040; DR-096; DR-123; DR-149; DR-154; `add-pr-cost-calculator` task 6.1; `add-pr-cost-calculator` task 6.4
+~~~~
+
+New:
+
+~~~~text
+- **Held by:** `releases-and-compatibility`: "A changed public surface needs a major version"; `releases-and-compatibility`: "The surface manifest names the hook's registration whole"; `releases-and-compatibility`: "The surface manifest names the configuration's keys"; `ledger`: "A released version's schema does not change"; `usage-capture`: "A store that an earlier release wrote is upgraded"; `releases-and-compatibility`: "A breaking change raises the major version"; `releases-and-compatibility`: "The surface manifest names the plugin whole"; `usage-capture`: "A store version's fingerprint does not change"; DR-040; DR-096; DR-123; DR-149; DR-154; `add-pr-cost-calculator` task 6.1; `add-pr-cost-calculator` task 6.4; `report-comment`: "A ledger file of an earlier version is read by that version's rules"; `report-comment`: "Ledger files of a later release are named, not quoted"
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Held by:** `releases-and-compatibility`: "A changed public surface needs a major version"; `releases-and-compatibility`: "The surface manifest names the hook's registration whole"; `releases-and-compatibility`: "The surface manifest names the configuration's keys"; `ledger`: "A released version's schema does not change"; `usage-capture`: "A store that an earlier release wrote is upgraded"; `releases-and-compatibility`: "A breaking change raises the major version"; `releases-and-compatibility`: "The surface manifest names the plugin whole"; `usage-capture`: "A store version's fingerprint does not change"; DR-040; DR-096; DR-123; DR-149; DR-154; `add-pr-cost-calculator` task 6.1; `add-pr-cost-calculator` task 6.4
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Held by:** `releases-and-compatibility`: "An older Python is refused quietly"; `releases-and-compatibility`: "An older git is refused quietly"; DR-025; DR-027; DR-096; DR-154
+~~~~
+
+New:
+
+~~~~text
+- **Held by:** `releases-and-compatibility`: "An older Python is refused quietly"; `releases-and-compatibility`: "An older git is refused quietly"; DR-025; DR-027; DR-096; DR-154; `releases-and-compatibility`: "The surface manifest names the whole public surface"
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Held by:** `releases-and-compatibility`: "An older Python is refused quietly"; `releases-and-compatibility`: "An older git is refused quietly"; DR-025; DR-027; DR-096; DR-154
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Held by:** `project-standards`: "A threat that leaves out a record listing it fails CI"; `project-standards`: "A new record that leaves out a threat citing it fails CI"; `project-standards`: "A threat's field that runs onto another line fails CI"; DR-095; DR-121; DR-159; `add-pr-cost-calculator` task 1.18
+~~~~
+
+New:
+
+~~~~text
+- **Held by:** `project-standards`: "A threat that leaves out a record listing it fails CI"; `project-standards`: "A new record that leaves out a threat citing it fails CI"; `project-standards`: "A threat's field that runs onto another line fails CI"; DR-095; DR-121; DR-159; `add-pr-cost-calculator` task 1.18; `project-standards`: "A mention of a closed record fails CI"
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Held by:** `project-standards`: "A threat that leaves out a record listing it fails CI"; `project-standards`: "A new record that leaves out a threat citing it fails CI"; `project-standards`: "A threat's field that runs onto another line fails CI"; DR-095; DR-121; DR-159; `add-pr-cost-calculator` task 1.18
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Held by:** `project-standards`: "An earlier release's entries give their hand-worked figures"; `project-standards`: "A format that the report reads keeps a golden session"; `project-standards`: "A released golden figure changed without a changelog line fails CI"; `report-comment`: "Ledger files of a later release are named, not quoted"; `add-pr-cost-calculator` task 6.4; DR-165
+~~~~
+
+New:
+
+~~~~text
+- **Held by:** `project-standards`: "An earlier release's entries give their hand-worked figures"; `project-standards`: "A format that the report reads keeps a golden session"; `project-standards`: "A released golden figure changed without a changelog line fails CI"; `report-comment`: "Ledger files of a later release are named, not quoted"; `add-pr-cost-calculator` task 6.4; DR-165; `ledger`: "A ledger file names its format's version"
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Held by:** `project-standards`: "An earlier release's entries give their hand-worked figures"; `project-standards`: "A format that the report reads keeps a golden session"; `project-standards`: "A released golden figure changed without a changelog line fails CI"; `report-comment`: "Ledger files of a later release are named, not quoted"; `add-pr-cost-calculator` task 6.4; DR-165
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Held by:** `usage-capture`: "A call whose working directory is gone is not recorded"; `usage-capture`: "A call made in another repository that works on this one is not recorded here"; `usage-capture`: "The run before a git command in another repository records that repository's calls first"; DR-198; DR-199; `add-pr-cost-calculator` task 2.1
+~~~~
+
+New:
+
+~~~~text
+- **Held by:** `usage-capture`: "A call whose working directory is gone is not recorded"; `usage-capture`: "A call made in another repository that works on this one is not recorded here"; `usage-capture`: "The run before a git command in another repository records that repository's calls first"; DR-198; DR-199; `add-pr-cost-calculator` task 2.1; `usage-capture`: "Calls made from a folder that holds this repository are flagged"
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Held by:** `usage-capture`: "A call whose working directory is gone is not recorded"; `usage-capture`: "A call made in another repository that works on this one is not recorded here"; `usage-capture`: "The run before a git command in another repository records that repository's calls first"; DR-198; DR-199; `add-pr-cost-calculator` task 2.1
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Held by:** `switch-and-opt-in`: "An opt-out empties the store"; `switch-and-opt-in`: "An opt-out keeps only what a take-back needs"; `switch-and-opt-in`: "Calls recorded before an opt-out that no run saw are not staged"; DR-171; DR-175; `add-pr-cost-calculator` task 4.4
+~~~~
+
+New:
+
+~~~~text
+- **Held by:** `switch-and-opt-in`: "An opt-out empties the store"; `switch-and-opt-in`: "An opt-out keeps only what a take-back needs"; `switch-and-opt-in`: "Calls recorded before an opt-out that no run saw are not staged"; DR-171; DR-175; `add-pr-cost-calculator` task 4.4; `usage-capture`: "A waiting call is dropped at the end of the retention window"
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Held by:** `switch-and-opt-in`: "An opt-out empties the store"; `switch-and-opt-in`: "An opt-out keeps only what a take-back needs"; `switch-and-opt-in`: "Calls recorded before an opt-out that no run saw are not staged"; DR-171; DR-175; `add-pr-cost-calculator` task 4.4
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Held by:** `switch-and-opt-in`: "A copy of the store put back after an opt-out brings back no call"; `switch-and-opt-in`: "An opt-out empties the store"; `usage-capture`: "The store holds ids and paths only as hashes while no file is staged"; `usage-capture`: "A waiting call is dropped at the end of the retention window"; DR-169; `add-pr-cost-calculator` task 4.4
+~~~~
+
+New:
+
+~~~~text
+- **Held by:** `switch-and-opt-in`: "A copy of the store put back after an opt-out brings back no call"; `switch-and-opt-in`: "An opt-out empties the store"; `usage-capture`: "The store holds ids and paths only as hashes while no file is staged"; `usage-capture`: "A waiting call is dropped at the end of the retention window"; DR-169; `add-pr-cost-calculator` task 4.4; `usage-capture`: "An empty store is removed"; `usage-capture`: "A staged file's note keeps its paths only until it is resolved"
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Held by:** `switch-and-opt-in`: "A copy of the store put back after an opt-out brings back no call"; `switch-and-opt-in`: "An opt-out empties the store"; `usage-capture`: "The store holds ids and paths only as hashes while no file is staged"; `usage-capture`: "A waiting call is dropped at the end of the retention window"; DR-169; `add-pr-cost-calculator` task 4.4
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Held by:** `project-standards`: "The README gives the zip first and the marketplace second"; `releases-and-compatibility`: "The surface manifest names the plugin whole"; `project-standards`: "The README says which release of the plugin runs"; DR-197; `add-pr-cost-calculator` task 4.4; `add-pr-cost-calculator` task 7.2
+~~~~
+
+New:
+
+~~~~text
+- **Held by:** `project-standards`: "The README gives the zip first and the marketplace second"; `releases-and-compatibility`: "The surface manifest names the plugin whole"; `project-standards`: "The README says which release of the plugin runs"; DR-197; `add-pr-cost-calculator` task 4.4; `add-pr-cost-calculator` task 7.2; `releases-and-compatibility`: "A changed public surface needs a major version"
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Held by:** `project-standards`: "The README gives the zip first and the marketplace second"; `releases-and-compatibility`: "The surface manifest names the plugin whole"; `project-standards`: "The README says which release of the plugin runs"; DR-197; `add-pr-cost-calculator` task 4.4; `add-pr-cost-calculator` task 7.2
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Held by:** DR-230; `CLAUDE.md`
+~~~~
+
+New:
+
+~~~~text
+- **Held by:** DR-230; `CLAUDE.md`; `project-standards`: "A mention of a closed record fails CI"
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Held by:** DR-230; `CLAUDE.md`
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
 | 1 low | T113 | T31, T36, T37, T110, T114, T118 | T5, T106, T117 |
 ~~~~
 
@@ -1631,7 +1971,7 @@ Old:
 New:
 
 ~~~~text
-- **Answer:** the report counts only the entries of ledger files that the merge adds (R58), and each call at most once (R59). So a call recorded on two branches is counted once, for whichever pull request merges first, and a resumed session records nothing again that its own branch already holds (R2), and in a fresh clone, which holds no store, records no call that answers a line written before its first run there (R52). Capture runs before each of the agent's Bash commands that the hook's condition `Bash(git *)` matches, so a call that the transcript holds as over by then is recorded before the command can change the branch (R7), and a run of the plugin works first on the repository where the command runs, so that a command that changes another repository's branch, as `git -C` can, finds that repository's calls recorded first (R180). A push whose commits do not all belong to one pull request, or that merges none, gets no comment, and its job summary says why (R69). This rests on GitHub's lookup of the pull requests associated with a commit behaving as documented (A49).
+- **Answer:** the report counts only the entries of ledger files that the merge adds (R58), and each call at most once (R59). So a call recorded on two branches is counted once, for whichever pull request merges first, and a resumed session records nothing again that its own branch already holds (R2), and in a fresh clone, which holds no store, records no call that answers a line written before its first run there (R153). Capture runs before each of the agent's Bash commands that the hook's condition `Bash(git *)` matches, so a call that the transcript holds as over by then is recorded before the command can change the branch (R7), and a run of the plugin works first on the repository where the command runs, so that a command that changes another repository's branch, as `git -C` can, finds that repository's calls recorded first (R180). A push whose commits do not all belong to one pull request, or that merges none, gets no comment, and its job summary says why (R69). This rests on GitHub's lookup of the pull requests associated with a commit behaving as documented (A49).
 ~~~~
 
 Clause, the new unit:
