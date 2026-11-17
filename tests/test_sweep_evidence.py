@@ -430,3 +430,23 @@ def test_a_section_that_is_neither_a_file_nor_a_list_is_out_of_form(
     other.mkdir()
     history(other, {"docs/page.md": SWEPT, MAPPING: listed})
     assert run(other, monkeypatch, capsys)[0] == 0
+
+
+def test_a_clause_that_this_pull_requests_own_work_changed_is_listed_apart(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    changed = COMPLETE.replace("Clause, R12:", "Clause, changed, the status moves on:")
+    history(tmp_path, {"docs/page.md": SWEPT, MAPPING: changed})
+    code, out = run(tmp_path, monkeypatch, capsys)
+    assert code == 0, out
+    assert (
+        "## Changed by this pull request's own work\n\n"
+        "- `docs/page.md`: The ledger keeps counts. (the status moves on)\n"
+    ) in out
+    empty = COMPLETE.replace("Clause, R12:", "Clause, changed, :")
+    other = tmp_path / "other"
+    other.mkdir()
+    history(other, {"docs/page.md": SWEPT, MAPPING: empty})
+    code, out = run(other, monkeypatch, capsys)
+    assert code == 1
+    assert "changed, is not a place" in out

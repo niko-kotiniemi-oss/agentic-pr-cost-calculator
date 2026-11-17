@@ -12,7 +12,9 @@ and HEAD does not, the mapping, as HEAD holds it, must give an entry whose claus
 quoted from the unit, cover every word of it, and each clause must have a place that
 exists at HEAD: the entry's new unit, which HEAD's page must hold; the page itself; a
 requirement of the register; a scenario of a spec, as `capability`: "name"; a decision
-record; or a task of a change. It fails on a change to a spec, since the sweep writes
+record; a task of a change; or, for a clause that the pull request's own work changes
+rather than the sweep, such as a status or a count, `changed, ` and why, which the output
+lists apart for the review. It fails on a change to a spec, since the sweep writes
 none, on a changed file read as no units, on an entry for a unit that HEAD still holds,
 and on a mapping out of its form.
 
@@ -46,6 +48,7 @@ TASK = re.compile(r"task (\d+\.\d+)")
 SCENARIO = re.compile(r'`([a-z0-9-]+)`: "(.+)"')
 NEW_UNIT = "the new unit"
 PAGE = "the page"
+CHANGED = "changed, "
 OTHER_SECTIONS = ("For B-007", "Left as it is")
 
 
@@ -232,6 +235,8 @@ def place_problem(place: str, clause: str, entry: Entry, page: str, head: Head) 
         if entry.new is None:
             return f"a clause placed in a new unit that the entry does not give: {clause}"
         return None if clause in entry.new else f"the new unit does not hold the clause: {clause}"
+    if place.startswith(CHANGED) and place[len(CHANGED) :].strip():
+        return None
     if place == PAGE:
         return None if clause in page else f"HEAD's page does not hold the clause: {clause}"
     if REQUIREMENT.fullmatch(place):
@@ -246,7 +251,7 @@ def place_problem(place: str, clause: str, entry: Entry, page: str, head: Head) 
         if (scenario.group(1), scenario.group(2)) in head.scenarios:
             return None
         return f"no spec at HEAD holds {place}"
-    return f"{place} is not a place"
+    return f"{place.strip()} is not a place"
 
 
 def entry_problems(entry: Entry, page: str, head_units: Counter[str], head: Head) -> list[str]:
@@ -269,7 +274,10 @@ def entry_problems(entry: Entry, page: str, head_units: Counter[str], head: Head
     return problems
 
 
-def compare(reference: str) -> tuple[str, str, list[tuple[str, int, int, int]], list[str]]:
+Rows = list[tuple[str, int, int, int]]
+
+
+def compare(reference: str) -> tuple[str, str, Rows, list[str], list[str]]:
     base = git("merge-base", "HEAD", reference)
     head = git("rev-parse", "HEAD")
     if base is None or head is None:
@@ -281,8 +289,9 @@ def compare(reference: str) -> tuple[str, str, list[tuple[str, int, int, int]], 
     entries = parse(mapping_text)
     changed = (git("diff", "--name-only", "--no-renames", base, head) or "").split()
     places = head_places()
-    rows: list[tuple[str, int, int, int]] = []
+    rows: Rows = []
     problems: list[str] = []
+    changes: list[str] = []
     for path in sorted(set(changed)):
         if not path.endswith(".md") or path == MAPPING:
             continue
@@ -307,6 +316,9 @@ def compare(reference: str) -> tuple[str, str, list[tuple[str, int, int, int]], 
                 )
                 continue
             gone[entry.old] -= 1
+            for clause, place in entry.clauses:
+                if place.startswith(CHANGED) and place[len(CHANGED) :].strip():
+                    changes.append(f"`{path}`: {clause} ({place[len(CHANGED) :].strip()})")
             for problem in entry_problems(entry, after_text or "", Counter(after), places):
                 problems.append(f"`{path}`: {problem}")
         for unit, count in gone.items():
@@ -314,13 +326,13 @@ def compare(reference: str) -> tuple[str, str, list[tuple[str, int, int, int]], 
                 problems.append(f"`{path}`: no entry for a unit that HEAD does not hold: {unit}")
     for path in sorted(set(entries) - {row[0] for row in rows}):
         problems.append(f"`{path}`: entries for a file that did not change")
-    return base, head, rows, problems
+    return base, head, rows, problems, changes
 
 
 def main(argv: Sequence[str]) -> int:
     reference = argv[0] if argv else DEFAULT
     try:
-        base, head, rows, problems = compare(reference)
+        base, head, rows, problems, changes = compare(reference)
     except Unreadable as reason:
         print(f"Cannot compare: {reason}.")
         return 2
@@ -329,6 +341,10 @@ def main(argv: Sequence[str]) -> int:
     print("|---|---|---|---|")
     for path, before, after, given in rows:
         print(f"| `{path}` | {before} | {after} | {given} |")
+    if changes:
+        print("\n## Changed by this pull request's own work\n")
+        for change in changes:
+            print(f"- {change}")
     if not problems:
         print("\nNo problems.")
         return 0
