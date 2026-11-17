@@ -450,3 +450,38 @@ def test_a_clause_that_this_pull_requests_own_work_changed_is_listed_apart(
     code, out = run(other, monkeypatch, capsys)
     assert code == 1
     assert "changed, is not a place" in out
+
+
+def test_a_clause_that_the_old_unit_holds_twice_covers_its_second_place_too(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    before = "# Page\n\nCounts and tokens and calls.\n"
+    after = "# Page\n\nCounts and tokens, and calls (R12).\n"
+    text = mapping(
+        (
+            "docs/page.md",
+            [
+                entry(
+                    "Counts and tokens and calls.",
+                    [
+                        ("Counts and tokens", "the new unit"),
+                        ("and", "the new unit"),
+                        ("calls", "the new unit"),
+                    ],
+                    new="Counts and tokens, and calls (R12).",
+                )
+            ],
+        )
+    )
+    history(tmp_path, {"docs/page.md": before})
+    git(tmp_path, "checkout", "-q", "main")
+    write(tmp_path, {"docs/page.md": before})
+    git(tmp_path, "commit", "-qam", "Base")
+    git(tmp_path, "update-ref", "refs/remotes/origin/main", "main")
+    git(tmp_path, "checkout", "-q", "work")
+    git(tmp_path, "reset", "-q", "--hard", "main")
+    write(tmp_path, {"docs/page.md": after, MAPPING: text})
+    git(tmp_path, "add", "-A")
+    git(tmp_path, "commit", "-qm", "Swept")
+    code, out = run(tmp_path, monkeypatch, capsys)
+    assert code == 0, out

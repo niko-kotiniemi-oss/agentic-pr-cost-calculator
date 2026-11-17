@@ -261,6 +261,11 @@ def entry_problems(entry: Entry, page: str, head_units: Counter[str], head: Head
     covered = [False] * len(entry.old)
     for clause, place in entry.clauses:
         at = entry.old.find(clause)
+        while at != -1 and clause and all(covered[at : at + len(clause)]):
+            following = entry.old.find(clause, at + 1)
+            if following == -1:
+                break
+            at = following
         if at == -1 or not clause:
             problems.append(f"the old unit does not hold the clause: {clause}")
         else:
