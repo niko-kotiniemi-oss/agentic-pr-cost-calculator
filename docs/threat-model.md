@@ -2,7 +2,7 @@
 
 What could go wrong with the tool, for the people who use it and for this repository, and what answers each threat. Every change revisits this file (see `CLAUDE.md`).
 
-It was written for the first change, `add-pr-cost-calculator`, before any code, so the answers are requirements and tasks rather than code. It holds 200 threats across 9 trust boundaries. T38 to T69 were found by the design-stage review, T70 to T78 by the design-stage review of the decision records in `docs/decisions/`, T79 to T81 by the implementation-stage review of those records and their checks, T82 to T100 by the design-stage review of the assumptions, the glossary and the golden set, T101 by the implementation-stage review of the assumptions, T102 and T103 by the implementation-stage review of the glossary, T104 to T116 at the design of the revision of consent, the store and the ledger's format, T117 and T118 by the design-stage review of that revision, T119 to T122 by the review of that revision after its approval, T123 with the owner's answer to a question that the check of that review's fixes raised, T124 to T126 by the design-stage review of the test of the specs' form, T127 by the implementation-stage review of that test, T128 to T135 at the design of the plugin that brings capture to a project's cloud threads, T136 to T142 by the design-stage review of that plugin, T143 by its implementation-stage review, T144 by its security review, T145 to T147 at the design of the README's short start, T148 to T156 by the design-stage review of that short start, T157 and T158 by its implementation-stage review, T159 to T162 at the design of the roadmap, T163 to T165 by the design-stage review of the roadmap, T166 to T168 at the design of the backlog, T169 by the design-stage review of the backlog, T170 at the design of the guide, T171 to T174 by the design-stage review of the guide, T175 and T176 by the design-stage review of one opt-in for every agent, T177 to T182 by the second design-stage review of the guide, T183 by the final review of its build, T184 by its implementation-stage review, T185 to T189 at the design of the walking skeleton and T190 to T194 by its design-stage review, and T195 to T197 at the design of the specs' citation sweep and T198 to T200 by its design-stage review; they follow T37, each under a heading for its boundary, so that the numbers stay in order, and a threat that a change removes keeps its ID out of use (see Retired IDs). Where an answer can be a scenario in a spec, it is one, so that an acceptance test holds it. `tests/test_threat_model.py` checks that every citation below names a scenario, task, decision, decision record or file that exists.
+It was written for the first change, `add-pr-cost-calculator`, before any code, so the answers are requirements and tasks rather than code. It holds 205 threats across 9 trust boundaries. T38 to T69 were found by the design-stage review, T70 to T78 by the design-stage review of the decision records in `docs/decisions/`, T79 to T81 by the implementation-stage review of those records and their checks, T82 to T100 by the design-stage review of the assumptions, the glossary and the golden set, T101 by the implementation-stage review of the assumptions, T102 and T103 by the implementation-stage review of the glossary, T104 to T116 at the design of the revision of consent, the store and the ledger's format, T117 and T118 by the design-stage review of that revision, T119 to T122 by the review of that revision after its approval, T123 with the owner's answer to a question that the check of that review's fixes raised, T124 to T126 by the design-stage review of the test of the specs' form, T127 by the implementation-stage review of that test, T128 to T135 at the design of the plugin that brings capture to a project's cloud threads, T136 to T142 by the design-stage review of that plugin, T143 by its implementation-stage review, T144 by its security review, T145 to T147 at the design of the README's short start, T148 to T156 by the design-stage review of that short start, T157 and T158 by its implementation-stage review, T159 to T162 at the design of the roadmap, T163 to T165 by the design-stage review of the roadmap, T166 to T168 at the design of the backlog, T169 by the design-stage review of the backlog, T170 at the design of the guide, T171 to T174 by the design-stage review of the guide, T175 and T176 by the design-stage review of one opt-in for every agent, T177 to T182 by the second design-stage review of the guide, T183 by the final review of its build, T184 by its implementation-stage review, T185 to T189 at the design of the walking skeleton and T190 to T194 by its design-stage review, and T195 to T197 at the design of the specs' citation sweep, T198 to T200 by its design-stage review and T201 to T205 by its implementation-stage review; they follow T37, each under a heading for its boundary, so that the numbers stay in order, and a threat that a change removes keeps its ID out of use (see Retired IDs). Where an answer can be a scenario in a spec, it is one, so that an acceptance test holds it. `tests/test_threat_model.py` checks that every citation below names a scenario, task, decision, decision record or file that exists.
 
 ## How it was built
 
@@ -2517,7 +2517,7 @@ The trust boundaries:
 - **Risk:** 2
 - **What could happen:** the mapping quotes every unit that the sweep removed or rewrote. An agent or a reader who searches the repository for a behaviour finds it there and takes it as what the tool does after the specs have changed it, or, were the mapping in a plan that tells agents to carry it out, an agent resuming that plan builds or rewrites to the old text.
 - **Answer:** design decision 19: the mapping is a file of its own, `docs/evidence/B-022-mapping.md`, not a plan, holding no instruction, and opens by saying that its quotes are what the base held, kept as the sweep's evidence, and that the specs say what the tool does; `CLAUDE.md` names it among the pages that describe.
-- **Residual:** a reader who lands on a quoted unit without reading the file's opening (A16).
+- **Residual:** a reader who lands on a quoted unit without reading the file's opening, and an adopter's agent, which this repository's `CLAUDE.md` never reaches (A16).
 - **Held by:** `add-pr-cost-calculator` task 1.37; DR-232; `CLAUDE.md`
 - **Assumptions:** A16
 
@@ -2531,7 +2531,7 @@ The trust boundaries:
 - **Risk:** 2
 - **What could happen:** the sweep replaces a feature page's or the page on how the tool works' account of what capture records, publishes or needs with citations of scenarios that an adopter does not read, so that a person opts in, or a repository turns the tool on, without knowing what it does, which those pages exist to tell them.
 - **Answer:** design decision 19: a page keeps in words each step and command that a reader follows and each thing that the tool never does, each followed by the requirement that states it; a page that a requirement obliges to tell its readers something keeps telling them and cites that requirement, among them the page on how the tool works (R29) and the pages that say where an opt-in applies and what an opt-out leaves published (R159, R164), and that obligation wins over citing on a feature page; the tests that hold R101 keep comparing the page on how the tool works with the workflows, and the sweep changes no check (DR-251).
-- **Residual:** a page that no requirement obliges, from which a reader learns less than before, which the review reads for (A15).
+- **Residual:** a page that no requirement obliges, from which a reader learns less than before, which the review reads for, as the implementation-stage review found on the pages on capture and on the comment, which now keep what capture records and what the comment shows; and a requirement's ID that a reader cannot follow to its text (T205) (A15).
 - **Held by:** `project-standards`: "A flow without a diagram fails CI"; `project-standards`: "An undocumented permission or action fails CI"; `project-standards`: "The opt-in's pages say where an opt-in applies"; DR-232; DR-251; `add-pr-cost-calculator` task 1.37
 - **Assumptions:** A15
 
@@ -2544,8 +2544,8 @@ The trust boundaries:
 - **Likelihood:** 1 (unlikely)
 - **Risk:** 2
 - **What could happen:** the agent that rewrites the pages also writes the mapping and the script and posts the script's output. The script reads units that leave out a field line, a table row or a code block, opens only the pages its author listed, reads an empty base in a shallow clone, or accepts a rewritten entry whose clauses go nowhere; it still fails on its planted cases, passes the sweep, and the owner merges on output that no one reproduced.
-- **Answer:** design decision 19: the script is committed with its tests; it takes its base from git as the merge base with the default branch and fails when it cannot resolve it, takes its pages from git's list of changed Markdown files, prints both commits' IDs and the units that it read in each file, fails on a changed file read as no units, and fails on a rewritten entry whose new unit the head does not hold or one of whose clauses has no place; each failure is planted in its tests, and the review in a separate context runs it again at the head that the owner is asked to merge and compares its output with the posted one, as the answer to T94 does for the rewording script.
-- **Residual:** whether a clause's given place says what the clause said, which only the review can judge (A15).
+- **Answer:** design decision 19: the script is committed with its tests; it takes its base from git as the merge base with the default branch and fails when it cannot resolve it, takes its pages from git's list of changed files that GitHub shows as Markdown, read so that no path escapes it (T203), lists apart each clause given as the pull request's own change (T204), prints both commits' IDs and the units that it read in each file, fails on a changed file read as no units, and fails on a rewritten entry whose new unit the head does not hold or one of whose clauses has no place; each failure is planted in its tests, and the review in a separate context runs it again at the head that the owner is asked to merge and compares its output with the posted one, as the answer to T94 does for the rewording script.
+- **Residual:** whether a clause's given place says what the clause said, and what a new unit adds beyond its clauses (T201), which only the review can judge (A15).
 - **Held by:** `add-pr-cost-calculator` task 1.37; DR-251
 - **Assumptions:** A15
 
@@ -2556,7 +2556,7 @@ The trust boundaries:
 - **Likelihood:** 1 (unlikely)
 - **Risk:** 2
 - **What could happen:** while the sweep's pull request is open, another pull request merges new text into the threat model, the design or a feature page. The sweep's branch is rebased or merged, and the agent rewrites that text into citations too, while the mapping compares with the commit where the sweep began, which never held it.
-- **Answer:** design decision 19: the script takes as its base the merge base of the head and the default branch when it runs, runs after the last rebase or push, and names both commits in its output, and the review runs it again at the head that the owner is asked to merge.
+- **Answer:** design decision 19: the script takes as its base the merge base of the head and the default branch when it runs, runs after the last rebase or push, and names both commits in its output, and the review fetches the default branch, runs it again at the head that the owner is asked to merge, and checks that the base that it prints is the merge base with that branch.
 - **Residual:** none beyond T198's.
 - **Held by:** `add-pr-cost-calculator` task 1.37
 - **Assumptions:** A15
@@ -2567,11 +2567,75 @@ The trust boundaries:
 
 - **Kind:** reliability
 - **Impact:** 2 (medium)
+- **Likelihood:** 2 (possible)
+- **Risk:** 4
+- **What could happen:** the sweep replaces a feature page's or the page on how the tool works' text with the names of scenarios. B-007 then corrects the requirements and renames or removes some of those scenarios. No check reads a scenario's name outside a threat's Held by, so the pages cite scenarios that no longer exist, and a reader who follows a citation finds nothing.
+- **Answer:** design decision 19: outside a threat's Held by, the sweep cites a requirement by its ID, which the check of mentions finds in the register, and a scenario by name only in Held by, which the threat model's test resolves. The check of mentions also takes an ID that the register gives as retired, so a page that cites a requirement that B-007 removes still passes; issue 42 asks for a check that refuses one, which DR-251 allows at this risk.
+- **Residual:** a page that cites a retired requirement, until that check exists; and a requirement whose ID stays while its text changes so that it no longer holds what a page cites it for, which the review of that change reads for (A15).
+- **Held by:** `add-pr-cost-calculator` task 1.37; DR-232
+- **Assumptions:** A15
+
+## Boundary 7, continued: found at the implementation-stage review of the specs' citation sweep
+
+### T201. A rewritten unit says more than the clauses that it replaces, and no check reads what it adds
+
+- **Kind:** tampering, reliability
+- **Impact:** 2 (medium)
+- **Likelihood:** 2 (possible)
+- **Risk:** 4
+- **What could happen:** the sweep's script checks that each clause of a removed unit has a place, and reads nothing that a new unit adds. A rewrite can state a behaviour that no requirement holds, or claim more than the requirement that it cites, and pass, as T81's Answer did before the implementation-stage review named R134's files in it.
+- **Answer:** design decision 19: whether a new unit says more than the clauses that it replaces is a rule about prose, which DR-251 leaves to review; the review in a separate context reads each new unit against the requirements that it cites, and the script prints each file's units at the base and at the head, so that the review sees each file that changed.
+- **Residual:** a new unit that the review does not read closely enough (A15).
+- **Held by:** `add-pr-cost-calculator` task 1.37; DR-251
+- **Assumptions:** A15
+
+### T202. The sweep's script fails at every head after its merge, so a later sweep has no check
+
+- **Kind:** reliability
+- **Impact:** 2 (medium)
 - **Likelihood:** 1 (unlikely)
 - **Risk:** 2
-- **What could happen:** the sweep replaces a feature page's or the page on how the tool works' text with the names of scenarios. B-007 then corrects the requirements and renames or removes some of those scenarios. No check reads a scenario's name outside a threat's Held by, so the pages cite scenarios that no longer exist, and a reader who follows a citation finds nothing.
-- **Answer:** design decision 19: outside a threat's Held by, the sweep cites a requirement by its ID, which the check of mentions resolves against the register, and a scenario by name only in Held by, which the threat model's test resolves.
-- **Residual:** a requirement whose ID stays while its text changes so that it no longer holds what a page cites it for, which the review of that change reads for (A15).
+- **What could happen:** the script reads one mapping and compares with the merge base with the default branch. Once the sweep merges, that base moves past it, and the script reports a problem at every later head, so a later pull request that brings another page to cite the specs has no check that runs, and nothing checks the mapping once merged.
+- **Answer:** design decision 19: the sweep's pull request finishes B-022, which the default branch then gives as `Done`, and the script's docstring says that it serves that pull request alone; a later page that states behaviour is brought to the rule by a change of its own, which brings its own evidence. The mapping, once merged, is evidence of what the base held and describes (`CLAUDE.md`).
+- **Residual:** a later change that reuses the script without its own mapping (A15).
+- **Held by:** `add-pr-cost-calculator` task 1.37; DR-232; `CLAUDE.md`
+- **Assumptions:** A15
+
+### T203. A changed page whose path git quotes, or whose extension is not `.md`, escapes the sweep's script
+
+- **Kind:** tampering, reliability
+- **Impact:** 2 (medium)
+- **Likelihood:** 1 (unlikely)
+- **Risk:** 2
+- **What could happen:** the script read git's list of changed files split on white space and kept only paths ending in `.md`, so a page named with a space or a character outside ASCII, which git quotes, or one with another extension that GitHub shows as Markdown, such as `.markdown`, lost units with no entry, and a spec at such a path changed, with the script saying that there was no problem.
+- **Answer:** the script reads git's list separated by NUL bytes, filtered by the extensions that `scripts/wording.py` lists, and takes any path under a `specs` folder of `openspec/` as a spec; its tests plant a page with a space, a page with a character outside ASCII, `.markdown`, `.MD` and `.mdx`, and a spec at a path with a space.
+- **Residual:** none beyond T198's.
+- **Held by:** `add-pr-cost-calculator` task 1.37; `tests/test_sweep_evidence.py`
+- **Assumptions:** A15
+
+### T204. A clause dropped as the pull request's own change passes the sweep's script
+
+- **Kind:** tampering, reliability
+- **Impact:** 2 (medium)
+- **Likelihood:** 1 (unlikely)
+- **Risk:** 2
+- **What could happen:** the script accepts as a clause's place `changed, ` and a reason, for a clause that the pull request's own work changes rather than the sweep, such as an item's status, a date or a count. Any clause can be dropped that way and still pass.
+- **Answer:** design decision 19 names that place and what it is for; the script lists each such clause apart, with its reason, under a heading of its own in its output, and the review reads each.
+- **Residual:** a clause so given that the review accepts without reading its reason (A15).
+- **Held by:** `add-pr-cost-calculator` task 1.37; `tests/test_sweep_evidence.py`
+- **Assumptions:** A15
+
+## Boundary 6, continued: found at the implementation-stage review of the specs' citation sweep
+
+### T205. A reader cannot follow a requirement's ID from a page to what the requirement says
+
+- **Kind:** reliability
+- **Impact:** 1 (low)
+- **Likelihood:** 3 (likely)
+- **Risk:** 3
+- **What could happen:** after the sweep, the pages cite requirements by ID instead of stating them. The register gives each ID only its title and its capability's name, with no link, so a reader who wants what a requirement says must find the capability's spec and search it by its title, and may give up and rely on less than the page used to say.
+- **Answer:** accepted for now: the register names each requirement's title and capability, and each feature page names its spec, so the text can be found by hand; the pages keep in words what a reader acts on or relies on (design decision 19), and issue 43 asks for links from each ID to its requirement.
+- **Residual:** the step a reader takes by hand, until issue 43 is done (A15).
 - **Held by:** `add-pr-cost-calculator` task 1.37; DR-232
 - **Assumptions:** A15
 
@@ -2582,8 +2646,8 @@ Generated from the ratings above. Each cell lists the threats whose impact and l
 | Impact \ Likelihood | 1 unlikely | 2 possible | 3 likely |
 |---|---|---|---|
 | 3 high | T1, T12, T14, T15, T23, T24, T28, T29, T35, T43, T46, T58, T59, T63, T64, T66, T67, T68, T73, T77, T82, T83, T92, T93, T94, T95, T103, T107, T108, T119, T125, T133, T138, T140, T141, T142, T144, T147, T148, T150, T151, T160, T163, T164, T165, T167, T169, T174, T175, T177, T178, T180, T183, T184, T186, T187, T188, T190, T192 | T2, T32, T33, T34, T61, T62, T65, T132, T137 |  |
-| 2 medium | T4, T6, T11, T13, T18, T25, T26, T38, T41, T42, T53, T55, T56, T57, T60, T69, T70, T76, T78, T79, T80, T81, T84, T85, T86, T87, T88, T89, T90, T91, T97, T98, T99, T100, T101, T102, T104, T105, T109, T112, T115, T124, T126, T127, T135, T139, T146, T149, T152, T153, T155, T156, T157, T162, T172, T173, T179, T181, T182, T185, T189, T191, T193, T194, T195, T197, T196, T198, T199, T200 | T3, T9, T10, T17, T19, T20, T21, T22, T27, T30, T39, T40, T44, T45, T47, T48, T49, T50, T51, T52, T54, T71, T72, T74, T75, T96, T111, T116, T120, T121, T122, T123, T129, T130, T131, T134, T136, T143, T145, T154, T158, T159, T161, T166, T168, T170, T171, T176 | T7, T8, T16, T128 |
-| 1 low | T113 | T31, T36, T37, T110, T114, T118 | T5, T106, T117 |
+| 2 medium | T4, T6, T11, T13, T18, T25, T26, T38, T41, T42, T53, T55, T56, T57, T60, T69, T70, T76, T78, T79, T80, T81, T84, T85, T86, T87, T88, T89, T90, T91, T97, T98, T99, T100, T101, T102, T104, T105, T109, T112, T115, T124, T126, T127, T135, T139, T146, T149, T152, T153, T155, T156, T157, T162, T172, T173, T179, T181, T182, T185, T189, T191, T193, T194, T195, T196, T197, T198, T199, T202, T203, T204 | T3, T9, T10, T17, T19, T20, T21, T22, T27, T30, T39, T40, T44, T45, T47, T48, T49, T50, T51, T52, T54, T71, T72, T74, T75, T96, T111, T116, T120, T121, T122, T123, T129, T130, T131, T134, T136, T143, T145, T154, T158, T159, T161, T166, T168, T170, T171, T176, T200, T201 | T7, T8, T16, T128 |
+| 1 low | T113 | T31, T36, T37, T110, T114, T118 | T5, T106, T117, T205 |
 
 The threats with a risk of 6 or more:
 

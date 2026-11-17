@@ -299,7 +299,7 @@ The entries are read again at each assessment and before each release, and were 
 - **Anti-patterns:** Duplication of knowledge, recognised by a behaviour stated on a page beside the scenario that holds it; cite the scenario. Checks of the documentation that grow faster than what they protect, recognised by a new test for each new sentence; record which checks stay, and leave a rule about prose to review.
 - **Held by:** DR-232 and `tests/test_documentation.py`. Review: whether a changed page states a behaviour that a scenario holds.
 - **Rests on:** DR-232, B-022
-- **Where we stand:** Gap. Before the build. B-022 brings the pages that state behaviour today to cite the specs instead.
+- **Where we stand:** Followed. The sweep of B-022 brought the pages that stated behaviour to cite the specs instead, and DR-251 says which checks of the documentation stay.
 
 ### Documentation changes with what it describes
 

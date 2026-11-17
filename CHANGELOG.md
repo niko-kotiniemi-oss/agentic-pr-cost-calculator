@@ -30,4 +30,5 @@ A release's entry lists any breaking change under `### Breaking`, and the releas
 
 ### Changed
 
+- The pages other than the specs, such as the threat model, the design, the feature pages and the page on how the tool works, cite the requirement that states a behaviour instead of stating it again, while keeping in words what a reader acts on or relies on (DR-232, DR-250, DR-251). `docs/evidence/B-022-mapping.md` shows where each clause that they lost is held.
 - The licence moves from MIT to the Fair Core License, version 1.0, with MIT as its future licence (FCL-1.0-MIT): the tool is fair source, not open source, as the README's section on the licence says (DR-242, DR-243).

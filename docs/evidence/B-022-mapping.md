@@ -19,7 +19,7 @@ Old:
 New:
 
 ~~~~text
-- **Rests on it:** R26, R27, R59, R124, R129, T2, T20, T28, T32, T33, T35, T37, T47, T53, T61, T62, T64, T66, T67, T68, T71, T72, T76, T77, T79, T81, T93, T94, T95, T102, T103, T128, T132, T137, T140, T147, T149, T151, T160, T161, T162, T163, T165, T166, T167, T168, T170, T172, T173, T174, T175, T177, T178, T179, T180, T181, T182, T183, T184, T185, T186, T187, T188, T190, T192, T193, T195, T197, T198, T199, T200, DR-015, DR-017, DR-072, DR-073, DR-074, DR-075, DR-076, DR-077, DR-078, DR-080, DR-093, DR-095, DR-096, DR-108, DR-111, DR-116, DR-119, DR-121, DR-122, DR-131, DR-134, DR-140, DR-141, DR-144, DR-145, DR-151, DR-153, DR-156, DR-161, DR-210, DR-237, DR-248
+- **Rests on it:** R26, R27, R59, R124, R129, T2, T20, T28, T32, T33, T35, T37, T47, T53, T61, T62, T64, T66, T67, T68, T71, T72, T76, T77, T79, T81, T93, T94, T95, T102, T103, T128, T132, T137, T140, T147, T149, T151, T160, T161, T162, T163, T165, T166, T167, T168, T170, T172, T173, T174, T175, T177, T178, T179, T180, T181, T182, T183, T184, T185, T186, T187, T188, T190, T192, T193, T195, T197, T198, T199, T200, T201, T202, T203, T204, T205, DR-015, DR-017, DR-072, DR-073, DR-074, DR-075, DR-076, DR-077, DR-078, DR-080, DR-093, DR-095, DR-096, DR-108, DR-111, DR-116, DR-119, DR-121, DR-122, DR-131, DR-134, DR-140, DR-141, DR-144, DR-145, DR-151, DR-153, DR-156, DR-161, DR-210, DR-237, DR-248
 ~~~~
 
 Clause, the new unit:
@@ -71,7 +71,7 @@ Old:
 New:
 
 ~~~~text
-- **Relied on:** R124, R129, T33, T35, T53, T71, T72, T77, T79, T81, T93, T94, T95, T102, T103, T137, T140, T147, T149, T151, T160, T161, T162, T163, T165, T166, T167, T168, T170, T172, T173, T174, T175, T177, T178, T179, T180, T181, T182, T183, T184, T186, T187, T188, T190, T192, T193, T195, T197, T198, T199, T200, DR-080, DR-096, DR-108, DR-116, DR-121, DR-151, DR-153, DR-237
+- **Relied on:** R124, R129, T33, T35, T53, T71, T72, T77, T79, T81, T93, T94, T95, T102, T103, T137, T140, T147, T149, T151, T160, T161, T162, T163, T165, T166, T167, T168, T170, T172, T173, T174, T175, T177, T178, T179, T180, T181, T182, T183, T184, T186, T187, T188, T190, T192, T193, T195, T197, T198, T199, T200, T201, T202, T203, T204, T205, DR-080, DR-096, DR-108, DR-116, DR-121, DR-151, DR-153, DR-237
 ~~~~
 
 Clause, the new unit:
@@ -189,7 +189,7 @@ Old:
 New:
 
 ~~~~text
-- **Status:** In progress
+- **Status:** Done
 ~~~~
 
 Clause, the new unit:
@@ -198,7 +198,7 @@ Clause, the new unit:
 - **Status:**
 ~~~~
 
-Clause, changed, the item moves to In progress with this pull request:
+Clause, changed, the item is Done with this pull request:
 
 ~~~~text
 Planned
@@ -224,7 +224,7 @@ Clause, the new unit:
 - **Last changed:**
 ~~~~
 
-Clause, changed, the item moves to In progress with this pull request:
+Clause, changed, the item is Done with this pull request:
 
 ~~~~text
 2026-11-14
@@ -250,10 +250,38 @@ Clause, the new unit:
 - **Pull requests:**
 ~~~~
 
-Clause, changed, the item moves to In progress with this pull request:
+Clause, changed, the item is Done with this pull request:
 
 ~~~~text
 none
+~~~~
+
+## `docs/patterns.md`
+
+### Entry
+
+Old:
+
+~~~~text
+- **Where we stand:** Gap. Before the build. B-022 brings the pages that state behaviour today to cite the specs instead.
+~~~~
+
+New:
+
+~~~~text
+- **Where we stand:** Followed. The sweep of B-022 brought the pages that stated behaviour to cite the specs instead, and DR-251 says which checks of the documentation stay.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Where we stand:**
+~~~~
+
+Clause, changed, the gap closes with B-022, which is Done with this pull request (R233):
+
+~~~~text
+Gap. Before the build. B-022 brings the pages that state behaviour today to cite the specs instead.
 ~~~~
 
 ## `docs/roadmap.md`
@@ -266,43 +294,33 @@ Old:
 - [B-022: The specs as the single source](backlog/B-022-the-specs-as-the-single-source.md) - Planned, last changed 2026-11-14. The documents that state what the tool does today, such as the threat model, the design's risks, the feature pages and the register, brought to cite the specs instead of stating it again.
 ~~~~
 
-New:
+Clause, changed, the item is Done with this pull request, and the roadmap lists no item that is Done (R213):
 
 ~~~~text
-- [B-022: The specs as the single source](backlog/B-022-the-specs-as-the-single-source.md) - In progress, last changed 2026-11-17. The documents that state what the tool does today, such as the threat model, the design's risks, the feature pages and the register, brought to cite the specs instead of stating it again.
-~~~~
-
-Clause, the new unit:
-
-~~~~text
-- [B-022: The specs as the single source](backlog/B-022-the-specs-as-the-single-source.md) -
-~~~~
-
-Clause, changed, the item moves to In progress with this pull request:
-
-~~~~text
-Planned
-~~~~
-
-Clause, the new unit:
-
-~~~~text
-last changed
-~~~~
-
-Clause, changed, the item moves to In progress with this pull request:
-
-~~~~text
-2026-11-14
-~~~~
-
-Clause, the new unit:
-
-~~~~text
-The documents that state what the tool does today, such as the threat model, the design's risks, the feature pages and the register, brought to cite the specs instead of stating it again.
+- [B-022: The specs as the single source](backlog/B-022-the-specs-as-the-single-source.md) - Planned, last changed 2026-11-14. The documents that state what the tool does today, such as the threat model, the design's risks, the feature pages and the register, brought to cite the specs instead of stating it again.
 ~~~~
 
 ## `docs/threat-model.md`
+
+### Entry
+
+Old:
+
+~~~~text
+| 1 low | T113 | T31, T36, T37, T110, T114, T118 | T5, T106, T117 |
+~~~~
+
+New:
+
+~~~~text
+| 1 low | T113 | T31, T36, T37, T110, T114, T118 | T5, T106, T117, T205 |
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+| 1 low | T113 | T31, T36, T37, T110, T114, T118 | T5, T106, T117
+~~~~
 
 ### Entry
 
@@ -315,7 +333,7 @@ It holds 194 threats across 9 trust boundaries.
 New:
 
 ~~~~text
-It holds 200 threats across 9 trust boundaries.
+It holds 205 threats across 9 trust boundaries.
 ~~~~
 
 Clause, the new unit:
@@ -347,7 +365,7 @@ T38 to T69 were found by the design-stage review, T70 to T78 by the design-stage
 New:
 
 ~~~~text
-T38 to T69 were found by the design-stage review, T70 to T78 by the design-stage review of the decision records in `docs/decisions/`, T79 to T81 by the implementation-stage review of those records and their checks, T82 to T100 by the design-stage review of the assumptions, the glossary and the golden set, T101 by the implementation-stage review of the assumptions, T102 and T103 by the implementation-stage review of the glossary, T104 to T116 at the design of the revision of consent, the store and the ledger's format, T117 and T118 by the design-stage review of that revision, T119 to T122 by the review of that revision after its approval, T123 with the owner's answer to a question that the check of that review's fixes raised, T124 to T126 by the design-stage review of the test of the specs' form, T127 by the implementation-stage review of that test, T128 to T135 at the design of the plugin that brings capture to a project's cloud threads, T136 to T142 by the design-stage review of that plugin, T143 by its implementation-stage review, T144 by its security review, T145 to T147 at the design of the README's short start, T148 to T156 by the design-stage review of that short start, T157 and T158 by its implementation-stage review, T159 to T162 at the design of the roadmap, T163 to T165 by the design-stage review of the roadmap, T166 to T168 at the design of the backlog, T169 by the design-stage review of the backlog, T170 at the design of the guide, T171 to T174 by the design-stage review of the guide, T175 and T176 by the design-stage review of one opt-in for every agent, T177 to T182 by the second design-stage review of the guide, T183 by the final review of its build, T184 by its implementation-stage review, T185 to T189 at the design of the walking skeleton and T190 to T194 by its design-stage review, and T195 to T197 at the design of the specs' citation sweep and T198 to T200 by its design-stage review; they follow T37, each under a heading for its boundary, so that the numbers stay in order, and a threat that a change removes keeps its ID out of use (see Retired IDs).
+T38 to T69 were found by the design-stage review, T70 to T78 by the design-stage review of the decision records in `docs/decisions/`, T79 to T81 by the implementation-stage review of those records and their checks, T82 to T100 by the design-stage review of the assumptions, the glossary and the golden set, T101 by the implementation-stage review of the assumptions, T102 and T103 by the implementation-stage review of the glossary, T104 to T116 at the design of the revision of consent, the store and the ledger's format, T117 and T118 by the design-stage review of that revision, T119 to T122 by the review of that revision after its approval, T123 with the owner's answer to a question that the check of that review's fixes raised, T124 to T126 by the design-stage review of the test of the specs' form, T127 by the implementation-stage review of that test, T128 to T135 at the design of the plugin that brings capture to a project's cloud threads, T136 to T142 by the design-stage review of that plugin, T143 by its implementation-stage review, T144 by its security review, T145 to T147 at the design of the README's short start, T148 to T156 by the design-stage review of that short start, T157 and T158 by its implementation-stage review, T159 to T162 at the design of the roadmap, T163 to T165 by the design-stage review of the roadmap, T166 to T168 at the design of the backlog, T169 by the design-stage review of the backlog, T170 at the design of the guide, T171 to T174 by the design-stage review of the guide, T175 and T176 by the design-stage review of one opt-in for every agent, T177 to T182 by the second design-stage review of the guide, T183 by the final review of its build, T184 by its implementation-stage review, T185 to T189 at the design of the walking skeleton and T190 to T194 by its design-stage review, and T195 to T197 at the design of the specs' citation sweep, T198 to T200 by its design-stage review and T201 to T205 by its implementation-stage review; they follow T37, each under a heading for its boundary, so that the numbers stay in order, and a threat that a change removes keeps its ID out of use (see Retired IDs).
 ~~~~
 
 Clause, the new unit:
@@ -371,7 +389,13 @@ T185 to T189 at the design of the walking skeleton and T190 to T194
 Clause, the new unit:
 
 ~~~~text
-by its design-stage review; they follow T37, each under a heading for its boundary, so that the numbers stay in order, and a threat that a change removes keeps its ID out of use (see Retired IDs).
+by its design-stage review
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+; they follow T37, each under a heading for its boundary, so that the numbers stay in order, and a threat that a change removes keeps its ID out of use (see Retired IDs).
 ~~~~
 
 ### Entry
@@ -385,7 +409,7 @@ Old:
 New:
 
 ~~~~text
-| 2 medium | T4, T6, T11, T13, T18, T25, T26, T38, T41, T42, T53, T55, T56, T57, T60, T69, T70, T76, T78, T79, T80, T81, T84, T85, T86, T87, T88, T89, T90, T91, T97, T98, T99, T100, T101, T102, T104, T105, T109, T112, T115, T124, T126, T127, T135, T139, T146, T149, T152, T153, T155, T156, T157, T162, T172, T173, T179, T181, T182, T185, T189, T191, T193, T194, T195, T197, T196, T198, T199, T200 | T3, T9, T10, T17, T19, T20, T21, T22, T27, T30, T39, T40, T44, T45, T47, T48, T49, T50, T51, T52, T54, T71, T72, T74, T75, T96, T111, T116, T120, T121, T122, T123, T129, T130, T131, T134, T136, T143, T145, T154, T158, T159, T161, T166, T168, T170, T171, T176 | T7, T8, T16, T128 |
+| 2 medium | T4, T6, T11, T13, T18, T25, T26, T38, T41, T42, T53, T55, T56, T57, T60, T69, T70, T76, T78, T79, T80, T81, T84, T85, T86, T87, T88, T89, T90, T91, T97, T98, T99, T100, T101, T102, T104, T105, T109, T112, T115, T124, T126, T127, T135, T139, T146, T149, T152, T153, T155, T156, T157, T162, T172, T173, T179, T181, T182, T185, T189, T191, T193, T194, T195, T196, T197, T198, T199, T202, T203, T204 | T3, T9, T10, T17, T19, T20, T21, T22, T27, T30, T39, T40, T44, T45, T47, T48, T49, T50, T51, T52, T54, T71, T72, T74, T75, T96, T111, T116, T120, T121, T122, T123, T129, T130, T131, T134, T136, T143, T145, T154, T158, T159, T161, T166, T168, T170, T171, T176, T200, T201 | T7, T8, T16, T128 |
 ~~~~
 
 Clause, the new unit:
@@ -403,7 +427,13 @@ T194
 Clause, the new unit:
 
 ~~~~text
-| T3, T9, T10, T17, T19, T20, T21, T22, T27, T30, T39, T40, T44, T45, T47, T48, T49, T50, T51, T52, T54, T71, T72, T74, T75, T96, T111, T116, T120, T121, T122, T123, T129, T130, T131, T134, T136, T143, T145, T154, T158, T159, T161, T166, T168, T170, T171, T176 | T7, T8, T16, T128 |
+| T3, T9, T10, T17, T19, T20, T21, T22, T27, T30, T39, T40, T44, T45, T47, T48, T49, T50, T51, T52, T54, T71, T72, T74, T75, T96, T111, T116, T120, T121, T122, T123, T129, T130, T131, T134, T136, T143, T145, T154, T158, T159, T161, T166, T168, T170, T171, T176
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+| T7, T8, T16, T128 |
 ~~~~
 
 ### Entry
