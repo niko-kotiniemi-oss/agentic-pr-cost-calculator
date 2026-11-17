@@ -14004,6 +14004,3432 @@ Clause, the new unit:
 .
 ~~~~
 
+## `docs/features/activity-types.md`
+
+### Entry
+
+Old:
+
+~~~~text
+The label comes from the first tool the call used:
+~~~~
+
+New:
+
+~~~~text
+The label comes from the first tool the call used, as R6 gives it:
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+The label comes from the first tool the call used
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+It is never recorded, because an MCP server's name can name a private service.
+~~~~
+
+New:
+
+~~~~text
+It is never recorded, as R6 gives it, because an MCP server's name can name a private service.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+It is never recorded,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+because an MCP server's name can name a private service.
+~~~~
+
+## `docs/features/ci-minutes.md`
+
+### Entry
+
+Old:
+
+~~~~text
+- **Which runs.** Every attempt of every job of every workflow run on the pull request's own commits, created before the pull request merged. The pull request's own commits are those its head holds that the default branch did not hold before the merge.
+~~~~
+
+New:
+
+~~~~text
+- **Which runs.** R62 gives which job attempts count, and which commits are the pull request's own.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Which runs.**
+~~~~
+
+Clause, R62:
+
+~~~~text
+Every attempt of every job of every workflow run on the pull request's own commits, created before the pull request merged. The pull request's own commits are those its head holds that the default branch did not hold before the merge.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Which runs are not counted.** Runs that a push to the default branch started, the merge's own runs and the report's included, and runs on commits that a force-push removed.
+~~~~
+
+New:
+
+~~~~text
+- **Which runs are not counted.** Those that R120 gives, and runs on commits that a force-push removed.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Which runs are not counted.**
+~~~~
+
+Clause, R120:
+
+~~~~text
+Runs that a push to the default branch started, the merge's own runs and the report's included,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+and runs on commits that a force-push removed.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Rounding.** Each attempt's duration is rounded up to a whole minute and priced at its runner type's rate for its day.
+~~~~
+
+New:
+
+~~~~text
+- **Rounding.** R18 gives how each attempt's minutes are rounded and priced.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Rounding.**
+~~~~
+
+Clause, R18:
+
+~~~~text
+Each attempt's duration is rounded up to a whole minute and priced at its runner type's rate for its day.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Unknown runners.** A job on a runner that the price table does not list is counted in minutes and left out of the cost, and the report says how many minutes that was.
+~~~~
+
+New:
+
+~~~~text
+- **Unknown runners.** R63 gives how minutes on a runner that the price table does not list are counted and reported.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Unknown runners.**
+~~~~
+
+Clause, R63:
+
+~~~~text
+A job on a runner that the price table does not list is counted in minutes and left out of the cost, and the report says how many minutes that was.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Incomplete.** If any run or job that counts cannot be read, has not finished, or is left unread because the report's call budget ran out or because GitHub returned only part of a listing, the CI cost is marked incomplete and is not presented as the total.
+~~~~
+
+New:
+
+~~~~text
+- **Incomplete.** R64 gives when the CI cost is marked incomplete and not presented as the total.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Incomplete.**
+~~~~
+
+Clause, R64:
+
+~~~~text
+If any run or job that counts cannot be read, has not finished, or is left unread because the report's call budget ran out or because GitHub returned only part of a listing, the CI cost is marked incomplete and is not presented as the total.
+~~~~
+
+## `docs/features/pricing.md`
+
+### Entry
+
+Old:
+
+~~~~text
+- **Dated prices.** Every price has an effective date, and each call uses the latest price dated on or before its UTC day. A price change is a new row with a later date, so history is never rewritten (DR-020). The statements of how modifiers combine are dated the same way, so a changed combination reprices nothing earlier.
+~~~~
+
+New:
+
+~~~~text
+- **Dated prices.** R14 gives how each price, and each statement of how modifiers combine, is dated, and which one a call uses. A price change is a new row with a later date, so history is never rewritten (DR-020).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Dated prices.**
+~~~~
+
+Clause, R14:
+
+~~~~text
+Every price has an effective date, and each call uses the latest price dated on or before its UTC day.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+A price change is a new row with a later date, so history is never rewritten (DR-020).
+~~~~
+
+Clause, R14:
+
+~~~~text
+The statements of how modifiers combine are dated the same way, so a changed combination reprices nothing earlier.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Each token type at its own rate.** Input, output, cache-write and cache-read tokens are priced separately. Cache writes use the rate for their cache lifetime, and where the lifetime is unknown the report gives the range between the two.
+~~~~
+
+New:
+
+~~~~text
+- **Each token type at its own rate.** R15 gives the rate of each token type, and the range that a cache write of unknown lifetime gets.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Each token type at its own rate.**
+~~~~
+
+Clause, R15:
+
+~~~~text
+Input, output, cache-write and cache-read tokens are priced separately. Cache writes use the rate for their cache lifetime, and where the lifetime is unknown the report gives the range between the two.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Modifiers.** Higher rates for long prompts, the inference region's multiplier, rates for speed and service tier, and a per-request rate for server-side tool requests such as web searches, all as the price table states them.
+~~~~
+
+New:
+
+~~~~text
+- **Modifiers.** R16 gives the modifiers that apply, as the price table states them.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Modifiers.**
+~~~~
+
+Clause, R16:
+
+~~~~text
+Higher rates for long prompts, the inference region's multiplier, rates for speed and service tier, and a per-request rate for server-side tool requests such as web searches, all
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+as the price table states them.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Nothing is guessed.** A model, attribute or combination that the price table does not price is counted in tokens, left out of the cost and named by the report.
+~~~~
+
+New:
+
+~~~~text
+- **Nothing is guessed.** A model, attribute or combination that the price table does not price is counted in tokens, left out of the cost and named by the report, as R17 and R61 give it.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Nothing is guessed.** A model, attribute or combination that the price table does not price is counted in tokens, left out of the cost and named by the report
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Never fetched.** Prices are read from the table at the tool's own commit. The tool fetches no prices from anywhere, a rule that `project-standards` holds for the whole tool.
+~~~~
+
+New:
+
+~~~~text
+- **Never fetched.** Prices are read from the table at the tool's own commit. The tool fetches no prices from anywhere, as R30 gives it for the whole tool.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Never fetched.** Prices are read from the table at the tool's own commit.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+The tool fetches no prices from anywhere,
+~~~~
+
+Clause, R30:
+
+~~~~text
+a rule that `project-standards` holds for the whole tool.
+~~~~
+
+## `docs/features/ledger.md`
+
+### Entry
+
+Old:
+
+~~~~text
+- **One file per commit,** named `.pr-cost/ledger/<YYYY-MM>/<random>.jsonl`, one line per call after a first line that states the file's format. Each file is written once and never changed by the tool.
+~~~~
+
+New:
+
+~~~~text
+- **One file per commit,** named `.pr-cost/ledger/<YYYY-MM>/<random>.jsonl`, one line per call after a first line that states the file's format, and written once, as R10 gives it.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **One file per commit,** named `.pr-cost/ledger/<YYYY-MM>/<random>.jsonl`, one line per call after a first line that states the file's format
+~~~~
+
+Clause, R10:
+
+~~~~text
+Each file is written once and never changed by the tool.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **The first line.** It states the version of the ledger format that the file is written in, the release of the capture step that wrote it, both in a place and form that every version keeps, so that the report can say when a file of any version comes from a later release than its own (DR-208), the number of calls that capture refused, and three flags, one for each reason that capture left calls out: for consent, for their age, or because their repository could not be told. A flag says only that calls were left out, with no count, time or other fact about them. Each entry after it marks whether its call was read without a stop reason, or held a usage field that capture does not know, so that the report counts those marks only on the entries that it counts.
+~~~~
+
+New:
+
+~~~~text
+- **The first line.** It states the version and the release that R156 gives, so that the report can say when a file of any version comes from a later release than its own (DR-208), the number of calls that capture refused, and one flag for each reason that capture left calls out: for consent, for their age, or because their repository could not be told, as R155 gives them. Each entry after it marks the calls that R42 and R43 count.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **The first line.** It states
+~~~~
+
+Clause, R156:
+
+~~~~text
+the version of the ledger format that the file is written in, the release of the capture step that wrote it, both in a place and form that every version keeps,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+so that the report can say when a file of any version comes from a later release than its own (DR-208),
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+the number of calls that capture refused,
+~~~~
+
+Clause, R155:
+
+~~~~text
+and three flags, one
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+for each reason that capture left calls out: for consent, for their age, or because their repository could not be told
+~~~~
+
+Clause, R155:
+
+~~~~text
+A flag says only that calls were left out, with no count, time or other fact about them.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+Each entry after it marks
+~~~~
+
+Clause, R42:
+
+~~~~text
+whether its call was read without a stop reason,
+~~~~
+
+Clause, R43:
+
+~~~~text
+or held a usage field that capture does not know,
+~~~~
+
+Clause, `report-comment`: "A mark on an entry that is not counted is not counted":
+
+~~~~text
+so that the report counts those marks only on the entries that it counts.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Counts, never content.** A line holds no prompt, response, code, file contents, tool name, tool input or output, path, working directory, branch name, user name, session identifier, transcript path, `tool_use_id` or time of day, nor a hash of any of them. The model's name and the price attributes are the only text taken from a transcript, and each is recorded only when the price table lists it, or else as `unknown`.
+~~~~
+
+New:
+
+~~~~text
+- **Counts, never content.** A line holds no prompt, response, code, file contents, tool name, tool input or output, path, working directory, branch name, user name, session identifier, transcript path, `tool_use_id` or time of day, nor a hash of any of them. The model's name and the price attributes are the only text taken from a transcript, and each is recorded only when the price table lists it, or else as `unknown` (R4, R77).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Counts, never content.** A line holds no prompt, response, code, file contents, tool name, tool input or output, path, working directory, branch name, user name, session identifier, transcript path, `tool_use_id` or time of day, nor a hash of any of them. The model's name and the price attributes are the only text taken from a transcript, and each is recorded only when the price table lists it, or else as `unknown`
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **A published format.** Each version of the format is published in `docs/ledger-format.md` with a JSON Schema for each kind of line, so that anyone can check a ledger file without the tool, and what no schema can hold, such as a field given twice, is listed beside it, where the report's rules decide. A ledger file holds nothing that its version's schema does not allow, and a released version's schema never changes. Every version names a call by the same id, the SHA-256 hash of its message id, so that a call is counted once whichever versions its entries are in.
+~~~~
+
+New:
+
+~~~~text
+- **A published format.** Each version of the format is published in `docs/ledger-format.md` with a JSON Schema for each kind of line, as R156 gives it, so that anyone can check a ledger file without the tool, and what no schema can hold, such as a field given twice, is listed beside it, where the report's rules decide. R163 gives the one id by which every version names a call.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **A published format.** Each version of the format is published in `docs/ledger-format.md` with a JSON Schema for each kind of line,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+so that anyone can check a ledger file without the tool, and what no schema can hold, such as a field given twice, is listed beside it, where the report's rules decide.
+~~~~
+
+Clause, R156:
+
+~~~~text
+A ledger file holds nothing that its version's schema does not allow, and a released version's schema never changes.
+~~~~
+
+Clause, R163:
+
+~~~~text
+Every version names a call by the same id, the SHA-256 hash of its message id, so that a call is counted once whichever versions its entries are in.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **The record.** The ledger stays in the repository after the merge, and the report writes nothing to the repository.
+~~~~
+
+New:
+
+~~~~text
+- **The record.** The ledger stays in the repository after the merge, and the report writes nothing to the repository (R22).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **The record.** The ledger stays in the repository after the merge, and the report writes nothing to the repository
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Counted once.** The report counts only the ledger files that the merge adds, and each call at most once: identical entries for one call count once, and entries for one call that differ are all refused. A ledger file that the pull request removes or changes is flagged in the comment and not counted, and a ledger file that a revert brings back is counted as restored, not again.
+~~~~
+
+New:
+
+~~~~text
+- **Counted once.** R58, R59 and R119 give which ledger files and entries the report counts, and which it flags or counts as restored.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Counted once.**
+~~~~
+
+Clause, R58:
+
+~~~~text
+The report counts only the ledger files that the merge adds,
+~~~~
+
+Clause, R59:
+
+~~~~text
+and each call at most once: identical entries for one call count once, and entries for one call that differ are all refused.
+~~~~
+
+Clause, R119:
+
+~~~~text
+A ledger file that the pull request removes or changes is flagged in the comment and not counted, and a ledger file that a revert brings back is counted as restored, not again.
+~~~~
+
+## `docs/features/report-comment.md`
+
+### Entry
+
+Old:
+
+~~~~text
+- **What it shows.** The total cost; the cost by model, by token type and by activity type; the CI minutes and their cost; the price table's date; the tool's version; how many ledger entries were counted, and how many were not, for each reason; how many calls capture refused; how many it read without a stop reason, with a note that the token cost is then a lower bound, and how many carried a usage field that capture does not know, with a note that the token cost may be low, counting those marks only on the entries that it counts. It also says when the hook file at the merged commit differs from the one at the report's own commit, and when the hook's registration in that commit's `.claude/settings.json` or `.claude/settings.local.json` carries a checksum other than that commit's hook file's, so that the registration runs nothing, as when it was copied from the README of another release, quoting nothing from either file, and leaves out, without stopping, a settings file that it cannot read.
+~~~~
+
+New:
+
+~~~~text
+- **What it shows.** What R20, R94 and R95 give, and, as R65 and R202 give it, when the repository's hook file or its registration does not run the report's own hook file, as when it was copied from the README of another release.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **What it shows.**
+~~~~
+
+Clause, R20:
+
+~~~~text
+The total cost; the cost by model, by token type and by activity type; the CI minutes and their cost;
+~~~~
+
+Clause, R94:
+
+~~~~text
+the price table's date; the tool's version;
+~~~~
+
+Clause, R20:
+
+~~~~text
+how many ledger entries were counted, and how many were not, for each reason;
+~~~~
+
+Clause, R95:
+
+~~~~text
+how many calls capture refused; how many it read without a stop reason, with a note that the token cost is then a lower bound, and how many carried a usage field that capture does not know, with a note that the token cost may be low,
+~~~~
+
+Clause, `report-comment`: "A mark on an entry that is not counted is not counted":
+
+~~~~text
+counting those marks only on the entries that it counts.
+~~~~
+
+Clause, R65:
+
+~~~~text
+It also says when the hook file at the merged commit differs from the one at the report's own commit,
+~~~~
+
+Clause, R202:
+
+~~~~text
+and when the hook's registration in that commit's `.claude/settings.json` or `.claude/settings.local.json` carries a checksum other than that commit's hook file's, so that the registration runs nothing,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+as when it was copied from the README of another release
+~~~~
+
+Clause, R202:
+
+~~~~text
+quoting nothing from either file, and leaves out, without stopping, a settings file that it cannot read.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Calls left out.** When the pull request's ledger files say that calls were left out, for consent, for their age or because their repository could not be told, the comment says so for each reason, as what those files say, with no count, and says that the token cost, each of its parts and the total are then lower bounds. For consent, it says that capture could not show that some calls were made while it was on, and nothing of capture being off. It always says that calls that no ledger file holds are neither counted nor flagged. A restored ledger file, or one that holds at least one entry, each of which the default branch already held, adds no counts and no flags.
+~~~~
+
+New:
+
+~~~~text
+- **Calls left out.** R157 gives what the comment says when the pull request's ledger files flag calls left out, and R95 that a restored or copied ledger file adds no counts and no flags.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Calls left out.**
+~~~~
+
+Clause, R157:
+
+~~~~text
+When the pull request's ledger files say that calls were left out, for consent, for their age or because their repository could not be told, the comment says so for each reason, as what those files say, with no count, and says that the token cost, each of its parts and the total are then lower bounds.
+~~~~
+
+Clause, `report-comment`: "Calls left out for consent are flagged in the comment":
+
+~~~~text
+For consent, it says that capture could not show that some calls were made while it was on, and nothing of capture being off.
+~~~~
+
+Clause, `report-comment`: "A comment with no flag still says what it does not count":
+
+~~~~text
+It always says that calls that no ledger file holds are neither counted nor flagged.
+~~~~
+
+Clause, `report-comment`: "A restored or copied ledger file adds no counts or flags":
+
+~~~~text
+A restored ledger file, or one that holds at least one entry, each of which the default branch already held, adds no counts and no flags.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **What it says about itself.** That the figure is an API-equivalent estimate, not a bill, and that it counts the usage that the pull request's commits carry and the CI runs on those commits. Calls that Claude Code's own tools make to a model, such as a web fetch's summary, are counted only where the transcript holds them.
+~~~~
+
+New:
+
+~~~~text
+- **What it says about itself.** R94 gives what the comment says of its figure. Calls that Claude Code's own tools make to a model, such as a web fetch's summary, are counted only where the transcript holds them.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **What it says about itself.**
+~~~~
+
+Clause, R94:
+
+~~~~text
+That the figure is an API-equivalent estimate, not a bill, and that it counts the usage that the pull request's commits carry and the CI runs on those commits.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+Calls that Claude Code's own tools make to a model, such as a web fetch's summary, are counted only where the transcript holds them.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Only its own words.** The comment, the job summary and the log hold numbers, the report's fixed text, and names that the price table lists. It never quotes ledger lines, file names, branch names, job names or any other text from the pull request.
+~~~~
+
+New:
+
+~~~~text
+- **Only its own words.** The comment, the job summary and the log hold numbers, the report's fixed text, and names that the price table lists. It never quotes ledger lines, file names, branch names, job names or any other text from the pull request (R21, R97).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Only its own words.** The comment, the job summary and the log hold numbers, the report's fixed text, and names that the price table lists. It never quotes ledger lines, file names, branch names, job names or any other text from the pull request
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **One comment.** When the report runs again, it updates its own comment and no one else's.
+~~~~
+
+New:
+
+~~~~text
+- **One comment.** When the report runs again, it updates its own comment and no one else's (R96).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **One comment.** When the report runs again, it updates its own comment and no one else's
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Within bounds.** The report reads ledger files from git as data. It counts as a refused file any path that the merge adds in the ledger folder and that is not a regular file, and skips such a path among the ledger files that the default branch already held. When a pull request's ledger files are together above the documented size bound, it counts none of their entries and says they are too large to read, while still reporting the CI cost. Each ledger line that the merge adds is held to the ledger format: a line with a count that is not a whole number within the ceiling, a field given twice or unknown, nesting too deep or a day that is not a date is refused and counted, and the report completes.
+~~~~
+
+New:
+
+~~~~text
+- **Within bounds.** R23 and R67 give how the report reads ledger files from git as data, R66 what it does when they are too large to read, and R35 and R102 how it holds each line to the ledger format and completes.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Within bounds.**
+~~~~
+
+Clause, R23:
+
+~~~~text
+The report reads ledger files from git as data.
+~~~~
+
+Clause, R23:
+
+~~~~text
+It counts as a refused file any path that the merge adds in the ledger folder and that is not a regular file,
+~~~~
+
+Clause, R67:
+
+~~~~text
+and skips such a path among the ledger files that the default branch already held.
+~~~~
+
+Clause, R66:
+
+~~~~text
+When a pull request's ledger files are together above the documented size bound, it counts none of their entries and says they are too large to read, while still reporting the CI cost.
+~~~~
+
+Clause, R35:
+
+~~~~text
+Each ledger line that the merge adds is held to the ledger format: a line with a count that is not a whole number within the ceiling, a field given twice or unknown, nesting too deep or a day that is not a date is refused and counted,
+~~~~
+
+Clause, R102:
+
+~~~~text
+and the report completes.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Read by its version.** The report reads each ledger file that the merge adds by the version of the ledger format that its first line states, matched exactly as a whole number, choosing no code by its value. A file whose first line states no version or one that the report does not read, or breaks its version's rules, is counted as a refused file, and none of its entries, counts or flags is used, so that a report older than the hook says what it could not read rather than misreading it. When a ledger file's first line names a later release of the capture step than the report's own, as a person's plugin can while the repository pins an earlier release, the comment says that some ledger files come from a later release than the report, and quotes nothing from them (DR-208). A line shaped as a first line anywhere else is a refused line. The default branch's earlier ledger files are read by the versions that they state too, and the job summary says how many the report skipped for a version that it does not read.
+~~~~
+
+New:
+
+~~~~text
+- **Read by its version.** R158 gives how the report reads each ledger file that the merge adds by the version that its first line states, so that a report older than the hook says what it could not read rather than misreading it. R193 gives what the comment says when a ledger file comes from a later release of the capture step than the report's own, as a person's plugin can while the repository pins an earlier release (DR-208), and R168 how the default branch's earlier ledger files are read.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Read by its version.**
+~~~~
+
+Clause, R158:
+
+~~~~text
+The report reads each ledger file that the merge adds by the version of the ledger format that its first line states,
+~~~~
+
+Clause, `report-comment`: "A version is matched exactly, and chooses no code by its value":
+
+~~~~text
+matched exactly as a whole number, choosing no code by its value.
+~~~~
+
+Clause, R158:
+
+~~~~text
+A file whose first line states no version or one that the report does not read, or breaks its version's rules, is counted as a refused file, and none of its entries, counts or flags is used,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+so that a report older than the hook says what it could not read rather than misreading it.
+~~~~
+
+Clause, R193:
+
+~~~~text
+When a ledger file's first line names a later release of the capture step than the report's own,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+as a person's plugin can while the repository pins an earlier release
+~~~~
+
+Clause, R193:
+
+~~~~text
+the comment says that some ledger files come from a later release than the report, and quotes nothing from them
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+(DR-208)
+~~~~
+
+Clause, `report-comment`: "A first line anywhere but first is refused":
+
+~~~~text
+A line shaped as a first line anywhere else is a refused line.
+~~~~
+
+Clause, R168:
+
+~~~~text
+The default branch's earlier ledger files are read by the versions that they state too, and the job summary says how many the report skipped for a version that it does not read.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **When there is no comment.** A push that merges no pull request, or more than one, or that has more commits than the report's call budget allows, gets no comment, and the report says why in its job summary. So does a merge that finds the tool off both before it and after it: its job summary says why the configuration after the merge leaves the tool off.
+~~~~
+
+New:
+
+~~~~text
+- **When there is no comment.** R69 and R70 give the pushes that get no comment, and R172 what the job summary says of a merge that finds the tool off both before it and after it.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **When there is no comment.**
+~~~~
+
+Clause, R69:
+
+~~~~text
+A push that merges no pull request, or more than one,
+~~~~
+
+Clause, `report-comment`: "A push with more commits than the call budget allows gets no comment":
+
+~~~~text
+or that has more commits than the report's call budget allows,
+~~~~
+
+Clause, R69:
+
+~~~~text
+gets no comment, and the report says why in its job summary.
+~~~~
+
+Clause, R172:
+
+~~~~text
+So does a merge that finds the tool off both before it and after it: its job summary says why the configuration after the merge leaves the tool off.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **A budget that runs short.** A pull request whose runs and jobs take more calls to read than the budget leaves still gets its comment, with its CI cost marked incomplete, as the CI minutes page says.
+~~~~
+
+New:
+
+~~~~text
+- **A budget that runs short.** A pull request whose runs and jobs take more calls to read than the budget leaves still gets its comment, as R64 gives it.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **A budget that runs short.** A pull request whose runs and jobs take more calls to read than the budget leaves still gets its comment,
+~~~~
+
+Clause, R64:
+
+~~~~text
+with its CI cost marked incomplete, as the CI minutes page says.
+~~~~
+
+## `docs/features/releases-and-compatibility.md`
+
+### Entry
+
+Old:
+
+~~~~text
+- **Python.** The tool runs on Python 3.11 and every later release, with the standard library only. CI tests on the oldest supported version and on the newest. `requires-python` in `pyproject.toml` is the one source of the oldest version, and a test fails when another copy of it disagrees. The oldest rises only when its version nears its end of life, or when a security fix needs a newer one, on the owner's decision.
+~~~~
+
+New:
+
+~~~~text
+- **Python.** The tool runs on Python 3.11 and every later release, with the standard library only. R25 and R99 give how CI tests it and where the oldest version is kept. The oldest rises only when its version nears its end of life, or when a security fix needs a newer one, on the owner's decision (R26).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Python.** The tool runs on Python 3.11 and every later release, with the standard library only.
+~~~~
+
+Clause, R25:
+
+~~~~text
+CI tests on the oldest supported version and on the newest.
+~~~~
+
+Clause, R99:
+
+~~~~text
+`requires-python` in `pyproject.toml` is the one source of the oldest version, and a test fails when another copy of it disagrees.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+The oldest rises only when its version nears its end of life, or when a security fix needs a newer one, on the owner's decision
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Floors of the capture step.** Under a Python older than 3.11, or a git older than 2.43, the capture step records nothing, stages nothing, prints nothing and exits with success, so an old machine is never blocked from committing.
+~~~~
+
+New:
+
+~~~~text
+- **Floors of the capture step.** Under a Python older than 3.11, or a git older than 2.43, the capture step records nothing, stages nothing, prints nothing and exits with success (R32), so an old machine is never blocked from committing.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Floors of the capture step.** Under a Python older than 3.11, or a git older than 2.43, the capture step records nothing, stages nothing, prints nothing and exits with success
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+so an old machine is never blocked from committing.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Dependency updates.** Minor and patch updates and vulnerability fixes are proposed as usual. A major update waits for the owner's approval on Renovate's dependency dashboard.
+~~~~
+
+New:
+
+~~~~text
+- **Dependency updates.** Minor and patch updates and vulnerability fixes are proposed as usual. A major update waits for the owner's approval on Renovate's dependency dashboard (R26).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Dependency updates.** Minor and patch updates and vulnerability fixes are proposed as usual. A major update waits for the owner's approval on Renovate's dependency dashboard
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Versions.** Semantic: the major number rises for a change that adopters must act on, which is any change to the public surface: the hook's registration, by the events and matchers that it names and its command's form, and the hook file's path (the checksum that the command carries changes with every hook change and is not part of the surface), the plugin's name and hooks, by the events and matchers that they name and their command's form, not the checksum that it carries, the marketplace's name, the opt-in key and each agent that it records, the ledger's path and format, the store's format and how its fingerprint is made, `.pr-cost.json` and the keys and values that its format documents, the reusable workflow's path, inputs and permissions, and the Python and git floors. A manifest of that surface is kept in the repository, naming the plugin's name, each event and matcher that its hooks name and their command's form, the marketplace's name, each agent that the opt-in records, and each key that `.pr-cost.json` may hold, with its values, and holding each released ledger version's schema by its hash, and a release whose manifest changed needs a raised major number and a `### Breaking` section; the minor number for new behaviour; the patch number for a fix.
+~~~~
+
+New:
+
+~~~~text
+- **Versions.** Semantic: the major number rises for a change that adopters must act on, which is any change to the public surface that R122 lists and keeps in a manifest, and R71 and R123 give how a release whose manifest changed is numbered; the minor number for new behaviour; the patch number for a fix.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Versions.** Semantic: the major number rises for a change that adopters must act on, which is any change to the public surface
+~~~~
+
+Clause, R122:
+
+~~~~text
+: the hook's registration, by the events and matchers that it names and its command's form, and the hook file's path (the checksum that the command carries changes with every hook change and is not part of the surface), the plugin's name and hooks, by the events and matchers that they name and their command's form, not the checksum that it carries, the marketplace's name, the opt-in key and each agent that it records, the ledger's path and format, the store's format and how its fingerprint is made, `.pr-cost.json` and the keys and values that its format documents, the reusable workflow's path, inputs and permissions, and the Python and git floors.
+~~~~
+
+Clause, R122:
+
+~~~~text
+A manifest of that surface is kept in the repository, naming the plugin's name, each event and matcher that its hooks name and their command's form, the marketplace's name, each agent that the opt-in records, and each key that `.pr-cost.json` may hold, with its values, and holding each released ledger version's schema by its hash,
+~~~~
+
+Clause, R123:
+
+~~~~text
+and a release whose manifest changed needs a raised major number and a `### Breaking` section;
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+the minor number for new behaviour; the patch number for a fix.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Releases.** A release is made by pushing a tag `vMAJOR.MINOR.PATCH` for a commit in the default branch's first-parent history. The release workflow checks the tag's form before any other step, refuses a tag that does not match `pyproject.toml`, the plugin's manifest and `CHANGELOG.md`, or whose root marketplace file lists any plugin but the tool's, or whose guide was not read for it or leaves a gap that adopters rely on out of its changelog entry, as R230 gives it, and creates the GitHub release as a draft, attaches the plugin's zip and the bill of materials, downloads each again to check its size and SHA-256, and only then publishes the release, which names the commit to pin (DR-209). A tag that the workflow refused names no release, and its version is not used again.
+~~~~
+
+New:
+
+~~~~text
+- **Releases.** A release is made by pushing a tag `vMAJOR.MINOR.PATCH` for a commit in the default branch's first-parent history. R27, R190 and R230 give the tags that the release workflow refuses, and R189 how it attaches and checks the release's files before it publishes the release, which names the commit to pin (DR-209). A tag that the workflow refused names no release, and its version is not used again.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Releases.** A release is made by pushing a tag `vMAJOR.MINOR.PATCH` for a commit in the default branch's first-parent history.
+~~~~
+
+Clause, R27:
+
+~~~~text
+The release workflow checks the tag's form before any other step, refuses a tag that does not match `pyproject.toml`, the plugin's manifest and `CHANGELOG.md`,
+~~~~
+
+Clause, R190:
+
+~~~~text
+or whose root marketplace file lists any plugin but the tool's,
+~~~~
+
+Clause, R230:
+
+~~~~text
+or whose guide was not read for it or leaves a gap that adopters rely on out of its changelog entry, as R230 gives it,
+~~~~
+
+Clause, R189:
+
+~~~~text
+and creates the GitHub release as a draft, attaches the plugin's zip and the bill of materials, downloads each again to check its size and SHA-256, and only then publishes the release,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+which names the commit to pin (DR-209).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+A tag that the workflow refused names no release, and its version is not used again.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Bill of materials.** Every release carries a CycloneDX JSON software bill of materials. It is written from the tagged tree, and names the hook file's SHA-256, the plugin's zip's SHA-256 and each action the reusable workflow uses. A release whose bill of materials cannot be written, misses an action or gives a checksum that differs from the file's or the README's is not published.
+~~~~
+
+New:
+
+~~~~text
+- **Bill of materials.** Every release carries a CycloneDX JSON software bill of materials, as R28 gives it, and R72 gives when a release is not published for it.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Bill of materials.** Every release carries a CycloneDX JSON software bill of materials
+~~~~
+
+Clause, R28:
+
+~~~~text
+It is written from the tagged tree, and names the hook file's SHA-256, the plugin's zip's SHA-256 and each action the reusable workflow uses.
+~~~~
+
+Clause, R72:
+
+~~~~text
+A release whose bill of materials cannot be written, misses an action or gives a checksum that differs from the file's or the README's is not published.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **The plugin's zip.** Each release carries the plugin as a zip built from its tag's files alone, as git's objects hold them, holding only the plugin's manifest, its hooks, the capture step and the licence, stored uncompressed with every header field fixed, so that a build on Linux and one on Windows give the same bytes. The README gives its SHA-256, CI fails on a pull request after which the zip built from its tree has another, and the release workflow publishes no release whose zip has another, so a person can check a zip against the README at the release's commit before they upload it (DR-203).
+~~~~
+
+New:
+
+~~~~text
+- **The plugin's zip.** Each release carries the plugin as a zip that R183 gives, whose SHA-256 the README gives, so a person can check a zip against the README at the release's commit before they upload it (DR-203).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **The plugin's zip.** Each release carries the plugin as a zip
+~~~~
+
+Clause, R183:
+
+~~~~text
+built from its tag's files alone, as git's objects hold them, holding only the plugin's manifest, its hooks, the capture step and the licence, stored uncompressed with every header field fixed, so that a build on Linux and one on Windows give the same bytes.
+~~~~
+
+Clause, R183:
+
+~~~~text
+The README gives its SHA-256,
+~~~~
+
+Clause, R183:
+
+~~~~text
+CI fails on a pull request after which the zip built from its tree has another, and the release workflow publishes no release whose zip has another,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+so a person can check a zip against the README at the release's commit before they upload it (DR-203).
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **What the plugin declares.** Each commit builds the plugin from the hook file, byte for byte, as its capture step, the licence and the plugin's own manifest and hooks files, never from the marketplace's plugin folder. Its manifest holds only its name, version, description, author, licence and repository, its hooks are all command hooks, and CI checks the plugin that each pull request's tree builds, so that it runs nothing that its zip's list of files, its checksum and the bill of materials do not show.
+~~~~
+
+New:
+
+~~~~text
+- **What the plugin declares.** R188 gives what each commit builds the plugin from and what its manifest and hooks hold, so that it runs nothing that its zip's list of files, its checksum and the bill of materials do not show.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **What the plugin declares.**
+~~~~
+
+Clause, R188:
+
+~~~~text
+Each commit builds the plugin from the hook file, byte for byte, as its capture step, the licence and the plugin's own manifest and hooks files, never from the marketplace's plugin folder. Its manifest holds only its name, version, description, author, licence and repository, its hooks are all command hooks, and CI checks the plugin that each pull request's tree builds,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+so that it runs nothing that its zip's list of files, its checksum and the bill of materials do not show.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **The marketplace.** The repository's root marketplace file holds only the marketplace's name, its owner and one entry that gives the tool's plugin's name and its folder, and that folder holds the plugin as a published release's tag builds it, with that release's version in its manifest. The folder moves only in a pull request made after a release, which changes nothing else, and CI fails when the folder, compared by path, mode and content, differs from what the release tag's own build script builds, holds anything but regular files, or gives a version that no published release has, or a lower one than before, and when the root file holds anything else. So a person who adds the repository as a marketplace gets only a release's plugin, once their account syncs it (DR-204, DR-205). The marketplace that loads the vendored Superpowers into this repository's own sessions moves to a folder under `vendor/`, and the root marketplace file is then removed, in a pull request of its own, before the checks that hold it, which pass while there is none, and comes back in the pull request after the first release that carries the plugin, which changes nothing else.
+~~~~
+
+New:
+
+~~~~text
+- **The marketplace.** R190 gives what the repository's root marketplace file holds, and R184 what its folder holds and when CI fails on it. So a person who adds the repository as a marketplace gets only a release's plugin, once their account syncs it (DR-204, DR-205). The marketplace that loads the vendored Superpowers into this repository's own sessions moves to a folder under `vendor/`, and the root marketplace file is then removed, in a pull request of its own, before the checks that hold it, which pass while there is none, and comes back in the pull request after the first release that carries the plugin, which changes nothing else.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **The marketplace.**
+~~~~
+
+Clause, R190:
+
+~~~~text
+The repository's root marketplace file holds only the marketplace's name, its owner and one entry that gives the tool's plugin's name and its folder,
+~~~~
+
+Clause, R184:
+
+~~~~text
+and that folder holds the plugin as a published release's tag builds it, with that release's version in its manifest.
+~~~~
+
+Clause, R190:
+
+~~~~text
+The folder moves only in a pull request made after a release, which changes nothing else,
+~~~~
+
+Clause, R184:
+
+~~~~text
+and CI fails when the folder, compared by path, mode and content, differs from what the release tag's own build script builds, holds anything but regular files, or gives a version that no published release has, or a lower one than before,
+~~~~
+
+Clause, R190:
+
+~~~~text
+and when the root file holds anything else.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+So a person who adds the repository as a marketplace gets only a release's plugin, once their account syncs it (DR-204, DR-205).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+The marketplace that loads the vendored Superpowers into this repository's own sessions moves to a folder under `vendor/`, and the root marketplace file is then removed, in a pull request of its own, before the checks that hold it, which pass while there is none, and comes back in the pull request after the first release that carries the plugin, which changes nothing else.
+~~~~
+
+## `docs/features/switch-and-opt-in.md`
+
+### Entry
+
+Old:
+
+~~~~text
+- **The repository's switch.** A repository turns the tool on by adding a valid `.pr-cost.json` at its root with `enabled` set to true, and off by removing the file or setting `enabled` to false. Capture reads the file in the working tree, and only while it is a regular file within its size bound. A file that holds a key that its format does not document, which in this version is any key but `enabled`, is not valid and leaves the tool off, whatever `enabled` says (DR-190), and so is one that gives a key twice or has no `enabled` of `true` or `false`, as `{}` has not (DR-192): the pull request that adds such a key still gets its report, flagged, when the file before it turned the tool on, and the pull requests after it get none while the file holds it. That comment says that the tool is off after the merge, and why, and a merge that finds the tool off at both commits says why in its job summary (DR-191). A key that a later version adds is a breaking change, since every earlier version takes a file that holds it to be not valid, so it goes in only with or after the pull request that moves the hook file and the calling workflow's pin to that version, and so is a key that a later version no longer documents, which goes out before or with that pull request.
+~~~~
+
+New:
+
+~~~~text
+- **The repository's switch.** A repository turns the tool on by adding a valid `.pr-cost.json` at its root with `enabled` set to true, and off by removing the file or setting `enabled` to false. R36 and R171 give when capture takes the file to be valid: a file that holds a key that its format does not document, which in this version is any key but `enabled`, is not valid and leaves the tool off, whatever `enabled` says (DR-190). R19 and R172 give the report on such a file, and what the comment and the job summary then say (DR-191, DR-192). A key that a later version adds is a breaking change, since every earlier version takes a file that holds it to be not valid, so it goes in only with or after the pull request that moves the hook file and the calling workflow's pin to that version, and so is a key that a later version no longer documents, which goes out before or with that pull request.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **The repository's switch.** A repository turns the tool on by adding a valid `.pr-cost.json` at its root with `enabled` set to true, and off by removing the file or setting `enabled` to false.
+~~~~
+
+Clause, R36:
+
+~~~~text
+Capture reads the file in the working tree, and only while it is a regular file within its size bound.
+~~~~
+
+Clause, R171:
+
+~~~~text
+A file
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+that holds a key that its format does not document, which in this version is any key but `enabled`, is not valid and leaves the tool off, whatever `enabled` says (DR-190)
+~~~~
+
+Clause, R171:
+
+~~~~text
+and so is one that gives a key twice or has no `enabled` of `true` or `false`, as `{}` has not (DR-192):
+~~~~
+
+Clause, R19:
+
+~~~~text
+the pull request that adds such a key still gets its report, flagged, when the file before it turned the tool on, and the pull requests after it get none while the file holds it.
+~~~~
+
+Clause, R172:
+
+~~~~text
+That comment says that the tool is off after the merge, and why, and a merge that finds the tool off at both commits says why in its job summary (DR-191).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+A key that a later version adds is a breaking change, since every earlier version takes a file that holds it to be not valid, so it goes in only with or after the pull request that moves the hook file and the calling workflow's pin to that version, and so is a key that a later version no longer documents, which goes out before or with that pull request.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **The person's opt-in.** A person turns capture on for themselves by setting `pr-cost.capture` to `true` in their global git configuration: `~/.gitconfig`, or git's file in their XDG configuration folder, and `~/.gitconfig` decides where both set it. In a cloud environment of Claude Code, the global git configuration is the session machine's own, so a person opts in there with one line in the environment's setup script, `git config --global pr-cost.capture true`, which opts in each session in that environment (DR-201). Removing that line, or using another environment, reaches only the sessions that start, or whose machines are rebuilt, afterwards: in a session that is running, `git config --global pr-cost.capture false` turns capture off until something writes the opt-in again, as the setup script does on a machine that is rebuilt and an organization's hook can at a session's start or resume, or after `/clear` or a compaction, and on an environment the variables `GIT_CONFIG_COUNT=1`, `GIT_CONFIG_KEY_0=pr-cost.capture` and `GIT_CONFIG_VALUE_0=false` do, from each of its sessions' next restore, since git's own reading of them can turn capture off, never on, unless a settings file that the session loads sets `GIT_CONFIG_COUNT` itself. `git config --global --get pr-cost.capture` shows a session's opt-in, and `git config --show-origin --get-all pr-cost.capture` where each value comes from. Capture reads those two files itself, by git's rules, follows no include in them, ignores the variables that point git at other configuration files or add settings, and reads no file from a relative path. So nothing in a repository can turn capture on for anyone, whether through its own git configuration, a variable that its Claude Code settings set, or a file that a configuration includes, and an outside contributor's usage is never committed because a repository's owner turned the tool on.
+~~~~
+
+New:
+
+~~~~text
+- **The person's opt-in.** A person turns capture on for themselves by setting `pr-cost.capture` to `true` in their global git configuration: `~/.gitconfig`, or git's file in their XDG configuration folder, and `~/.gitconfig` decides where both set it. In a cloud environment of Claude Code, the global git configuration is the session machine's own, so a person opts in there with one line in the environment's setup script, `git config --global pr-cost.capture true`, which opts in each session in that environment (DR-201). Removing that line, or using another environment, reaches only the sessions that start, or whose machines are rebuilt, afterwards: in a session that is running, `git config --global pr-cost.capture false` turns capture off until something writes the opt-in again, as the setup script does on a machine that is rebuilt and an organization's hook can at a session's start or resume, or after `/clear` or a compaction, and on an environment the variables `GIT_CONFIG_COUNT=1`, `GIT_CONFIG_KEY_0=pr-cost.capture` and `GIT_CONFIG_VALUE_0=false` do, from each of its sessions' next restore, since git's own reading of them can turn capture off, never on, unless a settings file that the session loads sets `GIT_CONFIG_COUNT` itself. `git config --global --get pr-cost.capture` shows a session's opt-in, and `git config --show-origin --get-all pr-cost.capture` where each value comes from. R37, R38, R103 and R104 give how capture reads those two files itself. So nothing in a repository can turn capture on for anyone, whether through its own git configuration, a variable that its Claude Code settings set, or a file that a configuration includes, and an outside contributor's usage is never committed because a repository's owner turned the tool on.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **The person's opt-in.** A person turns capture on for themselves by setting `pr-cost.capture` to `true` in their global git configuration: `~/.gitconfig`, or git's file in their XDG configuration folder, and `~/.gitconfig` decides where both set it. In a cloud environment of Claude Code, the global git configuration is the session machine's own, so a person opts in there with one line in the environment's setup script, `git config --global pr-cost.capture true`, which opts in each session in that environment (DR-201). Removing that line, or using another environment, reaches only the sessions that start, or whose machines are rebuilt, afterwards: in a session that is running, `git config --global pr-cost.capture false` turns capture off until something writes the opt-in again, as the setup script does on a machine that is rebuilt and an organization's hook can at a session's start or resume, or after `/clear` or a compaction, and on an environment the variables `GIT_CONFIG_COUNT=1`, `GIT_CONFIG_KEY_0=pr-cost.capture` and `GIT_CONFIG_VALUE_0=false` do, from each of its sessions' next restore, since git's own reading of them can turn capture off, never on, unless a settings file that the session loads sets `GIT_CONFIG_COUNT` itself. `git config --global --get pr-cost.capture` shows a session's opt-in, and `git config --show-origin --get-all pr-cost.capture` where each value comes from.
+~~~~
+
+Clause, R37:
+
+~~~~text
+Capture reads those two files itself,
+~~~~
+
+Clause, R38:
+
+~~~~text
+by git's rules,
+~~~~
+
+Clause, R37:
+
+~~~~text
+follows no include in them, ignores the variables that point git at other configuration files or add settings,
+~~~~
+
+Clause, R104:
+
+~~~~text
+and reads no file from a relative path.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+So nothing in a repository can turn capture on for anyone, whether through its own git configuration, a variable that its Claude Code settings set, or a file that a configuration includes, and an outside contributor's usage is never committed because a repository's owner turned the tool on.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **The plugin opts no one in.** The plugin records nothing for a session whose opt-in is not on, however it came to that session, as when a person adds it or their organization turns it on for its members or requires it (DR-202).
+~~~~
+
+New:
+
+~~~~text
+- **The plugin opts no one in.** The plugin records nothing for a session whose opt-in is not on, however it came to that session, as when a person adds it or their organization turns it on for its members or requires it (DR-202) (R182).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **The plugin opts no one in.** The plugin records nothing for a session whose opt-in is not on, however it came to that session, as when a person adds it or their organization turns it on for its members or requires it (DR-202)
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+Once capture's own reading finds both switches on, it asks git for each value of `pr-cost.capture` that git reads in the repository, twice, in the session's environment and without its `GIT_` variables, and takes capture to be off when either answer does not come within the run's time budget, or when either answer's last value, or the last value of any file in it other than the person's two global configuration files or of the variables, is not true, so the opt-out holds wherever the include stands in the file, no value that git reads later undoes it, and no variable that a repository's settings set can hide it.
+~~~~
+
+New:
+
+~~~~text
+Once capture's own reading finds both switches on, it asks git, as R160 gives it, so the opt-out holds wherever the include stands in the file, no value that git reads later undoes it, and no variable that a repository's settings set can hide it.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+Once capture's own reading finds both switches on, it asks git
+~~~~
+
+Clause, R160:
+
+~~~~text
+for each value of `pr-cost.capture` that git reads in the repository, twice, in the session's environment and without its `GIT_` variables, and takes capture to be off when either answer does not come within the run's time budget, or when either answer's last value, or the last value of any file in it other than the person's two global configuration files or of the variables, is not true,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+so the opt-out holds wherever the include stands in the file, no value that git reads later undoes it, and no variable that a repository's settings set can hide it.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Consent for each call.** Capture records a call only when it was made inside one of its session's intervals when both switches were on. An interval begins only at a run of the capture step that finds both on, never at the session's start, and ends at its last run before one that finds either off or finds that the files that hold the opt-in have changed. A call is inside an interval only when the line it answers, which gives the person's prompt, a tool's result or a compaction's summary, was written at or after the run that began the interval, and the call began no later than the interval's last run, each by its line's own time. So calls made before a person opts in, or while capture was off, are never recorded later, even when the person opts in before the next run, and a call already being made when an interval begins is left out. The next ledger file staged for the worktree and branch of calls left out this way says that calls were left out for consent, with no count, time or other fact about them.
+~~~~
+
+New:
+
+~~~~text
+- **Consent for each call.** R40, R108 and R144 give when capture records a call, by the intervals when both switches were on. So calls made before a person opts in, or while capture was off, are never recorded later, even when the person opts in before the next run, and a call already being made when an interval begins is left out. R155 gives what the next ledger file says of them.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Consent for each call.**
+~~~~
+
+Clause, R40:
+
+~~~~text
+Capture records a call only when it was made inside one of its session's intervals when both switches were on.
+~~~~
+
+Clause, R108:
+
+~~~~text
+An interval begins only at a run of the capture step that finds both on, never at the session's start, and ends at its last run before one that finds either off or finds that the files that hold the opt-in have changed.
+~~~~
+
+Clause, R144:
+
+~~~~text
+A call is inside an interval only when the line it answers, which gives the person's prompt, a tool's result or a compaction's summary, was written at or after the run that began the interval, and the call began no later than the interval's last run, each by its line's own time.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+So calls made before a person opts in, or while capture was off, are never recorded later, even when the person opts in before the next run, and a call already being made when an interval begins is left out.
+~~~~
+
+Clause, R155:
+
+~~~~text
+The next ledger file staged for the worktree and branch of calls left out this way says that calls were left out for consent, with no count, time or other fact about them.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **A start run.** The capture step also runs when a session starts, is resumed or forked, or is cleared or compacted. That start run reads no transcript, and when it finds both switches on, and no store whose version it does not know, it begins the interval before the session's first call, unless the person sends the first prompt the moment the session starts. Nothing depends on it: where no start run comes, the interval begins at the session's first run that finds both on, and the calls before it are left out, as they may be in every session whose first prompt is given before it starts, as with `claude -p`, the Agent SDK or a cloud session. So a person opts in before they start a session.
+~~~~
+
+New:
+
+~~~~text
+- **A start run.** R148 gives the run that comes when a session starts, and the interval that it begins, unless the person sends the first prompt the moment the session starts. Where no start run comes, the calls before the session's first run that finds both switches on are left out, as they may be in every session whose first prompt is given before it starts, as with `claude -p`, the Agent SDK or a cloud session. So a person opts in before they start a session.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **A start run.**
+~~~~
+
+Clause, R148:
+
+~~~~text
+The capture step also runs when a session starts, is resumed or forked, or is cleared or compacted. That start run reads no transcript, and when it finds both switches on, and no store whose version it does not know, it begins the interval before the session's first call,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+unless the person sends the first prompt the moment the session starts.
+~~~~
+
+Clause, R148:
+
+~~~~text
+Nothing depends on it: where no start run comes, the interval begins at the session's first run that finds both on,
+~~~~
+
+Clause, R40:
+
+~~~~text
+and the calls before it are left out,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+as they may be in every session whose first prompt is given before it starts, as with `claude -p`, the Agent SDK or a cloud session. So a person opts in before they start a session.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **What a run notes.** A run that finds both switches on, and no store whose version it does not know, notes in the store its time, read from the system's clock in UTC, which no setting of the session's environment can move, and a fingerprint of the files that can turn the person's capture on or off: their two global configuration files, each other file that either of git's two readings names for `pr-cost.capture`, and each link on the way to one, made of each one's device and inode numbers, size and modification times and never of its contents or its path, and kept in the store only as a hash. A run that finds another fingerprint than the last that the store notes, whichever session's run noted it, does what an opt-out does, since a change that it cannot read may have been an opt-out and back, so two sessions in one clone for which git reads `pr-cost.capture` from different files, as when their environments name different configuration files, empty the store at each other's runs, and few of their calls are recorded. A run whose clock reads earlier than the latest time that its session's runs noted or read ends that session's intervals and begins none, so the session's next interval begins only once the clock has passed that time. The repository's own git configuration is part of the fingerprint only when it sets the opt-in key, so a routine `git push -u`, which writes that file, ends no interval, and an opt-out and back there between two runs is not seen. A write to a global configuration file, such as `git config --global user.email` or the `safe.directory` line that git's own advice adds, does end the interval, as an opt-out does, and the calls that it leaves out are flagged for consent.
+~~~~
+
+New:
+
+~~~~text
+- **What a run notes.** R107 gives the time and the fingerprint that a run that finds both switches on notes in the store, and R162 that a run that finds another fingerprint does what an opt-out does, since a change that it cannot read may have been an opt-out and back, so two sessions in one clone for which git reads `pr-cost.capture` from different files, as when their environments name different configuration files, empty the store at each other's runs, and few of their calls are recorded. R166 gives what a clock set back ends. The repository's own git configuration is part of the fingerprint only when it sets the opt-in key, so a routine `git push -u`, which writes that file, ends no interval, and an opt-out and back there between two runs is not seen. A write to a global configuration file, such as `git config --global user.email` or the `safe.directory` line that git's own advice adds, does end the interval, as an opt-out does, and the calls that it leaves out are flagged for consent.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **What a run notes.**
+~~~~
+
+Clause, R107:
+
+~~~~text
+A run that finds both switches on, and no store whose version it does not know, notes in the store its time, read from the system's clock in UTC, which no setting of the session's environment can move, and a fingerprint of the files that can turn the person's capture on or off: their two global configuration files, each other file that either of git's two readings names for `pr-cost.capture`, and each link on the way to one, made of each one's device and inode numbers, size and modification times and never of its contents or its path, and kept in the store only as a hash.
+~~~~
+
+Clause, R162:
+
+~~~~text
+A run that finds another fingerprint than the last that the store notes, whichever session's run noted it, does what an opt-out does,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+since a change that it cannot read may have been an opt-out and back, so two sessions in one clone for which git reads `pr-cost.capture` from different files, as when their environments name different configuration files, empty the store at each other's runs, and few of their calls are recorded.
+~~~~
+
+Clause, R166:
+
+~~~~text
+A run whose clock reads earlier than the latest time that its session's runs noted or read ends that session's intervals and begins none, so the session's next interval begins only once the clock has passed that time.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+The repository's own git configuration is part of the fingerprint only when it sets the opt-in key, so a routine `git push -u`, which writes that file, ends no interval, and an opt-out and back there between two runs is not seen. A write to a global configuration file, such as `git config --global user.email` or the `safe.directory` line that git's own advice adds, does end the interval, as an opt-out does, and the calls that it leaves out are flagged for consent.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **No store without consent.** A run that finds either switch off creates no store and adds nothing of its session to one, so a person who has never opted in leaves nothing in the git common directory. Such a run still removes a store that does not parse, and in one of a version that it knows ends its session's interval, noting its time so that a clock set back after it is seen, drops what the retention window ends and removes the store when it then holds nothing, while it leaves one that a later release wrote as it was.
+~~~~
+
+New:
+
+~~~~text
+- **No store without consent.** A run that finds either switch off creates no store and adds nothing of its session to one, so a person who has never opted in leaves nothing in the git common directory. R145 and R55 give what such a run does to a store that is already there.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **No store without consent.** A run that finds either switch off creates no store and adds nothing of its session to one, so a person who has never opted in leaves nothing in the git common directory.
+~~~~
+
+Clause, R145:
+
+~~~~text
+Such a run still removes a store that does not parse, and in one of a version that it knows ends its session's interval, noting its time so that a clock set back after it is seen, drops what the retention window ends and removes the store when it then holds nothing,
+~~~~
+
+Clause, R55:
+
+~~~~text
+while it leaves one that a later release wrote as it was.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **An opt-out empties the store.** A run that finds the person's own capture off, and a store of a version that it knows, ends every session's interval and removes from it every call waiting to be staged, every flag due, every note of a taken call and every session's notes, keeping only what a take-back or a put-back still needs, and the store removes itself once those are done. No call made before that run is staged after it, and turning capture on again records no call that answers a line written before a later run that finds both switches on. A run that began before an opt-out writes nothing after it. A store that a later release wrote waits for a run of a release that knows its version, which treats the opt-out as one that no run saw.
+~~~~
+
+New:
+
+~~~~text
+- **An opt-out empties the store.** R109 gives what a run that finds the person's own capture off removes from the store. No call made before that run is staged after it, and turning capture on again records no call that answers a line written before a later run that finds both switches on. R161 gives that a run that began before an opt-out writes nothing after it. A store that a later release wrote waits for a run of a release that knows its version, which treats the opt-out as one that no run saw.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **An opt-out empties the store.**
+~~~~
+
+Clause, R109:
+
+~~~~text
+A run that finds the person's own capture off, and a store of a version that it knows, ends every session's interval and removes from it every call waiting to be staged, every flag due, every note of a taken call and every session's notes, keeping only what a take-back or a put-back still needs,
+~~~~
+
+Clause, R151:
+
+~~~~text
+and the store removes itself once those are done.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+No call made before that run is staged after it, and turning capture on again records no call that answers a line written before a later run that finds both switches on.
+~~~~
+
+Clause, R161:
+
+~~~~text
+A run that began before an opt-out writes nothing after it.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+A store that a later release wrote waits for a run of a release that knows its version, which treats the opt-out as one that no run saw.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Take-backs go on.** Taking back and putting back ledger files does not wait on the switches, so a ledger file staged before capture was turned off is still taken back when no commit took it.
+~~~~
+
+New:
+
+~~~~text
+- **Take-backs go on.** Taking back and putting back ledger files does not wait on the switches, so a ledger file staged before capture was turned off is still taken back when no commit took it (R110).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Take-backs go on.** Taking back and putting back ledger files does not wait on the switches, so a ledger file staged before capture was turned off is still taken back when no commit took it
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **The report's switch.** The report reads `.pr-cost.json` from the default branch as it was before the merge and as it is after, and runs when either turns the tool on. So a pull request cannot turn off its own report, and the pull request that turns the tool on gets one.
+~~~~
+
+New:
+
+~~~~text
+- **The report's switch.** R19 gives which configuration the report reads, from before the merge and after it. So a pull request cannot turn off its own report, and the pull request that turns the tool on gets one.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **The report's switch.**
+~~~~
+
+Clause, R19:
+
+~~~~text
+The report reads `.pr-cost.json` from the default branch as it was before the merge and as it is after, and runs when either turns the tool on.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+So a pull request cannot turn off its own report, and the pull request that turns the tool on gets one.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Flagged changes.** A pull request that changes `.pr-cost.json`, the hook file, `.claude/settings.json` or `.claude/settings.local.json`, the project settings files that can register it and set its environment, or any workflow file has that change flagged in its comment.
+~~~~
+
+New:
+
+~~~~text
+- **Flagged changes.** A pull request's comment flags the changes that R93 lists.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Flagged changes.**
+~~~~
+
+Clause, R93:
+
+~~~~text
+A pull request that changes `.pr-cost.json`, the hook file, `.claude/settings.json` or `.claude/settings.local.json`, the project settings files that can register it and set its environment, or any workflow file has that change flagged in its comment.
+~~~~
+
+## `docs/features/usage-capture.md`
+
+### Entry
+
+Old:
+
+~~~~text
+- **What is recorded.** For each model call, once: its UTC day, its model, a hash of its message id, whether the main agent or a subagent made it, and its input, output, cache-write and cache-read tokens. Where the transcript gives them, it also records the attributes that change the price: service tier, speed, inference region and server-side tool requests. A call is recorded only when it was made while both switches were on, as the [opt-in's page](switch-and-opt-in.md) says.
+~~~~
+
+New:
+
+~~~~text
+- **What is recorded.** For each model call, once, the fields that R2 gives, and only when it was made while both switches were on, as the [opt-in's page](switch-and-opt-in.md) says.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **What is recorded.** For each model call, once
+~~~~
+
+Clause, R2:
+
+~~~~text
+: its UTC day, its model, a hash of its message id, whether the main agent or a subagent made it, and its input, output, cache-write and cache-read tokens. Where the transcript gives them, it also records the attributes that change the price: service tier, speed, inference region and server-side tool requests.
+~~~~
+
+Clause, R40:
+
+~~~~text
+A call is recorded only
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+when it was made while both switches were on, as the [opt-in's page](switch-and-opt-in.md) says.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Placed by the line it answers.** A run reads again, from the earliest line that a call not yet recorded may still answer, the lines that earlier runs read, so that a call is placed inside or outside an interval by the line it answers, whichever run read that line. A call whose answered line comes before where runs read again, or was skipped as too long for a run's time budget, is left out, and the next ledger file staged for its worktree and branch says that calls were left out for consent, with no count.
+~~~~
+
+New:
+
+~~~~text
+- **Placed by the line it answers.** R165 gives how a run reads again the lines that earlier runs read, so that a call is placed inside or outside an interval by the line it answers, whichever run read that line, and what the next ledger file says of a call that it leaves out.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Placed by the line it answers.**
+~~~~
+
+Clause, R165:
+
+~~~~text
+A run reads again, from the earliest line that a call not yet recorded may still answer, the lines that earlier runs read,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+so that a call is placed inside or outside an interval by the line it answers, whichever run read that line
+~~~~
+
+Clause, R165:
+
+~~~~text
+A call whose answered line comes before where runs read again, or was skipped as too long for a run's time budget, is left out, and the next ledger file staged for its worktree and branch says that calls were left out for consent, with no count.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Where from.** A call's repository and worktree are told by the working directory that its transcript line gives, alone, as git finds them from that directory when a run reads the call: not by what the call reads or writes, not by the branch, and not by the session's variables, such as `GIT_DIR`, that tell git which repository to use, since the git commands that tell them run without the session's `GIT_` variables. A run of the hook file's registration works on the repository that holds the session's project directory, and a run of the plugin on each repository that it meets: first the one where each git command that the hook's condition matches runs, before and after that command, then the one that holds Claude's current directory, then the one that holds the project directory or, when none does, each whose top level is directly inside it, in their paths' order, leaving out one whose git files it cannot read (DR-198). Outside the repository that holds the project directory, a run of the plugin starts a git command that can start a program that a repository's configuration names, as staging, a take-back and a put-back can, only before or after a git command of the session there, or to take back a file that the session staged there, so that a clone that the session only meets or moves into has git start none of the programs that its own configuration names, such as `core.fsmonitor` or `gpg.program`. A run that works on a repository records there only the calls made in it or in one of its worktrees. That rule has limits:
+~~~~
+
+New:
+
+~~~~text
+- **Where from.** R147 and R169 give how a call's repository and worktree are told, by the working directory that its transcript line gives, alone. R76 and R180 give the repositories that a run of the hook file's registration and a run of the plugin work on (DR-198), and R197 where a run of the plugin lets git start a program that a repository's configuration names, so that a clone that the session only meets or moves into has git start none of the programs that its own configuration names, such as `core.fsmonitor` or `gpg.program`. A run that works on a repository records there only the calls made in it or in one of its worktrees (R3, R180). That rule has limits:
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Where from.**
+~~~~
+
+Clause, R147:
+
+~~~~text
+A call's repository and worktree are told by the working directory that its transcript line gives, alone,
+~~~~
+
+Clause, R147:
+
+~~~~text
+as git finds them from that directory when a run reads the call: not by what the call reads or writes, not by the branch,
+~~~~
+
+Clause, R169:
+
+~~~~text
+and not by the session's variables, such as `GIT_DIR`, that tell git which repository to use, since the git commands that tell them run without the session's `GIT_` variables.
+~~~~
+
+Clause, R76:
+
+~~~~text
+A run of the hook file's registration works on the repository that holds the session's project directory,
+~~~~
+
+Clause, R180:
+
+~~~~text
+and a run of the plugin on each repository that it meets: first the one where each git command that the hook's condition matches runs, before and after that command, then the one that holds Claude's current directory, then the one that holds the project directory or, when none does, each whose top level is directly inside it, in their paths' order, leaving out one whose git files it cannot read
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+(DR-198)
+~~~~
+
+Clause, R197:
+
+~~~~text
+Outside the repository that holds the project directory, a run of the plugin starts a git command that can start a program that a repository's configuration names, as staging, a take-back and a put-back can, only before or after a git command of the session there, or to take back a file that the session staged there,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+so that a clone that the session only meets or moves into has git start none of the programs that its own configuration names, such as `core.fsmonitor` or `gpg.program`.
+~~~~
+
+Clause, R3:
+
+~~~~text
+A run that works on a repository records there only the calls made in it or in one of its worktrees.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+That rule has limits:
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Which branch.** A call goes to the branch checked out in its worktree when a run records it, not when it was made (DR-012). A run before every git command that the hook's condition matches records the calls that are over by then, before that command can change the branch, so a call reaches another branch only when it is the call that runs that command and its run cannot yet read it as over, when that run's time budget leaves it unread, or when the branch changes in a way that the condition does not match, as the design's risks list.
+~~~~
+
+New:
+
+~~~~text
+- **Which branch.** R78 gives the branch that a call goes to (DR-012), and R7 the run before every git command that the hook's condition matches, so a call reaches another branch only when it is the call that runs that command and its run cannot yet read it as over, when that run's time budget leaves it unread, or when the branch changes in a way that the condition does not match, as the design's risks list.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Which branch.**
+~~~~
+
+Clause, R78:
+
+~~~~text
+A call goes to the branch checked out in its worktree when a run records it, not when it was made
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+(DR-012)
+~~~~
+
+Clause, R7:
+
+~~~~text
+A run before every git command that the hook's condition matches records the calls that are over by then, before that command can change the branch,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+so a call reaches another branch only when it is the call that runs that command and its run cannot yet read it as over, when that run's time budget leaves it unread, or when the branch changes in a way that the condition does not match, as the design's risks list.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **The store.** Between runs, capture keeps its notes in a store: one file for each user, in a folder of that user's own, `pr-cost-<uid>/store.json` in the repository's git common directory where the system numbers users, as POSIX systems do, and `pr-cost/store.json` where it does not, outside the working tree, shared by every worktree and never committed. It holds only what capture needs to tell a call's worktree and branch, to record each call once and to take back the ledger file of a command that never committed: for each session, its intervals, how far each transcript was read and the latest time that its runs noted or read; each waiting call's entry and each flag due, with the worktree and branch they go to; the day of each call that a commit took; and, until a run resolves it, a note of each staged or taken-back ledger file. A session's id, a transcript's path, a worktree, a branch, a `tool_use_id` and a call are held as SHA-256 hashes, and the last fingerprint that a run noted of the files that hold the opt-in as a hash too, with no path. The only plain names are a staged ledger file's path, its worktree's name and its transcript's path, which carries the session's id, and a taken-back one's path and worktree's name, which go when their note does. None of these ids, paths and names reaches a ledger file, and the store never leaves the git common directory.
+~~~~
+
+New:
+
+~~~~text
+- **The store.** Between runs, capture keeps its notes in a store: one file for each user, in a folder of that user's own, `pr-cost-<uid>/store.json` in the repository's git common directory where the system numbers users, as POSIX systems do, and `pr-cost/store.json` where it does not, outside the working tree, shared by every worktree and never committed. R149 and R170 give what it holds, and which of it only as SHA-256 hashes, and R4 that none of it reaches a ledger file, and the store never leaves the git common directory.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **The store.** Between runs, capture keeps its notes in a store: one file for each user, in a folder of that user's own, `pr-cost-<uid>/store.json` in the repository's git common directory where the system numbers users, as POSIX systems do, and `pr-cost/store.json` where it does not, outside the working tree, shared by every worktree and never committed.
+~~~~
+
+Clause, R149:
+
+~~~~text
+It holds only what capture needs to tell a call's worktree and branch, to record each call once and to take back the ledger file of a command that never committed: for each session, its intervals, how far each transcript was read and the latest time that its runs noted or read; each waiting call's entry and each flag due, with the worktree and branch they go to; the day of each call that a commit took; and, until a run resolves it, a note of each staged or taken-back ledger file.
+~~~~
+
+Clause, R149:
+
+~~~~text
+A session's id, a transcript's path, a worktree, a branch, a `tool_use_id` and a call are held as SHA-256 hashes, and the last fingerprint that a run noted of the files that hold the opt-in as a hash too, with no path.
+~~~~
+
+Clause, R170:
+
+~~~~text
+The only plain names are a staged ledger file's path, its worktree's name and its transcript's path, which carries the session's id, and a taken-back one's path and worktree's name, which go when their note does.
+~~~~
+
+Clause, R4:
+
+~~~~text
+None of these ids, paths and names reaches a ledger file,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+and the store never leaves the git common directory.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **For 30 days at most.** The store's retention window is 30 days. A run records no call whose day is more than 30 days before its own, and drops a waiting call, a flag due or a taken call's note that old, and the next ledger file staged for a dropped waiting call's worktree and branch says that calls were left out for their age, with no count. A session's notes go once none of its runs has come within the window, a ledger file staged that long ago is taken back as for a command that is over, and a store that holds nothing removes itself. Retention runs at every run that finds a store of a version that it knows, whatever the switches say, and only then, so a repository where no session runs again keeps its store until the person removes it.
+~~~~
+
+New:
+
+~~~~text
+- **For 30 days at most.** The store's retention window is 30 days. R150 gives what a run drops and takes back at that window, R155 what the next ledger file then says, and R151 that a store that holds nothing removes itself. Retention runs at every run that finds a store of a version that it knows, whatever the switches say, and only then, so a repository where no session runs again keeps its store until the person removes it.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **For 30 days at most.** The store's retention window is 30 days.
+~~~~
+
+Clause, R150:
+
+~~~~text
+A run records no call whose day is more than 30 days before its own, and drops a waiting call, a flag due or a taken call's note that old,
+~~~~
+
+Clause, R155:
+
+~~~~text
+and the next ledger file staged for a dropped waiting call's worktree and branch says that calls were left out for their age, with no count.
+~~~~
+
+Clause, R150:
+
+~~~~text
+A session's notes go once none of its runs has come within the window, a ledger file staged that long ago is taken back as for a command that is over,
+~~~~
+
+Clause, R151:
+
+~~~~text
+and a store that holds nothing removes itself.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+Retention runs at every run that finds a store of a version that it knows, whatever the switches say, and only then, so a repository where no session runs again keeps its store until the person removes it.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **For its owner alone.** Each user's store is in a folder of that user's own. Each write leaves the store's folder readable, writable and enterable by its owner alone, mode 0700, and its file readable and writable by its owner alone, mode 0600, whatever the umask, writing a new file and renaming it over the old one, never through a link. A run leaves alone a store whose file or folder is a link, or on Windows another reparse point, is not a regular file or a folder, or belongs to another user, and acts on a note only for a ledger file of the form that it writes, in a worktree of this repository. A run that cannot make its store's folder records nothing. On Windows, the step checks neither the store's access list nor its owner, so there the store has the access of the git common directory around it.
+~~~~
+
+New:
+
+~~~~text
+- **For its owner alone.** R152 gives how each write leaves the store's folder and file for its owner alone, mode 0700 and mode 0600, and the stores and notes that a run leaves alone. A run that cannot make its store's folder records nothing. On Windows, the step checks neither the store's access list nor its owner, so there the store has the access of the git common directory around it.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **For its owner alone.**
+~~~~
+
+Clause, R152:
+
+~~~~text
+Each user's store is in a folder of that user's own.
+~~~~
+
+Clause, R152:
+
+~~~~text
+Each write leaves the store's folder readable, writable and enterable by its owner alone, mode 0700, and its file readable and writable by its owner alone, mode 0600, whatever the umask, writing a new file and renaming it over the old one, never through a link.
+~~~~
+
+Clause, R152:
+
+~~~~text
+A run leaves alone a store whose file or folder is a link, or on Windows another reparse point, is not a regular file or a folder, or belongs to another user, and acts on a note only for a ledger file of the form that it writes, in a worktree of this repository.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+A run that cannot make its store's folder records nothing.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+On Windows, the step checks neither the store's access list nor its owner, so there the store has the access of the git common directory around it.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **A removed store.** A store that the person removes, or that does not parse, as when a sync or a power loss cut it short, takes its notes with it: no call that answers a line written before the next run that finds both switches on is recorded, and a ledger file staged before the removal is left to git. A run that finds a switch off removes a store that does not parse, and one that finds both on replaces it. A store does not parse only when a run cannot read a version from it, or reads one that it knows from a store that is not of that version's form, so a run never takes for a broken one a store that it leaves alone above, or one that a later release wrote. So before removing the store, look for a staged ledger file with `git status` in every worktree that `git worktree list` names. A session resumed in a fresh clone at the same path, which holds no store, records none of the calls that answer a line written before its first run there.
+~~~~
+
+New:
+
+~~~~text
+- **A removed store.** R153 gives what a store that the person removes, or that does not parse, as when a sync or a power loss cut it short, takes with it, and when a store does not parse. So before removing the store, look for a staged ledger file with `git status` in every worktree that `git worktree list` names. A session resumed in a fresh clone at the same path, which holds no store, records none of the calls that answer a line written before its first run there.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **A removed store.**
+~~~~
+
+Clause, R153:
+
+~~~~text
+A store that the person removes, or that does not parse,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+as when a sync or a power loss cut it short,
+~~~~
+
+Clause, R153:
+
+~~~~text
+takes its notes with it: no call that answers a line written before the next run that finds both switches on is recorded, and a ledger file staged before the removal is left to git.
+~~~~
+
+Clause, R145:
+
+~~~~text
+A run that finds a switch off removes a store that does not parse,
+~~~~
+
+Clause, R153:
+
+~~~~text
+and one that finds both on replaces it.
+~~~~
+
+Clause, R153:
+
+~~~~text
+A store does not parse only when a run cannot read a version from it, or reads one that it knows from a store that is not of that version's form, so a run never takes for a broken one a store that it leaves alone above, or one that a later release wrote.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+So before removing the store, look for a staged ledger file with `git status` in every worktree that `git worktree list` names.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+A session resumed in a fresh clone at the same path, which holds no store, records none of the calls that answer a line written before its first run there.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **No transcript kept.** Capture writes no line of a transcript, and no value from one beyond an entry's fields and the store's notes, to any file or to standard error. A pull request's cost is recomputed from its ledger, the price table and GitHub's jobs API alone, and keeping or reprocessing transcripts would need a change of its own (DR-178).
+~~~~
+
+New:
+
+~~~~text
+- **No transcript kept.** Capture writes no line of a transcript, and no value from one beyond an entry's fields and the store's notes, to any file or to standard error (R154). A pull request's cost is recomputed from its ledger, the price table and GitHub's jobs API alone, and keeping or reprocessing transcripts would need a change of its own (DR-178).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **No transcript kept.** Capture writes no line of a transcript, and no value from one beyond an entry's fields and the store's notes, to any file or to standard error
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+A pull request's cost is recomputed from its ledger, the price table and GitHub's jobs API alone, and keeping or reprocessing transcripts would need a change of its own (DR-178).
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **When.** The hook runs when a session starts, is resumed or forked, or is cleared or compacted; when Claude finishes responding, when a subagent finishes, when a turn ends in an API error and when the session ends; and before and after each of the agent's Bash commands that the hook's condition `Bash(git *)` matches. The run when a session starts, a start run, reads no transcript: it takes back and puts back what is due, as any run does, and begins the session's interval when it finds both switches on and no store whose version it does not know. The plugin's run when a session ends takes back first, before it reads any transcript, and stops within the 1.5 seconds that Claude Code gives a plugin's `SessionEnd` hooks, which a plugin cannot raise.
+~~~~
+
+New:
+
+~~~~text
+- **When.** R7 gives the events at which the hook runs, and R148 what the start run does. The plugin's run when a session ends takes back first, as R90 gives it, and stops within the 1.5 seconds that Claude Code gives a plugin's `SessionEnd` hooks, which a plugin cannot raise.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **When.**
+~~~~
+
+Clause, R7:
+
+~~~~text
+The hook runs when a session starts, is resumed or forked, or is cleared or compacted; when Claude finishes responding, when a subagent finishes, when a turn ends in an API error and when the session ends; and before and after each of the agent's Bash commands that the hook's condition `Bash(git *)` matches.
+~~~~
+
+Clause, R148:
+
+~~~~text
+The run when a session starts, a start run, reads no transcript: it takes back and puts back what is due, as any run does, and begins the session's interval when it finds both switches on and no store whose version it does not know.
+~~~~
+
+Clause, R90:
+
+~~~~text
+The plugin's run when a session ends takes back first, before it reads any transcript, and stops
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+within the 1.5 seconds that Claude Code gives a plugin's `SessionEnd` hooks, which a plugin cannot raise.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **The plugin.** The tool also ships the capture step as a Claude Code plugin, which a person adds from a release's zip or from the tool's repository as a marketplace (DR-203). Its hooks run the same file, from the plugin's own folder, for the same events, with the same condition and timeouts as the hook file's registration, through a command that carries the file's SHA-256 and runs it only when it matches, with each CRLF taken as LF, so that a checkout that writes Windows line endings still runs it, as the hook file's registration does, so that neither a branch checked out during the session nor, for a plugin loaded in place from a folder, a change to that folder's file changes what it runs (DR-197). Its manifest holds only its name, version, description, author, licence and repository, and its hooks are all command hooks. It runs wherever it is loaded, in a repository that registers the hook or not, and records only where the tool is on and the person has opted in.
+~~~~
+
+New:
+
+~~~~text
+- **The plugin.** The tool also ships the capture step as a Claude Code plugin, which a person adds from a release's zip or from the tool's repository as a marketplace (DR-203). R179 gives how its hooks run the same file as the hook file's registration, only when its SHA-256 matches, so that neither a branch checked out during the session nor, for a plugin loaded in place from a folder, a change to that folder's file changes what it runs (DR-197), and R188 what its manifest and hooks hold. It runs wherever it is loaded, in a repository that registers the hook or not, and records only where the tool is on and the person has opted in.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **The plugin.** The tool also ships the capture step as a Claude Code plugin, which a person adds from a release's zip or from the tool's repository as a marketplace (DR-203).
+~~~~
+
+Clause, R179:
+
+~~~~text
+Its hooks run the same file, from the plugin's own folder, for the same events, with the same condition and timeouts as the hook file's registration, through a command that carries the file's SHA-256 and runs it only when it matches, with each CRLF taken as LF, so that a checkout that writes Windows line endings still runs it, as the hook file's registration does,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+so that neither a branch checked out during the session nor, for a plugin loaded in place from a folder, a change to that folder's file changes what it runs (DR-197)
+~~~~
+
+Clause, R188:
+
+~~~~text
+Its manifest holds only its name, version, description, author, licence and repository, and its hooks are all command hooks.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+It runs wherever it is loaded, in a repository that registers the hook or not, and records only where the tool is on and the person has opted in.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Two copies in one session.** A session can run the plugin and the hook file's registration together, their runs coming in parallel at each event, while of two copies of the plugin, as when a person adds it both ways, only one registers its hooks. Both copies work through the same store of each repository, under its lock, so each call is recorded once and each commit gets one ledger file at most. Every release that writes a store version keeps its path, lock and fields and makes its fingerprint the same way, whose hash the checks hold once a published release has written that version, and the store notes, for each session, the latest release that has run in it, so a copy of an earlier release leaves that session to the later one, but for an opt-out, which it acts on, and one that finds the store at a version that it does not know leaves the store to the copy whose release wrote it. Once the later copy no longer runs there, as when the person removes the plugin, the earlier one records nothing in that clone, with no flag, until it is updated (DR-206).
+~~~~
+
+New:
+
+~~~~text
+- **Two copies in one session.** A session can run the plugin and the hook file's registration together, their runs coming in parallel at each event, while of two copies of the plugin, as when a person adds it both ways, only one registers its hooks. R181 gives how both copies share each repository's store, so each call is recorded once and each commit gets one ledger file at most, R192 how every release writes a store version the same way, and R191 how a copy of an earlier release leaves a session to the later one, but for an opt-out, which it acts on. Once the later copy no longer runs there, as when the person removes the plugin, the earlier one records nothing in that clone, with no flag, until it is updated (DR-206).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Two copies in one session.** A session can run the plugin and the hook file's registration together, their runs coming in parallel at each event, while of two copies of the plugin, as when a person adds it both ways, only one registers its hooks.
+~~~~
+
+Clause, R181:
+
+~~~~text
+Both copies work through the same store of each repository, under its lock,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+so each call is recorded once and each commit gets one ledger file at most
+~~~~
+
+Clause, R192:
+
+~~~~text
+Every release that writes a store version keeps its path, lock and fields and makes its fingerprint the same way, whose hash the checks hold once a published release has written that version,
+~~~~
+
+Clause, R191:
+
+~~~~text
+and the store notes, for each session, the latest release that has run in it, so a copy of an earlier release leaves that session to the later one,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+but for an opt-out, which it acts on
+~~~~
+
+Clause, R55:
+
+~~~~text
+and one that finds the store at a version that it does not know leaves the store to the copy whose release wrote it.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+Once the later copy no longer runs there, as when the person removes the plugin, the earlier one records nothing in that clone, with no flag, until it is updated (DR-206).
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **When no commit takes the file.** If the commit fails, is refused at a permission prompt or by a permission rule, is cancelled or never runs, the hook takes the file back, and its calls and flags wait for a later commit.
+~~~~
+
+New:
+
+~~~~text
+- **When no commit takes the file.** If the commit fails, is refused at a permission prompt or by a permission rule, is cancelled or never runs, the hook takes the file back, and its calls and flags wait for a later commit (R9, R87).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **When no commit takes the file.** If the commit fails, is refused at a permission prompt or by a permission rule, is cancelled or never runs, the hook takes the file back, and its calls and flags wait for a later commit
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Removed calls stay removed.** Once a run has found a commit holding a ledger file, the hook never stages that file's calls again in that clone, so a ledger file removed after that takes its calls with it.
+~~~~
+
+New:
+
+~~~~text
+- **Removed calls stay removed.** Once a run has found a commit holding a ledger file, the hook never stages that file's calls again in that clone, so a ledger file removed after that takes its calls with it (R52).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Removed calls stay removed.** Once a run has found a commit holding a ledger file, the hook never stages that file's calls again in that clone, so a ledger file removed after that takes its calls with it
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Counts are checked.** A call with a count that is not a whole number within the documented ceiling is refused, and the ledger says how many calls were refused.
+~~~~
+
+New:
+
+~~~~text
+- **Counts are checked.** R5 gives the counts that capture refuses, and the ledger says how many calls were refused.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Counts are checked.**
+~~~~
+
+Clause, R5:
+
+~~~~text
+A call with a count that is not a whole number within the documented ceiling is refused,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+and the ledger says how many calls were refused.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Two runs at once.** Runs at the same time, such as the main agent's and a subagent's, never split each other's notes or record one call twice.
+~~~~
+
+New:
+
+~~~~text
+- **Two runs at once.** Runs at the same time, such as the main agent's and a subagent's, never split each other's notes or record one call twice (R11).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Two runs at once.** Runs at the same time, such as the main agent's and a subagent's, never split each other's notes or record one call twice
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **It never gets in the way.** A failure in the hook never stops the session. The hook prints nothing that Claude reads, writes no transcript text anywhere, and stops at a time budget, leaving the rest for its next run.
+~~~~
+
+New:
+
+~~~~text
+- **It never gets in the way.** A failure in the hook never stops the session. The hook prints nothing that Claude reads, writes no transcript text anywhere, and stops at a time budget, leaving the rest for its next run (R13, R90, R154).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **It never gets in the way.** A failure in the hook never stops the session. The hook prints nothing that Claude reads, writes no transcript text anywhere, and stops at a time budget, leaving the rest for its next run
+~~~~
+
+## `docs/features/project-standards.md`
+
+### Entry
+
+Old:
+
+~~~~text
+- **Documentation.** A register of every requirement, one page per feature, and [`../how-it-works.md`](../how-it-works.md), which names every credential, permission, connection and flow. Tests fail when the register and the specs disagree, when a workflow grants a permission or runs an action that the page does not name, and when a flow has no diagram.
+~~~~
+
+New:
+
+~~~~text
+- **Documentation.** A register of every requirement, one page per feature, and [`../how-it-works.md`](../how-it-works.md), which names every credential, permission, connection and flow, each held by the tests that R29, R100 and R101 give.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Documentation.** A register of every requirement, one page per feature, and [`../how-it-works.md`](../how-it-works.md), which names every credential, permission, connection and flow
+~~~~
+
+Clause, R100:
+
+~~~~text
+Tests fail when the register and the specs disagree,
+~~~~
+
+Clause, R101:
+
+~~~~text
+when a workflow grants a permission or runs an action that the page does not name,
+~~~~
+
+Clause, R29:
+
+~~~~text
+and when a flow has no diagram.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Validation, written down.** Each feature is one spec, with a page that names all its requirements and says how the feature is validated, and each change's proposal says how each of its capabilities is validated. Tests fail when a page and its spec disagree, when a page is missing from the index, and when a proposal leaves a capability out.
+~~~~
+
+New:
+
+~~~~text
+- **Validation, written down.** R73 and R74 give the page that each feature has, with all its requirements and how it is validated, what each change's proposal says of each capability, and the tests that hold both.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Validation, written down.**
+~~~~
+
+Clause, R73:
+
+~~~~text
+Each feature is one spec, with a page that names all its requirements and says how the feature is validated,
+~~~~
+
+Clause, R74:
+
+~~~~text
+and each change's proposal says how each of its capabilities is validated.
+~~~~
+
+Clause, R73:
+
+~~~~text
+Tests fail when a page and its spec disagree, when a page is missing from the index,
+~~~~
+
+Clause, R74:
+
+~~~~text
+and when a proposal leaves a capability out.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **The specs' form.** Every spec that OpenSpec reads, at any depth below `openspec/specs/` and below the `specs/` folder of each change that is not archived, is read as OpenSpec reads it, line by line, so that none is read otherwise than it is written or shown. Tests fail on a requirement, a scenario, a heading or a line out of the form that OpenSpec's template gives, each as the spec's requirements on the specs' form list them; on text that GitHub would hide or show otherwise than OpenSpec and agents read it; on a `spec.md` that they do not read and on a symbolic link, which they never follow; and when they read no requirement or no scenario. CI also compares the tests' reading of each spec and change with what the pinned OpenSpec shows for it, so that a release of OpenSpec that reads specs otherwise, or a defect in the tests' reader, fails CI, and so does a change that OpenSpec does not show, such as one with no proposal yet, or a change's spec that gives no requirement.
+~~~~
+
+New:
+
+~~~~text
+- **The specs' form.** R173 to R178 give how every spec that OpenSpec reads is read as OpenSpec reads it, line by line, so that none is read otherwise than it is written or shown, and how CI compares that reading with what the pinned OpenSpec shows.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **The specs' form.**
+~~~~
+
+Clause, R177:
+
+~~~~text
+Every spec that OpenSpec reads, at any depth below `openspec/specs/` and below the `specs/` folder of each change that is not archived,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+is read as OpenSpec reads it, line by line, so that none is read otherwise than it is written or shown
+~~~~
+
+Clause, R173:
+
+~~~~text
+Tests fail on a requirement, a scenario, a heading or a line out of the form that OpenSpec's template gives, each as the spec's requirements on the specs' form list them;
+~~~~
+
+Clause, R176:
+
+~~~~text
+on text that GitHub would hide or show otherwise than OpenSpec and agents read it;
+~~~~
+
+Clause, R177:
+
+~~~~text
+on a `spec.md` that they do not read and on a symbolic link, which they never follow; and when they read no requirement or no scenario.
+~~~~
+
+Clause, R178:
+
+~~~~text
+CI also compares the tests' reading of each spec and change with what the pinned OpenSpec shows for it, so that a release of OpenSpec that reads specs otherwise, or a defect in the tests' reader, fails CI, and so does a change that OpenSpec does not show, such as one with no proposal yet, or a change's spec that gives no requirement.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **What the opt-in publishes, and where it applies.** The README, the opt-in's feature page and the ledger's say that an opt-out, a removed ledger file or a removed store leaves each pushed ledger file in its branch's history, in clones, forks and posted comments, that a later push publishes those in commits not yet pushed, that a force-push does not remove what GitHub keeps for the pull requests that referenced them, and that a hashed id does not hide whose record it is. The README and the opt-in's page also say that one opt-in covers every repository that turns the tool on, later ones too, with no notice in any of them, and with the plugin each one where the person's sessions work or commit, whether or not it registers the hook, that a repository's own setting that turns capture off holds only in that clone, and how a person turns capture off for a folder. The README's sections on the opt-in, on cloud threads and on organizations say that a person sets their own opt-in, or their organization does once it has told them, and that an agent that sets the tool up turns capture on for no one. The glossary lists `anonymous` as a word to avoid, so that the wording test fails on a page whose prose uses it.
+~~~~
+
+New:
+
+~~~~text
+- **What the opt-in publishes, and where it applies.** R159 and R164 give what the README, the opt-in's feature page and the ledger's say of what an opt-out leaves published, what a hashed id does not hide and where an opt-in applies, with the glossary's word to avoid, and R204 what the README says of who sets an opt-in.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **What the opt-in publishes, and where it applies.**
+~~~~
+
+Clause, R159:
+
+~~~~text
+The README, the opt-in's feature page and the ledger's say that an opt-out, a removed ledger file or a removed store leaves each pushed ledger file in its branch's history, in clones, forks and posted comments, that a later push publishes those in commits not yet pushed, that a force-push does not remove what GitHub keeps for the pull requests that referenced them, and that a hashed id does not hide whose record it is.
+~~~~
+
+Clause, R164:
+
+~~~~text
+The README and the opt-in's page also say that one opt-in covers every repository that turns the tool on, later ones too, with no notice in any of them, and with the plugin each one where the person's sessions work or commit, whether or not it registers the hook, that a repository's own setting that turns capture off holds only in that clone, and how a person turns capture off for a folder.
+~~~~
+
+Clause, R204:
+
+~~~~text
+The README's sections on the opt-in, on cloud threads and on organizations say that a person sets their own opt-in, or their organization does once it has told them, and that an agent that sets the tool up turns capture on for no one.
+~~~~
+
+Clause, R159:
+
+~~~~text
+The glossary lists `anonymous` as a word to avoid, so that the wording test fails on a page whose prose uses it.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Cloud threads, organizations and the plugin.** The README and the capture's feature page say that a project's cloud threads run capture only through the plugin, give the setup script's line, which opts in each session in that environment in every repository that turns the tool on, say that calls made from the folder that holds the clones are left out and flagged, that a call made from a clone counts there whatever clone it works on, and how to keep a session inside a repository, and that one `cd` into a clone does not keep it there, since Claude's current directory can go back to the thread's folder, and say that a machine that cannot be resumed loses the calls that no commit took. The README says that removing the line, or using another environment, reaches only sessions that start afterwards, how to turn capture off in a session that is running, what can undo each way, how to see a session's opt-in and the hooks that run, and that a repository's settings can choose the environment of the cloud sessions that `claude --cloud` starts from its clone, which a person keeps with the clone's local settings. It says how an organization turns the plugin on for its members, with no `ref`, and puts the opt-in's line in a shared environment, which sessions each reaches, that a member who has picked no environment uses the organization's default, that sharing an environment, or making it the default, shares its line, so that an Owner takes their own line out first, that a member sees a shared environment read-only, so that an opt-out there holds only until its machine is rebuilt, that its managed settings can opt members in with a hook that does so only in cloud sessions, and what a hook without that condition leaves on a member's own computer, that the organization tells its members first and what is then published, how a member sees what turns capture on and turns it off, and that Projects are not offered on Team or Enterprise plans yet. It gives both ways to install the plugin, the release's zip first, with the command that checks its SHA-256, then the repository as a marketplace, says when a marketplace's updates arrive, that a fixed release comes from its zip, since a release's own tag holds an earlier release's plugin, or none, that a zip follows no address, that a plugin loaded in place runs whatever its folder holds, and that a repository still copies the hook file. It says which release of the plugin writes a session's ledger files, what a later or an earlier plugin then does, that only one copy of a plugin's name runs its hooks and how to see which, that a tag with no published release is not a version, and where a refused commit can leave a ledger file staged.
+~~~~
+
+New:
+
+~~~~text
+- **Cloud threads, organizations and the plugin.** R185 gives what the README and the capture's feature page say of how capture covers a project's cloud threads, R194 what the README says of turning capture off in a session that is running and of checking it, R186 what it says of an organization's option, R187 the two ways to install the plugin that it gives, the zip first, and R195 and R196 what it says of which release of the plugin runs and where a refused commit can leave a ledger file staged.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Cloud threads, organizations and the plugin.**
+~~~~
+
+Clause, R185:
+
+~~~~text
+The README and the capture's feature page say that a project's cloud threads run capture only through the plugin, give the setup script's line, which opts in each session in that environment in every repository that turns the tool on, say that calls made from the folder that holds the clones are left out and flagged, that a call made from a clone counts there whatever clone it works on, and how to keep a session inside a repository, and that one `cd` into a clone does not keep it there, since Claude's current directory can go back to the thread's folder, and say that a machine that cannot be resumed loses the calls that no commit took.
+~~~~
+
+Clause, R194:
+
+~~~~text
+The README says that removing the line, or using another environment, reaches only sessions that start afterwards, how to turn capture off in a session that is running, what can undo each way, how to see a session's opt-in and the hooks that run, and that a repository's settings can choose the environment of the cloud sessions that `claude --cloud` starts from its clone, which a person keeps with the clone's local settings.
+~~~~
+
+Clause, R186:
+
+~~~~text
+It says how an organization turns the plugin on for its members, with no `ref`, and puts the opt-in's line in a shared environment, which sessions each reaches, that a member who has picked no environment uses the organization's default, that sharing an environment, or making it the default, shares its line, so that an Owner takes their own line out first, that a member sees a shared environment read-only, so that an opt-out there holds only until its machine is rebuilt, that its managed settings can opt members in with a hook that does so only in cloud sessions, and what a hook without that condition leaves on a member's own computer, that the organization tells its members first and what is then published, how a member sees what turns capture on and turns it off, and that Projects are not offered on Team or Enterprise plans yet.
+~~~~
+
+Clause, R187:
+
+~~~~text
+It gives both ways to install the plugin, the release's zip first, with the command that checks its SHA-256, then the repository as a marketplace, says when a marketplace's updates arrive, that a fixed release comes from its zip, since a release's own tag holds an earlier release's plugin, or none, that a zip follows no address, that a plugin loaded in place runs whatever its folder holds, and that a repository still copies the hook file.
+~~~~
+
+Clause, R195:
+
+~~~~text
+It says which release of the plugin writes a session's ledger files, what a later or an earlier plugin then does, that only one copy of a plugin's name runs its hooks and how to see which, that a tag with no published release is not a version,
+~~~~
+
+Clause, R196:
+
+~~~~text
+and where a refused commit can leave a ledger file staged.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **The README's short start.** The README opens, after its first paragraph and its status, with a short start that holds no HTML and at most 200 words outside code, counted as the spec's scenarios count them. It says how a repository turns the tool on, pinned to a published release, and, before any step that opts anyone in, that the tool records only the sessions of people who are opted in, that one opt-in covers every repository that turns the tool on and every agent that the tool records, later ones too, that a call counts in the repository that it is made from, whatever it works on, and that what a session spends is committed with its work, can be traced to the person, is published when that work is pushed, even after an opt-out, and stays published. It also says how a person opts in on each machine, with the same line in the setup script of a cloud environment that only they use, how a person adds the plugin for a project's cloud threads in the project's settings, from the latest release's zip after checking its checksum against that release's README or from this repository's marketplace, named by its address, whose updates need no approval, how an organization tells its members and then opts them in, and how to stop, on each machine and in each running session, each step linking the section that gives its detail. The sections of detail follow it, each with its heading shown and its text folded until a reader opens it, and the README holds only printable ASCII and line breaks, and no other text that GitHub hides. Every address that the README gives is on its test's list or names, on GitHub, only this repository, its latest release, or a release, a release's file, a file or a folder at a release's tag or a placeholder, and its section on adopting the tool takes the hook file, its registration and the calling workflow from the README at a published release's commit, leaving the calling workflow's pin for that commit. While this repository's root marketplace file holds no entry for the tool's plugin, the README's status says that the marketplace does not serve it yet. Tests fail when the short start grows past its limit, moves, is hidden behind a README in the `.github` folder, holds HTML, links anywhere but the README's headings and this repository's latest release by its full address, leaves out what an opt-in publishes or gives it after a step that opts anyone in, or gives a command that its section or the specs do not, when a section of detail shows its text, when the README holds a character other than printable ASCII and a line break, text that GitHub hides or an address elsewhere, or names anything else under this repository's address, such as a commit by its ID, a branch, a pull request's ref, a pull request, an issue or a comparison, when its status leaves out that the marketplace does not serve the plugin yet while the root marketplace file holds no entry for it, and when its calling workflow gives a pin or the section on adopting the tool leaves out where the tool comes from.
+~~~~
+
+New:
+
+~~~~text
+- **The README's short start.** R198 to R201 give the short start that the README opens with, what it says before any step that opts anyone in, the sections of detail folded below it and the addresses that the README may give, R203 where its section on adopting the tool takes the tool from, and R205 what its status says while this repository's root marketplace file holds no entry for the tool's plugin, each with the tests that hold it.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **The README's short start.**
+~~~~
+
+Clause, R198:
+
+~~~~text
+The README opens, after its first paragraph and its status, with a short start that holds no HTML and at most 200 words outside code, counted as the spec's scenarios count them.
+~~~~
+
+Clause, R199:
+
+~~~~text
+It says how a repository turns the tool on, pinned to a published release, and, before any step that opts anyone in, that the tool records only the sessions of people who are opted in, that one opt-in covers every repository that turns the tool on and every agent that the tool records, later ones too, that a call counts in the repository that it is made from, whatever it works on, and that what a session spends is committed with its work, can be traced to the person, is published when that work is pushed, even after an opt-out, and stays published.
+~~~~
+
+Clause, R198:
+
+~~~~text
+It also says how a person opts in on each machine, with the same line in the setup script of a cloud environment that only they use, how a person adds the plugin for a project's cloud threads in the project's settings, from the latest release's zip after checking its checksum against that release's README or from this repository's marketplace, named by its address, whose updates need no approval, how an organization tells its members and then opts them in, and how to stop, on each machine and in each running session, each step linking the section that gives its detail.
+~~~~
+
+Clause, R200:
+
+~~~~text
+The sections of detail follow it, each with its heading shown and its text folded until a reader opens it, and the README holds only printable ASCII and line breaks, and no other text that GitHub hides.
+~~~~
+
+Clause, R201:
+
+~~~~text
+Every address that the README gives is on its test's list or names, on GitHub, only this repository, its latest release, or a release, a release's file, a file or a folder at a release's tag or a placeholder,
+~~~~
+
+Clause, R203:
+
+~~~~text
+and its section on adopting the tool takes the hook file, its registration and the calling workflow from the README at a published release's commit, leaving the calling workflow's pin for that commit.
+~~~~
+
+Clause, R205:
+
+~~~~text
+While this repository's root marketplace file holds no entry for the tool's plugin, the README's status says that the marketplace does not serve it yet.
+~~~~
+
+Clause, R198:
+
+~~~~text
+Tests fail when the short start grows past its limit, moves, is hidden behind a README in the `.github` folder, holds HTML,
+~~~~
+
+Clause, R201:
+
+~~~~text
+links anywhere but the README's headings and this repository's latest release by its full address,
+~~~~
+
+Clause, R199:
+
+~~~~text
+leaves out what an opt-in publishes or gives it after a step that opts anyone in,
+~~~~
+
+Clause, R198:
+
+~~~~text
+or gives a command that its section or the specs do not,
+~~~~
+
+Clause, R200:
+
+~~~~text
+when a section of detail shows its text, when the README holds a character other than printable ASCII and a line break, text that GitHub hides
+~~~~
+
+Clause, R201:
+
+~~~~text
+or an address elsewhere, or names anything else under this repository's address, such as a commit by its ID, a branch, a pull request's ref, a pull request, an issue or a comparison,
+~~~~
+
+Clause, R205:
+
+~~~~text
+when its status leaves out that the marketplace does not serve the plugin yet while the root marketplace file holds no entry for it,
+~~~~
+
+Clause, R203:
+
+~~~~text
+and when its calling workflow gives a pin or the section on adopting the tool leaves out where the tool comes from.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **The backlog and the roadmap.** Planned work is kept as backlog items, one file each in `docs/backlog/`, named `B-NNN-words.md` and numbered from B-001, each giving its status (`Open to feedback and contributions`, `Planned`, `In progress`, `Done` or `Dropped`), the date it last changed, a brief of one to three sentences, the IDs it rests on, the issue it came from and the pull requests that deliver it, and then its problem, what done looks like and the points that reviews postponed to it. An item becomes planned only through a pull request that the owner merges, by a change to its status line, never skips planned on its way to being built, is never removed or renamed, and changes its date with its text. The backlog's page says that an item describes and is neither a promise nor a date, what each status means, and that done means merged, with the changelog naming the release. `docs/roadmap.md`, which the README's list of documentation links, says what is now, next and later, with the known limitations and the known bugs: Now, Next and Later are the index of the open items, one line each giving the item's title, status, date and brief as the item does, and Now ends with a line on the build. Each item listed under Next or Later rests on at least one ID, and Later opens by saying how work on an item starts. Each record that the README's list of what the first version does not support links is named by an item under Later. Known limitations is a short list that links each feature page's section on known limitations and the roadmap, and between them every risk of every change's design is listed by its title. The roadmap and the items name issues and pull requests by number alone, and they and those sections link only a heading of their own page or this repository's tracked files, give no fenced or indented code, no image, no `@` and no space in inline code, and hold no text that GitHub hides. Tests fail on a section or link missing, a line that differs from its item, an open item missing or listed twice, a closed item listed, an item out of form, without one of the statuses, naming what does not exist, stale, changed without a new date, removed or renamed, a risk that no page lists, a link elsewhere and hidden text.
+~~~~
+
+New:
+
+~~~~text
+- **The backlog and the roadmap.** Planned work is kept as backlog items in `docs/backlog/`, indexed by `docs/roadmap.md`, as R206 to R211 and R213 to R218 give them, with the tests that hold both.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **The backlog and the roadmap.**
+~~~~
+
+Clause, R211:
+
+~~~~text
+Planned work is kept as backlog items, one file each in `docs/backlog/`, named `B-NNN-words.md` and numbered from B-001,
+~~~~
+
+Clause, R207:
+
+~~~~text
+each giving its status (`Open to feedback and contributions`, `Planned`, `In progress`, `Done` or `Dropped`),
+~~~~
+
+Clause, R211:
+
+~~~~text
+the date it last changed, a brief of one to three sentences, the IDs it rests on, the issue it came from and the pull requests that deliver it, and then its problem, what done looks like and the points that reviews postponed to it.
+~~~~
+
+Clause, R218:
+
+~~~~text
+An item becomes planned only through a pull request that the owner merges, by a change to its status line, never skips planned on its way to being built,
+~~~~
+
+Clause, R216:
+
+~~~~text
+is never removed or renamed, and changes its date with its text.
+~~~~
+
+Clause, R217:
+
+~~~~text
+The backlog's page says that an item describes and is neither a promise nor a date, what each status means, and that done means merged, with the changelog naming the release.
+~~~~
+
+Clause, R206:
+
+~~~~text
+`docs/roadmap.md`, which the README's list of documentation links, says what is now, next and later, with the known limitations and the known bugs:
+~~~~
+
+Clause, R213:
+
+~~~~text
+Now, Next and Later are the index of the open items, one line each giving the item's title, status, date and brief as the item does,
+~~~~
+
+Clause, R206:
+
+~~~~text
+and Now ends with a line on the build.
+~~~~
+
+Clause, R213:
+
+~~~~text
+Each item listed under Next or Later rests on at least one ID,
+~~~~
+
+Clause, R214:
+
+~~~~text
+and Later opens by saying how work on an item starts.
+~~~~
+
+Clause, R214:
+
+~~~~text
+Each record that the README's list of what the first version does not support links is named by an item under Later.
+~~~~
+
+Clause, R208:
+
+~~~~text
+Known limitations is a short list that links each feature page's section on known limitations and the roadmap, and between them every risk of every change's design is listed by its title.
+~~~~
+
+Clause, R209:
+
+~~~~text
+The roadmap and the items name issues and pull requests by number alone, and they and those sections link only a heading of their own page or this repository's tracked files, give no fenced or indented code, no image, no `@` and no space in inline code,
+~~~~
+
+Clause, R210:
+
+~~~~text
+and hold no text that GitHub hides.
+~~~~
+
+Clause, R206:
+
+~~~~text
+Tests fail on a section or link missing,
+~~~~
+
+Clause, R213:
+
+~~~~text
+a line that differs from its item, an open item missing or listed twice, a closed item listed,
+~~~~
+
+Clause, R211:
+
+~~~~text
+an item out of form,
+~~~~
+
+Clause, R207:
+
+~~~~text
+without one of the statuses,
+~~~~
+
+Clause, R215:
+
+~~~~text
+naming what does not exist, stale,
+~~~~
+
+Clause, R216:
+
+~~~~text
+changed without a new date, removed or renamed,
+~~~~
+
+Clause, R208:
+
+~~~~text
+a risk that no page lists,
+~~~~
+
+Clause, R209:
+
+~~~~text
+a link elsewhere
+~~~~
+
+Clause, R210:
+
+~~~~text
+and hidden text.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **The briefing for developers.** The README's section on working on this repository opens with a briefing: anyone may open an issue with no approval needed, an issue is public at once and holds nothing private, what an issue proposes is neither planned nor committed to, and a backlog item changes only through a pull request that the owner merges, with a table of the stages of the work from an idea to its result, which `CONTRIBUTING.md` and the backlog's page link rather than repeat.
+~~~~
+
+New:
+
+~~~~text
+- **The briefing for developers.** R212 gives the briefing that the README's section on working on this repository opens with, and its table of the stages of the work, which `CONTRIBUTING.md` and the backlog's page link rather than repeat.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **The briefing for developers.**
+~~~~
+
+Clause, R212:
+
+~~~~text
+The README's section on working on this repository opens with a briefing: anyone may open an issue with no approval needed, an issue is public at once and holds nothing private, what an issue proposes is neither planned nor committed to, and a backlog item changes only through a pull request that the owner merges, with a table of the stages of the work from an idea to its result,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+which `CONTRIBUTING.md` and the backlog's page link rather than repeat.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Connections.** The hook opens no network connection. The report connects only to GitHub, over HTTPS, with the workflow's own token: to its REST API, at the address the workflow gives, and by git to the tool's own repository and the one it reports on. Prices are read from the price table in the repository and never fetched.
+~~~~
+
+New:
+
+~~~~text
+- **Connections.** The hook opens no network connection. The report connects only to GitHub, over HTTPS, with the workflow's own token: to its REST API, at the address the workflow gives, and by git to the tool's own repository and the one it reports on. Prices are read from the price table in the repository and never fetched (R30).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Connections.** The hook opens no network connection. The report connects only to GitHub, over HTTPS, with the workflow's own token: to its REST API, at the address the workflow gives, and by git to the tool's own repository and the one it reports on. Prices are read from the price table in the repository and never fetched
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Threats.** Every threat in [`../threat-model.md`](../threat-model.md) is rated for impact and likelihood from 1 to 3, with a risk that is their product, and placed in the one cell of the risk matrix that its ratings name. The threat model is reviewed independently before a design is approved, and again against what was built before its pull request merges.
+~~~~
+
+New:
+
+~~~~text
+- **Threats.** Every threat in [`../threat-model.md`](../threat-model.md) is rated and placed in the risk matrix as R31 gives it. The threat model is reviewed independently before a design is approved, and again against what was built before its pull request merges.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Threats.** Every threat in [`../threat-model.md`](../threat-model.md) is rated
+~~~~
+
+Clause, R31:
+
+~~~~text
+for impact and likelihood from 1 to 3, with a risk that is their product, and placed in the one cell of the risk matrix that its ratings name.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+The threat model is reviewed independently before a design is approved, and again against what was built before its pull request merges.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Pull request text.** A pull request's title and body are checked against the same private patterns as the repository's files, each time the pull request is opened, edited, reopened or updated. A match fails the check, which names the pattern and quotes none of the text.
+~~~~
+
+New:
+
+~~~~text
+- **Pull request text.** R33 gives how a pull request's title and body are checked against the same private patterns as the repository's files, and what a match does.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Pull request text.**
+~~~~
+
+Clause, R33:
+
+~~~~text
+A pull request's title and body are checked against the same private patterns as the repository's files, each time the pull request is opened, edited, reopened or updated. A match fails the check, which names the pattern and quotes none of the text.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Pinned actions.** Every action and container image that a workflow uses is pinned to a full commit or a digest that a tag of its source names, so a commit that only a fork holds is refused.
+~~~~
+
+New:
+
+~~~~text
+- **Pinned actions.** Every action and container image that a workflow uses is pinned as R34 gives it.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Pinned actions.** Every action and container image that a workflow uses is pinned
+~~~~
+
+Clause, R34:
+
+~~~~text
+to a full commit or a digest that a tag of its source names, so a commit that only a fork holds is refused.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Decision records.** Each decision has a record of its own in [`../decisions/`](../decisions/README.md), holding one choice: its type, its status, who decided it, the requirements and threats it shapes, why it was made, what else was considered, what follows from it and what reversing it would change. An index lists every record. Once the default branch holds a record, it is never edited or removed, only closed by the record that replaces it, after which lines of its text may become `[removed]`, so each decision can be reversed on its own and its history stays readable. Tests fail when a record is out of form, holds anything but plain ASCII text, names something that does not exist, or changes other than by being closed, when the records' folder holds anything but the records and their index, when an attribute hides the diff of a record, of the README, of `CLAUDE.md`, of the guide, of a change's `tasks.md` or of what the marketplace serves, or changes what git's checkout of the hook file or the marketplace's plugin folder writes beyond its line endings, when the index and the records disagree, when a threat leaves out a record that lists it, when a document gives a record a title that is not its own, and when a document outside the history follows a closed record. Threat IDs, like requirement IDs, are retired rather than reused, so a record never comes to cite another threat.
+~~~~
+
+New:
+
+~~~~text
+- **Decision records.** Each decision has a record of its own in [`../decisions/`](../decisions/README.md), as R124 to R134 give it, with the index that lists every record and the tests that hold both. A record that the default branch holds changes only by being closed, so each decision can be reversed on its own and its history stays readable. Threat IDs, like requirement IDs, are retired rather than reused, so a record never comes to cite another threat.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Decision records.** Each decision has a record of its own in [`../decisions/`](../decisions/README.md)
+~~~~
+
+Clause, R124:
+
+~~~~text
+, holding one choice: its type, its status, who decided it, the requirements and threats it shapes, why it was made, what else was considered, what follows from it and what reversing it would change.
+~~~~
+
+Clause, R125:
+
+~~~~text
+An index lists every record.
+~~~~
+
+Clause, R129:
+
+~~~~text
+Once the default branch holds a record, it is never edited or removed, only closed by the record that replaces it, after which lines of its text may become `[removed]`,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+so each decision can be reversed on its own and its history stays readable.
+~~~~
+
+Clause, R124:
+
+~~~~text
+Tests fail when a record is out of form,
+~~~~
+
+Clause, R128:
+
+~~~~text
+holds anything but plain ASCII text,
+~~~~
+
+Clause, R126:
+
+~~~~text
+names something that does not exist,
+~~~~
+
+Clause, R129:
+
+~~~~text
+or changes other than by being closed,
+~~~~
+
+Clause, R133:
+
+~~~~text
+when the records' folder holds anything but the records and their index,
+~~~~
+
+Clause, R134:
+
+~~~~text
+when an attribute hides the diff of a record, of the README, of `CLAUDE.md`, of the guide, of a change's `tasks.md` or of what the marketplace serves, or changes what git's checkout of the hook file or the marketplace's plugin folder writes beyond its line endings,
+~~~~
+
+Clause, R125:
+
+~~~~text
+when the index and the records disagree,
+~~~~
+
+Clause, R131:
+
+~~~~text
+when a threat leaves out a record that lists it,
+~~~~
+
+Clause, R127:
+
+~~~~text
+when a document gives a record a title that is not its own,
+~~~~
+
+Clause, R127:
+
+~~~~text
+and when a document outside the history follows a closed record.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+Threat IDs, like requirement IDs, are retired rather than reused, so a record never comes to cite another threat.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Assumptions.** Every assumption that the design rests on is in [`../assumptions/`](../assumptions/README.md), listed by the highest impact among the threats that rest on it, then least checked first, then by the highest risk among those threats, with what rests on it, what changes if it is wrong, and each of its facts with where it is relied on and how it is checked. A threat that rests on an assumption and the assumption name each other. A fact about Claude Code or GitHub, which no test may reach, is never checked by a test alone; an observation names the file that reproduces what was seen, its date and the build it was seen on, and never whose work it was seen in; and documentation is linked by its address, on a listed host or at a full commit of a listed repository, with the date it was read, while no page gives another web address. Tests fail when an assumption or a fact leaves any of these out, names something that does not exist or does not rest on it, a test that is not collected or may not run, or a task that is done as the one that will check it, holds a path under a home folder or a session identifier, gives a date that has not come, stands out of order, or gives a rating that differs from the threat model's, and when a subject has no page.
+~~~~
+
+New:
+
+~~~~text
+- **Assumptions.** Every assumption that the design rests on is in [`../assumptions/`](../assumptions/README.md), as R135, R136, R140 and R143 give it, with the tests that hold them.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Assumptions.** Every assumption that the design rests on is in [`../assumptions/`](../assumptions/README.md)
+~~~~
+
+Clause, R136:
+
+~~~~text
+, listed by the highest impact among the threats that rest on it, then least checked first, then by the highest risk among those threats,
+~~~~
+
+Clause, R135:
+
+~~~~text
+with what rests on it, what changes if it is wrong, and each of its facts with where it is relied on and how it is checked.
+~~~~
+
+Clause, R135:
+
+~~~~text
+A threat that rests on an assumption and the assumption name each other.
+~~~~
+
+Clause, R140:
+
+~~~~text
+A fact about Claude Code or GitHub, which no test may reach, is never checked by a test alone; an observation names the file that reproduces what was seen, its date and the build it was seen on, and never whose work it was seen in;
+~~~~
+
+Clause, R140:
+
+~~~~text
+and documentation is linked by its address, on a listed host or at a full commit of a listed repository, with the date it was read,
+~~~~
+
+Clause, R143:
+
+~~~~text
+while no page gives another web address.
+~~~~
+
+Clause, R135:
+
+~~~~text
+Tests fail when an assumption or a fact leaves any of these out, names something that does not exist or does not rest on it, a test that is not collected or may not run, or a task that is done as the one that will check it,
+~~~~
+
+Clause, R140:
+
+~~~~text
+holds a path under a home folder or a session identifier, gives a date that has not come,
+~~~~
+
+Clause, R136:
+
+~~~~text
+stands out of order, or gives a rating that differs from the threat model's,
+~~~~
+
+Clause, R135:
+
+~~~~text
+and when a subject has no page.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Words.** A glossary, `docs/glossary.md`, gives each term's meaning and the words to avoid for it. Tests fail when a Markdown file that the repository tracks uses a word to avoid in its prose, except the records, archived changes, released changelog entries, vendored or generated files and the titles that an accepted record quotes, which keep their words, when they cannot read such a file whole, as when it is a symbolic link, is not UTF-8, opens a fenced code block that never closes, or holds a line that GitHub reads in a fence or after it depending on whether a list item holds that fence, and when a row gives no meaning or a term that holds a backslash, two rows give the same term or word, or a word to avoid is found in a term or is a term's plural. Words inside code are left as written, so a name that adopters type keeps its spelling. A script, `scripts/rewording.py`, run from the copy that the default branch holds, lists for the owner and the review each line that a rewording changed by more than a word to avoid replaced with its term, apart from those each line that replaces a word that the glossary at the pull request's base did not give for its term, and each changed file that it does not compare, and refuses to compare when the glossary is not in its form. The glossary and the assumptions describe, and never steer: where they differ from `CLAUDE.md` or a spec, those hold.
+~~~~
+
+New:
+
+~~~~text
+- **Words.** A glossary, `docs/glossary.md`, gives each term's meaning and the words to avoid for it, with the tests that R137 and R138 give. Words inside code are left as written, so a name that adopters type keeps its spelling. A script, `scripts/rewording.py`, run from the copy that the default branch holds, lists for the owner and the review each line that a rewording changed by more than a word to avoid replaced with its term, apart from those each line that replaces a word that the glossary at the pull request's base did not give for its term, and each changed file that it does not compare, and refuses to compare when the glossary is not in its form. The glossary and the assumptions describe, and never steer: where they differ from `CLAUDE.md` or a spec, those hold.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Words.** A glossary, `docs/glossary.md`, gives each term's meaning and the words to avoid for it
+~~~~
+
+Clause, R137:
+
+~~~~text
+Tests fail when a Markdown file that the repository tracks uses a word to avoid in its prose, except the records, archived changes, released changelog entries, vendored or generated files and the titles that an accepted record quotes, which keep their words, when they cannot read such a file whole, as when it is a symbolic link, is not UTF-8, opens a fenced code block that never closes, or holds a line that GitHub reads in a fence or after it depending on whether a list item holds that fence,
+~~~~
+
+Clause, R138:
+
+~~~~text
+and when a row gives no meaning or a term that holds a backslash, two rows give the same term or word, or a word to avoid is found in a term or is a term's plural.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+Words inside code are left as written, so a name that adopters type keeps its spelling. A script, `scripts/rewording.py`, run from the copy that the default branch holds, lists for the owner and the review each line that a rewording changed by more than a word to avoid replaced with its term, apart from those each line that replaces a word that the glossary at the pull request's base did not give for its term, and each changed file that it does not compare, and refuses to compare when the glossary is not in its form. The glossary and the assumptions describe, and never steer: where they differ from `CLAUDE.md` or a spec, those hold.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Golden set.** Synthetic sessions, each with the pull request it is reported for, a price table of its own, each call with its entry or the scenario that leaves it out, and the figures as the comment shows them, worked out by hand from the specs with the working beside each. Every version must reproduce them, a figure that its working does not give fails too, and no release is made until every acceptance test, these among them, passes. A golden figure changes only with the spec that gives it, and one that a release holds with a line in the changelog, and each ledger format that a release wrote keeps sessions with its figures for as long as the report reads it.
+~~~~
+
+New:
+
+~~~~text
+- **Golden set.** R139, R141 and R142 give the golden set of synthetic sessions, worked out by hand from the specs, that every version must reproduce, and when a golden figure may change.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Golden set.**
+~~~~
+
+Clause, R139:
+
+~~~~text
+Synthetic sessions, each with the pull request it is reported for, a price table of its own, each call with its entry or the scenario that leaves it out, and the figures as the comment shows them, worked out by hand from the specs with the working beside each.
+~~~~
+
+Clause, R139:
+
+~~~~text
+Every version must reproduce them, a figure that its working does not give fails too,
+~~~~
+
+Clause, `project-standards`: "A version that does not reproduce the golden set is not released":
+
+~~~~text
+and no release is made until every acceptance test, these among them, passes.
+~~~~
+
+Clause, R141:
+
+~~~~text
+A golden figure changes only with the spec that gives it, and one that a release holds with a line in the changelog,
+~~~~
+
+Clause, R142:
+
+~~~~text
+and each ledger format that a release wrote keeps sessions with its figures for as long as the report reads it.
+~~~~
+
 ## For B-007
 
 - `docs/threat-model.md`: the configuration is read only as a blob at each commit (T49: R19's requirement states it, but none of its scenarios does)
@@ -14039,7 +17465,10 @@ Clause, the new unit:
 - `docs/how-it-works.md`: or their organization's managed settings set it for them (R1's text names an organization's managed settings, but no scenario shows them opting a member in; R182's scenario covers only a required plugin without the opt-in.)
 - `README.md`: An organization can also set it for its members. (No capture scenario shows an organization setting the opt-in for a member; R186 obliges only the README's words about it.)
 - `SECURITY.md`: or their organization's managed settings set it for them (Same clause as on the page on how the tool works: R1's text holds it and no scenario does.)
+- `docs/features/ci-minutes.md`: and runs on commits that a force-push removed (R62 counts the runs on the commits that the head holds, but no scenario says that runs on commits that a force-push removed are left out.)
+- `docs/features/releases-and-compatibility.md`: A tag that the workflow refused names no release, and its version is not used again. (No scenario says that the version of a refused tag is not used again.)
+- `docs/features/usage-capture.md`: The store's retention window is 30 days. (R150 leaves the window's length to the store's format, which task 1.2 writes, so no scenario states 30 days.)
 
 ## Left as it is
 
-None yet.
+None met. The sweep read only the pages that it changes, and design decision 19 gives why it leaves the others as they are.
