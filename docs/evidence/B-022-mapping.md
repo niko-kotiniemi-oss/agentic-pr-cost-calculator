@@ -341,7 +341,7 @@ Old:
 New:
 
 ~~~~text
-- **Held by:** `ledger`: "Content in the transcript does not reach the ledger"; `ledger`: "A planted string never reaches the ledger"; `ledger`: "The store's notes never reach the ledger"; `usage-capture`: "The store holds ids and paths only as hashes while no file is staged"; `usage-capture`: "The store holds only the fields that its format documents"; `switch-and-opt-in`: "The store holds no configuration file's path"; `usage-capture`: "Standard error carries nothing from the store"; `project-standards`: "The opt-in's pages say what stays published"; DR-045; DR-053; DR-088; DR-127; DR-136; DR-173; DR-174; DR-182; `usage-capture`: "Running again records nothing twice"; `ledger`: "A new file for every commit"; `usage-capture`: "A call written over several lines is recorded once"
+- **Held by:** `ledger`: "Content in the transcript does not reach the ledger"; `ledger`: "A planted string never reaches the ledger"; `ledger`: "The store's notes never reach the ledger"; `usage-capture`: "The store holds ids and paths only as hashes while no file is staged"; `usage-capture`: "The store holds only the fields that its format documents"; `switch-and-opt-in`: "The store holds no configuration file's path"; `usage-capture`: "Standard error carries nothing from the store"; `project-standards`: "The opt-in's pages say what stays published"; DR-045; DR-053; DR-088; DR-127; DR-136; DR-173; DR-174; DR-182; `usage-capture`: "Running again records nothing twice"; `usage-capture`: "A call written over several lines is recorded once"
 ~~~~
 
 Clause, the new unit:
@@ -5225,13 +5225,19 @@ Old:
 New:
 
 ~~~~text
-- **Answer:** the store keeps nothing past its retention window of 30 days, which the owner picked on 2026-11-03 (R150), flags a waiting call that it drops for its age (R155), and removes itself once it holds nothing (R151), in every run that finds a store of a version that it knows, whatever the switches say (R145).
+- **Answer:** the store keeps nothing past its retention window (R150) of 30 days, which the owner picked on 2026-11-03 (DR-175), flags a waiting call that it drops for its age (R155), and removes itself once it holds nothing (R151), in every run that finds a store of a version that it knows, whatever the switches say (R145).
 ~~~~
 
 Clause, the new unit:
 
 ~~~~text
-- **Answer:** the store keeps nothing past its retention window of 30 days, which the owner picked on 2026-11-03
+- **Answer:** the store keeps nothing past its retention window
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+of 30 days, which the owner picked on 2026-11-03
 ~~~~
 
 Clause, R150:
@@ -15979,7 +15985,7 @@ Old:
 New:
 
 ~~~~text
-- **A start run.** R148 gives the run that comes when a session starts, and the interval that it begins, unless the person sends the first prompt the moment the session starts. Where no start run comes, the calls before the session's first run that finds both switches on are left out, as they may be in every session whose first prompt is given before it starts, as with `claude -p`, the Agent SDK or a cloud session. So a person opts in before they start a session.
+- **A start run.** R148 gives the run that comes when a session starts, and the interval that it begins, unless the person sends the first prompt the moment the session starts. Where no start run comes, the calls before the session's first run that finds both switches on are left out (R40), as they may be in every session whose first prompt is given before it starts, as with `claude -p`, the Agent SDK or a cloud session. So a person opts in before they start a session.
 ~~~~
 
 Clause, the new unit:
@@ -16111,7 +16117,7 @@ Old:
 New:
 
 ~~~~text
-- **An opt-out empties the store.** R109 gives what a run that finds the person's own capture off removes from the store. No call made before that run is staged after it, and turning capture on again records no call that answers a line written before a later run that finds both switches on. R161 gives that a run that began before an opt-out writes nothing after it. A store that a later release wrote waits for a run of a release that knows its version, which treats the opt-out as one that no run saw.
+- **An opt-out empties the store.** R109 gives what a run that finds the person's own capture off removes from the store, and R151 when the store then removes itself. No call made before that run is staged after it, and turning capture on again records no call that answers a line written before a later run that finds both switches on. R161 gives that a run that began before an opt-out writes nothing after it. A store that a later release wrote waits for a run of a release that knows its version, which treats the opt-out as one that no run saw.
 ~~~~
 
 Clause, the new unit:
@@ -16591,7 +16597,7 @@ Old:
 New:
 
 ~~~~text
-- **A removed store.** R153 gives what a store that the person removes, or that does not parse, as when a sync or a power loss cut it short, takes with it, and when a store does not parse. A ledger file staged before the removal stays staged, left to git, so that the next commit takes it (R153). So before removing the store, look for a staged ledger file with `git status` in every worktree that `git worktree list` names. A session resumed in a fresh clone at the same path, which holds no store, records none of the calls that answer a line written before its first run there.
+- **A removed store.** R153 gives what a store that the person removes, or that does not parse, as when a sync or a power loss cut it short, takes with it, and when a store does not parse, and R145 and R153 what a run does with such a store. A ledger file staged before the removal stays staged, left to git, so that the next commit takes it (R153). So before removing the store, look for a staged ledger file with `git status` in every worktree that `git worktree list` names. A session resumed in a fresh clone at the same path, which holds no store, records none of the calls that answer a line written before its first run there.
 ~~~~
 
 Clause, the new unit:
@@ -16773,7 +16779,7 @@ Old:
 New:
 
 ~~~~text
-- **Two copies in one session.** A session can run the plugin and the hook file's registration together, their runs coming in parallel at each event, while of two copies of the plugin, as when a person adds it both ways, only one registers its hooks. R181 gives how both copies share each repository's store, so each call is recorded once and each commit gets one ledger file at most, R192 how every release writes a store version the same way, and R191 how a copy of an earlier release leaves a session to the later one, but for an opt-out, which it acts on. Once the later copy no longer runs there, as when the person removes the plugin, the earlier one records nothing in that clone, with no flag, until it is updated (DR-206).
+- **Two copies in one session.** A session can run the plugin and the hook file's registration together, their runs coming in parallel at each event, while of two copies of the plugin, as when a person adds it both ways, only one registers its hooks. R181 gives how both copies share each repository's store, so each call is recorded once and each commit gets one ledger file at most, R192 how every release writes a store version the same way, and R191 how a copy of an earlier release leaves a session to the later one, but for an opt-out, which it acts on, and R55 how a copy leaves alone a store of a version that it does not know. Once the later copy no longer runs there, as when the person removes the plugin, the earlier one records nothing in that clone, with no flag, until it is updated (DR-206).
 ~~~~
 
 Clause, the new unit:
@@ -17886,6 +17892,9 @@ and each ledger format that a release wrote keeps sessions with its figures for 
 - `docs/threat-model.md`: the test also fails on a checkout input other than its ref, its path and `persist-credentials`, on a checkout into another folder than the report reads, on a command other than the report's, and on the word `secrets` anywhere in the file (T187: no scenario of R237 states these further cases of the test.)
 - `docs/threat-model.md`: it follows no ledger file that is a link, and takes as a count only a whole number from zero to below a bound, so that a line that gives another is counted as unread and the summary still says what it did (T191: no scenario of R241 states that the report follows no link or bounds a count.)
 - `docs/threat-model.md`: the recorder keeps names only at a line's top level, in its `message` object and in `message.usage`, gives every other object and array as its type alone, and checks its own output, writing nothing on a failure (T186: R236's scenarios hold the kept shape, not the recorder's own behaviour or its check of its output.)
+- `docs/threat-model.md`: a ledger file's name is random (T4: R10's requirement states it, but none of its scenarios does)
+- `docs/threat-model.md`: a ledger file's name is random (T11: the same clause as T4's; R10's requirement states it, but none of its scenarios does)
+- `docs/threat-model.md`: under a new random name (T13: the same clause as T4's; R10's requirement states it, but none of its scenarios does)
 - `openspec/changes/add-pr-cost-calculator/design.md`: In a sparse checkout, too, the put-back puts the file into the working tree, where it would be had the step not taken it back. (No scenario of R116 or R117 states a put-back in a sparse checkout.)
 - `openspec/changes/add-pr-cost-calculator/design.md`: A run takes back and puts back what it can before it reads any transcript (Only the plugin's run at a session's end is held to take back first, by R90's scenario; no scenario holds it for every run, nor for a put-back.)
 - `openspec/changes/add-pr-cost-calculator/design.md`: padded to three (R124 asks for a record named for its number in ASCII digits; no scenario says that the number is padded to three digits.)
@@ -17894,14 +17903,20 @@ and each ledger format that a release wrote keeps sessions with its figures for 
 - `openspec/changes/add-pr-cost-calculator/design.md`: a run checks each waiting call's entry again when it stages it, by the rules that it records by, so that an entry that someone wrote into the store carries nothing into a ledger file (No scenario has a run check a waiting entry again when it stages it.)
 - `openspec/changes/add-pr-cost-calculator/design.md`: timeouts as the hook file's registration (R179 gives the plugin's hooks the same events and condition as the registration, but no scenario gives them the same timeouts.)
 - `openspec/changes/add-pr-cost-calculator/design.md`: following no link and taking as a count only a whole number from zero to below a bound (R241 says what the skeleton's report counts, but no scenario has it follow no link or bound a count.)
+- `openspec/changes/add-pr-cost-calculator/design.md`: under a random name (Decision 3: the same clause as T4's in the threat model; R10's requirement states it, but none of its scenarios does)
+- `openspec/changes/add-pr-cost-calculator/design.md`: `<random>` (Decision 1, the capture script's path for a ledger file: the same clause as T4's in the threat model; R10's requirement states it, but none of its scenarios does)
+- `openspec/changes/add-pr-cost-calculator/design.md`: `<random>` (Decision 18, the file that the walking skeleton writes: the same clause as T4's in the threat model; R10's requirement states it, but none of its scenarios does)
 - `docs/how-it-works.md`: The comment splits the token cost by model, by token type and by activity type. (R20's text gives the split, but no scenario of R20 or of activity-types states it; the page keeps it unchanged.)
 - `docs/how-it-works.md`: Every figure can be recomputed from the ledger, the price table and the jobs API. (No scenario states that the comment's figures can be recomputed from those three sources; the page keeps it unchanged.)
 - `docs/how-it-works.md`: or their organization's managed settings set it for them (R1's text names an organization's managed settings, but no scenario shows them opting a member in; R182's scenario covers only a required plugin without the opt-in.)
+- `docs/how-it-works.md`: `<random>` (The table of parts, its row for ledger files: the same clause as T4's in the threat model; R10's requirement states it, but none of its scenarios does; the page keeps it unchanged.)
+- `docs/how-it-works.md`: random.jsonl (The diagram of a commit: the same clause as T4's in the threat model; R10's requirement states it, but none of its scenarios does; the page keeps it unchanged.)
 - `README.md`: An organization can also set it for its members. (No capture scenario shows an organization setting the opt-in for a member; R186 obliges only the README's words about it.)
 - `SECURITY.md`: or their organization's managed settings set it for them (Same clause as on the page on how the tool works: R1's text holds it and no scenario does.)
 - `docs/features/ci-minutes.md`: and runs on commits that a force-push removed (R62 counts the runs on the commits that the head holds, but no scenario says that runs on commits that a force-push removed are left out.)
 - `docs/features/releases-and-compatibility.md`: A tag that the workflow refused names no release, and its version is not used again. (No scenario says that the version of a refused tag is not used again.)
 - `docs/features/usage-capture.md`: The store's retention window is 30 days. (R150 leaves the window's length to the store's format, which task 1.2 writes, so no scenario states 30 days.)
+- `docs/features/ledger.md`: `<random>` (One file per commit: the same clause as T4's in the threat model; R10's requirement states it, but none of its scenarios does)
 
 ## Left as it is
 
