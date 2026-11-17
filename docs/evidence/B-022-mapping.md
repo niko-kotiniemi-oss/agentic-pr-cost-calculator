@@ -5619,7 +5619,7 @@ Old:
 New:
 
 ~~~~text
-- **Answer:** the fingerprint holds the files that the owner chose on 2026-11-02, at this cost (DR-169). The README's section on adopting the tool that task 4.4 writes says which writes end an interval and what that costs, and the comment never words the flag as capture being off (R157). The README's section on turning capture off gives `git config --global --get pr-cost.capture` to see a session's opt-in, and task 7.2 checks whether a project's thread that pauses and resumes keeps the details of the opt-in's files that the fingerprint holds.
+- **Answer:** the fingerprint holds the files that the owner chose on 2026-11-02, at this cost (DR-169). The README's section on adopting the tool that task 4.4 writes says which writes end an interval and what that costs, and the comment never words the flag as capture being off (R157). The README's section on turning capture off gives `git config --show-origin --get-all pr-cost.capture` to see each value of a session's opt-in and where it comes from, and says that `git config --global --get pr-cost.capture` shows only the global file's value (R194), and task 7.2 checks whether a project's thread that pauses and resumes keeps the details of the opt-in's files that the fingerprint holds.
 ~~~~
 
 Clause, the new unit:
@@ -5643,7 +5643,19 @@ never as capture being off
 Clause, the new unit:
 
 ~~~~text
-The README's section on turning capture off gives `git config --global --get pr-cost.capture` to see a session's opt-in, and task 7.2 checks whether a project's thread that pauses and resumes keeps the details of the opt-in's files that the fingerprint holds
+The README's section on turning capture off gives `git config
+~~~~
+
+Clause, changed, corrected to agree with R194's scenario, by which `--global --get` shows only the global file's value:
+
+~~~~text
+--global --get pr-cost.capture` to see a session's opt-in,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+and task 7.2 checks whether a project's thread that pauses and resumes keeps the details of the opt-in's files that the fingerprint holds
 ~~~~
 
 ### Entry
@@ -17810,7 +17822,6 @@ and each ledger format that a release wrote keeps sessions with its figures for 
 - `docs/threat-model.md`: finding a design decision or a task named without its change in any change, active or archived (T75: no scenario of R126 or R127 says how a design decision or a task named without its change is found)
 - `docs/threat-model.md`: "Decided by" takes one of three fixed forms: the owner, with the dates of the decision; the change that made it; or that change, with the dates on which the owner asked for what it decided. (T72: R124 holds a field's form only in general; no scenario names the three forms, which DR-108 and DR-151 give)
 - `docs/threat-model.md`: and no link, quotation or identifier fits in the field. (T72: no scenario of R124 states it)
-- `docs/threat-model.md`: The README's section on turning capture off gives `git config --global --get pr-cost.capture` to see a session's opt-in (T120: the scenario "The README says how to turn capture off in a running session" (R194) gives `git config --show-origin --get-all pr-cost.capture` to see each value of a session's opt-in, and says that `--global --get` shows only the global file's value.)
 - `docs/threat-model.md`: each golden session lists every call of its transcripts, by its message ID, (T83: R139 asks for each call with its entry or scenario; no scenario says that a golden session names a call by its message ID.)
 - `docs/threat-model.md`: and the set holds a session for each rule at this boundary that changes a figure or a count (T87: no scenario of R139 asks for a golden session for each rule at this boundary.)
 - `docs/threat-model.md`: and each golden test names as its expected error one that only a missing capture step or report raises, so a wrong figure fails CI on the pull request, before any tag (T99: no scenario states what a golden test names as its expected error.)
