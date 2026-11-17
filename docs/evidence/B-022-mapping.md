@@ -3870,6 +3870,1400 @@ Clause, the new unit:
 so that every name in a Held by line is read.
 ~~~~
 
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** CI fails when the repository's attributes give a record, the index, the README, `CLAUDE.md`, the guide, a change's `tasks.md`, the root marketplace file or a file in the plugin folder that it names `binary`, `diff` or `linguist-generated`, in any state, and a person's own global attributes file is not read. The line that sets such an attribute shows in the pull request's own diff. An attribute that changes what git's checkout of the hook file or of the marketplace's plugin folder writes, rather than how its diff shows, is T143.
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** CI fails on an attribute that hides the diff of a file that the review reads, and reads none of a person's own attributes (R134). The line that sets such an attribute shows in the pull request's own diff. An attribute that changes what git's checkout of the hook file or of the marketplace's plugin folder writes, rather than how its diff shows, is T143.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:**
+~~~~
+
+Clause, R134:
+
+~~~~text
+CI fails when the repository's attributes give a record, the index, the README, `CLAUDE.md`, the guide, a change's `tasks.md`, the root marketplace file or a file in the plugin folder that it names `binary`, `diff` or `linguist-generated`, in any state
+~~~~
+
+Clause, R134:
+
+~~~~text
+and a person's own global attributes file is not read
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+The line that sets such an attribute shows in the pull request's own diff. An attribute that changes what git's checkout of the hook file or of the marketplace's plugin folder writes, rather than how its diff shows, is T143
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** `usage-capture` states the rule in a scenario that an acceptance test holds, task 1.1 gives it a fixture, and when the section moves, each of its sentences that states what the tool does, rather than what it assumes, moves to the spec that holds that behaviour.
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** `usage-capture` states the rule in a scenario of R3 that an acceptance test holds, task 1.1 gives it a fixture, and when the section moves, each of its sentences that states what the tool does, rather than what it assumes, moves to the spec that holds that behaviour.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:** `usage-capture` states the rule in a scenario
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+that an acceptance test holds, task 1.1 gives it a fixture, and when the section moves, each of its sentences that states what the tool does, rather than what it assumes, moves to the spec that holds that behaviour
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** each golden session lists every call of its transcripts, by its message ID, with the entry that capture must write for it or the scenario that leaves it out, and a test fails on a call left unaccounted for or on a citation of a scenario that does not exist. The set holds sessions whose calls the rules of this boundary keep from being recorded or change.
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** each golden session lists every call of its transcripts, by its message ID, and a test holds each to an entry or to a scenario that exists and leaves it out (R139). The set holds sessions whose calls the rules of this boundary keep from being recorded or change.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:** each golden session lists every call of its transcripts, by its message ID
+~~~~
+
+Clause, R139:
+
+~~~~text
+with the entry that capture must write for it or the scenario that leaves it out, and a test fails on a call left unaccounted for or on a citation of a scenario that does not exist
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+The set holds sessions whose calls the rules of this boundary keep from being recorded or change
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** each run's time is read from the system's clock in UTC, which no environment variable sets, and a scenario that sets `TZ` holds it. The golden tests call the step's entry point in the test's own process and give each run its time there.
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** the session's environment cannot move a run's time (R107). The golden tests call the step's entry point in the test's own process and give each run its time there.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:**
+~~~~
+
+Clause, R107:
+
+~~~~text
+each run's time is read from the system's clock in UTC, which no environment variable sets
+~~~~
+
+Clause, `switch-and-opt-in`: "The environment cannot move a run's time":
+
+~~~~text
+and a scenario that sets `TZ` holds it
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+The golden tests call the step's entry point in the test's own process and give each run its time there
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** the golden tests run each golden session in a temporary repository of its own, with a home folder and a configuration folder inside the test's temporary folder, and a check around the whole test run fails when the clone's store, index or working tree changes.
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** the golden tests run each golden session in a temporary repository of its own, with a home folder and a configuration folder inside the test's temporary folder, and a check around the whole test run fails when the clone's store, index or working tree changes (R139).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:** the golden tests run each golden session in a temporary repository of its own, with a home folder and a configuration folder inside the test's temporary folder, and a check around the whole test run fails when the clone's store, index or working tree changes
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** an observation names the file that reproduces what was seen, the date, and the program, the version that it prints and its build, and a test fails on one that does not. The design's context names the build that the observation was made on and the releases whose source does not name the variable, and task 1.19 records the fact as not holding on those releases, linking their source.
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** an observation that does not name the build it was seen on fails a test (R140). The design's context names the build that the observation was made on and the releases whose source does not name the variable, and task 1.19 records the fact as not holding on those releases, linking their source.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:**
+~~~~
+
+Clause, R140:
+
+~~~~text
+an observation names the file that reproduces what was seen, the date, and the program, the version that it prints and its build, and a test fails on one that does not
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+The design's context names the build that the observation was made on and the releases whose source does not name the variable, and task 1.19 records the fact as not holding on those releases, linking their source
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** each golden session states the pull request it is reported for, the report runs without capture on a session that gives no transcripts, and the set holds a session for each rule at this boundary that changes a figure or a count. `report-comment` holds that an earlier file's valid lines keep their calls beside an unreadable one, and task 4.2 skips the line, not the file.
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** the golden tests run the report alone on a pull request's ledger files (R139), and the set holds a session for each rule at this boundary that changes a figure or a count. R67 keeps the calls of an earlier file's valid lines beside an unreadable one, and task 4.2 skips the line, not the file.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:**
+~~~~
+
+Clause, R139:
+
+~~~~text
+each golden session states the pull request it is reported for, the report runs without capture on a session that gives no transcripts
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+and the set holds a session for each rule at this boundary that changes a figure or a count
+~~~~
+
+Clause, R67:
+
+~~~~text
+`report-comment` holds that an earlier file's valid lines keep their calls beside an unreadable one
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+and task 4.2 skips the line, not the file
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** GitHub has a page of its own among the assumptions, and a fact whose subject no test may reach, such as Claude Code or GitHub, is never checked by a test alone: it is observed, documented or not yet, and may name beside that the test that holds the tool's handling of it.
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** GitHub has a page of its own among the assumptions, and a fact about it is never checked by a test alone (R140): it is observed, documented or not yet, and may name beside that the test that holds the tool's handling of it.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:** GitHub has a page of its own among the assumptions, and a fact
+~~~~
+
+Clause, R140:
+
+~~~~text
+whose subject no test may reach, such as Claude Code or GitHub
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+is never checked by a test alone
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+it is observed, documented or not yet, and may name beside that the test that holds the tool's handling of it
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** the golden set holds each figure as the comment shows it, and its tests compare the comment that the report writes. Task 1.21 waits until `report-comment` states how a cost is shown, a rule whose choices are the owner's and an open question of the design.
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** the golden set holds each figure as the comment shows it, and its tests compare the comment that the report writes (R139). Task 1.21 waits until `report-comment` states how a cost is shown, a rule whose choices are the owner's and an open question of the design.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:** the golden set holds each figure as the comment shows it, and its tests compare the comment that the report writes
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+Task 1.21 waits until `report-comment` states how a cost is shown, a rule whose choices are the owner's and an open question of the design
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** the wording test never reads inline code or fenced code blocks, which give names, commands, paths and snippets as they must be typed; a word is listed to avoid only if it is wrong wherever it appears in prose; and the review reads the pages that adopters act on before and after a rewording.
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** the wording test leaves inline code and fenced code blocks as written (R137), which give names, commands, paths and snippets as they must be typed; a word is listed to avoid only if it is wrong wherever it appears in prose; and the review reads the pages that adopters act on before and after a rewording.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:** the wording test
+~~~~
+
+Clause, R137:
+
+~~~~text
+never reads inline code or fenced code blocks
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+which give names, commands, paths and snippets as they must be typed; a word is listed to avoid only if it is wrong wherever it appears in prose; and the review reads the pages that adopters act on before and after a rewording
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** for each ledger format that a release wrote, the golden set keeps sessions whose entries are as that release wrote them, with their hand-worked figures, for as long as the report reads that format, and a pull request that changes a golden session that the latest release's tag holds names it in the changelog's unreleased section. Each ledger file names the release that wrote it, and the comment says when a merge adds one of a later release than the report's (T136).
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** the golden set keeps the figures of each ledger format that a release wrote for as long as the report reads it (R142), and a change to a released golden session is named in the changelog (R141), so that a newer report cannot give other figures for an older hook's files unseen. Each ledger file names the release that wrote it (R156), and the comment says when a merge adds one of a later release than the report's (R193, T136).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:**
+~~~~
+
+Clause, R142:
+
+~~~~text
+for each ledger format that a release wrote, the golden set keeps sessions whose entries are as that release wrote them, with their hand-worked figures, for as long as the report reads that format
+~~~~
+
+Clause, R141:
+
+~~~~text
+and a pull request that changes a golden session that the latest release's tag holds names it in the changelog's unreleased section
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+Each ledger file names the release that wrote it
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+and the comment says when a merge adds one of a later release than the report's
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+T136
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** the assumptions are listed by the highest impact among the threats that rest on them, then with the least checked first, then by the highest risk, all read from this model, and the index shows each assumption's impact beside its risk.
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** the assumptions, and the ratings of their index, follow the threats that rest on them as this model rates them, impact first (R136).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:**
+~~~~
+
+Clause, R136:
+
+~~~~text
+the assumptions are listed by the highest impact among the threats that rest on them, then with the least checked first, then by the highest risk, all read from this model, and the index shows each assumption's impact beside its risk
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** a script, run in each pull request that rewords or adds a word to avoid, as the pull request template asks, from the copies of it and of `scripts/wording.py` that the default branch holds, in the way that its docstring gives, shows that each changed line differs only by words to avoid replaced with their terms, and lists every other change, those to `CLAUDE.md` first and those to the guide next, since the guide steers too (DR-237). It compares a renamed page with what it was, names each changed file that it does not compare, and lists apart each line that replaces a word that the base's glossary did not give for its term, since that rule is the pull request's own (T103). The review in a separate context runs those copies itself and compares their output with the one posted, reads a pull request that changes either script as a change to a check, and reads, before and after, the requirements, `CLAUDE.md`, the guide, this model's answers and residuals, the README's statements of what opting in records and publishes, and the pages that adopters act on. Each concept that a rule tells apart has a term of its own, so listing one, or its plural, as a word to avoid for another fails the check of the glossary.
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** a script, run in each pull request that rewords or adds a word to avoid, as the pull request template asks, from the copies of it and of `scripts/wording.py` that the default branch holds, in the way that its docstring gives, shows that each changed line differs only by words to avoid replaced with their terms, and lists every other change, those to `CLAUDE.md` first and those to the guide next, since the guide steers too (DR-237). It compares a renamed page with what it was, names each changed file that it does not compare, and lists apart each line that replaces a word that the base's glossary did not give for its term, since that rule is the pull request's own (T103). The review in a separate context runs those copies itself and compares their output with the one posted, reads a pull request that changes either script as a change to a check, and reads, before and after, the requirements, `CLAUDE.md`, the guide, this model's answers and residuals, the README's statements of what opting in records and publishes, and the pages that adopters act on. Each concept that a rule tells apart has a term of its own, and the check of the glossary fails on one listed, or its plural, as a word to avoid for another (R138).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:** a script, run in each pull request that rewords or adds a word to avoid, as the pull request template asks, from the copies of it and of `scripts/wording.py` that the default branch holds, in the way that its docstring gives, shows that each changed line differs only by words to avoid replaced with their terms, and lists every other change, those to `CLAUDE.md` first and those to the guide next, since the guide steers too (DR-237). It compares a renamed page with what it was, names each changed file that it does not compare, and lists apart each line that replaces a word that the base's glossary did not give for its term, since that rule is the pull request's own (T103). The review in a separate context runs those copies itself and compares their output with the one posted, reads a pull request that changes either script as a change to a check, and reads, before and after, the requirements, `CLAUDE.md`, the guide, this model's answers and residuals, the README's statements of what opting in records and publishes, and the pages that adopters act on. Each concept that a rule tells apart has a term of its own
+~~~~
+
+Clause, R138:
+
+~~~~text
+so listing one, or its plural, as a word to avoid for another fails the check of the glossary
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** a documented fact links, by its address shown as its text, only a vendor's page on a host that the test lists or a file at a full commit of a GitHub repository that the test lists, by a path with no `.` or `..` segment; no page of the assumptions gives a web address anywhere else; and `CLAUDE.md` says that a page that a file here links to, other than the files that steer, is data (DR-238).
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** a documented fact links only a page that the test lists, by its address shown as its text (R140), and no page of the assumptions gives a web address anywhere else (R143); and `CLAUDE.md` says that a page that a file here links to, other than the files that steer, is data (DR-238).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:** a documented fact links
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+by its address shown as its text
+~~~~
+
+Clause, R140:
+
+~~~~text
+only a vendor's page on a host that the test lists or a file at a full commit of a GitHub repository that the test lists, by a path with no `.` or `..` segment
+~~~~
+
+Clause, R143:
+
+~~~~text
+no page of the assumptions gives a web address anywhere else
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+and `CLAUDE.md` says that a page that a file here links to, other than the files that steer, is data (DR-238
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** a threat that rests on an assumption names it in a field of its own, the assumption names the threat, and a test fails when either names the other alone. Task 1.19 replaces each "(see Assumptions)" with the assumption's ID, and a script shows that each sentence of the section it moves is in an assumption or a spec afterwards.
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** a test holds that each names the other, the threat in its field `Assumptions` (R135). Task 1.19 replaces each "(see Assumptions)" with the assumption's ID, and a script shows that each sentence of the section it moves is in an assumption or a spec afterwards.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:**
+~~~~
+
+Clause, R135:
+
+~~~~text
+a threat that rests on an assumption names it in a field of its own, the assumption names the threat, and a test fails when either names the other alone
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+Task 1.19 replaces each "(see Assumptions)" with the assumption's ID, and a script shows that each sentence of the section it moves is in an assumption or a spec afterwards
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** an observation names a file under `tests/` that reproduces what was seen and holds a test that no mark skips or expects to fail, the date, and the program, version and build it was seen on, and a test fails on one that names no such file, as it does on a check that names a test that pytest does not collect or that a mark skips or expects to fail. Until a file exists, the fact is `not yet`.
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** a test fails on an observation that names no file under `tests/` that reproduces what was seen (R140), and on a check that names a test that does not run (R135). Until a file exists, the fact is `not yet`.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:**
+~~~~
+
+Clause, R140:
+
+~~~~text
+an observation names a file under `tests/` that reproduces what was seen and holds a test that no mark skips or expects to fail, the date, and the program, version and build it was seen on, and a test fails on one that names no such file
+~~~~
+
+Clause, R135:
+
+~~~~text
+as it does on a check that names a test that pytest does not collect or that a mark skips or expects to fail
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+Until a file exists, the fact is `not yet`
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** a pull request that changes a golden session that its base holds either changes a spec or changes nothing outside the golden set, and a test fails otherwise, so a slip in the set is fixed on its own and a rule change comes with its spec.
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** a golden session changes alone or with a spec (R141), so a slip in the set is fixed on its own and a rule change comes with its spec.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:**
+~~~~
+
+Clause, R141:
+
+~~~~text
+a pull request that changes a golden session that its base holds either changes a spec or changes nothing outside the golden set, and a test fails otherwise
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+so a slip in the set is fixed on its own and a rule change comes with its spec
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** the release's test job runs every expected failure as an ordinary test, which the tests that parse the workflow check, so no version is released while any acceptance test fails, and each golden test names as its expected error one that only a missing capture step or report raises, so a wrong figure fails CI on the pull request, before any tag.
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** the release's test job runs every expected failure as an ordinary test, which the tests that parse the workflow check, so no version is released while any acceptance test fails, a golden test among them (R139), and each golden test names as its expected error one that only a missing capture step or report raises, so a wrong figure fails CI on the pull request, before any tag.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:** the release's test job runs every expected failure as an ordinary test, which the tests that parse the workflow check, so no version is released while any acceptance test fails
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+and each golden test names as its expected error one that only a missing capture step or report raises, so a wrong figure fails CI on the pull request, before any tag
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** a test fails when a fact that is not yet checked names, as the one that will check it, a task that its change's `tasks.md` ticks, and when an observation or a reading gives a date later than the day the test runs.
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** a test fails on each (R135, R140).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:** a test fails
+~~~~
+
+Clause, R135:
+
+~~~~text
+when a fact that is not yet checked names, as the one that will check it, a task that its change's `tasks.md` ticks
+~~~~
+
+Clause, R140:
+
+~~~~text
+and when an observation or a reading gives a date later than the day the test runs
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** the test reads every tracked file that GitHub shows as Markdown, by the extensions and the name that GitHub's language list gives the languages that it renders as Markdown. It finds a word to avoid under emphasis, with its apostrophe straight or curly, and with any run of spaces between its words, no-break spaces among them, that holds at most one line break, which it matches in one way only. The spaces after a heading's or a title's text are matched in one way too, and a line's code spans are found in one pass over its backticks; a test times each of the reader's patterns on a long run of spaces after each shape that it reads, and the reading of a line of many runs of backticks, so that neither slows the test. A fence that a list item's marker opens ends, as GitHub ends the item, at the first line that is not blank and is indented less than the fence, so the test reads that line. A fence that opens on its own line, two columns in or more, may be held by a list item or not, so the test fails on a line that GitHub reads one way in an item and another outside one, and reads no further. A blank line is one of spaces and tabs alone, and a closing fence is indented no further than GitHub allows. It leaves as written only the titles that the specs hold and an accepted record quotes where HEAD left the default branch, and it fails, naming the file, on a page that is a symbolic link, which it does not follow, on a file or a path that is not UTF-8, and on a fenced code block that never closes.
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** the test reads every tracked file that GitHub shows as Markdown, by the extensions and the name that GitHub's language list gives the languages that it renders as Markdown. It finds a word to avoid under emphasis, with its apostrophe straight or curly, and with any run of spaces between its words, no-break spaces among them, that holds at most one line break, which it matches in one way only. The spaces after a heading's or a title's text are matched in one way too, and a line's code spans are found in one pass over its backticks; a test times each of the reader's patterns on a long run of spaces after each shape that it reads, and the reading of a line of many runs of backticks, so that neither slows the test. A fence that a list item's marker opens ends, as GitHub ends the item, at the first line that is not blank and is indented less than the fence, so the test reads that line. A fence that opens on its own line, two columns in or more, may be held by a list item or not, so the test fails on a line that GitHub reads one way in an item and another outside one, and reads no further. A blank line is one of spaces and tabs alone, and a closing fence is indented no further than GitHub allows. It leaves as written only the titles that the specs hold and an accepted record quotes where HEAD left the default branch, and it fails, naming the file, on a page that it cannot read whole (R137) and on a path that is not UTF-8.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:** the test reads every tracked file that GitHub shows as Markdown, by the extensions and the name that GitHub's language list gives the languages that it renders as Markdown. It finds a word to avoid under emphasis, with its apostrophe straight or curly, and with any run of spaces between its words, no-break spaces among them, that holds at most one line break, which it matches in one way only. The spaces after a heading's or a title's text are matched in one way too, and a line's code spans are found in one pass over its backticks; a test times each of the reader's patterns on a long run of spaces after each shape that it reads, and the reading of a line of many runs of backticks, so that neither slows the test. A fence that a list item's marker opens ends, as GitHub ends the item, at the first line that is not blank and is indented less than the fence, so the test reads that line. A fence that opens on its own line, two columns in or more, may be held by a list item or not, so the test fails on a line that GitHub reads one way in an item and another outside one, and reads no further. A blank line is one of spaces and tabs alone, and a closing fence is indented no further than GitHub allows. It leaves as written only the titles that the specs hold and an accepted record quotes where HEAD left the default branch, and it fails, naming the file, on a page that
+~~~~
+
+Clause, R137:
+
+~~~~text
+is a symbolic link, which it does not follow, on a file or
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+a path that is not UTF-8
+~~~~
+
+Clause, R137:
+
+~~~~text
+and on a fenced code block that never closes
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** each run's time is read from the system's clock in UTC, which no environment variable sets, and which the transcript's times are taken to share. A call counts only when, by each line's own time, the line it answers, which is never one of Claude Code's own bookkeeping lines, a hook's output or a system line, was written at or after the run that began its interval and no later than the call's first line, and that first line no later than the interval's last run, so that a call already being made when an interval begins is left out. A run that finds its clock earlier than the latest time that its session's runs noted, or that a line they read gave, ends each of that session's intervals, begins none, and places no call inside any of them, so that the session's next interval begins only once the clock has passed every time that its runs saw. Among those times is that of a run that finds a switch off and ends the session's interval (DR-170), so a clock set back after such a run begins no interval until it has passed that run's time.
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** each run's time is read from a clock that the session's environment cannot move (R107), and which the transcript's times are taken to share. A call counts only when the line it answers and its first line fall inside an interval, by each line's own time, so that a call already being made when an interval begins is left out (R144). A clock that moves back ends the session's intervals and begins none until it has passed every time that its runs saw (R166), that of a run that finds a switch off and ends the session's interval (DR-170) among them.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:** each run's time is read from
+~~~~
+
+Clause, R107:
+
+~~~~text
+the system's clock in UTC, which no environment variable sets
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+and which the transcript's times are taken to share
+~~~~
+
+Clause, R144:
+
+~~~~text
+A call counts only when, by each line's own time, the line it answers, which is never one of Claude Code's own bookkeeping lines, a hook's output or a system line, was written at or after the run that began its interval and no later than the call's first line, and that first line no later than the interval's last run
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+so that a call already being made when an interval begins is left out
+~~~~
+
+Clause, R166:
+
+~~~~text
+A run that finds its clock earlier than the latest time that its session's runs noted, or that a line they read gave, ends each of that session's intervals, begins none, and places no call inside any of them, so that the session's next interval begins only once the clock has passed every time that its runs saw
+~~~~
+
+Clause, R166:
+
+~~~~text
+Among those times is
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+that of a run that finds a switch off and ends the session's interval (DR-170
+~~~~
+
+Clause, `switch-and-opt-in`: "A clock set back past earlier lines begins no interval until it passes them":
+
+~~~~text
+so a clock set back after such a run begins no interval until it has passed that run's time
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** a run that finds both switches on notes a fingerprint of the person's two global configuration files, each other file that git reads the opt-in key from, the repository's own git configuration among them only when it sets the key, and each link on the way to one, made of each one's device and inode numbers, size and modification times and never of its contents or its path, and kept only as a hash, and a run that notes another fingerprint than the store's last does what an opt-out does, so that the calls between those two runs, and the calls that wait to be staged, are left out.
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** a run that finds both switches on notes a fingerprint of the files that git reads the opt-in from, which holds nothing of their contents (R107), and a run that notes another fingerprint than the store's last does what an opt-out does (R108, R162), so that the calls between those two runs, and the calls that wait to be staged, are left out.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:** a run that finds both switches on notes a fingerprint of
+~~~~
+
+Clause, R107:
+
+~~~~text
+the person's two global configuration files, each other file that git reads the opt-in key from, the repository's own git configuration among them only when it sets the key, and each link on the way to one, made of each one's device and inode numbers, size and modification times and never of its contents or its path, and kept only as a hash
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+and a run that notes another fingerprint than the store's last does what an opt-out does
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+so that the calls between those two runs, and the calls that wait to be staged, are left out
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** the three flags carry no count, time or other fact about the calls left out. A flag for consent or for age goes only to the next ledger file staged for the worktree and branch of the calls left out, and one for the repository only when the call's line gives no working directory, or one inside this repository's folder or one that holds it; calls made in another repository raise none.
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** the three flags carry no count, time or other fact about the calls left out, and none is raised for calls made in another repository (R155).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:** the three flags carry no count, time or other fact about the calls left out
+~~~~
+
+Clause, R155:
+
+~~~~text
+A flag for consent or for age goes only to the next ledger file staged for the worktree and branch of the calls left out, and one for the repository only when the call's line gives no working directory, or one inside this repository's folder or one that holds it
+~~~~
+
+Clause, R155:
+
+~~~~text
+calls made in another repository raise none
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** the tool recomputes a pull request's cost from its ledger files, the price table and the jobs API alone, and keeps no transcript: the step writes no line of a transcript, and no value from one beyond the fields that an entry or the store's notes name, to any file, the store, a ledger file and a temporary file included, or to standard error. Keeping or reprocessing transcripts would need a change of its own, with its own specification, its own threat review and the owner's authorization.
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** the tool recomputes a pull request's cost from its ledger files, the price table and the jobs API alone, and keeps no transcript (R154). Keeping or reprocessing transcripts would need a change of its own, with its own specification, its own threat review and the owner's authorization.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:** the tool recomputes a pull request's cost from its ledger files, the price table and the jobs API alone, and keeps no transcript
+~~~~
+
+Clause, R154:
+
+~~~~text
+the step writes no line of a transcript, and no value from one beyond the fields that an entry or the store's notes name, to any file, the store, a ledger file and a temporary file included, or to standard error
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+Keeping or reprocessing transcripts would need a change of its own, with its own specification, its own threat review and the owner's authorization
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** a call whose directory no longer exists, or names no repository that git can tell, is left out, and when that directory is inside this repository's folder or holds it, the session's next ledger file here says that calls whose repository could not be told were left out. Runs come before and after every git command, at every turn's end and at the session's end, so that the gap between a call and the run that reads it is short. A run of the plugin before a git command works first on the repository where the command runs (T19).
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** a call whose directory no longer exists, or names no repository that git can tell, is left out, and when that directory is inside this repository's folder or holds it, the session's next ledger file here says that calls whose repository could not be told were left out (R147, R155). Runs come before and after every git command, at every turn's end and at the session's end, so that the gap between a call and the run that reads it is short. A run of the plugin before a git command works first on the repository where the command runs (R180, T19).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:** a call whose directory no longer exists, or names no repository that git can tell, is left out, and when that directory is inside this repository's folder or holds it, the session's next ledger file here says that calls whose repository could not be told were left out
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+Runs come before and after every git command, at every turn's end and at the session's end, so that the gap between a call and the run that reads it is short. A run of the plugin before a git command works first on the repository where the command runs
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+T19
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** the store keeps a session's id, a transcript's path, a worktree, a branch and a `tool_use_id` only as hashes, the ledger file's path and its worktree's name only in the note of a staged or taken-back ledger file, and its transcript's path, which carries the session's id, only in the note of a staged one, until it is resolved. Each user has a store of their own, in a folder of their own in the git common directory where the system numbers users, and each write leaves its folder with mode 0700 and its file with mode 0600, whatever the umask or the modes it found, writing a new file that the run creates itself, never through a link, so that a store that arrived looser is closed again, and nothing from the store reaches a ledger file, a comment or standard error.
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** the store keeps no plain id, path or name but in the note of a ledger file that is staged or taken back, and its transcript's path, which carries the session's id, only in the note of a staged one, until it is resolved (R149, R170). Only its owner can read it (R152), and nothing from the store reaches a ledger file, a comment or standard error (R4, R89).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:**
+~~~~
+
+Clause, R149:
+
+~~~~text
+the store keeps a session's id, a transcript's path, a worktree, a branch and a `tool_use_id` only as hashes
+~~~~
+
+Clause, R170:
+
+~~~~text
+the ledger file's path and its worktree's name only in the note of a staged or taken-back ledger file
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+and its transcript's path, which carries the session's id, only in the note of a staged one, until it is resolved
+~~~~
+
+Clause, R152:
+
+~~~~text
+Each user has a store of their own, in a folder of their own in the git common directory where the system numbers users, and each write leaves its folder with mode 0700 and its file with mode 0600, whatever the umask or the modes it found, writing a new file that the run creates itself, never through a link, so that a store that arrived looser is closed again
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+and nothing from the store reaches a ledger file, a comment or standard error
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** the store keeps nothing past its retention window of 30 days, which the owner picked on 2026-11-03: no call older than that is recorded, waiting calls, flags due and notes of taken calls that old are dropped, a dropped waiting call is flagged for its age in the next ledger file staged for its worktree and branch, a session's notes go once none of its runs has come within the window, a staged ledger file whose note is that old is taken back, and a store that holds nothing is removed, in every run that finds a store of a version that it knows, whatever the switches say.
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** the store keeps nothing past its retention window of 30 days, which the owner picked on 2026-11-03 (R150), flags a waiting call that it drops for its age (R155), and removes itself once it holds nothing (R151), in every run that finds a store of a version that it knows, whatever the switches say (R145).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:** the store keeps nothing past its retention window of 30 days, which the owner picked on 2026-11-03
+~~~~
+
+Clause, R150:
+
+~~~~text
+no call older than that is recorded, waiting calls, flags due and notes of taken calls that old are dropped
+~~~~
+
+Clause, R155:
+
+~~~~text
+a dropped waiting call is flagged for its age in the next ledger file staged for its worktree and branch
+~~~~
+
+Clause, R150:
+
+~~~~text
+a session's notes go once none of its runs has come within the window, a staged ledger file whose note is that old is taken back
+~~~~
+
+Clause, R151:
+
+~~~~text
+and a store that holds nothing is removed
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+in every run that finds a store of a version that it knows, whatever the switches say
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** when the store is gone, or its file does not parse, which a run takes as gone and replaces, the next run that finds both switches on begins a new interval, so that no call that answers a line written before that run is recorded, however far the transcripts were read before. A ledger file staged before the removal is left to git, and the README's section on adopting the tool that task 4.4 writes says to look for one with `git status`, in every worktree that `git worktree list` names, such as those that Claude Code keeps under `.claude/worktrees/`, before removing the store.
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** a store that is gone, or does not parse, lets no earlier call be recorded, however far the transcripts were read before, and leaves to git a ledger file staged before the removal (R153), and the README's section on adopting the tool that task 4.4 writes says to look for one with `git status`, in every worktree that `git worktree list` names, such as those that Claude Code keeps under `.claude/worktrees/`, before removing the store.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:**
+~~~~
+
+Clause, R153:
+
+~~~~text
+when the store is gone, or its file does not parse, which a run takes as gone and replaces, the next run that finds both switches on begins a new interval, so that no call that answers a line written before that run is recorded
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+however far the transcripts were read before
+~~~~
+
+Clause, R153:
+
+~~~~text
+A ledger file staged before the removal is left to git
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+and the README's section on adopting the tool that task 4.4 writes says to look for one with `git status`, in every worktree that `git worktree list` names, such as those that Claude Code keeps under `.claude/worktrees/`, before removing the store
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** each user's store lies in a folder of its own in the git common directory where the system numbers users, each write keeps the store its owner's alone, never through a link, and a run leaves alone a store whose file or folder is a link or, on Windows, another reparse point, is not a regular file or a folder, or, where the system numbers users, is not owned by the user that it runs as. Where the system numbers users, a run opens the store's folder once, without following a link, checks its owner and kind on what it opened, and creates, writes, renames and removes the store's files only through that opened folder, so that a folder replaced by a link between the check and the write redirects none of them. A run acts on a note only for a file of the form that the step writes, in the ledger folder of a worktree whose git common directory is this repository's, opens a note's transcript only when it is a regular file, and drops any other note, and it checks each waiting call's entry again when it stages it, by the rules that it records by, so that an entry written into the store carries nothing into a ledger file.
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** each user's store is theirs alone, and a run leaves alone one that is a link, not a regular file or a folder, or another user's (R152). Where the system numbers users, a run opens the store's folder once, without following a link, checks its owner and kind on what it opened, and creates, writes, renames and removes the store's files only through that opened folder, so that a folder replaced by a link between the check and the write redirects none of them. A run acts on a note only for a file that the step writes in a worktree of this repository (R152), opens a note's transcript only when it is a regular file (R13), and it checks each waiting call's entry again when it stages it, by the rules that it records by, so that an entry written into the store carries nothing into a ledger file (R4).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:** each user's store
+~~~~
+
+Clause, R152:
+
+~~~~text
+lies in a folder of its own in the git common directory where the system numbers users, each write keeps the store its owner's alone, never through a link, and a run leaves alone a store whose file or folder is a link or, on Windows, another reparse point, is not a regular file or a folder, or, where the system numbers users, is not owned by the user that it runs as
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+Where the system numbers users, a run opens the store's folder once, without following a link, checks its owner and kind on what it opened, and creates, writes, renames and removes the store's files only through that opened folder, so that a folder replaced by a link between the check and the write redirects none of them
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+A run acts on a note only for a file
+~~~~
+
+Clause, R152:
+
+~~~~text
+of the form that the step writes, in the ledger folder of a worktree whose git common directory is this repository's
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+opens a note's transcript only when it is a regular file
+~~~~
+
+Clause, R152:
+
+~~~~text
+and drops any other note
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+and it checks each waiting call's entry again when it stages it, by the rules that it records by, so that an entry written into the store carries nothing into a ledger file
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** a run that finds a switch off creates no store and adds no note of its session to one, and starts git only to find a store that exists, which it removes when it does not parse, and in one of a version that it knows only ends its own session's interval, noting its time, does what the store's notes call for, drops what the retention window ends, and removes the store when it then holds nothing.
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** a run that finds a switch off creates no store and adds no note of its session to one, and starts git only for a store that exists, where it does only what R145 says (R118).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:** a run that finds a switch off creates no store and adds no note of its session to one
+~~~~
+
+Clause, R118:
+
+~~~~text
+and starts git only to find a store that exists
+~~~~
+
+Clause, R145:
+
+~~~~text
+which it removes when it does not parse, and in one of a version that it knows only ends its own session's interval, noting its time, does what the store's notes call for, drops what the retention window ends, and removes the store when it then holds nothing
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** the README says where the store is and how to remove it, after looking with `git status`, in every worktree that `git worktree list` names, for a staged ledger file (T111), and the first run that comes, of any session in the repository and of a release that knows the store's version, empties the store or applies the window. A person who opts out and back in before any run comes changes a file that the fingerprint holds, so that run empties the store as an opt-out does.
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** the README says where the store is and how to remove it, after looking with `git status`, in every worktree that `git worktree list` names, for a staged ledger file (T111), and the first run that comes, of any session in the repository and of a release that knows the store's version, empties the store or applies the window (R109, R150). An opt-out and back in, before any run comes, in a file that the fingerprint holds is taken as an opt-out too (R162).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:** the README says where the store is and how to remove it, after looking with `git status`, in every worktree that `git worktree list` names, for a staged ledger file (T111), and the first run that comes, of any session in the repository and of a release that knows the store's version, empties the store or applies the window
+~~~~
+
+Clause, R162:
+
+~~~~text
+A person who opts out and back in before any run comes changes a file that the fingerprint holds, so that run empties the store as an opt-out does
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** each ledger file states its format's version on its first line, and the report reads each file by that version's rules, matching the version exactly as a whole number and choosing no code by its value, and counts as refused a file that states no version or one that it does not read, or that breaks its version's rules. It reads the default branch's earlier ledger files by their versions too, capture reads the branch's ledger files the same way, and every version names a call by the same id. Each entry marks whether its call was read without a stop reason or held a usage field that capture does not know, so that a restored or copied file adds no counts or flags.
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** each ledger file states its format's version (R156), the report reads each file only by the version that it states, the default branch's earlier ones too (R158, R168), capture reads the branch's ledger files the same way (R167), and every version names a call by the same id (R163). Each entry marks whether its call was read without a stop reason or held a usage field that capture does not know, so that a restored or copied file adds no counts or flags (R95, R158).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:** each ledger file states its format's version
+~~~~
+
+Clause, R156:
+
+~~~~text
+on its first line
+~~~~
+
+Clause, R158:
+
+~~~~text
+and the report reads each file by that version's rules, matching the version exactly as a whole number and choosing no code by its value, and counts as refused a file that states no version or one that it does not read, or that breaks its version's rules
+~~~~
+
+Clause, R168:
+
+~~~~text
+It reads the default branch's earlier ledger files by their versions too
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+capture reads the branch's ledger files the same way
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+and every version names a call by the same id
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+Each entry marks whether its call was read without a stop reason or held a usage field that capture does not know, so that a restored or copied file adds no counts or flags
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** the README, the opt-in's feature page and the ledger's feature page say what stays published after an opt-out, a removed ledger file or a removed store, and that a hashed id does not hide whose record it is, clause by clause as DR-182 decides, and the glossary lists `anonymous` as a word to avoid, which the wording test finds in the prose of any page.
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** the README, the opt-in's feature page and the ledger's feature page say what stays published after an opt-out, a removed ledger file or a removed store, and that a hashed id does not hide whose record it is, clause by clause as DR-182 decides (R159), and the glossary lists `anonymous` as a word to avoid, which the wording test finds in the prose of any page (R159).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:** the README, the opt-in's feature page and the ledger's feature page say what stays published after an opt-out, a removed ledger file or a removed store, and that a hashed id does not hide whose record it is, clause by clause as DR-182 decides
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+and the glossary lists `anonymous` as a word to avoid, which the wording test finds in the prose of any page
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** the store keeps a session's id, a transcript's path, a worktree, a branch and a `tool_use_id` only as hashes, and plain names only in the note of a staged or taken-back ledger file until it is resolved; it keeps nothing past its retention window, empties itself at an opt-out and removes itself once it holds nothing. A copy put back after an opt-out brings back no call when the opt-out changed a file that the fingerprint holds, since the next run then notes another fingerprint and does what an opt-out does, and the README says where the store is, so that a person can leave it out of their backups.
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** the store keeps no plain id, path or name but in the note of a ledger file until it is resolved (R149, R170), keeps nothing past its retention window (R150), empties itself at an opt-out (R109) and removes itself once it holds nothing (R151). A copy put back after an opt-out brings back no call when the opt-out changed a file that the fingerprint holds, since the next run then notes another fingerprint and does what an opt-out does (R162), and the README says where the store is, so that a person can leave it out of their backups.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:** the store keeps
+~~~~
+
+Clause, R149:
+
+~~~~text
+a session's id, a transcript's path, a worktree, a branch and a `tool_use_id` only as hashes
+~~~~
+
+Clause, R170:
+
+~~~~text
+and plain names only in the note of a staged or taken-back ledger file until it is resolved
+~~~~
+
+Clause, R150:
+
+~~~~text
+it keeps nothing past its retention window
+~~~~
+
+Clause, R109:
+
+~~~~text
+empties itself at an opt-out
+~~~~
+
+Clause, R151:
+
+~~~~text
+and removes itself once it holds nothing
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+A copy put back after an opt-out brings back no call when the opt-out changed a file that the fingerprint holds, since the next run then notes another fingerprint and does what an opt-out does
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+and the README says where the store is, so that a person can leave it out of their backups
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** each schema is written with ASCII patterns rather than `format`, which a validator only notes by default, and `docs/ledger-format.md` lists what no schema can hold, where the report's rules decide. The tests check, with a standard validator and its default options, that each schema refuses each line that the report refuses, but for those, and accepts each line that it counts, a property-based test compares each schema with the reader, and the surface manifest holds each released version's schema by its hash, so that a released schema cannot change unseen.
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** each schema is written with ASCII patterns rather than `format`, which a validator only notes by default, and `docs/ledger-format.md` lists what no schema can hold, where the report's rules decide. The tests hold each schema to what the report refuses and counts, by a standard validator with its default options (R156), a property-based test compares each schema with the reader, and the surface manifest holds each released version's schema by its hash, so that a released schema cannot change unseen (R156).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:** each schema is written with ASCII patterns rather than `format`, which a validator only notes by default, and `docs/ledger-format.md` lists what no schema can hold, where the report's rules decide. The tests
+~~~~
+
+Clause, R156:
+
+~~~~text
+check, with a standard validator and its default options, that each schema refuses each line that the report refuses, but for those, and accepts each line that it counts
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+a property-based test compares each schema with the reader, and the surface manifest holds each released version's schema by its hash, so that a released schema cannot change unseen
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** every git command that the step starts runs without the session's variables whose names begin with `GIT_`, setting only its own, so that the session's environment chooses neither the repository, its index, its objects nor the files that git reads its settings from. The one exception is git's reading of the opt-in, which the step asks for twice, in the session's environment and without those variables, and capture stays on only when both readings keep it on, so that the variables can add an opt-out but neither hide one nor give consent.
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** every git command that the step starts runs without the session's git variables (R169), so that the session's environment chooses neither the repository, its index, its objects nor the files that git reads its settings from. The one exception is git's reading of the opt-in, which can turn capture off but never on (R160), so that the variables can add an opt-out but neither hide one nor give consent.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:** every git command that the step starts runs without the session's
+~~~~
+
+Clause, R169:
+
+~~~~text
+variables whose names begin with `GIT_`, setting only its own
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+so that the session's environment chooses neither the repository, its index, its objects nor the files that git reads its settings from. The one exception is git's reading of the opt-in
+~~~~
+
+Clause, R160:
+
+~~~~text
+which the step asks for twice, in the session's environment and without those variables, and capture stays on only when both readings keep it on
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+so that the variables can add an opt-out but neither hide one nor give consent
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** the fingerprint holds the files that the owner chose on 2026-11-02, at this cost (DR-169). The README's section on adopting the tool that task 4.4 writes says which writes end an interval and what that costs, and the comment words the flag as calls that capture could not show were made while it was on, never as capture being off. The README's section on turning capture off gives `git config --global --get pr-cost.capture` to see a session's opt-in, and task 7.2 checks whether a project's thread that pauses and resumes keeps the details of the opt-in's files that the fingerprint holds.
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** the fingerprint holds the files that the owner chose on 2026-11-02, at this cost (DR-169). The README's section on adopting the tool that task 4.4 writes says which writes end an interval and what that costs, and the comment never words the flag as capture being off (R157). The README's section on turning capture off gives `git config --global --get pr-cost.capture` to see a session's opt-in, and task 7.2 checks whether a project's thread that pauses and resumes keeps the details of the opt-in's files that the fingerprint holds.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:** the fingerprint holds the files that the owner chose on 2026-11-02, at this cost (DR-169). The README's section on adopting the tool that task 4.4 writes says which writes end an interval and what that costs
+~~~~
+
+Clause, R157:
+
+~~~~text
+and the comment words the flag as calls that capture could not show were made while it was on
+~~~~
+
+Clause, R157:
+
+~~~~text
+never as capture being off
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+The README's section on turning capture off gives `git config --global --get pr-cost.capture` to see a session's opt-in, and task 7.2 checks whether a project's thread that pauses and resumes keeps the details of the opt-in's files that the fingerprint holds
+~~~~
+
 ## For B-007
 
 - `docs/threat-model.md`: the configuration is read only as a blob at each commit (T49: R19's requirement states it, but none of its scenarios does)
@@ -3879,6 +5273,11 @@ so that every name in a Held by line is read.
 - `docs/threat-model.md`: finding a design decision or a task named without its change in any change, active or archived (T75: no scenario of R126 or R127 says how a design decision or a task named without its change is found)
 - `docs/threat-model.md`: "Decided by" takes one of three fixed forms: the owner, with the dates of the decision; the change that made it; or that change, with the dates on which the owner asked for what it decided. (T72: R124 holds a field's form only in general; no scenario names the three forms, which DR-108 and DR-151 give)
 - `docs/threat-model.md`: and no link, quotation or identifier fits in the field. (T72: no scenario of R124 states it)
+- `docs/threat-model.md`: The README's section on turning capture off gives `git config --global --get pr-cost.capture` to see a session's opt-in (T120: the scenario "The README says how to turn capture off in a running session" (R194) gives `git config --show-origin --get-all pr-cost.capture` to see each value of a session's opt-in, and says that `--global --get` shows only the global file's value.)
+- `docs/threat-model.md`: each golden session lists every call of its transcripts, by its message ID, (T83: R139 asks for each call with its entry or scenario; no scenario says that a golden session names a call by its message ID.)
+- `docs/threat-model.md`: and the set holds a session for each rule at this boundary that changes a figure or a count (T87: no scenario of R139 asks for a golden session for each rule at this boundary.)
+- `docs/threat-model.md`: and each golden test names as its expected error one that only a missing capture step or report raises, so a wrong figure fails CI on the pull request, before any tag (T99: no scenario states what a golden test names as its expected error.)
+- `docs/threat-model.md`: a path that is not UTF-8 (T102: R137's scenario fails on a file that is not UTF-8; none names a path that is not.)
 
 ## Left as it is
 
