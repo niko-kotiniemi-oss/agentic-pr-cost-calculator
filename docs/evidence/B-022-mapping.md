@@ -10112,6 +10112,2650 @@ Clause, R184:
 , and fails when the version is lower than at the pull request's base.
 ~~~~
 
+### Entry
+
+Old:
+
+~~~~text
+`docs/how-it-works.md` gives each workflow's permissions as a table, per workflow and per job, and `tests/test_documentation.py` compares that table with every workflow, `.yml` and `.yaml` alike, in both directions, so that a permission granted and not listed fails it, and so does one listed and not granted.
+~~~~
+
+New:
+
+~~~~text
+`docs/how-it-works.md` gives each workflow's permissions as a table, per workflow and per job, and `tests/test_documentation.py` compares that table with every workflow, as R101 gives it.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+`docs/how-it-works.md` gives each workflow's permissions as a table, per workflow and per job, and `tests/test_documentation.py` compares that table with every workflow
+~~~~
+
+Clause, R101:
+
+~~~~text
+`.yml` and `.yaml` alike, in both directions, so that a permission granted and not listed fails it, and so does one listed and not granted.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+The test compares every action and every container or service image the workflows use with the connections the page names.
+~~~~
+
+New:
+
+~~~~text
+The test holds the actions and images that the workflows use to the page too (R101).
+~~~~
+
+Clause, R101:
+
+~~~~text
+The test compares every action and every container or service image the workflows use with the connections the page names.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+`tests/test_spec_form.py` reads every spec that OpenSpec reads, at any depth below `openspec/specs/` and below the `specs/` folder of each change that is not archived, line by line, as OpenSpec reads it, and fails where a spec would be read otherwise than it is written or shown: on a requirement, a scenario, a heading or a line out of the form that R173 to R175 of `project-standards` give, and on a `spec.md` that it does not read and on a symbolic link, as R177 says (DR-193, DR-194); and on text that GitHub would hide or show otherwise than it is, as R176 lists it, so that what GitHub shows of a spec is all that OpenSpec and agents read (DR-195).
+~~~~
+
+New:
+
+~~~~text
+`tests/test_spec_form.py` reads every spec that OpenSpec reads, as OpenSpec reads it, and fails where a spec would be read otherwise than it is written or shown, as R173 to R177 give it (DR-193, DR-194), so that what GitHub shows of a spec is all that OpenSpec and agents read (DR-195).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+`tests/test_spec_form.py` reads every spec that OpenSpec reads
+~~~~
+
+Clause, R177:
+
+~~~~text
+at any depth below `openspec/specs/` and below the `specs/` folder of each change that is not archived, line by line
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+as OpenSpec reads it, and fails where a spec would be read otherwise than it is written or shown
+~~~~
+
+Clause, R173:
+
+~~~~text
+on a requirement,
+~~~~
+
+Clause, R174:
+
+~~~~text
+a scenario,
+~~~~
+
+Clause, R175:
+
+~~~~text
+a heading or a line out of the form that R173 to R175 of `project-standards` give
+~~~~
+
+Clause, R177:
+
+~~~~text
+and on a `spec.md` that it does not read and on a symbolic link, as R177 says
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+(DR-193, DR-194)
+~~~~
+
+Clause, R176:
+
+~~~~text
+and on text that GitHub would hide or show otherwise than it is, as R176 lists it
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+so that what GitHub shows of a spec is all that OpenSpec and agents read (DR-195).
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+Since the test models how the pinned OpenSpec reads a spec, `scripts/verify-openspec.sh` compares the test's reading of every spec and change with what the pinned OpenSpec CLI shows for it, so that a release that reads specs otherwise, or a defect in the test's reader, fails CI in the pull request that brings it (DR-196).
+~~~~
+
+New:
+
+~~~~text
+Since the test models how the pinned OpenSpec reads a spec, `scripts/verify-openspec.sh` makes the comparison that R178 gives, so that a release that reads specs otherwise, or a defect in the test's reader, fails CI in the pull request that brings it (DR-196).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+Since the test models how the pinned OpenSpec reads a spec, `scripts/verify-openspec.sh`
+~~~~
+
+Clause, R178:
+
+~~~~text
+compares the test's reading of every spec and change with what the pinned OpenSpec CLI shows for it
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+so that a release that reads specs otherwise, or a defect in the test's reader, fails CI in the pull request that brings it (DR-196).
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+After the README's first paragraph and its status, with no HTML and in at most 200 words outside code, it says how a repository turns the tool on, pinned to a published release, how a person opts in, with the same line in the setup script of a cloud environment that only they use, how a person adds the plugin for a project's cloud threads, in the project's settings, from the latest release's zip after checking its checksum against that release's README, or from this repository's marketplace, named by its address, whose updates need no approval, how an organization tells its members and then opts them in, and how to stop, in every running session too, each step linking the section that gives its detail (R198).
+~~~~
+
+New:
+
+~~~~text
+After the README's first paragraph and its status, the short start gives what R198 lists, each step linking the section that gives its detail.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+After the README's first paragraph and its status,
+~~~~
+
+Clause, R198:
+
+~~~~text
+with no HTML and in at most 200 words outside code, it says how a repository turns the tool on, pinned to a published release, how a person opts in, with the same line in the setup script of a cloud environment that only they use, how a person adds the plugin for a project's cloud threads, in the project's settings, from the latest release's zip after checking its checksum against that release's README, or from this repository's marketplace, named by its address, whose updates need no approval, how an organization tells its members and then opts them in, and how to stop, in every running session too,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+each step linking the section that gives its detail
+~~~~
+
+Clause, R198:
+
+~~~~text
+(R198).
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+Before any step that opts anyone in, it says what an opt-in records and publishes: that only the sessions of people who are opted in are recorded, in every repository that turns the tool on and for every agent that the tool records, later ones too, that a call counts in the repository that it is made from, whatever it works on, and that what a session spends is committed with its work, which ties it to the person, and published when that work is pushed, even after an opt-out, so that a person who reads no further knows it before they opt in (R199, T145).
+~~~~
+
+New:
+
+~~~~text
+Before any step that opts anyone in, it says what an opt-in records and publishes, as R199 gives it, so that a person who reads no further knows it before they opt in (R199, T145).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+Before any step that opts anyone in, it says what an opt-in records and publishes
+~~~~
+
+Clause, R199:
+
+~~~~text
+that only the sessions of people who are opted in are recorded, in every repository that turns the tool on and for every agent that the tool records, later ones too, that a call counts in the repository that it is made from, whatever it works on, and that what a session spends is committed with its work, which ties it to the person, and published when that work is pushed, even after an opt-out,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+so that a person who reads no further knows it before they opt in (R199, T145).
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+Its links name only the README's headings and this repository's latest release, by its full address, and every address in the README is one that its test lists or, on GitHub, only this repository, its latest release, or a release, a release's file, a file or a folder at a release's tag or a placeholder, since GitHub also serves under this repository's address what others write (R201, T147, DR-215).
+~~~~
+
+New:
+
+~~~~text
+Its links and every address in the README are held as R198 and R201 give them, since GitHub also serves under this repository's address what others write (R201, T147, DR-215).
+~~~~
+
+Clause, R198:
+
+~~~~text
+Its links name only the README's headings and this repository's latest release, by its full address,
+~~~~
+
+Clause, R201:
+
+~~~~text
+and every address in the README is one that its test lists or, on GitHub, only this repository, its latest release, or a release, a release's file, a file or a folder at a release's tag or a placeholder,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+since GitHub also serves under this repository's address what others write (R201, T147, DR-215).
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+The detail stays in the README, as the owner chose on 2026-11-10, under the headings that task 4.4 gives, each section's text folded in a `<details>` element, which GitHub shows closed until a reader opens it (A9), and the README holds only printable ASCII and line breaks, and no other text that GitHub hides (T151), so that the README first shows the short start and a list of what the detail covers, while every requirement and record that says the README gives a detail still holds (R200, DR-213).
+~~~~
+
+New:
+
+~~~~text
+The detail stays in the README, as the owner chose on 2026-11-10, under the headings that task 4.4 gives, each section folded as R200 gives it (A9, T151), so that the README first shows the short start and a list of what the detail covers, while every requirement and record that says the README gives a detail still holds (R200, DR-213).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+The detail stays in the README, as the owner chose on 2026-11-10, under the headings that task 4.4 gives,
+~~~~
+
+Clause, R200:
+
+~~~~text
+each section's text folded in a `<details>` element, which GitHub shows closed until a reader opens it
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+A9
+~~~~
+
+Clause, R200:
+
+~~~~text
+and the README holds only printable ASCII and line breaks, and no other text that GitHub hides
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+T151
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+so that the README first shows the short start and a list of what the detail covers, while every requirement and record that says the README gives a detail still holds (R200, DR-213).
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+Its sections on the opt-in, on cloud threads and on organizations say that a person sets their own opt-in, or their organization does once it has told them, and that an agent that sets the tool up turns capture on for no one and leaves the opt-in to whoever asked it, since `CLAUDE.md` steers only the agents that work here (R204, DR-214, T158).
+~~~~
+
+New:
+
+~~~~text
+Its sections on the opt-in, on cloud threads and on organizations leave each opt-in to the person or their organization, as R204 gives it, since `CLAUDE.md` steers only the agents that work here (R204, DR-214, T158).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+Its sections on the opt-in, on cloud threads and on organizations
+~~~~
+
+Clause, R204:
+
+~~~~text
+say that a person sets their own opt-in, or their organization does once it has told them, and that an agent that sets the tool up turns capture on for no one and leaves the opt-in to whoever asked it,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+since `CLAUDE.md` steers only the agents that work here (R204, DR-214, T158).
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+Until the root marketplace file holds an entry for the tool's plugin, the README's status says that this repository's marketplace does not serve it yet, which a test holds against that file, and task 4.4 writes the short start only once task 6.8 has removed the root marketplace file, which lists the vendored Superpowers, so that a person who adds the marketplace from the short start is never offered that plugin (R205, T138).
+~~~~
+
+New:
+
+~~~~text
+The README's status says what R205 gives, and task 4.4 writes the short start only once task 6.8 has removed the root marketplace file, which lists the vendored Superpowers, so that a person who adds the marketplace from the short start is never offered that plugin (R205, T138).
+~~~~
+
+Clause, R205:
+
+~~~~text
+Until the root marketplace file holds an entry for the tool's plugin, the README's status says that this repository's marketplace does not serve it yet, which a test holds against that file,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+and task 4.4 writes the short start only once task 6.8 has removed the root marketplace file, which lists the vendored Superpowers, so that a person who adds the marketplace from the short start is never offered that plugin (R205, T138).
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+An item is named `B-NNN-words.md`, numbered from B-001 without a gap, beside a `README.md` that gives the form, links the roadmap and the README's briefing, and says that an item describes, is neither a promise nor a date and is not a request to start work, what each status means, and that `Done` means that its pull requests have merged to the default branch, while `CHANGELOG.md` names the release that holds it (R217).
+~~~~
+
+New:
+
+~~~~text
+Each item is a file of its own in the form that R211 gives, beside a `README.md` that says what R217 gives and links the README's briefing (R212).
+~~~~
+
+Clause, R211:
+
+~~~~text
+An item is named `B-NNN-words.md`, numbered from B-001 without a gap,
+~~~~
+
+Clause, R217:
+
+~~~~text
+beside a `README.md` that gives the form, links the roadmap
+~~~~
+
+Clause, R212:
+
+~~~~text
+and the README's briefing,
+~~~~
+
+Clause, R217:
+
+~~~~text
+and says that an item describes, is neither a promise nor a date and is not a request to start work, what each status means, and that `Done` means that its pull requests have merged to the default branch, while `CHANGELOG.md` names the release that holds it (R217).
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+Compared with the base commit, an item is added only as open or planned, and never moves from open or dropped straight to in progress or done, so that the agreement is a change to a status line that the diff shows; the check examines nothing while no base holds `docs/backlog/`, so that task 1.27 can write the first items with the statuses that the roadmap's marks give them today (R218).
+~~~~
+
+New:
+
+~~~~text
+Compared with the base commit, an item becomes agreed only as R218 gives it, so that the agreement is a change to a status line that the diff shows, and so that task 1.27 can write the first items with the statuses that the roadmap's marks give them today (R218).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+Compared with the base commit,
+~~~~
+
+Clause, R218:
+
+~~~~text
+an item is added only as open or planned, and never moves from open or dropped straight to in progress or done,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+so that the agreement is a change to a status line that the diff shows
+~~~~
+
+Clause, R218:
+
+~~~~text
+the check examines nothing while no base holds `docs/backlog/`,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+so that task 1.27 can write the first items with the statuses that the roadmap's marks give them today (R218).
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+A test, like that of the records, compares the items with the base commit that `tests/test_decisions.py` uses and fails when an item is removed, renamed or moved, so that every link to an item still leads to it once it is done or dropped, and when a branch changes an item's text and leaves its date before the base's, or at the base's when that is not the day of the run, so that two changes to one item can merge on one day, and on a date later than the day on which it runs, in UTC (R216); it also fails on Rests on in another form, on an ID that does not exist, on an item that names a closed record, as R127 asks of every page outside the history, and on an open item whose tasks are all ticked, which is stale (R215, T161).
+~~~~
+
+New:
+
+~~~~text
+A test, like that of the records, compares the items with the base commit that `tests/test_decisions.py` uses, as R216 gives it, so that every link to an item still leads to it once it is done or dropped, and so that two changes to one item can merge on one day; it also holds R215, as R127 asks of every page outside the history (T161).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+A test, like that of the records, compares the items with the base commit that `tests/test_decisions.py` uses
+~~~~
+
+Clause, R216:
+
+~~~~text
+and fails when an item is removed, renamed or moved,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+so that every link to an item still leads to it once it is done or dropped,
+~~~~
+
+Clause, R216:
+
+~~~~text
+and when a branch changes an item's text and leaves its date before the base's, or at the base's when that is not the day of the run,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+so that two changes to one item can merge on one day
+~~~~
+
+Clause, R216:
+
+~~~~text
+and on a date later than the day on which it runs, in UTC (R216);
+~~~~
+
+Clause, R215:
+
+~~~~text
+it also fails on Rests on in another form, on an ID that does not exist, on an item that names a closed record,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+as R127 asks of every page outside the history
+~~~~
+
+Clause, R215:
+
+~~~~text
+and on an open item whose tasks are all ticked, which is stale (R215,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+T161).
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+The README's list of documentation links it, and its sections are Now, Next, Later, Known limitations and Known bugs, in that order; it opens by saying that it describes, that an item on it is neither a promise nor a date, and that it is not a request to start work (R206).
+~~~~
+
+Clause, R206:
+
+~~~~text
+The README's list of documentation links it, and its sections are Now, Next, Later, Known limitations and Known bugs, in that order; it opens by saying that it describes, that an item on it is neither a promise nor a date, and that it is not a request to start work (R206).
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+Brief`, giving the item's title, status, date and brief exactly as the item does, and a test fails on a line that differs from its item or links none, on an item that is open to feedback and contributions, planned or in progress and is listed in none of the three or more than once, and on an item that is done or dropped and is still listed, since the changelog says what shipped.
+~~~~
+
+New:
+
+~~~~text
+Brief`, giving the item's title, status, date and brief exactly as the item does, as R213 holds, and listing no item that is done or dropped, since the changelog says what shipped.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+Brief`, giving the item's title, status, date and brief exactly as the item does,
+~~~~
+
+Clause, R213:
+
+~~~~text
+and a test fails on a line that differs from its item or links none, on an item that is open to feedback and contributions, planned or in progress and is listed in none of the three or more than once, and on an item that is done or dropped and is still listed,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+since the changelog says what shipped.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+Later holds what the first version leaves out, among them other agents than Claude Code, which the owner chose on 2026-11-12 to plan for after the first version (B-017, DR-003, DR-234), and opens by saying that work on an item that is open to feedback and contributions starts with an issue, that an item is built only once it is `Planned`, which only a pull request that the owner merges makes it, and that some items need a spec, a threat review and the owner's decision first; each record that the README's list of what the first version does not support links is named in the field Rests on of an item listed under Later, and each item listed under Next or Later rests on at least one ID (R213, R214, DR-226).
+~~~~
+
+New:
+
+~~~~text
+Later holds what the first version leaves out, among them other agents than Claude Code, which the owner chose on 2026-11-12 to plan for after the first version (B-017, DR-003, DR-234), and opens and rests as R213 and R214 give it (DR-226).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+Later holds what the first version leaves out, among them other agents than Claude Code, which the owner chose on 2026-11-12 to plan for after the first version (B-017, DR-003, DR-234),
+~~~~
+
+Clause, R214:
+
+~~~~text
+and opens by saying that work on an item that is open to feedback and contributions starts with an issue, that an item is built only once it is `Planned`, which only a pull request that the owner merges makes it, and that some items need a spec, a threat review and the owner's decision first; each record that the README's list of what the first version does not support links is named in the field Rests on of an item listed under Later,
+~~~~
+
+Clause, R213:
+
+~~~~text
+and each item listed under Next or Later rests on at least one ID
+~~~~
+
+Clause, DR-226:
+
+~~~~text
+(R213, R214, DR-226).
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+Each feature page named for a spec has that section, which lists the rest of the risks that concern it and links the roadmap, and every risk of every change's design, active or archived, is listed by its title as its design gives it on the roadmap or on a feature page, as the owner chose on 2026-11-11 (R208, DR-220, T162).
+~~~~
+
+New:
+
+~~~~text
+Each feature page named for a spec has that section, which lists the rest of the risks that concern it, so that every risk is listed as R208 gives it, as the owner chose on 2026-11-11 (DR-220, T162).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+Each feature page named for a spec has that section, which lists the rest of the risks that concern it
+~~~~
+
+Clause, R208:
+
+~~~~text
+and links the roadmap, and every risk of every change's design, active or archived, is listed by its title as its design gives it on the roadmap or on a feature page
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+as the owner chose on 2026-11-11
+~~~~
+
+Clause, R208:
+
+~~~~text
+(R208,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+DR-220, T162).
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+The roadmap and the backlog items name issues and pull requests by number alone, with no link, as the owner chose on 2026-11-11 and agreed for the items on 2026-11-13 (DR-228, T164), and their other links, and those of each feature page's section on known limitations and the roadmap, name only a heading of their own page or a tracked file of this repository, each link read from its `](` in prose and code alike, with no fenced or indented code, no image, no `@` and no space in inline code, so that commands are given only in the README, whose tests hold them (R209, DR-227, T160, T163).
+~~~~
+
+New:
+
+~~~~text
+The roadmap and the backlog items name issues and pull requests by number alone, with no link, as the owner chose on 2026-11-11 and agreed for the items on 2026-11-13 (DR-228, T164), and their other links, and those of each feature page's section on known limitations and the roadmap, are held as R209 gives them, so that commands are given only in the README, whose tests hold them (DR-227, T160, T163).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+The roadmap and the backlog items name issues and pull requests by number alone, with no link, as the owner chose on 2026-11-11 and agreed for the items on 2026-11-13 (DR-228, T164), and their other links, and those of each feature page's section on known limitations and the roadmap,
+~~~~
+
+Clause, R209:
+
+~~~~text
+name only a heading of their own page or a tracked file of this repository, each link read from its `](` in prose and code alike, with no fenced or indented code, no image, no `@` and no space in inline code,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+so that commands are given only in the README, whose tests hold them
+~~~~
+
+Clause, R209:
+
+~~~~text
+(R209,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+DR-227, T160, T163).
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+The README is the table's one home, and `CONTRIBUTING.md` and `docs/backlog/README.md` link the section; a test fails when the briefing is missing or follows the setup, leaves out a statement, its table lacks a column or a row or gives them out of order, a row links no page, another tracked Markdown file gives the table's header and rows, or either page does not link the section (R212).
+~~~~
+
+New:
+
+~~~~text
+The README is the table's one home, and `CONTRIBUTING.md` and `docs/backlog/README.md` link the section, as R212 holds.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+The README is the table's one home, and `CONTRIBUTING.md` and `docs/backlog/README.md` link the section
+~~~~
+
+Clause, R212:
+
+~~~~text
+a test fails when the briefing is missing or follows the setup, leaves out a statement, its table lacks a column or a row or gives them out of order, a row links no page, another tracked Markdown file gives the table's header and rows, or either page does not link the section (R212).
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+Its sections are its concerns, in this order: Architecture and integration, Security, Privacy, Identity and credentials, Supply chain and releases, Testing, Decisions and documentation, Working with agents, and Conventions, as arc42 keeps one heading for each crosscutting concept.
+~~~~
+
+New:
+
+~~~~text
+Its sections are its concerns, in the order that R219 gives, as arc42 keeps one heading for each crosscutting concept.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+Its sections are its concerns, in
+~~~~
+
+Clause, R219:
+
+~~~~text
+this order: Architecture and integration, Security, Privacy, Identity and credentials, Supply chain and releases, Testing, Decisions and documentation, Working with agents, and Conventions,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+as arc42 keeps one heading for each crosscutting concept.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+It opens with a text that R219 gives word for word, so that a line added to it or taken from it fails a test, as a test of each statement's presence would not (T180): that the specs decide what the tool does, `CLAUDE.md` what an agent may do and the guide how the project builds, that both win where the guide differs from them and the owner is told, that the guide never widens what `CLAUDE.md` lets an agent do, that an entry cites the requirement or the rule of `CLAUDE.md` that it rests on rather than stating it again, and that where an entry and a step of a Superpowers skill differ, the step is followed and the owner is told (T181); that the guide steers as the default branch holds it, a principle changing, or moving to another concern, only when the owner asks for it (T179, T183), and that it speaks to work on this repository, not to setting the tool up, which is the README's section on adopting it, an agent that sets the tool up turning capture on for no one (T158); what Where we stand gives, and that it gives where the default branch stands, a release's guide being the copy at its tag; and that a gap is not, by being there, a request to start work, closing only through its backlog item, while work outside that item leaves what the gap concerns as it stands, and that a principle knowingly accepted is accepted only where its record says (T159).
+~~~~
+
+New:
+
+~~~~text
+It opens with a text that R219 gives word for word, so that a line added to it or taken from it fails a test, as a test of each statement's presence would not (T158, T159, T179, T180, T181, T183).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+It opens with a text that R219 gives word for word, so that a line added to it or taken from it fails a test, as a test of each statement's presence would not
+~~~~
+
+Clause, R219:
+
+~~~~text
+(T180): that the specs decide what the tool does, `CLAUDE.md` what an agent may do and the guide how the project builds, that both win where the guide differs from them and the owner is told, that the guide never widens what `CLAUDE.md` lets an agent do, that an entry cites the requirement or the rule of `CLAUDE.md` that it rests on rather than stating it again, and that where an entry and a step of a Superpowers skill differ, the step is followed and the owner is told (T181); that the guide steers as the default branch holds it, a principle changing, or moving to another concern, only when the owner asks for it (T179, T183), and that it speaks to work on this repository, not to setting the tool up, which is the README's section on adopting it, an agent that sets the tool up turning capture on for no one (T158); what Where we stand gives, and that it gives where the default branch stands, a release's guide being the copy at its tag; and that a gap is not, by being there, a request to start work, closing only through its backlog item, while work outside that item leaves what the gap concerns as it stands, and that a principle knowingly accepted is accepted only where its record says (T159).
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+Its last line names the assessment, by its date, or the release, by its version, for which its entries were last read (R219).
+~~~~
+
+Clause, R219:
+
+~~~~text
+Its last line names the assessment, by its date, or the release, by its version, for which its entries were last read (R219).
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+An entry under Working with agents cites `CLAUDE.md` in its Held by, so that it adds to a rule of `CLAUDE.md` and never stands in for one more narrowly worded (R220, T180).
+~~~~
+
+New:
+
+~~~~text
+An entry under Working with agents cites `CLAUDE.md` as R220 gives it, so that it adds to a rule of `CLAUDE.md` and never stands in for one more narrowly worded (T180).
+~~~~
+
+Clause, R220:
+
+~~~~text
+An entry under Working with agents cites `CLAUDE.md` in its Held by,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+so that it adds to a rule of `CLAUDE.md` and never stands in for one more narrowly worded
+~~~~
+
+Clause, R220:
+
+~~~~text
+(R220,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+T180).
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+Where we stand opens with `Followed.` while every task that the entry's Held by cites is ticked, `Designed.` while one of them is not, so that no reader takes a principle that the specs hold for one that the code holds, `Knowingly accepted.` with the record that gives the reason, or `Gap.` with the backlog item that closes it, and a test fails while a gap names an item that is done or dropped, so that the pull request that finishes or drops an item says again where the project stands (R226, DR-241, T170).
+~~~~
+
+New:
+
+~~~~text
+Where we stand opens as R226 gives it, so that no reader takes a principle that the specs hold for one that the code holds, and so that the pull request that finishes or drops an item says again where the project stands (DR-241, T170).
+~~~~
+
+Clause, R226:
+
+~~~~text
+Where we stand opens with `Followed.` while every task that the entry's Held by cites is ticked, `Designed.` while one of them is not,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+so that no reader takes a principle that the specs hold for one that the code holds
+~~~~
+
+Clause, R226:
+
+~~~~text
+`Knowingly accepted.` with the record that gives the reason, or `Gap.` with the backlog item that closes it, and a test fails while a gap names an item that is done or dropped,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+so that the pull request that finishes or drops an item says again where the project stands
+~~~~
+
+Clause, R226:
+
+~~~~text
+(R226,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+DR-241, T170).
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+Compared with the base, a test fails on an entry that leaves `Gap.`, or whose gap stops naming an item that it named, while that item is neither `Done` nor `Dropped`, so that a gap closes, or passes to other work, only through its item, and not in the pull request whose work it holds back (R233, DR-241, T182).
+~~~~
+
+New:
+
+~~~~text
+Compared with the base, a gap of the guide closes as R233 gives it, so that a gap closes, or passes to other work, only through its item, and not in the pull request whose work it holds back (DR-241, T182).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+Compared with the base,
+~~~~
+
+Clause, R233:
+
+~~~~text
+a test fails on an entry that leaves `Gap.`, or whose gap stops naming an item that it named, while that item is neither `Done` nor `Dropped`,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+so that a gap closes, or passes to other work, only through its item, and not in the pull request whose work it holds back
+~~~~
+
+Clause, R233:
+
+~~~~text
+(R233,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+DR-241, T182).
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+The ticks are read from each change's `tasks.md` as GitHub shows them: a test fails on a task given twice, on a checkbox that the checks do not read as a task, and on fenced code, front matter, a byte-order mark, a `<` before a letter, `/`, `!` or `?` outside inline code on its line, with which an HTML comment or tag opens, a line that opens with `$$`, or a carriage return without a line feed after it, in which a tick would be read that GitHub does not show as one (R232, T184), and no attribute hides the diff of a change's `tasks.md` (R134).
+~~~~
+
+New:
+
+~~~~text
+The ticks are read from each change's `tasks.md` as GitHub shows them, as R232 and R134 give it (T184).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+The ticks are read from each change's `tasks.md` as GitHub shows them
+~~~~
+
+Clause, R232:
+
+~~~~text
+a test fails on a task given twice, on a checkbox that the checks do not read as a task, and on fenced code, front matter, a byte-order mark, a `<` before a letter, `/`, `!` or `?` outside inline code on its line, with which an HTML comment or tag opens, a line that opens with `$$`, or a carriage return without a line feed after it, in which a tick would be read that GitHub does not show as one (R232,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+T184
+~~~~
+
+Clause, R134:
+
+~~~~text
+and no attribute hides the diff of a change's `tasks.md` (R134).
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+Under Security, Privacy, Identity and credentials, and Supply chain and releases, the four concerns that adopters rely on, a principle knowingly accepted names a record that the owner decided, so that no change's own choice reads as the project's accepted risk, and a gap names an item that is `Planned` or `In progress`, so that no such gap waits on an item that no one has agreed to build (R226, DR-241, T177).
+~~~~
+
+New:
+
+~~~~text
+Under Security, Privacy, Identity and credentials, and Supply chain and releases, the four concerns that adopters rely on, what is knowingly accepted and what is a gap are held as R226 gives it, so that no change's own choice reads as the project's accepted risk, and so that no such gap waits on an item that no one has agreed to build (DR-241, T177).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+Under Security, Privacy, Identity and credentials, and Supply chain and releases, the four concerns that adopters rely on,
+~~~~
+
+Clause, R226:
+
+~~~~text
+a principle knowingly accepted names a record that the owner decided,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+so that no change's own choice reads as the project's accepted risk,
+~~~~
+
+Clause, R226:
+
+~~~~text
+and a gap names an item that is `Planned` or `In progress`,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+so that no such gap waits on an item that no one has agreed to build
+~~~~
+
+Clause, R226:
+
+~~~~text
+(R226,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+DR-241, T177).
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+The entries are read again at each assessment and before each release, each gap found becoming a backlog item, and the release workflow refuses a tag whose guide does not say that its entries were last read for that tag's version, or whose changelog entry leaves out the item of a gap under those four concerns, so that each release's text tells its adopters of each such gap (R230, DR-241, T177).
+~~~~
+
+New:
+
+~~~~text
+The entries are read again at each assessment and before each release, each gap found becoming a backlog item, and the release workflow holds each tag to R230, so that each release's text tells its adopters of each such gap (DR-241, T177).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+The entries are read again at each assessment and before each release, each gap found becoming a backlog item, and the release workflow
+~~~~
+
+Clause, R230:
+
+~~~~text
+refuses a tag whose guide does not say that its entries were last read for that tag's version, or whose changelog entry leaves out the item of a gap under those four concerns,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+so that each release's text tells its adopters of each such gap
+~~~~
+
+Clause, R230:
+
+~~~~text
+(R230,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+DR-241, T177).
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+Compared with the base commit that the records' check uses, a pull request that adds or removes an entry, moves one to another concern, or changes its Statement, Rationale, Implications, Pattern or Anti-patterns, changes no file outside `docs/`, `openspec/`, `CLAUDE.md` and `CHANGELOG.md`, so that one diff cannot both weaken a principle and add the work that it forbade, and one that gives an agreed item a gap changes that item's What done looks like, which only the owner's words change, while Held by, Rests on and Where we stand change with the work that they follow; each check reads nothing while no base holds the guide (R228, R231, DR-239, DR-240, T166, T179, T183).
+~~~~
+
+New:
+
+~~~~text
+Compared with the base commit that the records' check uses, a pull request that changes a principle of the guide is held as R228 gives it, so that one diff cannot both weaken a principle and add the work that it forbade, and one that gives an agreed item a gap changes that item's What done looks like (R231), which only the owner's words change, while Held by, Rests on and Where we stand change with the work that they follow (DR-239, DR-240, T166, T179, T183).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+Compared with the base commit that the records' check uses, a pull request that
+~~~~
+
+Clause, R228:
+
+~~~~text
+adds or removes an entry, moves one to another concern, or changes its Statement, Rationale, Implications, Pattern or Anti-patterns, changes no file outside `docs/`, `openspec/`, `CLAUDE.md` and `CHANGELOG.md`,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+so that one diff cannot both weaken a principle and add the work that it forbade, and one that gives an agreed item a gap changes that item's What done looks like
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+which only the owner's words change, while Held by, Rests on and Where we stand change with the work that they follow
+~~~~
+
+Clause, R228:
+
+~~~~text
+each check reads nothing while no base holds the guide
+~~~~
+
+Clause, R231:
+
+~~~~text
+(R228, R231,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+DR-239, DR-240, T166, T179, T183).
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+The records are in `docs/decisions/`, one Markdown file each, named `DR-NNN-<words>.md` with the number in ASCII digits, padded to three, and `docs/decisions/README.md` is their index, with one row per record giving its title, type, status, decider, requirements and threats.
+~~~~
+
+New:
+
+~~~~text
+The records are in `docs/decisions/`, one Markdown file each, named and indexed as R124 and R125 give it, the number padded to three.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+The records are in `docs/decisions/`, one Markdown file each,
+~~~~
+
+Clause, R124:
+
+~~~~text
+named `DR-NNN-<words>.md` with the number in ASCII digits,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+padded to three
+~~~~
+
+Clause, R125:
+
+~~~~text
+and `docs/decisions/README.md` is their index, with one row per record giving its title, type, status, decider, requirements and threats.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+The folder holds nothing else, each record a file and not a link, and no file elsewhere is named as a record.
+~~~~
+
+Clause, R133:
+
+~~~~text
+The folder holds nothing else, each record a file and not a link, and no file elsewhere is named as a record.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+Its sections follow, each once and in this order: Context, Decision, Alternatives, Consequences, Scope, and What reversing it would change.
+~~~~
+
+Clause, R124:
+
+~~~~text
+Its sections follow, each once and in this order: Context, Decision, Alternatives, Consequences, Scope, and What reversing it would change.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+It holds only printable ASCII characters and line breaks, and links only from a record's ID to that record's file.
+~~~~
+
+Clause, R128:
+
+~~~~text
+It holds only printable ASCII characters and line breaks, and links only from a record's ID to that record's file.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+The closed record's status becomes closed and its "Closed by" names the new record, which names it in "Replaces".
+~~~~
+
+Clause, R129:
+
+~~~~text
+The closed record's status becomes closed
+~~~~
+
+Clause, R126:
+
+~~~~text
+and its "Closed by" names the new record, which names it in "Replaces".
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+Threat IDs, like requirement IDs, are retired rather than reused, and the threat model lists the retired ones.
+~~~~
+
+New:
+
+~~~~text
+Threat IDs, like requirement IDs, are retired rather than reused (R132).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+Threat IDs, like requirement IDs, are retired rather than reused
+~~~~
+
+Clause, R132:
+
+~~~~text
+and the threat model lists the retired ones.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+Its entry names what rests on it, by requirement, threat and record ID, says what would change if it is wrong, never how to change it, and lists its facts, each with where it is relied on, by ID or by path, and how it is checked: `tested`, naming the test; `observed`, naming the file under `tests/` that reproduces what was seen, the date, and the program, the version that it prints and its build; `documented`, linking by its address a vendor's page on a host that the test lists, or a file at a full commit of a GitHub repository that it lists, with the date it was read; or `not yet`, naming the task that will check it or saying why none will.
+~~~~
+
+New:
+
+~~~~text
+Its entry names what rests on it, says what would change if it is wrong, never how to change it, and lists its facts, each with where it is relied on and how it is checked, as R135 and R140 give them.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+Its entry names what rests on it
+~~~~
+
+Clause, R135:
+
+~~~~text
+by requirement, threat and record ID
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+says what would change if it is wrong, never how to change it, and lists its facts, each with where it is relied on
+~~~~
+
+Clause, R140:
+
+~~~~text
+by ID or by path, and how it is checked: `tested`, naming the test; `observed`, naming the file under `tests/` that reproduces what was seen, the date, and the program, the version that it prints and its build;
+~~~~
+
+Clause, R140:
+
+~~~~text
+`documented`, linking by its address a vendor's page on a host that the test lists, or a file at a full commit of a GitHub repository that it lists, with the date it was read;
+~~~~
+
+Clause, R135:
+
+~~~~text
+or `not yet`, naming the task that will check it or saying why none will.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+The assumptions are listed by the highest impact among the threats that rest on them, then least checked first, an assumption being as checked as its least checked fact, from `not yet` through `documented` and `observed` to `tested`, then by the highest risk among those threats, all read from the threat model, so a changed rating or check changes the order and no assumption is rated on its own; an assumption that no threat rests on comes last.
+~~~~
+
+New:
+
+~~~~text
+The assumptions are listed in the order that R136 gives, an assumption being as checked as its least checked fact, from `not yet` through `documented` and `observed` to `tested`, all read from the threat model, so a changed rating or check changes the order and no assumption is rated on its own.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+The assumptions are listed
+~~~~
+
+Clause, R136:
+
+~~~~text
+by the highest impact among the threats that rest on them, then least checked first,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+an assumption being as checked as its least checked fact, from `not yet` through `documented` and `observed` to `tested`,
+~~~~
+
+Clause, R136:
+
+~~~~text
+then by the highest risk among those threats,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+all read from the threat model, so a changed rating or check changes the order and no assumption is rated on its own
+~~~~
+
+Clause, R136:
+
+~~~~text
+an assumption that no threat rests on comes last.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+It leaves as written each requirement's or scenario's title that an accepted record quotes, the records and the specs read where HEAD left the default branch, so that a record that a pull request adds keeps no title's words, and fails when such a title leaves the specs, since the record keeps its quote (DR-121).
+~~~~
+
+New:
+
+~~~~text
+It leaves as written each requirement's or scenario's title that an accepted record quotes, as R137 gives it, the records and the specs read where HEAD left the default branch, since the record keeps its quote (DR-121).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+It leaves as written each requirement's or scenario's title that an accepted record quotes,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+the records and the specs read where HEAD left the default branch,
+~~~~
+
+Clause, R137:
+
+~~~~text
+so that a record that a pull request adds keeps no title's words, and fails when such a title leaves the specs,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+since the record keeps its quote (DR-121).
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+A golden entry, figure or working changes only in a pull request that changes a spec or nothing outside the set, and one that the latest release's tag holds is named in the changelog's unreleased section (R141).
+~~~~
+
+Clause, R141:
+
+~~~~text
+A golden entry, figure or working changes only in a pull request that changes a spec or nothing outside the set, and one that the latest release's tag holds is named in the changelog's unreleased section (R141).
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+For each ledger format that a release wrote, sessions as that release wrote them keep their figures for as long as the report reads that format (R142).
+~~~~
+
+Clause, R142:
+
+~~~~text
+For each ledger format that a release wrote, sessions as that release wrote them keep their figures for as long as the report reads that format (R142).
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+The roadmap, every file in `docs/backlog/`, and each feature page's section on known limitations and the roadmap, hold no text that GitHub hides, as the README holds none (R210, T165).
+~~~~
+
+Clause, R210:
+
+~~~~text
+The roadmap, every file in `docs/backlog/`, and each feature page's section on known limitations and the roadmap, hold no text that GitHub hides,
+~~~~
+
+Clause, R200:
+
+~~~~text
+as the README holds none
+~~~~
+
+Clause, R210:
+
+~~~~text
+(R210, T165).
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+Retention, over a window of 30 days, which the owner picked on 2026-11-03 from 7, 14 and 30: a run records no call whose day is more than 30 days before the run's day, and drops a waiting call, a flag due or a taken call's note that old, a flag by the day a run last raised it, flagging a dropped waiting call for its age in the next ledger file staged for its worktree and branch, so that the store never holds a call that it may still record without its note; a session's notes go once none of its runs has come within those 30 days; a staged file's note that old is taken back as for a command that is over, and a take-back's note that old is dropped.
+~~~~
+
+New:
+
+~~~~text
+Retention, over a window of 30 days, which the owner picked on 2026-11-03 from 7, 14 and 30, is as R150 gives it, so that the store never holds a call that it may still record without its note.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+Retention, over a window of 30 days, which the owner picked on 2026-11-03 from 7, 14 and 30
+~~~~
+
+Clause, R150:
+
+~~~~text
+a run records no call whose day is more than 30 days before the run's day, and drops a waiting call, a flag due or a taken call's note that old, a flag by the day a run last raised it, flagging a dropped waiting call for its age in the next ledger file staged for its worktree and branch,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+so that the store never holds a call that it may still record without its note
+~~~~
+
+Clause, R150:
+
+~~~~text
+a session's notes go once none of its runs has come within those 30 days; a staged file's note that old is taken back as for a command that is over, and a take-back's note that old is dropped.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+A run that leaves the store holding nothing, no flag among it, removes its file and its folder.
+~~~~
+
+Clause, R151:
+
+~~~~text
+A run that leaves the store holding nothing, no flag among it, removes its file and its folder.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+Protection: each write leaves the folder with mode 0700 and the file with 0600, whatever the umask or the modes it found.
+~~~~
+
+New:
+
+~~~~text
+Protection: each write leaves the folder and the file readable and writable by their owner alone, as R152 gives it.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+Protection: each write leaves the folder
+~~~~
+
+Clause, R152:
+
+~~~~text
+with mode 0700 and the file with 0600, whatever the umask or the modes it found.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+A run that cannot create or enter its own folder records, stages, takes back and puts back nothing, says so on standard error in its own words, and exits with success.
+~~~~
+
+Clause, R152:
+
+~~~~text
+A run that cannot create or enter its own folder records, stages, takes back and puts back nothing, says so on standard error in its own words, and exits with success.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+A note's paths are acted on only for a file of the form that the step writes, in the ledger folder of a worktree whose git common directory is this repository's, and a run checks each waiting call's entry again when it stages it, by the rules that it records by, so that an entry that someone wrote into the store carries nothing into a ledger file.
+~~~~
+
+New:
+
+~~~~text
+A note's paths are acted on only as R152 gives it, and a run checks each waiting call's entry again when it stages it, by the rules that it records by, so that an entry that someone wrote into the store carries nothing into a ledger file.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+A note's paths are acted on only
+~~~~
+
+Clause, R152:
+
+~~~~text
+for a file of the form that the step writes, in the ledger folder of a worktree whose git common directory is this repository's,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+and a run checks each waiting call's entry again when it stages it, by the rules that it records by, so that an entry that someone wrote into the store carries nothing into a ledger file.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+A store that the person, or anything else, removes, or that does not parse, as when a sync or a power loss cut it short, takes its notes with it: the next run that finds both switches on begins a new interval, so that no call that answers a line written before that run is recorded, however far the transcripts were read, and a ledger file staged before the removal is left to git, since no note says that a run staged it, so the README says to look for one with `git status`, in every worktree that `git worktree list` names, before removing the store.
+~~~~
+
+New:
+
+~~~~text
+A store that the person, or anything else, removes, or that does not parse, as when a sync or a power loss cut it short, takes its notes with it, as R153 gives it, however far the transcripts were read, and leaves to git a ledger file staged before, since no note says that a run staged it, so the README says to look for one with `git status`, in every worktree that `git worktree list` names, before removing the store.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+A store that the person, or anything else, removes, or that does not parse, as when a sync or a power loss cut it short, takes its notes with it
+~~~~
+
+Clause, R153:
+
+~~~~text
+the next run that finds both switches on begins a new interval, so that no call that answers a line written before that run is recorded,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+however far the transcripts were read,
+~~~~
+
+Clause, R153:
+
+~~~~text
+and a ledger file staged before the removal is left to git,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+since no note says that a run staged it, so the README says to look for one with `git status`, in every worktree that `git worktree list` names, before removing the store.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+Every version names a call by the same id, the SHA-256 hash of its message id, so that a call is counted once whichever versions its entries are in, and states the format's version and the release on the first line in the same place and form, so that a report reads both from a file of a version that it does not read, and can say that it comes from a later release (DR-208).
+~~~~
+
+New:
+
+~~~~text
+Every version names a call as R163 gives it and states the format's version and the release on the first line as R156 gives it, so that a report reads both from a file of a version that it does not read, and can say that it comes from a later release (DR-208).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+Every version names a call
+~~~~
+
+Clause, R163:
+
+~~~~text
+by the same id, the SHA-256 hash of its message id, so that a call is counted once whichever versions its entries are in,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+and states the format's version and the release on the first line
+~~~~
+
+Clause, R156:
+
+~~~~text
+in the same place and form,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+so that a report reads both from a file of a version that it does not read, and can say that it comes from a later release (DR-208).
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+The report reads each file by its version's rules, which it keeps for every version that a release wrote (DR-040), matching the version exactly as a whole number and choosing no code by its value, and counts as a refused file, using none of its entries, counts or flags, one whose first line states no version or one that it does not read, or breaks its version's rules, so that a report older than the hook says what it could not read rather than misreading it; a line shaped as a first line anywhere else is a refused line.
+~~~~
+
+New:
+
+~~~~text
+The report reads each file by its version's rules, which it keeps for every version that a release wrote (DR-040), as R158 gives it, so that a report older than the hook says what it could not read rather than misreading it.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+The report reads each file by its version's rules, which it keeps for every version that a release wrote (DR-040)
+~~~~
+
+Clause, R158:
+
+~~~~text
+matching the version exactly as a whole number and choosing no code by its value, and counts as a refused file, using none of its entries, counts or flags, one whose first line states no version or one that it does not read, or breaks its version's rules,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+so that a report older than the hook says what it could not read rather than misreading it
+~~~~
+
+Clause, R158:
+
+~~~~text
+a line shaped as a first line anywhere else is a refused line.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+It reads the default branch's earlier ledger files by the versions that they state too, skipping one that it does not read and giving their number in its job summary, and capture skips such a file in the branch it reads.
+~~~~
+
+Clause, R168:
+
+~~~~text
+It reads the default branch's earlier ledger files by the versions that they state too, skipping one that it does not read and giving their number in its job summary,
+~~~~
+
+Clause, R167:
+
+~~~~text
+and capture skips such a file in the branch it reads.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+A restored ledger file, or one that holds at least one entry, each of which the default branch already held, adds no counts and no flags.
+~~~~
+
+Clause, R95:
+
+~~~~text
+A restored ledger file, or one that holds at least one entry, each of which the default branch already held, adds no counts and no flags.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+The comment says when the pull request's ledger files flag calls left out, for each reason, as what those files say, with no count, and that the token cost, each of its parts and the total are then lower bounds, and it always says that calls that no ledger file holds are neither counted nor flagged.
+~~~~
+
+Clause, R157:
+
+~~~~text
+The comment says when the pull request's ledger files flag calls left out, for each reason, as what those files say, with no count, and that the token cost, each of its parts and the total are then lower bounds,
+~~~~
+
+Clause, R157:
+
+~~~~text
+and it always says that calls that no ledger file holds are neither counted nor flagged.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+The plugin's hooks run the same file, from the plugin's own folder, for the same events and with the same condition and timeouts as the hook file's registration, through a command that names the plugin form with an argument, ends in `; exit 0` and prints nothing on standard output.
+~~~~
+
+New:
+
+~~~~text
+The plugin's hooks run the same file as R179 gives it, with the same timeouts as the hook file's registration, through a command that names the plugin form with an argument and ends in `; exit 0`.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+The plugin's hooks run the same file
+~~~~
+
+Clause, R179:
+
+~~~~text
+from the plugin's own folder, for the same events and with the same condition and
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+timeouts as the hook file's registration
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+through a command that names the plugin form with an argument
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+ends in `; exit 0`
+~~~~
+
+Clause, R179:
+
+~~~~text
+and prints nothing on standard output.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+The plugin declares nothing but those hooks: its manifest holds only its name, version, description, author, licence and repository, its hooks are all command hooks, and each commit builds it with the hook file, byte for byte, as its capture step, never from the marketplace's plugin folder, which holds a published release's build (decision 11), so that it runs nothing that the zip's list of files, its checksum and the bill of materials do not show, and CI and the release workflow fail where any of these does not hold in the plugin that a commit builds (DR-197).
+~~~~
+
+New:
+
+~~~~text
+The plugin declares nothing but those hooks, and each commit builds it as R188 gives it, never from the marketplace's plugin folder, which holds a published release's build (decision 11), so that it runs nothing that the zip's list of files, its checksum and the bill of materials do not show (DR-197).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+The plugin declares nothing but those hooks
+~~~~
+
+Clause, R188:
+
+~~~~text
+its manifest holds only its name, version, description, author, licence and repository, its hooks are all command hooks, and each commit builds it with the hook file, byte for byte, as its capture step,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+never from the marketplace's plugin folder, which holds a published release's build (decision 11), so that it runs nothing that the zip's list of files, its checksum and the bill of materials do not show
+~~~~
+
+Clause, R188:
+
+~~~~text
+and CI and the release workflow fail where any of these does not hold in the plugin that a commit builds
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+(DR-197).
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+So a run of the plugin works first on the repository where each git command of its input that the hook's condition matches runs, read as decision 1 reads where a commit runs, so that a command that changes the branch of another repository, as `git -C <path> switch` does, finds that repository's waiting calls recorded on the branch checked out before it; then on the repository that holds the hook input's working directory; then on the repository that holds the project directory or, when no repository holds it, on each repository whose top level is directly inside it, as a project's thread's folder holds its clones, in the order of their paths, so that what a run reaches within its time budget does not depend on the order in which the system lists them (DR-198).
+~~~~
+
+New:
+
+~~~~text
+So a run of the plugin works on the repositories that it meets in the order that R180 gives, each git command's read as decision 1 reads where a commit runs, so that a command that changes the branch of another repository, as `git -C <path> switch` does, finds that repository's waiting calls recorded on the branch checked out before it, and on the clones that the project directory holds, as a project's thread's folder holds its clones, in the order of their paths, so that what a run reaches within its time budget does not depend on the order in which the system lists them (DR-198).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+So a run of the plugin works
+~~~~
+
+Clause, R180:
+
+~~~~text
+first on the repository where each git command of its input that the hook's condition matches runs,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+read as decision 1 reads where a commit runs, so that a command that changes the branch of another repository, as `git -C <path> switch` does, finds that repository's waiting calls recorded on the branch checked out before it
+~~~~
+
+Clause, R180:
+
+~~~~text
+then on the repository that holds the hook input's working directory; then on the repository that holds the project directory or, when no repository holds it, on each repository whose top level is directly inside it,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+as a project's thread's folder holds its clones, in the order of their paths, so that what a run reaches within its time budget does not depend on the order in which the system lists them (DR-198).
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+It finds each by reading the git files on the way itself, before it starts any program, as a run finds its own repository (decision 1), leaves out one whose files it cannot read, and in each of the others does what decision 1 and decision 6 say of this repository, with that repository's switches, intervals, store and ledger files, recording only the calls whose line gives a working directory in it.
+~~~~
+
+New:
+
+~~~~text
+It finds each as R180 gives it, as a run finds its own repository (decision 1), and in each of the others does what decision 1 and decision 6 say of this repository, with that repository's switches, intervals, store and ledger files.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+It finds each
+~~~~
+
+Clause, R180:
+
+~~~~text
+by reading the git files on the way itself, before it starts any program,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+as a run finds its own repository (decision 1),
+~~~~
+
+Clause, R180:
+
+~~~~text
+leaves out one whose files it cannot read,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+and in each of the others does what decision 1 and decision 6 say of this repository, with that repository's switches, intervals, store and ledger files
+~~~~
+
+Clause, R180:
+
+~~~~text
+recording only the calls whose line gives a working directory in it.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+Outside the repository that holds the project directory, it starts a git command that can start a program that a repository's own configuration names, as staging, a take-back and a put-back can, only where a git command of its input runs, or to take back a ledger file that its own session staged there, and leaves any other take-back or put-back to the first run that may make it, since git starts such a program, as it starts `core.fsmonitor` at a command that reads the index or the attributes, and `gpg.program` at `git log` and `git show` for a signed commit when `log.showSignature` is on (A21), and a session may never have run git in a clone that it only meets or moves into (T144).
+~~~~
+
+New:
+
+~~~~text
+Outside the repository that holds the project directory, it lets git start a program that a repository's own configuration names only as R197 gives it, since git starts such a program, as it starts `core.fsmonitor` at a command that reads the index or the attributes, and `gpg.program` at `git log` and `git show` for a signed commit when `log.showSignature` is on (A21), and a session may never have run git in a clone that it only meets or moves into (T144).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+Outside the repository that holds the project directory,
+~~~~
+
+Clause, R197:
+
+~~~~text
+it starts a git command that can start a program that a repository's own configuration names, as staging, a take-back and a put-back can, only where a git command of its input runs, or to take back a ledger file that its own session staged there, and leaves any other take-back or put-back to the first run that may make it,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+since git starts such a program, as it starts `core.fsmonitor` at a command that reads the index or the attributes, and `gpg.program` at `git log` and `git show` for a signed commit when `log.showSignature` is on (A21), and a session may never have run git in a clone that it only meets or moves into (T144).
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+A repository deeper inside the project directory is met only once Claude's directory or a git command is in it, so that a run never walks a folder tree of unknown size within its time budget.
+~~~~
+
+New:
+
+~~~~text
+A repository deeper inside the project directory is met as R180 gives it, so that a run never walks a folder tree of unknown size within its time budget.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+A repository deeper inside the project directory is met
+~~~~
+
+Clause, `usage-capture`: "A repository deeper inside the project directory is not met at the start":
+
+~~~~text
+only once Claude's directory or a git command is in it,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+so that a run never walks a folder tree of unknown size within its time budget.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+Both copies work through the same store of each repository, under its lock, so that a call is recorded once by its message id, and a run before a command for which another run has staged a ledger file stages nothing more.
+~~~~
+
+New:
+
+~~~~text
+Both copies work through the same store of each repository, under its lock, as R181 gives it.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+Both copies work through the same store of each repository, under its lock,
+~~~~
+
+Clause, R181:
+
+~~~~text
+so that a call is recorded once by its message id, and a run before a command for which another run has staged a ledger file stages nothing more.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+A run that finds the store at a version that it does not know leaves it, and the session's calls there, to the copy whose release wrote it, and a run of an earlier release than the latest that has run in its session leaves that session to the later copy, but for an opt-out, which it acts on, as decision 1 says (DR-206).
+~~~~
+
+New:
+
+~~~~text
+A run that finds the store at a version that it does not know leaves it, and the session's calls there, to the copy whose release wrote it (R55), and an earlier release leaves a session to a later copy as R191 gives it, as decision 1 says (DR-206).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+A run that finds the store at a version that it does not know leaves it, and the session's calls there, to the copy whose release wrote it
+~~~~
+
+Clause, R191:
+
+~~~~text
+and a run of an earlier release than the latest that has run in its session leaves that session to the later copy, but for an opt-out, which it acts on,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+as decision 1 says (DR-206).
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+Each of its files that can hold a comment opens with one that says it is the walking skeleton and not the tool or a release, its plugin's manifest says so in its description, and while the folder exists the README's status names it as such (R242).
+~~~~
+
+New:
+
+~~~~text
+It says what it is, as R242 gives it.
+~~~~
+
+Clause, R242:
+
+~~~~text
+Each of its files that can hold a comment opens with one that says it is the walking skeleton and not the tool or a release, its plugin's manifest says so in its description, and while the folder exists the README's status names it as such (R242).
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+Nothing here registers it: no tracked file under `.claude/`, `.claude-plugin/` or `.github/` holds the word `skeleton` (R234).
+~~~~
+
+New:
+
+~~~~text
+Nothing here registers it (R234).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+Nothing here registers it
+~~~~
+
+Clause, R234:
+
+~~~~text
+no tracked file under `.claude/`, `.claude-plugin/` or `.github/` holds the word `skeleton` (R234).
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+A capture script, one file that imports only Python's standard library, run by the plugin's hooks at `Stop`, `SubagentStop` and `SessionEnd`, and at `PreToolUse`, `PostToolUse` and `PostToolUseFailure` for every Bash command, with no `if` condition, the script itself going on only when the command's text holds the word `git`, through a command that runs it with `python3 -I` and ends in `; exit 0`, and which prints nothing on standard output (R239).
+~~~~
+
+New:
+
+~~~~text
+A capture script, one file that imports only Python's standard library, run by the plugin's hooks at `Stop`, `SubagentStop` and `SessionEnd`, and at `PreToolUse`, `PostToolUse` and `PostToolUseFailure` for every Bash command, with no `if` condition, the script itself going on only when the command's text holds the word `git`, and run as R239 gives it.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+A capture script, one file that imports only Python's standard library, run by the plugin's hooks at `Stop`, `SubagentStop` and `SessionEnd`, and at `PreToolUse`, `PostToolUse` and `PostToolUseFailure` for every Bash command, with no `if` condition, the script itself going on only when the command's text holds the word `git`,
+~~~~
+
+Clause, R239:
+
+~~~~text
+through a command that runs it with `python3 -I` and ends in `; exit 0`, and which prints nothing on standard output (R239).
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+In each, it does nothing unless the repository's `.pr-cost.json` holds `enabled` and `walking_skeleton` both set to `true`, so that the tool's own switch never turns the skeleton on and the skeleton's never turns the tool on, and git gives the skeleton's own opt-in, `pr-cost-skeleton.capture`, as `true` from the person's global configuration files alone, read without the session's git variables, which a repository's own settings can set, or `XDG_CONFIG_HOME`, should they reach it too (A5), so that the tool's opt-in, which an environment may already hold, never turns the skeleton on either, and a repository never turns it on for someone (R235).
+~~~~
+
+New:
+
+~~~~text
+In each, it records only as R235 gives it, so that the tool's own switch never turns the skeleton on and the skeleton's never turns the tool on, the session's git variables being ones which a repository's own settings can set, should they reach it too (A5), so that the tool's opt-in, which an environment may already hold, never turns the skeleton on either, and a repository never turns it on for someone.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+In each,
+~~~~
+
+Clause, R235:
+
+~~~~text
+it does nothing unless the repository's `.pr-cost.json` holds `enabled` and `walking_skeleton` both set to `true`,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+so that the tool's own switch never turns the skeleton on and the skeleton's never turns the tool on,
+~~~~
+
+Clause, R235:
+
+~~~~text
+and git gives the skeleton's own opt-in, `pr-cost-skeleton.capture`, as `true` from the person's global configuration files alone, read without the session's git variables,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+which a repository's own settings can set,
+~~~~
+
+Clause, R235:
+
+~~~~text
+or `XDG_CONFIG_HOME`,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+should they reach it too (A5),
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+so that the tool's opt-in, which an environment may already hold, never turns the skeleton on either, and a repository never turns it on for someone
+~~~~
+
+Clause, R235:
+
+~~~~text
+(R235).
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+Before a command that it recognises as a commit, it writes the calls waiting into one new file, `.pr-cost/ledger/<YYYY-MM>/<random>.jsonl`, and stages it, unless the commit would commit nothing without it; after a command that did not commit the file, it removes the file from the index and the working tree, and its calls wait for a later commit (R240, DR-249).
+~~~~
+
+New:
+
+~~~~text
+Before a command that it recognises as a commit, it writes the calls waiting into one new file, `.pr-cost/ledger/<YYYY-MM>/<random>.jsonl`, and stages and takes back that file as R240 gives it (DR-249).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+Before a command that it recognises as a commit, it writes the calls waiting into one new file, `.pr-cost/ledger/<YYYY-MM>/<random>.jsonl`, and stages
+~~~~
+
+Clause, R240:
+
+~~~~text
+it, unless the commit would commit nothing without it; after a command that did not commit the file, it removes the file from the index and the working tree, and its calls wait for a later commit (R240,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+DR-249).
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+A command is recognised when its parts, joined by two ampersands, are each `cd` to a written path or `git add` with written paths, and last a `git commit` whose options are only `-m` with a quoted message, which may repeat, `-a` or `-q`, in the repository of each `git add` before it, each git command with at most one `-C` written path.
+~~~~
+
+Clause, R240:
+
+~~~~text
+A command is recognised when its parts, joined by two ampersands, are each `cd` to a written path or `git add` with written paths, and last a `git commit` whose options are only `-m` with a quoted message, which may repeat, `-a` or `-q`, in the repository of each `git add` before it, each git command with at most one `-C` written path.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+A report script, run by a workflow on the push that a merge makes to `main`, which compares the push's `before` and `after` commits, fetched by their SHA, and, only when GitHub's API gives exactly one merged pull request for `after` and `before` is not all zeros, reads the ledger files that the push added, following no link and taking as a count only a whole number from zero to below a bound, counts each call's key once, sums each model's tokens, prices them at a fixed test price that `skeleton/` holds and names as one, and writes the figure, saying that it is at a test price and not a real cost, to the job summary and as one comment; otherwise it posts no comment and says why in the job summary (R241, DR-246).
+~~~~
+
+New:
+
+~~~~text
+A report script, run by a workflow on the push that a merge makes to `main`, which compares the push's `before` and `after` commits, fetched by their SHA, reads the ledger files that the push added, following no link and taking as a count only a whole number from zero to below a bound, and counts, prices and posts as R241 gives it (DR-246).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+A report script, run by a workflow on the push that a merge makes to `main`, which compares the push's `before` and `after` commits, fetched by their SHA
+~~~~
+
+Clause, R241:
+
+~~~~text
+and, only when GitHub's API gives exactly one merged pull request for `after` and `before` is not all zeros,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+reads the ledger files that the push added, following no link and taking as a count only a whole number from zero to below a bound
+~~~~
+
+Clause, R241:
+
+~~~~text
+counts each call's key once, sums each model's tokens, prices them at a fixed test price that `skeleton/` holds and names as one, and writes the figure, saying that it is at a test price and not a real cost, to the job summary and as one comment; otherwise it posts no comment and says why in the job summary (R241,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+DR-246).
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+The plugin's manifest and hooks, as `pr-cost-skeleton`, whose manifest holds only its name, a version and a description and whose hooks are all command hooks, and a script that builds its zip of the manifest, the hooks and the capture script, stored without compression, from git's objects of a full commit id that it prints beside the zip's SHA-256, the same bytes each time and on each machine (R243, DR-248).
+~~~~
+
+New:
+
+~~~~text
+The plugin's manifest and hooks, as `pr-cost-skeleton`, and a script that builds its zip, stored without compression, from git's objects of a full commit id that it prints beside the zip's SHA-256, as R243 gives them (DR-248).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+The plugin's manifest and hooks, as `pr-cost-skeleton`
+~~~~
+
+Clause, R243:
+
+~~~~text
+whose manifest holds only its name, a version and a description and whose hooks are all command hooks,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+and a script that builds its zip
+~~~~
+
+Clause, R243:
+
+~~~~text
+of the manifest, the hooks and the capture script,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+stored without compression, from git's objects of a full commit id that it prints beside the zip's SHA-256
+~~~~
+
+Clause, R243:
+
+~~~~text
+the same bytes each time and on each machine (R243,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+DR-248).
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+A workflow for the scratch repository, `skeleton/workflow.yml`, which runs only on a push to `main`, asks only to read contents and to write pull requests, uses no action but `actions/checkout`, pinned to a full commit and keeping no credentials, fetches only the push's two commits, reads no secret, puts no expression inside a command and sets a time limit, and which sits outside `.github/workflows/` so that it never runs here (R237).
+~~~~
+
+New:
+
+~~~~text
+A workflow for the scratch repository, `skeleton/workflow.yml`, which can do no more than R237 lets it, and which sits outside `.github/workflows/` so that it never runs here.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+A workflow for the scratch repository, `skeleton/workflow.yml`
+~~~~
+
+Clause, R237:
+
+~~~~text
+which runs only on a push to `main`, asks only to read contents and to write pull requests, uses no action but `actions/checkout`, pinned to a full commit and keeping no credentials, fetches only the push's two commits, reads no secret, puts no expression inside a command and sets a time limit,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+and which sits outside `.github/workflows/` so that it never runs here
+~~~~
+
+Clause, R237:
+
+~~~~text
+(R237).
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- [Claude Code changes its transcript format] → The parser keeps to the fields it needs, refuses unknown shapes with a count instead of guessing, and its fixtures carry every shape seen in each kind of transcript, so a change shows up as a failing test. A call whose two final lines disagree, or whose usage block gives a cache-write split that disagrees with its total, is refused. A usage field that the parser does not know is not a reason to refuse the call, whose known fields still price it, but the ledger counts such calls, and when there are any, the comment gives their number and says that the token cost may be low, because the new field can carry a charge that the entry leaves out.
+~~~~
+
+New:
+
+~~~~text
+- [Claude Code changes its transcript format] → The parser keeps to the fields it needs, refuses unknown shapes with a count instead of guessing, and its fixtures carry every shape seen in each kind of transcript, so a change shows up as a failing test. A call whose two final lines disagree, or whose usage block gives a cache-write split that disagrees with its total, is refused. A call with a usage field that the parser does not know is recorded and counted as R43 and R95 give it, because the new field can carry a charge that the entry leaves out.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- [Claude Code changes its transcript format] → The parser keeps to the fields it needs, refuses unknown shapes with a count instead of guessing, and its fixtures carry every shape seen in each kind of transcript, so a change shows up as a failing test. A call whose two final lines disagree, or whose usage block gives a cache-write split that disagrees with its total, is refused.
+~~~~
+
+Clause, R43:
+
+~~~~text
+A usage field that the parser does not know is not a reason to refuse the call, whose known fields still price it, but the ledger counts such calls,
+~~~~
+
+Clause, R95:
+
+~~~~text
+and when there are any, the comment gives their number and says that the token cost may be low,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+because the new field can carry a charge that the entry leaves out.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- [A call read without a stop reason gives the usage of its start, not of its end] → Its output tokens and server-side tool requests are too low. The ledger counts such calls, and when there are any, the comment gives their number and says that the token cost is a lower bound.
+~~~~
+
+New:
+
+~~~~text
+- [A call read without a stop reason gives the usage of its start, not of its end] → Its output tokens and server-side tool requests are too low, and such calls are counted as R42 and R95 give it.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- [A call read without a stop reason gives the usage of its start, not of its end] → Its output tokens and server-side tool requests are too low
+~~~~
+
+Clause, R42:
+
+~~~~text
+The ledger counts such calls,
+~~~~
+
+Clause, R95:
+
+~~~~text
+and when there are any, the comment gives their number and says that the token cost is a lower bound.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- [A workflow runs a script or a local action that a pull request changes] → The comment flags changes to workflow files, to `.pr-cost.json`, to the hook file and to `.claude/settings.json` and `.claude/settings.local.json`, which can register it (DR-186), not to the files that workflows run, which can also act with the identity that posts the report comment. Those changes are in the pull request's diff for review.
+~~~~
+
+New:
+
+~~~~text
+- [A workflow runs a script or a local action that a pull request changes] → The comment flags changes as R93 gives it (DR-186), not to the files that workflows run, which can also act with the identity that posts the report comment. Those changes are in the pull request's diff for review.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- [A workflow runs a script or a local action that a pull request changes] → The comment flags changes
+~~~~
+
+Clause, R93:
+
+~~~~text
+to workflow files, to `.pr-cost.json`, to the hook file and to `.claude/settings.json` and `.claude/settings.local.json`, which can register it
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+(DR-186), not to the files that workflows run, which can also act with the identity that posts the report comment. Those changes are in the pull request's diff for review.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- [An adopter updates the hook and the workflow pin at different times] → Their price tables then differ. An older hook records a model that only the newer table lists as `unknown`, which the report counts in tokens and leaves out of the cost. An older report refuses a ledger line with a name its table does not list, and counts it as refused. Either way the comment shows that something was not priced, and nothing is guessed. Whenever the hook file in the merged commit is not the one at the report's commit, the comment also says that the repository's hook does not come from the report's commit, quoting nothing from the file, and the README tells adopters to update both in one pull request.
+~~~~
+
+New:
+
+~~~~text
+- [An adopter updates the hook and the workflow pin at different times] → Their price tables then differ. An older hook records a model that only the newer table lists as `unknown`, which the report counts in tokens and leaves out of the cost. An older report refuses a ledger line with a name its table does not list, and counts it as refused. Either way the comment shows that something was not priced, and nothing is guessed. The comment also names a hook file that does not come from the report's commit (R65), and the README tells adopters to update both in one pull request.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- [An adopter updates the hook and the workflow pin at different times] → Their price tables then differ. An older hook records a model that only the newer table lists as `unknown`, which the report counts in tokens and leaves out of the cost. An older report refuses a ledger line with a name its table does not list, and counts it as refused. Either way the comment shows that something was not priced, and nothing is guessed.
+~~~~
+
+Clause, R65:
+
+~~~~text
+Whenever the hook file in the merged commit is not the one at the report's commit, the comment also says that the repository's hook does not come from the report's commit, quoting nothing from the file,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+and the README tells adopters to update both in one pull request.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- [Prices go stale, or a new model appears] → Every report names the price table's date, and an unpriced model or attribute is named rather than guessed. A model the hook's copy of the price table does not list is recorded as `unknown` until the adopter updates the hook.
+~~~~
+
+New:
+
+~~~~text
+- [Prices go stale, or a new model appears] → The report names the price table's date and never guesses a price (R14, R17, R61). A model the hook's copy of the price table does not list is recorded as `unknown` until the adopter updates the hook.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- [Prices go stale, or a new model appears] →
+~~~~
+
+Clause, R14:
+
+~~~~text
+Every report names the price table's date,
+~~~~
+
+Clause, R17:
+
+~~~~text
+and an unpriced model
+~~~~
+
+Clause, R61:
+
+~~~~text
+or attribute is named rather than guessed.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+A model the hook's copy of the price table does not list is recorded as `unknown` until the adopter updates the hook.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- [A pull request's commits and runs use up the report's call budget, or the requests per hour that `GITHUB_TOKEN` can make in the repository] → The report keeps to its call budget, so that one report cannot use up a limit that the repository's other workflows share. When the budget runs out while it reads runs and jobs, the comment marks the CI cost as incomplete, and when it runs out before the report can tell which pull request the push merged, no comment is posted and the job summary says why.
+~~~~
+
+New:
+
+~~~~text
+- [A pull request's commits and runs use up the report's call budget, or the requests per hour that `GITHUB_TOKEN` can make in the repository] → The report keeps to its call budget, so that one report cannot use up a limit that the repository's other workflows share, and says what the budget left unread as R64 and R70 give it.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- [A pull request's commits and runs use up the report's call budget, or the requests per hour that `GITHUB_TOKEN` can make in the repository] → The report keeps to its call budget, so that one report cannot use up a limit that the repository's other workflows share
+~~~~
+
+Clause, `ci-minutes`: "A pull request with more commits than the call budget allows is marked incomplete":
+
+~~~~text
+When the budget runs out while it reads runs and jobs, the comment marks the CI cost as incomplete,
+~~~~
+
+Clause, R70:
+
+~~~~text
+and when it runs out before the report can tell which pull request the push merged, no comment is posted and the job summary says why.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- [A person's plugin is of another release than the report that a repository pins] → A later plugin can write a model name or a ledger format that the pinned report does not know, which the report refuses, and the comment says that some ledger files come from a later release than the report (DR-208); an earlier plugin leaves a session to a later copy that runs beside it, and records nothing in a repository whose configuration holds a key that it does not know. The README says that a repository keeps its pin current and a person keeps their plugin current.
+~~~~
+
+New:
+
+~~~~text
+- [A person's plugin is of another release than the report that a repository pins] → A later plugin can write a model name or a ledger format that the pinned report does not know, which the report refuses, and the comment says so (R193, DR-208); an earlier plugin leaves a session to a later copy that runs beside it, and records nothing in a repository whose configuration holds a key that it does not know. The README says that a repository keeps its pin current and a person keeps their plugin current.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- [A person's plugin is of another release than the report that a repository pins] → A later plugin can write a model name or a ledger format that the pinned report does not know, which the report refuses, and the comment says
+~~~~
+
+Clause, R193:
+
+~~~~text
+that some ledger files come from a later release than the report
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+DR-208); an earlier plugin leaves a session to a later copy that runs beside it, and records nothing in a repository whose configuration holds a key that it does not know. The README says that a repository keeps its pin current and a person keeps their plugin current.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- [The glossary, an assumption or a page that one links to reads as an instruction to an agent] → They describe, and never instruct; where the glossary or an assumption differs from a requirement, a scenario or `CLAUDE.md`, those hold, and `CLAUDE.md` says so (DR-238). A documented fact links only a vendor's page on a listed host or a file at a full commit of a listed repository, and a page of the assumptions gives no other web address.
+~~~~
+
+New:
+
+~~~~text
+- [The glossary, an assumption or a page that one links to reads as an instruction to an agent] → They describe, and never instruct; where the glossary or an assumption differs from a requirement, a scenario or `CLAUDE.md`, those hold, and `CLAUDE.md` says so (DR-238). A documented fact and a page of the assumptions link only as R140 and R143 give it.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- [The glossary, an assumption or a page that one links to reads as an instruction to an agent] → They describe, and never instruct; where the glossary or an assumption differs from a requirement, a scenario or `CLAUDE.md`, those hold, and `CLAUDE.md` says so (DR-238).
+~~~~
+
+Clause, R140:
+
+~~~~text
+A documented fact links only a vendor's page on a listed host or a file at a full commit of a listed repository,
+~~~~
+
+Clause, R143:
+
+~~~~text
+and a page of the assumptions gives no other web address.
+~~~~
+
 ## For B-007
 
 - `docs/threat-model.md`: the configuration is read only as a blob at each commit (T49: R19's requirement states it, but none of its scenarios does)
@@ -10136,6 +12780,12 @@ Clause, R184:
 - `docs/threat-model.md`: the recorder keeps names only at a line's top level, in its `message` object and in `message.usage`, gives every other object and array as its type alone, and checks its own output, writing nothing on a failure (T186: R236's scenarios hold the kept shape, not the recorder's own behaviour or its check of its output.)
 - `openspec/changes/add-pr-cost-calculator/design.md`: In a sparse checkout, too, the put-back puts the file into the working tree, where it would be had the step not taken it back. (No scenario of R116 or R117 states a put-back in a sparse checkout.)
 - `openspec/changes/add-pr-cost-calculator/design.md`: A run takes back and puts back what it can before it reads any transcript (Only the plugin's run at a session's end is held to take back first, by R90's scenario; no scenario holds it for every run, nor for a put-back.)
+- `openspec/changes/add-pr-cost-calculator/design.md`: padded to three (R124 asks for a record named for its number in ASCII digits; no scenario says that the number is padded to three digits.)
+- `openspec/changes/add-pr-cost-calculator/design.md`: never how to change it (R135 asks an assumption to say what changes if it is wrong; no scenario says that it never says how to change it.)
+- `openspec/changes/add-pr-cost-calculator/design.md`: an assumption being as checked as its least checked fact, from `not yet` through `documented` and `observed` to `tested` (R136 orders the least checked first, but no scenario says how an assumption's checks rank or that its least checked fact decides.)
+- `openspec/changes/add-pr-cost-calculator/design.md`: a run checks each waiting call's entry again when it stages it, by the rules that it records by, so that an entry that someone wrote into the store carries nothing into a ledger file (No scenario has a run check a waiting entry again when it stages it.)
+- `openspec/changes/add-pr-cost-calculator/design.md`: timeouts as the hook file's registration (R179 gives the plugin's hooks the same events and condition as the registration, but no scenario gives them the same timeouts.)
+- `openspec/changes/add-pr-cost-calculator/design.md`: following no link and taking as a count only a whole number from zero to below a bound (R241 says what the skeleton's report counts, but no scenario has it follow no link or bound a count.)
 
 ## Left as it is
 
