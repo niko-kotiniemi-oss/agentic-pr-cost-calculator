@@ -4,7 +4,7 @@
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`, as the owner asked on 2026-11-17
 - **Requirements:** none
-- **Threats:** T173, T197
+- **Threats:** T173, T197, T198
 - **Replaces:** none
 - **Closed by:** none
 
@@ -14,7 +14,7 @@ Backlog item B-022 asks that a record say which checks of the documentation stay
 
 ## Decision
 
-Every check of the documentation that the default branch holds when B-022's pull request opens stays, since each compares a document with a source that a machine reads. A check that fails once a sweep's sentence is gone is read before anything changes: the sentence stays if the check holds a requirement's obligation, and otherwise the pull request says why the check changes. The sweep adds no check of its own to CI: its script that shows that no clause is lost runs once, in its pull request, as design decision 19 gives it. A rule about prose, such as that a page cites rather than restates, that it says only what no scenario can, or that a citation covers its sentence, is held by review, the four review lanes and the owner's, and not by a new check. A new check of the documentation is added only where it compares a document with a source that a machine reads, such as a spec, a workflow, a record or a file, and where a defect of the kind that it would hold has reached the default branch or a review once, or a threat with a risk of 4 or more rests on it.
+Every check of the documentation that the default branch holds when B-022's pull request opens stays, as it is: that pull request changes no file under `tests/` other than the tests of its own script, and a check that fails once a sentence is gone keeps the sentence, so that a check is never weakened in the diff that changes what it checks. Its script, which shows that no clause is lost, is committed with its tests and runs in that pull request, as design decision 19 gives it, and is not a check that CI runs on other pull requests. A rule about prose, such as that a page cites rather than restates, that it says only what no scenario can, or that a citation covers its sentence, is held by review, the four review lanes and the owner's, and not by a new check. A new check of the documentation is added only where it compares a document with a source that a machine reads, such as a spec, a workflow, a record or a file, and where a defect of the kind that it would hold has reached the default branch or a review once, or a threat with a risk of 4 or more rests on it. `CLAUDE.md` steers by this.
 
 ## Alternatives
 
@@ -26,6 +26,7 @@ Every check of the documentation that the default branch holds when B-022's pull
 
 - Review reads the swept pages for what the checks cannot, and a review lane that finds a page restating a scenario reports it as a finding.
 - A pull request that proposes a new check of the documentation says which source it compares with and which defect, review or threat it rests on.
+- A check that the sweep would need to change is changed in a pull request of its own, after the sweep, with the sentence that it reads kept until then.
 
 ## Scope
 
