@@ -5264,6 +5264,1550 @@ Clause, the new unit:
 The README's section on turning capture off gives `git config --global --get pr-cost.capture` to see a session's opt-in, and task 7.2 checks whether a project's thread that pauses and resumes keeps the details of the opt-in's files that the fingerprint holds
 ~~~~
 
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** the opt-in's feature page, and the README's section on adopting the tool that task 4.4 writes, say where a folder's opt-out stops: a linked worktree there whose repository lies elsewhere needs the opt-out in that repository's own configuration, a condition for a folder reached through a symbolic link needs the folder's real path, and an opt-out whose file is missing does nothing, which `git config --show-origin --get-all pr-cost.capture`, run from a repository's real path there, as after `cd "$(pwd -P)"`, shows, since it lists each value with the file that gives it as the hook's reading without the session's variables and `PWD` finds them.
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** the opt-in's feature page, and the README's section on adopting the tool that task 4.4 writes, say where a folder's opt-out stops (R164): a linked worktree there whose repository lies elsewhere needs the opt-out in that repository's own configuration, a condition for a folder reached through a symbolic link needs the folder's real path, and an opt-out whose file is missing does nothing, which `git config --show-origin --get-all pr-cost.capture`, run from a repository's real path there, as after `cd "$(pwd -P)"`, shows, since it lists each value with the file that gives it as the hook's reading without the session's variables and `PWD` finds them.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:** the opt-in's feature page, and the README's section on adopting the tool that task 4.4 writes, say where a folder's opt-out stops
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+a linked worktree there whose repository lies elsewhere needs the opt-out in that repository's own configuration, a condition for a folder reached through a symbolic link needs the folder's real path, and an opt-out whose file is missing does nothing, which `git config --show-origin --get-all pr-cost.capture`, run from a repository's real path there, as after `cd "$(pwd -P)"`, shows, since it lists each value with the file that gives it as the hook's reading without the session's variables and `PWD` finds them
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** a run that git refuses records no call, creates no store, stages no ledger file and exits with success, never asking git to trust the folder, and since the step runs git without the session's `GIT_` variables (DR-188), a `safe.directory` setting that only those variables give does not count. The README's section on adopting the tool that task 4.4 writes says that a clone that git does not trust records nothing until a `safe.directory` setting in the person's global configuration, or the system's, names it, and that adding one to the person's global configuration ends every open interval in their other repositories, as any write to it does (T120).
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** a run that git refuses records nothing and exits with success, never asking git to trust the folder, and since the step runs git without the session's `GIT_` variables (DR-188), a `safe.directory` setting that only those variables give does not count (R147). The README's section on adopting the tool that task 4.4 writes says that a clone that git does not trust records nothing until a `safe.directory` setting in the person's global configuration, or the system's, names it, and that adding one to the person's global configuration ends every open interval in their other repositories, as any write to it does (T120).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:** a run that git refuses
+~~~~
+
+Clause, R147:
+
+~~~~text
+records no call, creates no store, stages no ledger file and exits with success
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+never asking git to trust the folder, and since the step runs git without the session's `GIT_` variables (DR-188), a `safe.directory` setting that only those variables give does not count
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+The README's section on adopting the tool that task 4.4 writes says that a clone that git does not trust records nothing until a `safe.directory` setting in the person's global configuration, or the system's, names it, and that adding one to the person's global configuration ends every open interval in their other repositories, as any write to it does (T120)
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** the surface manifest names each key that the configuration's format documents, with the values that each takes, so the release check refuses a release that adds or drops one without a raised major number and a `### Breaking` section (DR-096, DR-123). The comment of the pull request that adds the key says that it changed the tool's configuration and that the tool is off after the merge, each merge that then finds the tool off at both commits says why in its job summary (DR-191), and a hook file at another commit than the report's is named in the comment (DR-139). The README's section on adopting the tool that task 4.4 writes says to add such a key only with or after the pull request that moves the hook file and the calling workflow's pin to that version, and to drop one that a later version no longer documents before or with it. Where the plugin and the hook file's registration both run, a copy of an earlier release leaves the session to the later one, and the README says that a person keeps their plugin current (T136).
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** the surface manifest names each key that the configuration's format documents (R122), so the release check refuses a release that adds or drops one without a raised major number and a `### Breaking` section (R123, DR-096, DR-123). The comment of the pull request that adds the key says that it changed the tool's configuration and that the tool is off after the merge (R171, R172), each merge that then finds the tool off at both commits says why in its job summary (R172, DR-191), and a hook file at another commit than the report's is named in the comment (R65, DR-139). The README's section on adopting the tool that task 4.4 writes says to add such a key only with or after the pull request that moves the hook file and the calling workflow's pin to that version, and to drop one that a later version no longer documents before or with it. Where the plugin and the hook file's registration both run, a copy of an earlier release leaves the session to the later one (R191), and the README says that a person keeps their plugin current (R195, T136).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:** the surface manifest names each key that the configuration's format documents
+~~~~
+
+Clause, R122:
+
+~~~~text
+with the values that each takes
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+so the release check refuses a release that adds or drops one without a raised major number and a `### Breaking` section (
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+DR-096, DR-123). The comment of the pull request that adds the key says that it changed the tool's configuration and that the tool is off after the merge
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+each merge that then finds the tool off at both commits says why in its job summary (
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+DR-191), and a hook file at another commit than the report's is named in the comment (
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+DR-139). The README's section on adopting the tool that task 4.4 writes says to add such a key only with or after the pull request that moves the hook file and the calling workflow's pin to that version, and to drop one that a later version no longer documents before or with it. Where the plugin and the hook file's registration both run, a copy of an earlier release leaves the session to the later one
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+and the README says that a person keeps their plugin current (
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+T136)
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** `tests/test_spec_form.py` reads every `spec.md` that OpenSpec reads, at any depth, line by line as OpenSpec reads it, and fails on a scenario out of form or with the name of another scenario in its spec, on a heading out of form or out of place, on a line that OpenSpec or GitHub alone reads as a fence or a heading, after a list's or a quote's marker among them, on text before a spec's first section, on a label line or a scenario's line in a requirement's text, and on a `spec.md` that it does not read (DR-193). CI compares its reading of each spec and change with what the pinned OpenSpec CLI shows for it, so that a release that reads specs otherwise, or a defect in the test's reader, fails CI in the pull request that brings it (DR-196).
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** `tests/test_spec_form.py` reads every `spec.md` that OpenSpec reads, at any depth, line by line as OpenSpec reads it, and fails on a spec out of form or one that it does not read (R173, R174, R175, R177, DR-193). CI compares its reading of each spec and change with what the pinned OpenSpec CLI shows for it, so that a release that reads specs otherwise, or a defect in the test's reader, fails CI in the pull request that brings it (R178, DR-196).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:** `tests/test_spec_form.py` reads every `spec.md` that OpenSpec reads, at any depth, line by line as OpenSpec reads it, and fails
+~~~~
+
+Clause, R174:
+
+~~~~text
+on a scenario out of form or with the name of another scenario in its spec
+~~~~
+
+Clause, R175:
+
+~~~~text
+on a heading out of form or out of place, on a line that OpenSpec or GitHub alone reads as a fence or a heading, after a list's or a quote's marker among them, on text before a spec's first section
+~~~~
+
+Clause, R173:
+
+~~~~text
+on a label line
+~~~~
+
+Clause, R174:
+
+~~~~text
+or a scenario's line in a requirement's text
+~~~~
+
+Clause, R177:
+
+~~~~text
+and on a `spec.md` that it does not read
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+DR-193
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+). CI compares its reading of each spec and change with what the pinned OpenSpec CLI shows for it, so that a release that reads specs otherwise, or a defect in the test's reader, fails CI in the pull request that brings it (
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+DR-196)
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** `tests/test_spec_form.py` fails, naming the spec, the line and what it holds, on a spec that holds a character other than printable ASCII and line breaks, a run of backticks that no run as long closes on its line, or, outside inline code, a `<`, an `&`, a backslash, a `|`, a `](`, a `]:`, a `$` or a `~` (DR-195).
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** `tests/test_spec_form.py` fails, naming the spec, the line and what it holds, on a spec that holds text that GitHub would hide or show otherwise (R176, DR-195).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:** `tests/test_spec_form.py` fails, naming the spec, the line and what it holds
+~~~~
+
+Clause, R176:
+
+~~~~text
+on a spec that holds a character other than printable ASCII and line breaks, a run of backticks that no run as long closes on its line, or, outside inline code, a `<`, an `&`, a backslash, a `|`, a `](`, a `]:`, a `$` or a `~`
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+DR-195)
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** the test checks each spec's bytes as plain text before it splits them into lines, and fails naming the spec on bytes that are not UTF-8. Its patterns match a line in one way only, and a test times the reading of a line of many spaces and of one of many backticks. It fails on every symbolic link in `openspec/` outside the archive, which it never follows, and it reports each problem only in a test's failure message. The comparison starts each line that it prints with `verify-openspec: `, shows each name, path and text from a spec or from the CLI with every character outside printable ASCII replaced by its code point, and quotes the requirements only of a spec that the test reads too, naming one that only the CLI reads by its path alone, so that no line of a spec or of the CLI's output starts a line of either output.
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** the test checks each spec's bytes as plain text before it splits them into lines, and fails naming the spec on bytes that are not UTF-8 (R176). Its patterns match a line in one way only, and a test times the reading of a line of many spaces and of one of many backticks. It fails on every symbolic link in `openspec/` outside the archive, which it never follows (R177), and it reports each problem only in a test's failure message. The comparison starts each line that it prints with `verify-openspec: `, shows each name, path and text from a spec or from the CLI with every character outside printable ASCII replaced by its code point, and quotes the requirements only of a spec that the test reads too, naming one that only the CLI reads by its path alone, so that no line of a spec or of the CLI's output starts a line of either output.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:** the test checks each spec's bytes as plain text before it splits them into lines, and fails naming the spec on bytes that are not UTF-8
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+Its patterns match a line in one way only, and a test times the reading of a line of many spaces and of one of many backticks. It fails on every symbolic link in `openspec/` outside the archive, which it never follows
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+and it reports each problem only in a test's failure message. The comparison starts each line that it prints with `verify-openspec: `, shows each name, path and text from a spec or from the CLI with every character outside printable ASCII replaced by its code point, and quotes the requirements only of a spec that the test reads too, naming one that only the CLI reads by its path alone, so that no line of a spec or of the CLI's output starts a line of either output
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** such calls are left out, as every call whose repository cannot be told is, and the session's next ledger file in each clone that turns the tool on says that calls whose repository could not be told were left out, so that the comment says that the token cost, each of its parts and the total are lower bounds. The README's section on cloud threads says that these calls are left out and flagged, and how to keep a session's work inside a repository, such as by asking Claude in the project's instructions to work from inside it, since one `cd` into a clone does not keep it there, since Claude's current directory can go back to the thread's folder. The README's section on cloud threads also says that a call made from one clone counts there, whatever clone it works on, so that a project that holds a repository that turns the tool on should hold no repository whose work must stay private, and this repository turns the tool on only from a project that holds it alone, with the owner's opt-in only in that project's own environment, so that only that project's threads record here (DR-207, DR-210).
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** such calls are left out, as every call whose repository cannot be told is, and flagged in the session's next ledger file in each clone that turns the tool on (R155), so that the comment says that the figure is a lower bound (R157). The README's section on cloud threads says that these calls are left out and flagged, and how to keep a session's work inside a repository, such as by asking Claude in the project's instructions to work from inside it (R185). The README's section on cloud threads also says that a call made from one clone counts there, whatever clone it works on, so that a project that holds a repository that turns the tool on should hold no repository whose work must stay private (R185), and this repository turns the tool on only from a project that holds it alone, with the owner's opt-in only in that project's own environment, so that only that project's threads record here (DR-207, DR-210).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:** such calls are left out, as every call whose repository cannot be told is, and
+~~~~
+
+Clause, R155:
+
+~~~~text
+the session's next ledger file in each clone that turns the tool on says that calls whose repository could not be told were left out
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+so that the comment says that
+~~~~
+
+Clause, R157:
+
+~~~~text
+the token cost, each of its parts and the total are lower bounds
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+The README's section on cloud threads says that these calls are left out and flagged, and how to keep a session's work inside a repository, such as by asking Claude in the project's instructions to work from inside it
+~~~~
+
+Clause, R185:
+
+~~~~text
+since one `cd` into a clone does not keep it there, since Claude's current directory can go back to the thread's folder
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+The README's section on cloud threads also says that a call made from one clone counts there, whatever clone it works on, so that a project that holds a repository that turns the tool on should hold no repository whose work must stay private
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+and this repository turns the tool on only from a project that holds it alone, with the owner's opt-in only in that project's own environment, so that only that project's threads record here (DR-207, DR-210)
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** a run records in each repository only the calls whose line gives a working directory in it, and nothing reaches a ledger file there until a commit is made there, whose diff shows the file, though a project's thread can commit and push with no one reading it. A plugin run meets a repository only through the project directory, a folder directly inside it, Claude's current directory or a git command run there, never by walking deeper. The opt-in's pages say that one opt-in covers every repository that turns the tool on, with the plugin wherever Claude works or runs a git command, and how a person turns capture off for a folder with git's own conditional includes (DR-185), and a repository's own git configuration can turn it off there (DR-050).
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** a run records in each repository only the calls whose line gives a working directory in it (R180), and nothing reaches a ledger file there until a commit is made there, whose diff shows the file, though a project's thread can commit and push with no one reading it. A plugin run meets a repository only through the project directory, a folder directly inside it, Claude's current directory or a git command run there, never by walking deeper (R180). The opt-in's pages say that one opt-in covers every repository that turns the tool on, with the plugin wherever Claude works or runs a git command, and how a person turns capture off for a folder with git's own conditional includes (R164, DR-185), and a repository's own git configuration can turn it off there (R39, DR-050).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:** a run records in each repository only the calls whose line gives a working directory in it
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+and nothing reaches a ledger file there until a commit is made there, whose diff shows the file, though a project's thread can commit and push with no one reading it. A plugin run meets a repository only through the project directory, a folder directly inside it, Claude's current directory or a git command run there, never by walking deeper
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+The opt-in's pages say that one opt-in covers every repository that turns the tool on, with the plugin wherever Claude works or runs a git command, and how a person turns capture off for a folder with git's own conditional includes (
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+DR-185), and a repository's own git configuration can turn it off there (
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+DR-050)
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** every copy works through the same store of each repository, under its lock, so that each call is recorded once, by its message id, and a run before a command for which another run has staged a ledger file stages nothing more. A run that finds the store at a version that it does not know records, stages, takes back and puts back nothing there, and leaves the store, and the session's calls there, to the copy whose release wrote it (T44). Every release that writes a store version keeps its path, its lock and its fields and makes its fingerprint the same way, which a test holds for each version, and whose recorded hash the checks hold unchanged once a published release has written that version, and each run that finds both switches on notes, for its session, the latest release whose copy has run in it, so that a run of an earlier release records, stages, takes back, puts back and ends nothing for that session there, and leaves it to the later release's copy, unless it finds the person's own capture off, which it acts on as any run does, so that an opt-out is acted on even where the later copy no longer runs. The README's section on installing the plugin says what happens when the plugin and the repository's hook file are of different releases, and that only one copy of a plugin's name runs its hooks.
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** every copy works through the same store of each repository, under its lock, so that each call is recorded once, by its message id, and a run before a command for which another run has staged a ledger file stages nothing more (R181). A run that finds the store at a version that it does not know leaves the store, and the session's calls there, to the copy whose release wrote it (R55, R181, T44). Every release that writes a store version keeps its path, its lock and its fields and makes its fingerprint the same way (R192), and each run that finds both switches on notes, for its session, the latest release whose copy has run in it, so that a run of an earlier release leaves the session to the later release's copy, unless it finds the person's own capture off, so that an opt-out is acted on even where the later copy no longer runs (R191). The README's section on installing the plugin says what happens when the plugin and the repository's hook file are of different releases, and that only one copy of a plugin's name runs its hooks (R195).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:** every copy works through the same store of each repository, under its lock, so that each call is recorded once, by its message id, and a run before a command for which another run has staged a ledger file stages nothing more
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+A run that finds the store at a version that it does not know
+~~~~
+
+Clause, R55:
+
+~~~~text
+records, stages, takes back and puts back nothing there, and
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+leaves the store, and the session's calls there, to the copy whose release wrote it (
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+T44). Every release that writes a store version keeps its path, its lock and its fields and makes its fingerprint the same way
+~~~~
+
+Clause, R192:
+
+~~~~text
+which a test holds for each version, and whose recorded hash the checks hold unchanged once a published release has written that version
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+and each run that finds both switches on notes, for its session, the latest release whose copy has run in it, so that a run of an earlier release
+~~~~
+
+Clause, R191:
+
+~~~~text
+records, stages, takes back, puts back and ends nothing for that session there, and leaves it to the later release's copy
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+unless it finds the person's own capture off
+~~~~
+
+Clause, R191:
+
+~~~~text
+which it acts on as any run does
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+so that an opt-out is acted on even where the later copy no longer runs
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+The README's section on installing the plugin says what happens when the plugin and the repository's hook file are of different releases, and that only one copy of a plugin's name runs its hooks
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** none in the tool beyond what a fresh clone already brings: its first run begins a new interval, so the calls that answer a line written before that run are left out and flagged for consent, and the comment says that the figure is a lower bound. The README's section on cloud threads says that a machine that cannot be resumed loses the calls that no commit took, so that a person who wants them counted commits as the work goes.
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** none in the tool beyond what a fresh clone already brings: its first run begins a new interval, so the calls that answer a line written before that run are left out and flagged for consent (R153, R155), and the comment says that the figure is a lower bound. The README's section on cloud threads says that a machine that cannot be resumed loses the calls that no commit took, so that a person who wants them counted commits as the work goes (R185).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:** none in the tool beyond what a fresh clone already brings: its first run begins a new interval, so the calls that answer a line written before that run are left out and flagged for consent
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+and the comment says that the figure is a lower bound. The README's section on cloud threads says that a machine that cannot be resumed loses the calls that no commit took, so that a person who wants them counted commits as the work goes
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** the root marketplace file holds only the marketplace's name, its owner and one entry that names the tool's plugin and its folder, and CI fails when it holds anything else (T140). The folder holds the plugin exactly as a published release's tag builds it, with that release's version in its manifest, and CI fails when, compared by path, mode and content, it differs from what that tag's own build script builds, holds anything but regular files, or gives a version that no published release, found by its tag's full name in the default branch's first-parent history, has, or a lower one than at the base (T137, T138). A pull request that adds, changes or removes the root file, or changes the folder, changes nothing else, and the folder moves only after a release, in a pull request that the owner reviews and merges, while only an identity that agent sessions never hold can create a tag (T67). The README gives the zip first, each update of which is the person's own act after a check, says that a marketplace's update arrives when the person checks for updates, or by itself once they turn on syncing, with nothing to accept once it has synced, and that a fixed release comes from its zip, since a release's own tag holds an earlier release's plugin. The owner merges a pull request that changes the root file or the folder only when its diff changes nothing else, since its CI runs the checks as that pull request leaves them (T137). The README's short start says that the marketplace's updates need no approval, beside the zip, whose checksum a person checks first.
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** the root marketplace file holds only the marketplace's name, its owner and one entry that names the tool's plugin and its folder, and CI fails when it holds anything else (R190, T140). The folder holds the plugin exactly as a published release's tag builds it, with that release's version in its manifest, and CI fails when it differs from what that tag's own build script builds or gives a version that no published release, found by its tag's full name in the default branch's first-parent history, has, or a lower one than at the base (R184, T137, T138). A pull request that adds, changes or removes the root file, or changes the folder, changes nothing else (R190), and the folder moves only after a release, in a pull request that the owner reviews and merges, while only an identity that agent sessions never hold can create a tag (T67). The README gives the zip first, each update of which is the person's own act after a check, and says how a marketplace's updates arrive and where a fixed release comes from (R187). The owner merges a pull request that changes the root file or the folder only when its diff changes nothing else, since its CI runs the checks as that pull request leaves them (T137). The README's short start says that the marketplace's updates need no approval (R198).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:** the root marketplace file holds only the marketplace's name, its owner and one entry that names the tool's plugin and its folder, and CI fails when it holds anything else (
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+T140). The folder holds the plugin exactly as a published release's tag builds it, with that release's version in its manifest, and CI fails when
+~~~~
+
+Clause, R184:
+
+~~~~text
+compared by path, mode and content
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+it differs from what that tag's own build script builds
+~~~~
+
+Clause, R184:
+
+~~~~text
+holds anything but regular files
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+or gives a version that no published release, found by its tag's full name in the default branch's first-parent history, has, or a lower one than at the base (
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+T137, T138). A pull request that adds, changes or removes the root file, or changes the folder, changes nothing else
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+and the folder moves only after a release, in a pull request that the owner reviews and merges, while only an identity that agent sessions never hold can create a tag (T67). The README gives the zip first, each update of which is the person's own act after a check
+~~~~
+
+Clause, R187:
+
+~~~~text
+says that a marketplace's update arrives when the person checks for updates, or by itself once they turn on syncing, with nothing to accept once it has synced, and that a fixed release comes from its zip, since a release's own tag holds an earlier release's plugin
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+The owner merges a pull request that changes the root file or the folder only when its diff changes nothing else, since its CI runs the checks as that pull request leaves them (T137). The README's short start says that the marketplace's updates need no approval
+~~~~
+
+Clause, R198:
+
+~~~~text
+beside the zip, whose checksum a person checks first
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** each release carries the zip built from its tag alone, holding only the plugin, stored uncompressed with every header field fixed, the system that made it among them, so that every build on any system gives the same bytes, whose SHA-256 the README at the tag's commit gives. CI fails on a pull request after which the zip built from its tree, on Linux and on Windows, has another SHA-256 than its README gives, so that a mistake shows before any tag, and the release workflow publishes no release whose zip has another SHA-256, while the release's bill of materials names it too. The README's section on installing the plugin gives the command that checks a zip's SHA-256 against the README at the release's commit before it is uploaded, and says that a zip follows no address. The README's short start says to check the zip's checksum against that release's README before uploading it, and links that section.
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** each release carries the zip built from its tag alone, holding only the plugin, stored uncompressed with every header field fixed, the system that made it among them, so that every build on any system gives the same bytes (R183), whose SHA-256 the README at the tag's commit gives. CI fails on a pull request after which the zip built from its tree has another SHA-256 than its README gives, so that a mistake shows before any tag, and the release workflow publishes no release whose zip has another SHA-256 (R183), while the release's bill of materials names it too (R28). The README's section on installing the plugin gives the command that checks a zip's SHA-256 against the README at the release's commit before it is uploaded, and says that a zip follows no address (R187). The README's short start says to check the zip's checksum against that release's README before uploading it, and links that section (R198).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:** each release carries the zip built from its tag alone, holding only the plugin, stored uncompressed with every header field fixed, the system that made it among them, so that every build on any system gives the same bytes
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+whose SHA-256 the README at the tag's commit gives. CI fails on a pull request after which the zip built from its tree
+~~~~
+
+Clause, R183:
+
+~~~~text
+on Linux and on Windows
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+has another SHA-256 than its README gives, so that a mistake shows before any tag, and the release workflow publishes no release whose zip has another SHA-256
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+while the release's bill of materials names it too
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+The README's section on installing the plugin gives the command that checks a zip's SHA-256 against the README at the release's commit before it is uploaded, and says that a zip follows no address
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+The README's short start says to check the zip's checksum against that release's README before uploading it, and links that section
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** the opt-in is set by the person, or by the setup script of the environment that they use, and having the plugin, which an organization can turn on for its members or require, opts no one in. A person turns capture off in a running session with `git config --global pr-cost.capture false`, and in each session of an environment that they can change, from its next restore, with the three `GIT_CONFIG_` variables that set the key to false, since an opt-out that git reads in the session's environment turns capture off (T119), and the variables outlast a rewrite of the global configuration file, such as a setup script makes on a rebuilt machine or an organization's hook at a session's start or resume, or after `/clear` or a compaction. The README's short start says that a person's own line goes in a cloud environment that only they use, tells an organization to tell its members before it opts them in, and says what is then published. Its section on organizations says how an organization turns the plugin on and puts the line in a shared environment, which sessions each reaches, that a member who has picked no environment uses the organization's default, that sharing an environment, or making it the default, shares the line in its setup script with every member who uses it and with a Claude Tag channel's sessions, so that an Owner takes their own line out first, that a member sees a shared environment read-only, so that an opt-out in a session there holds only until its machine is rebuilt and a member refuses the line for good only by working in an environment of their own, that its managed settings can also opt members in (T155), that the organization tells its members first what is then published, and that its opt-in also records each agent that a later release adds (T176), that a person's own line belongs in an environment of their own, and how a member sees what turns capture on, with git's `--show-origin` and `/hooks`, and turns it off.
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** the opt-in is set by the person, or by the setup script of the environment that they use, and having the plugin, which an organization can turn on for its members or require, opts no one in (R1, R182). A person turns capture off in a running session with `git config --global pr-cost.capture false`, and in each session of an environment that they can change, from its next restore, with the three `GIT_CONFIG_` variables that set the key to false, since an opt-out that git reads in the session's environment turns capture off (R160, T119), and the variables outlast a rewrite of the global configuration file, such as a setup script makes on a rebuilt machine or an organization's hook at a session's start or resume, or after `/clear` or a compaction (R194). The README's short start says that a person's own line goes in a cloud environment that only they use, tells an organization to tell its members before it opts them in, and says what is then published (R198, R199). Its section on organizations says how an organization turns the plugin on and puts the line in a shared environment, what sharing an environment and its managed settings do to its members' opt-ins (T155), that the organization tells its members first what is then published, and that its opt-in also records each agent that a later release adds (T176), and how a member sees what turns capture on, with git's `--show-origin` and `/hooks`, and turns it off (R186).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:** the opt-in is set by the person, or by the setup script of the environment that they use, and having the plugin, which an organization can turn on for its members or require, opts no one in
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+A person turns capture off in a running session with `git config --global pr-cost.capture false`, and in each session of an environment that they can change, from its next restore, with the three `GIT_CONFIG_` variables that set the key to false, since an opt-out that git reads in the session's environment turns capture off (
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+T119), and the variables outlast a rewrite of the global configuration file, such as a setup script makes on a rebuilt machine or an organization's hook at a session's start or resume, or after `/clear` or a compaction
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+The README's short start says that a person's own line goes in a cloud environment that only they use, tells an organization to tell its members before it opts them in, and says what is then published
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+Its section on organizations says how an organization turns the plugin on and puts the line in a shared environment
+~~~~
+
+Clause, R186:
+
+~~~~text
+which sessions each reaches, that a member who has picked no environment uses the organization's default, that sharing an environment, or making it the default, shares the line in its setup script with every member who uses it and with a Claude Tag channel's sessions, so that an Owner takes their own line out first, that a member sees a shared environment read-only, so that an opt-out in a session there holds only until its machine is rebuilt and a member refuses the line for good only by working in an environment of their own, that its managed settings can also opt members in
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+(T155), that the organization tells its members first what is then published, and that its opt-in also records each agent that a later release adds (T176)
+~~~~
+
+Clause, R186:
+
+~~~~text
+that a person's own line belongs in an environment of their own
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+and how a member sees what turns capture on, with git's `--show-origin` and `/hooks`, and turns it off
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** a repository's settings can already run any hook in a session that trusts its folder (A62), so a plugin of the same name gives it no power that it lacks. The plugin's name is part of the public surface, so it does not change but in a major release, and the README's section on installing the plugin says that only one copy of a plugin's name runs its hooks, how to see which one in a terminal session, and what a cloud session shows.
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** a repository's settings can already run any hook in a session that trusts its folder (A62), so a plugin of the same name gives it no power that it lacks. The plugin's name is part of the public surface, so it does not change but in a major release (R122, R123), and the README's section on installing the plugin says that only one copy of a plugin's name runs its hooks, how to see which one in a terminal session, and what a cloud session shows (R195).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:** a repository's settings can already run any hook in a session that trusts its folder (A62), so a plugin of the same name gives it no power that it lacks. The plugin's name is part of the public surface, so it does not change but in a major release
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+and the README's section on installing the plugin says that only one copy of a plugin's name runs its hooks, how to see which one in a terminal session, and what a cloud session shows
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** each ledger file's first line states, beside its format's version, the release of the capture step that wrote it, both in a place and form that every version of the format keeps, and when a ledger file that a merge adds names a later release than the report's own, whatever its version, the comment says that some ledger files come from a later release than the report, so that lines or files that the report cannot read may be refused, and quotes nothing from them. Where the plugin and the hook file's registration both run, a copy of an earlier release leaves the session to the later one, but for an opt-out (T130). The README's section on installing the plugin says that the plugin's release, not the repository's pinned report, writes the ledger files of the sessions that run it, what a later or an earlier plugin then does, and that a repository keeps its pin current and a person keeps their plugin current. The README's short start says that the marketplace's updates need no approval, so that a person who adds it knows that each new release reaches their sessions with nothing to accept.
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** each ledger file's first line states, beside its format's version, the release of the capture step that wrote it, both in a place and form that every version of the format keeps (R156), and when a ledger file that a merge adds names a later release than the report's own, whatever its version, the comment says that some ledger files come from a later release than the report, so that lines or files that the report cannot read may be refused, and quotes nothing from them (R193). Where the plugin and the hook file's registration both run, a copy of an earlier release leaves the session to the later one, but for an opt-out (R191, T130). The README's section on installing the plugin says that the plugin's release, not the repository's pinned report, writes the ledger files of the sessions that run it, what a later or an earlier plugin then does, and that a repository keeps its pin current and a person keeps their plugin current (R195). The README's short start says that the marketplace's updates need no approval, so that a person who adds it knows that each new release reaches their sessions with nothing to accept (R198).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:** each ledger file's first line states, beside its format's version, the release of the capture step that wrote it, both in a place and form that every version of the format keeps
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+and when a ledger file that a merge adds names a later release than the report's own, whatever its version, the comment says that some ledger files come from a later release than the report, so that lines or files that the report cannot read may be refused, and quotes nothing from them
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+Where the plugin and the hook file's registration both run, a copy of an earlier release leaves the session to the later one, but for an opt-out (
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+T130). The README's section on installing the plugin says that the plugin's release, not the repository's pinned report, writes the ledger files of the sessions that run it, what a later or an earlier plugin then does, and that a repository keeps its pin current and a person keeps their plugin current
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+The README's short start says that the marketplace's updates need no approval, so that a person who adds it knows that each new release reaches their sessions with nothing to accept
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** the check compares the folder with what the release tag's own build script builds, run with `python3 -I`, never with the pull request's build, and fails a pull request that adds, changes or removes the root marketplace file, or changes the folder that it names, together with anything else, so that a change to the check, the build script or the workflow comes in a pull request of its own, which the owner reviews as such. The checks are on the default branch before the root file comes back, in a pull request that changes no marketplace file, so that the pull request that brings the marketplace back is held by checks that it does not change. That check runs as the pull request leaves it, so the owner merges a pull request that changes the root file or the folder only when its diff changes nothing else, a rule that no change to CI undoes (A15).
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** the check compares the folder with what the release tag's own build script builds, never with the pull request's build (R184), and fails a pull request that changes the marketplace together with anything else (R190), so that a change to the check, the build script or the workflow comes in a pull request of its own, which the owner reviews as such. The checks are on the default branch before the root file comes back, in a pull request that changes no marketplace file, so that the pull request that brings the marketplace back is held by checks that it does not change. That check runs as the pull request leaves it, so the owner merges a pull request that changes the root file or the folder only when its diff changes nothing else, a rule that no change to CI undoes (A15).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:** the check compares the folder with what the release tag's own build script builds
+~~~~
+
+Clause, R184:
+
+~~~~text
+run with `python3 -I`
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+never with the pull request's build
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+and fails a pull request that
+~~~~
+
+Clause, R190:
+
+~~~~text
+adds, changes or removes the root marketplace file, or changes the folder that it names, together with anything else
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+so that a change to the check, the build script or the workflow comes in a pull request of its own, which the owner reviews as such. The checks are on the default branch before the root file comes back, in a pull request that changes no marketplace file, so that the pull request that brings the marketplace back is held by checks that it does not change. That check runs as the pull request leaves it, so the owner merges a pull request that changes the root file or the folder only when its diff changes nothing else, a rule that no change to CI undoes (A15)
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** the check takes a release's tag by its full name, `refs/tags/v<version>`, passes the folder only when that tag's commit is in the default branch's first-parent history and a published release has its version, and refuses a version lower than the one at the pull request's base. The owner deletes a refused release's tag, with its draft, and its version is never tagged again (DR-209). The README's sections on installing the plugin and on adopting the tool say that a tag with no published release is not a version to pin or install, its short start says to pin a published release, and its section on organizations says to register the marketplace with no `ref`. The release workflow refuses a tag whose root marketplace file lists any plugin but the tool's. Until this repository's root marketplace file holds an entry for the tool's plugin, the README's status says that the marketplace does not serve it yet, which a test holds against that file, and the short start is written only once the root marketplace file, which lists the vendored Superpowers, is removed, so that a person who adds the marketplace from the short start is never offered that plugin.
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** the check takes a release's tag by its full name, `refs/tags/v<version>`, passes the folder only when that tag's commit is in the default branch's first-parent history and a published release has its version, and refuses a version lower than the one at the pull request's base (R184). The owner deletes a refused release's tag, with its draft, and its version is never tagged again (DR-209). The README's sections on installing the plugin and on adopting the tool say that a tag with no published release is not a version to pin or install (R195, R203), its short start says to pin a published release (R198), and its section on organizations says to register the marketplace with no `ref` (R186). The release workflow refuses a tag whose root marketplace file lists any plugin but the tool's (R190). Until this repository's root marketplace file holds an entry for the tool's plugin, the README's status says that the marketplace does not serve it yet, which a test holds against that file (R205), and the short start is written only once the root marketplace file, which lists the vendored Superpowers, is removed, so that a person who adds the marketplace from the short start is never offered that plugin.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:** the check takes a release's tag by its full name, `refs/tags/v<version>`, passes the folder only when that tag's commit is in the default branch's first-parent history and a published release has its version, and refuses a version lower than the one at the pull request's base
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+The owner deletes a refused release's tag, with its draft, and its version is never tagged again (DR-209). The README's sections on installing the plugin and on adopting the tool say that a tag with no published release is not a version to pin or install
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+its short start says to pin a published release
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+and its section on organizations says to register the marketplace with no `ref`
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+The release workflow refuses a tag whose root marketplace file lists any plugin but the tool's
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+Until this repository's root marketplace file holds an entry for the tool's plugin, the README's status says that the marketplace does not serve it yet, which a test holds against that file
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+and the short start is written only once the root marketplace file, which lists the vendored Superpowers, is removed, so that a person who adds the marketplace from the short start is never offered that plugin
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** the release workflow creates each release as a draft, attaches its plugin's zip and its bill of materials, downloads each attached file again and checks its size and SHA-256 against the file that it built, and only then publishes the release; when an attachment fails or differs, the release stays a draft, the workflow fails and names the file, and nothing is published. The tests hold the order of the workflow's calls against recorded responses.
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** the release workflow publishes a release only once each file attached to its draft, downloaded again, matches the file that it built, so that no release is published without its zip and its bill of materials (R189). The tests hold the order of the workflow's calls against recorded responses.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:**
+~~~~
+
+Clause, R189:
+
+~~~~text
+the release workflow creates each release as a draft, attaches its plugin's zip and its bill of materials, downloads each attached file again and checks its size and SHA-256 against the file that it built, and only then publishes the release; when an attachment fails or differs, the release stays a draft, the workflow fails and names the file, and nothing is published
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+The tests hold the order of the workflow's calls against recorded responses
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** the root marketplace file holds only the marketplace's name, its owner and one entry that gives the tool's plugin's name and its folder, and CI fails when the file, parsed, holds any other key, value or entry. The check that the plugin's hooks match the hook file's registration reads them from every file that can declare them. The owner merges a pull request that changes the root file only when its diff changes nothing else (T137).
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** the root marketplace file holds only the marketplace's name, its owner and one entry that gives the tool's plugin's name and its folder, and CI fails when the file, parsed, holds any other key, value or entry (R190). The check that the plugin's hooks match the hook file's registration reads them from every file that can declare them (R179). The owner merges a pull request that changes the root file only when its diff changes nothing else (T137).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:** the root marketplace file holds only the marketplace's name, its owner and one entry that gives the tool's plugin's name and its folder, and CI fails when the file, parsed, holds any other key, value or entry
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+The check that the plugin's hooks match the hook file's registration reads them from every file that can declare them
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+The owner merges a pull request that changes the root file only when its diff changes nothing else (T137)
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** the plugin that each commit builds has a manifest that holds no key but its name, version, description, author, licence and repository, hooks that are all command hooks, and the hook file, byte for byte, as its capture step; CI fails on a pull request whose tree builds a plugin where any of these does not hold, and the release workflow publishes no release where any does not. The zip, and the marketplace's folder, which CI compares with what the release's tag builds, hold only the manifest, the hooks, the capture step and the licence, so a file that Claude Code reads from a default path is refused too.
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** the plugin that each commit builds has a manifest that holds no key but its name, version, description, author, licence and repository, hooks that are all command hooks, and the hook file, byte for byte, as its capture step; CI fails, and no release is published, where any of these does not hold (R188). The zip, and the marketplace's folder, which CI compares with what the release's tag builds, hold only the manifest, the hooks, the capture step and the licence (R183, R184), so a file that Claude Code reads from a default path is refused too.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:** the plugin that each commit builds has a manifest that holds no key but its name, version, description, author, licence and repository, hooks that are all command hooks, and the hook file, byte for byte, as its capture step
+~~~~
+
+Clause, R188:
+
+~~~~text
+CI fails on a pull request whose tree builds a plugin where any of these does not hold, and the release workflow publishes no release where any does not
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+The zip, and the marketplace's folder, which CI compares with what the release's tag builds, hold only the manifest, the hooks, the capture step and the licence
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+so a file that Claude Code reads from a default path is refused too
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** the account's name and the repository's are among the settings the owner keeps, so that neither changes while the marketplace is served from them. The README gives the release's zip first, which follows no address once it is uploaded, and says so.
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** the account's name and the repository's are among the settings the owner keeps, so that neither changes while the marketplace is served from them. The README gives the release's zip first, which follows no address once it is uploaded, and says so (R187).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:** the account's name and the repository's are among the settings the owner keeps, so that neither changes while the marketplace is served from them. The README gives the release's zip first, which follows no address once it is uploaded, and says so
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** both commands take each CRLF in the step as LF before they compare its SHA-256, so that a checkout that changes only its line endings runs the step, while a change to any other byte, a lone carriage return among them, runs none of it. The zip is built from the tag's files as git's objects hold them, never from a checkout. CI fails when the repository's attributes give the hook file, or a file in the plugin folder that the root marketplace file names, `working-tree-encoding`, `ident` or `filter`, in any state.
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** both commands take each CRLF in the step as LF before they compare its SHA-256, so that a checkout that changes only its line endings runs the step, while a change to any other byte, a lone carriage return among them, runs none of it (R88, R179). The zip is built from the tag's files as git's objects hold them, never from a checkout (R183). CI fails on an attribute that would change the checkout of the hook file or of the plugin's files (R134).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:** both commands take each CRLF in the step as LF before they compare its SHA-256, so that a checkout that changes only its line endings runs the step, while a change to any other byte, a lone carriage return among them, runs none of it
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+The zip is built from the tag's files as git's objects hold them, never from a checkout
+~~~~
+
+Clause, R134:
+
+~~~~text
+CI fails when the repository's attributes give the hook file, or a file in the plugin folder that the root marketplace file names, `working-tree-encoding`, `ident` or `filter`, in any state
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** outside the repository that holds the project directory, a plugin run starts a git command that can start a program that a repository's configuration names, as one that reads the index or the attributes can, only where a git command of its input runs, or to take back a ledger file that its own session staged there, and leaves any other take-back or put-back there to the first run that may make it. It reads the opt-in and finds the store with `git config` and `git rev-parse`, which start neither program (A21), so that in a repository that the session only meets or moves into, its intervals still begin and its calls are still recorded.
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** outside the repository that holds the project directory, a plugin run starts a git command that can start a program that a repository's configuration names, as one that reads the index or the attributes can, only where a git command of its input runs, or to take back a ledger file that its own session staged there, and leaves any other take-back or put-back there to the first run that may make it (R197). It reads the opt-in and finds the store with `git config` and `git rev-parse`, which start neither program (A21), so that in a repository that the session only meets or moves into, its intervals still begin and its calls are still recorded (R197).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:** outside the repository that holds the project directory, a plugin run starts a git command that can start a program that a repository's configuration names, as one that reads the index or the attributes can, only where a git command of its input runs, or to take back a ledger file that its own session staged there, and leaves any other take-back or put-back there to the first run that may make it
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+It reads the opt-in and finds the store with `git config` and `git rev-parse`, which start neither program (A21), so that in a repository that the session only meets or moves into, its intervals still begin and its calls are still recorded
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** the short start itself, read as GitHub shows it, says before any step that opts anyone in that turning the tool on in a repository records only the sessions of people who are opted in, that one opt-in covers every repository that turns the tool on and every agent that the tool records, later ones too, that a call counts in the repository that it is made from, whatever repository it works on, that what a session spends is committed with its work and can be traced to the person, that pushing that work publishes it, even after an opt-out, and that it stays published, and its step for an organization says to tell its members before it opts them in. A test fails when it leaves out any of these, or gives one only after a step that opts anyone in. Each section of detail shows its heading, so that a reader sees what its folded text covers.
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** the short start itself, read as GitHub shows it, says before any step that opts anyone in what an opt-in records and publishes. A test fails when it leaves out any of these, or gives one only after a step that opts anyone in (R199). Each section of detail shows its heading, so that a reader sees what its folded text covers (R200).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:** the short start itself, read as GitHub shows it, says before any step that opts anyone in
+~~~~
+
+Clause, R199:
+
+~~~~text
+that turning the tool on in a repository records only the sessions of people who are opted in, that one opt-in covers every repository that turns the tool on and every agent that the tool records, later ones too, that a call counts in the repository that it is made from, whatever repository it works on, that what a session spends is committed with its work and can be traced to the person, that pushing that work publishes it, even after an opt-out, and that it stays published, and its step for an organization says to tell its members before it opts them in
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+A test fails when it leaves out any of these, or gives one only after a step that opts anyone in
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+Each section of detail shows its heading, so that a reader sees what its folded text covers
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** a test fails when a command in the short start's code is not given, as written, in the README's section that the short start links for that step, its opt-in's line in both the section on the opt-in and the section on cloud threads, when its opt-in is not `git config --global pr-cost.capture true` or its way to stop is not `git config --global pr-cost.capture false`, as the specs give them, so that a change to both the short start and a section fails it too, or when the marketplace's address that it gives is not the one that the section on installing the plugin gives. The tests of task 4.4 hold the commands of those sections to what the specs ask of them.
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** a test fails when a command of the short start differs from the section that it links for that step or from what the specs give, so that a change to both the short start and a section fails it too (R198). The tests of task 4.4 hold the commands of those sections to what the specs ask of them.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:** a test fails when
+~~~~
+
+Clause, R198:
+
+~~~~text
+a command in the short start's code is not given, as written, in the README's section that the short start links for that step, its opt-in's line in both the section on the opt-in and the section on cloud threads, when its opt-in is not `git config --global pr-cost.capture true` or its way to stop is not `git config --global pr-cost.capture false`, as the specs give them
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+so that a change to both the short start and a section fails it too
+~~~~
+
+Clause, R198:
+
+~~~~text
+or when the marketplace's address that it gives is not the one that the section on installing the plugin gives
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+The tests of task 4.4 hold the commands of those sections to what the specs ask of them
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** a test fails when a link of the short start names anything but a heading of the README or this repository's latest release by its full address, and another when a link, an autolink, a web address or an `owner/repo` anywhere in the README, in its opening, its short start, its folded detail and its code, names anything but a heading of the README, a file of this repository by a relative path, an address on the test's list, or, at `github.com` or `raw.githubusercontent.com`, this repository, its latest release, or a release, a release's file, a file or a folder at a release's tag or a placeholder, since GitHub serves under this repository's address a commit that only a fork holds (A26), a pull request's head, a fork's too, as `refs/pull/<number>/head` (A48), and what others write, such as a pull request, an issue or a comparison with a fork's branch (A26), and a third when the `.github` folder holds a README (A9). The owner reads every diff before merging it.
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** a test fails when a link of the short start names anything but a heading of the README or this repository's latest release by its full address (R198), and another when a link, an autolink, a web address or an `owner/repo` anywhere in the README names anything but a heading of the README, a file of this repository by a relative path, an address on the test's list, or, at `github.com` or `raw.githubusercontent.com`, this repository, its latest release, or a release, a release's file, a file or a folder at a release's tag or a placeholder (R201), since GitHub serves under this repository's address a commit that only a fork holds (A26), a pull request's head, a fork's too, as `refs/pull/<number>/head` (A48), and what others write, such as a pull request, an issue or a comparison with a fork's branch (A26), and a third when the `.github` folder holds a README (R198, A9). The owner reads every diff before merging it.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:** a test fails when a link of the short start names anything but a heading of the README or this repository's latest release by its full address
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+and another when a link, an autolink, a web address or an `owner/repo` anywhere in the README
+~~~~
+
+Clause, R201:
+
+~~~~text
+in its opening, its short start, its folded detail and its code
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+names anything but a heading of the README, a file of this repository by a relative path, an address on the test's list, or, at `github.com` or `raw.githubusercontent.com`, this repository, its latest release, or a release, a release's file, a file or a folder at a release's tag or a placeholder
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+since GitHub serves under this repository's address a commit that only a fork holds (A26), a pull request's head, a fork's too, as `refs/pull/<number>/head` (A48), and what others write, such as a pull request, an issue or a comparison with a fork's branch (A26), and a third when the `.github` folder holds a README (
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+A9). The owner reads every diff before merging it
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** the short start names this repository's marketplace by its `owner/repo`, in code, and links this repository's latest release by its full address, so that an unchanged copy of the README still sends its readers here, and a test fails when the marketplace's address that it gives is not the one that the section on installing the plugin gives. Every other address in the README is on the test's list or is one of the few of this repository's that the test allows (T147).
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** the short start names this repository's marketplace by its `owner/repo`, in code, and links this repository's latest release by its full address, so that an unchanged copy of the README still sends its readers here, and a test fails when the marketplace's address that it gives is not the one that the section on installing the plugin gives (R198). Every other address in the README is on the test's list or is one of the few of this repository's that the test allows (R201, T147).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:** the short start names this repository's marketplace by its `owner/repo`, in code, and links this repository's latest release by its full address, so that an unchanged copy of the README still sends its readers here, and a test fails when the marketplace's address that it gives is not the one that the section on installing the plugin gives
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+Every other address in the README is on the test's list or is one of the few of this repository's that the test allows (
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+T147)
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** the short start holds no HTML, and a test fails when it holds a `<details>` element, an HTML comment or any other element. The test of what it says reads it as GitHub shows it, and fails when it gives what an opt-in publishes only after a step that opts anyone in. The test of its commands also compares its opt-in and its way to stop with the commands that the specs give, and its opt-in's line with both the section on the opt-in and the section on cloud threads (T146).
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** the short start holds no HTML, and a test fails otherwise (R198). The test of what it says reads it as GitHub shows it, and fails when it gives what an opt-in publishes only after a step that opts anyone in (R199). The test of its commands also compares its opt-in and its way to stop with the commands that the specs give, and its opt-in's line with both the section on the opt-in and the section on cloud threads (R198, T146).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:** the short start holds no HTML, and a test fails
+~~~~
+
+Clause, R198:
+
+~~~~text
+when it holds a `<details>` element, an HTML comment or any other element
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+The test of what it says reads it as GitHub shows it, and fails when it gives what an opt-in publishes only after a step that opts anyone in
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+The test of its commands also compares its opt-in and its way to stop with the commands that the specs give, and its opt-in's line with both the section on the opt-in and the section on cloud threads (
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+T146)
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** the README holds no text that GitHub hides or shows otherwise: a test fails when it holds an attribute on the `<details>` and `<summary>` elements that fold its sections of detail, a character other than printable ASCII and a line break, a code block whose opening fence gives anything but a language on the test's list, which holds none that GitHub draws as a diagram, a map, a model or mathematics, or, outside code, a `<` that does not open or close one of those elements, which refuses every comment, other element, processing instruction, declaration and CDATA section, a `]:`, which refuses every link reference definition and footnote's definition, a character reference, a mathematical expression, an image, a link with a title, or a link whose target holds a query or a fragment that names no heading of the README, and names the line and what it holds.
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** the README holds no text that GitHub hides or shows otherwise: a test fails when it holds any, and names the line and what it holds (R200).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:** the README holds no text that GitHub hides or shows otherwise: a test fails when it holds
+~~~~
+
+Clause, R200:
+
+~~~~text
+an attribute on the `<details>` and `<summary>` elements that fold its sections of detail, a character other than printable ASCII and a line break, a code block whose opening fence gives anything but a language on the test's list, which holds none that GitHub draws as a diagram, a map, a model or mathematics, or, outside code, a `<` that does not open or close one of those elements, which refuses every comment, other element, processing instruction, declaration and CDATA section, a `]:`, which refuses every link reference definition and footnote's definition, a character reference, a mathematical expression, an image, a link with a title, or a link whose target holds a query or a fragment that names no heading of the README
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+and names the line and what it holds
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** the short start says to check the zip's checksum against that release's README, and the section on adopting the tool says to take the hook file, its registration and the calling workflow from the README at the commit that a published release names. When the merged commit's `.claude/settings.json` or `.claude/settings.local.json` registers the hook's command with a checksum other than the SHA-256 of the hook file at that commit, the comment says that the hook's registration does not run the repository's hook file, and quotes nothing from either file.
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** the short start says to check the zip's checksum against that release's README, and the section on adopting the tool says to take the hook file, its registration and the calling workflow from the README at the commit that a published release names (R198, R203). When the merged commit's `.claude/settings.json` or `.claude/settings.local.json` registers the hook's command with a checksum other than the SHA-256 of the hook file at that commit, the comment says so and quotes nothing from either file (R202).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:** the short start says to check the zip's checksum against that release's README, and the section on adopting the tool says to take the hook file, its registration and the calling workflow from the README at the commit that a published release names
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+When the merged commit's `.claude/settings.json` or `.claude/settings.local.json` registers the hook's command with a checksum other than the SHA-256 of the hook file at that commit
+~~~~
+
+Clause, R202:
+
+~~~~text
+the comment says that the hook's registration does not run the repository's hook file, and quotes nothing from either file
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** the section on adopting the tool says that a tag with no published release is not a version to pin, so that a pin, an update bot's included, is taken only once a published release names its commit, and the short start says to pin a published release. The owner deletes a refused release's tag, with its draft, and its version is never tagged again (DR-209).
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** the section on adopting the tool says that a tag with no published release is not a version to pin, so that a pin, an update bot's included, is taken only once a published release names its commit (R203), and the short start says to pin a published release (R198). The owner deletes a refused release's tag, with its draft, and its version is never tagged again (DR-209).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:** the section on adopting the tool says that a tag with no published release is not a version to pin, so that a pin, an update bot's included, is taken only once a published release names its commit
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+and the short start says to pin a published release
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+The owner deletes a refused release's tag, with its draft, and its version is never tagged again (DR-209)
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** the short start's way to stop says to run the opt-out on each machine and in each running session, and to take the line out of any setup script or use an environment without it, and the short start says, before any step that opts anyone in, that pushing a session's work publishes what it spent, even after an opt-out. The section on turning capture off says that taking the line out, or using another environment, reaches only the sessions that start, or whose machines are rebuilt, afterwards, and gives the command for a running session.
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** the short start's way to stop says to run the opt-out on each machine and in each running session, and to take the line out of any setup script or use an environment without it, and the short start says, before any step that opts anyone in, that pushing a session's work publishes what it spent, even after an opt-out (R198, R199). The section on turning capture off says that taking the line out, or using another environment, reaches only the sessions that start, or whose machines are rebuilt, afterwards, and gives the command for a running session (R194).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:** the short start's way to stop says to run the opt-out on each machine and in each running session, and to take the line out of any setup script or use an environment without it, and the short start says, before any step that opts anyone in, that pushing a session's work publishes what it spent, even after an opt-out
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+The section on turning capture off says that taking the line out, or using another environment, reaches only the sessions that start, or whose machines are rebuilt, afterwards, and gives the command for a running session
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** the README's section on organizations gives a hook that writes the opt-in only when `CLAUDE_CODE_REMOTE` is `true`, which Claude Code sets in cloud sessions and never locally, and `git config --global --get pr-cost.capture` does not already give `true`, so that it leaves alone a file that already opts the member in, says that a hook without the first condition writes the opt-in into a member's own git configuration on their own computer, where it stays after the hook goes and after they leave, and records each agent that later releases add, has an organization that stops tell its members to turn capture off on each computer, and says how a member sees what turns capture on, with git's `--show-origin` and `/hooks`, and turns it off. Task 4.4's tests run that hook against a git configuration of their own, and show that it writes nothing outside a cloud session, leaves a file that already opts the member in untouched, since git writes the file anew even to set the value that it holds (A51), and writes the opt-in otherwise. The short start says that an organization that opted a person in can do so again.
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** the README's section on organizations gives a hook that writes the opt-in only when `CLAUDE_CODE_REMOTE` is `true`, which Claude Code sets in cloud sessions and never locally, and `git config --global --get pr-cost.capture` does not already give `true`, so that it leaves alone a file that already opts the member in, says what a hook without the first condition leaves on a member's own computer, and has an organization that stops tell its members to turn capture off on each computer (R186). Task 4.4's tests run that hook against a git configuration of their own, and show that it writes nothing outside a cloud session, leaves a file that already opts the member in untouched, since git writes the file anew even to set the value that it holds (A51), and writes the opt-in otherwise. The short start says that an organization that opted a person in can do so again (R198).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:** the README's section on organizations gives a hook that writes the opt-in only when `CLAUDE_CODE_REMOTE` is `true`, which Claude Code sets in cloud sessions and never locally, and `git config --global --get pr-cost.capture` does not already give `true`, so that it leaves alone a file that already opts the member in
+~~~~
+
+Clause, R186:
+
+~~~~text
+says that a hook without the first condition writes the opt-in into a member's own git configuration on their own computer, where it stays after the hook goes and after they leave, and records each agent that later releases add
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+has an organization that stops tell its members to turn capture off on each computer
+~~~~
+
+Clause, R186:
+
+~~~~text
+and says how a member sees what turns capture on, with git's `--show-origin` and `/hooks`, and turns it off
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+Task 4.4's tests run that hook against a git configuration of their own, and show that it writes nothing outside a cloud session, leaves a file that already opts the member in untouched, since git writes the file anew even to set the value that it holds (A51), and writes the opt-in otherwise. The short start says that an organization that opted a person in can do so again
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** the README's section on turning capture off says that a repository whose `.claude/settings.json` sets `remote.defaultEnvironmentId` chooses the environment of the cloud sessions that `claude --cloud` starts from its clone, over the person's own pick, which the person keeps with the same key in the clone's `.claude/settings.local.json`.
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** the README's section on turning capture off says that a repository whose `.claude/settings.json` sets `remote.defaultEnvironmentId` chooses the environment of the cloud sessions that `claude --cloud` starts from its clone, over the person's own pick, which the person keeps with the same key in the clone's `.claude/settings.local.json` (R194).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:** the README's section on turning capture off says that a repository whose `.claude/settings.json` sets `remote.defaultEnvironmentId` chooses the environment of the cloud sessions that `claude --cloud` starts from its clone, over the person's own pick, which the person keeps with the same key in the clone's `.claude/settings.local.json`
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** the report reads each settings file as a blob within a size bound of their own, and leaves out, without stopping, one that is not a regular file, is above that bound, is not JSON that it can read, nested too deep for Python's JSON reader among them, or is JSON in which a value on the way to a hook's command is not of the type it has in a registration, saying nothing of a registration there and quoting nothing from it, which a test holds with each of these planted, at a depth on which the running Python's reader raises and within that bound.
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** the report reads each settings file as a blob within a size bound of their own, and leaves out, without stopping, one that is not a regular file, is above that bound, is not JSON that it can read, nested too deep for Python's JSON reader among them, or is JSON in which a value on the way to a hook's command is not of the type it has in a registration, saying nothing of a registration there and quoting nothing from it (R202), which a test holds with each of these planted, at a depth on which the running Python's reader raises and within that bound.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:** the report reads each settings file as a blob within a size bound of their own, and leaves out, without stopping, one that is not a regular file, is above that bound, is not JSON that it can read, nested too deep for Python's JSON reader among them, or is JSON in which a value on the way to a hook's command is not of the type it has in a registration, saying nothing of a registration there and quoting nothing from it
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+which a test holds with each of these planted, at a depth on which the running Python's reader raises and within that bound
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** the README's sections on the opt-in, on a project's cloud threads and on organizations say that a person sets their own opt-in, or their organization does once it has told them, and that an agent that sets the tool up turns capture on for no one, in a git configuration file, a setup script, an environment's variables or managed settings, and leaves the opt-in to whoever asked it. The section on the opt-in sits inside the section on adopting the tool, which the short start's step for a repository links, so an agent that sets a repository up reads it there. The guide, which the README's list of documentation links and which says that agents follow it, opens by saying that it speaks to work on this repository, not to setting the tool up, which is the README's section on adopting it, and that an agent that sets the tool up turns capture on for no one (R219, DR-231).
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** the README's sections on the opt-in, on a project's cloud threads and on organizations leave the opt-in to the person, or to their organization once it has told them, and say that an agent that sets the tool up turns capture on for no one (R204). The section on the opt-in sits inside the section on adopting the tool, which the short start's step for a repository links, so an agent that sets a repository up reads it there. The guide, which the README's list of documentation links and which says that agents follow it, opens by saying that it speaks to work on this repository, not to setting the tool up, which is the README's section on adopting it, and that an agent that sets the tool up turns capture on for no one (R219, DR-231).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:** the README's sections on the opt-in, on a project's cloud threads and on organizations
+~~~~
+
+Clause, R204:
+
+~~~~text
+say that a person sets their own opt-in, or their organization does once it has told them, and
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+that an agent that sets the tool up turns capture on for no one
+~~~~
+
+Clause, R204:
+
+~~~~text
+in a git configuration file, a setup script, an environment's variables or managed settings, and leaves the opt-in to whoever asked it
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+The section on the opt-in sits inside the section on adopting the tool, which the short start's step for a repository links, so an agent that sets a repository up reads it there. The guide, which the README's list of documentation links and which says that agents follow it, opens by saying that it speaks to work on this repository, not to setting the tool up, which is the README's section on adopting it, and that an agent that sets the tool up turns capture on for no one (R219, DR-231)
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** `CLAUDE.md` names the roadmap and the backlog items among the pages that describe and never tell an agent what to do, and says that an item is not, by being there, a request to start it: work on one starts only when the person the agent works for asks for it, and an item is built only while the default branch gives its status as `Planned` or `In progress`, whatever a branch says. Compared with the base commit, a test fails on an item added as in progress, done or dropped, and on one moved from open or dropped straight to in progress or done, so that an item is agreed by a change to its status line that the owner's merge accepts. The roadmap opens, and the backlog's page says, that an item is not a request to start work, and Later opens by saying to every reader that an item open to feedback and contributions starts with an issue, that an item is built only once it is planned, and that some items need a spec, a threat review and the owner's decision first; tests fail when they do not. Each gap on the guide names the backlog item that closes it, and a test fails while that item is done or dropped (R226); the guide opens by saying to every reader that a gap is not, by being there, a request to start work, that it closes only through the backlog item that it names, that work outside that item leaves what the gap concerns as it stands, and that a principle knowingly accepted is accepted only where its record says (R219), and `CLAUDE.md` says the same, so that a gap closes only once its item is built. `CLAUDE.md`'s rule that the specs are the single source has an agent write a finding into a spec only once the person it works for asks it to (DR-232). Nothing merges but by the owner.
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** `CLAUDE.md` names the roadmap and the backlog items among the pages that describe and never tell an agent what to do, and says that an item is not, by being there, a request to start it: work on one starts only when the person the agent works for asks for it, and an item is built only while the default branch gives its status as `Planned` or `In progress`, whatever a branch says. Compared with the base commit, a test fails on an item that skips agreement (R218), so that an item is agreed by a change to its status line that the owner's merge accepts. The roadmap opens, and the backlog's page says, that an item is not a request to start work, and Later opens by saying to every reader that an item open to feedback and contributions starts with an issue, that an item is built only once it is planned, and that some items need a spec, a threat review and the owner's decision first; tests fail when they do not (R214, R217). Each gap on the guide names the backlog item that closes it, and a test fails while that item is done or dropped (R226); the guide opens by saying to every reader that a gap is not, by being there, a request to start work, that it closes only through the backlog item that it names, that work outside that item leaves what the gap concerns as it stands, and that a principle knowingly accepted is accepted only where its record says (R219), and `CLAUDE.md` says the same, so that a gap closes only once its item is built. `CLAUDE.md`'s rule that the specs are the single source has an agent write a finding into a spec only once the person it works for asks it to (DR-232). Nothing merges but by the owner.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:** `CLAUDE.md` names the roadmap and the backlog items among the pages that describe and never tell an agent what to do, and says that an item is not, by being there, a request to start it: work on one starts only when the person the agent works for asks for it, and an item is built only while the default branch gives its status as `Planned` or `In progress`, whatever a branch says. Compared with the base commit, a test fails on an item
+~~~~
+
+Clause, R218:
+
+~~~~text
+added as in progress, done or dropped, and on one moved from open or dropped straight to in progress or done
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+so that an item is agreed by a change to its status line that the owner's merge accepts. The roadmap opens, and the backlog's page says, that an item is not a request to start work, and Later opens by saying to every reader that an item open to feedback and contributions starts with an issue, that an item is built only once it is planned, and that some items need a spec, a threat review and the owner's decision first; tests fail when they do not
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+Each gap on the guide names the backlog item that closes it, and a test fails while that item is done or dropped (R226); the guide opens by saying to every reader that a gap is not, by being there, a request to start work, that it closes only through the backlog item that it names, that work outside that item leaves what the gap concerns as it stands, and that a principle knowingly accepted is accepted only where its record says (R219), and `CLAUDE.md` says the same, so that a gap closes only once its item is built. `CLAUDE.md`'s rule that the specs are the single source has an agent write a finding into a spec only once the person it works for asks it to (DR-232). Nothing merges but by the owner
+~~~~
+
 ## For B-007
 
 - `docs/threat-model.md`: the configuration is read only as a blob at each commit (T49: R19's requirement states it, but none of its scenarios does)
@@ -5278,6 +6822,11 @@ The README's section on turning capture off gives `git config --global --get pr-
 - `docs/threat-model.md`: and the set holds a session for each rule at this boundary that changes a figure or a count (T87: no scenario of R139 asks for a golden session for each rule at this boundary.)
 - `docs/threat-model.md`: and each golden test names as its expected error one that only a missing capture step or report raises, so a wrong figure fails CI on the pull request, before any tag (T99: no scenario states what a golden test names as its expected error.)
 - `docs/threat-model.md`: a path that is not UTF-8 (T102: R137's scenario fails on a file that is not UTF-8; none names a path that is not.)
+- `docs/threat-model.md`: never asking git to trust the folder (T122: a never-does of the capture step that no scenario or requirement of usage-capture states; R147's scenarios show only that the run records nothing and exits with success.)
+- `docs/threat-model.md`: When the merged commit's `.claude/settings.json` or `.claude/settings.local.json` registers the hook's command with a checksum other than the SHA-256 of the hook file at that commit (T152: R202's requirement names both files, but its scenario that the comment names the registration covers `.claude/settings.json` alone.)
+- `docs/threat-model.md`: has a manifest that holds no key but its name, version, description, author, licence and repository (T141: R188's requirement gives the allowed keys, but its scenarios name only keys that fail, never the list that passes.)
+- `docs/threat-model.md`: found by its tag's full name in the default branch's first-parent history (T132: R184's requirement says so, but its scenarios say only that CI reads no ref by the short name, not that the tag's commit must be in the first-parent history.)
+- `docs/threat-model.md`: passes the folder only when that tag's commit is in the default branch's first-parent history and a published release has its version (T138: the same gap of R184's scenarios as T132's, for the marketplace's check.)
 
 ## Left as it is
 
