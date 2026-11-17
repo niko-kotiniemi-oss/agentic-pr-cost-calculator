@@ -13649,13 +13649,19 @@ Old:
 New:
 
 ~~~~text
-- Put a prompt, a response, code, a file's contents, a tool's name, input or output, a path, a working directory, a branch name, a user name, a session identifier, a transcript's path, a `tool_use_id` or a time of day, or a hash of any of them, in a ledger file or in anything it publishes. For its own use, the person's store in the git common directory of their clone keeps, for no longer than 30 days, the worktree and branch that each waiting call goes to, a session's id, a transcript's path, a `tool_use_id` and the fingerprint of the files that hold the opt-in, each as a hash, and, only until a run resolves a staged or taken-back ledger file, that file's path and its worktree's name, and for a staged one its transcript's path, which carries the session's id, and nothing in the store leaves that directory (R4, R47, R149, R150, R170).
+- Put a prompt, a response, code, a file's contents, a tool's name, input or output, a path, a working directory, a branch name, a user name, a session identifier, a transcript's path, a `tool_use_id` or a time of day, or a hash of any of them, in a ledger file or in anything it publishes. For its own use, the person's store in the git common directory of their clone keeps, for no longer than 30 days, the window that DR-175 sets, the worktree and branch that each waiting call goes to, a session's id, a transcript's path, a `tool_use_id` and the fingerprint of the files that hold the opt-in, each as a hash, and, only until a run resolves a staged or taken-back ledger file, that file's path and its worktree's name, and for a staged one its transcript's path, which carries the session's id, and nothing in the store leaves that directory (R4, R47, R149, R150, R170).
 ~~~~
 
 Clause, the new unit:
 
 ~~~~text
-- Put a prompt, a response, code, a file's contents, a tool's name, input or output, a path, a working directory, a branch name, a user name, a session identifier, a transcript's path, a `tool_use_id` or a time of day, or a hash of any of them, in a ledger file or in anything it publishes. For its own use, the person's store in the git common directory of their clone keeps, for no longer than 30 days, the worktree and branch that each waiting call goes to, a session's id, a transcript's path, a `tool_use_id` and the fingerprint of the files that hold the opt-in, each as a hash, and, only until a run resolves a staged or taken-back ledger file, that file's path and its worktree's name, and for a staged one its transcript's path, which carries the session's id, and nothing in the store leaves that directory
+- Put a prompt, a response, code, a file's contents, a tool's name, input or output, a path, a working directory, a branch name, a user name, a session identifier, a transcript's path, a `tool_use_id` or a time of day, or a hash of any of them, in a ledger file or in anything it publishes. For its own use, the person's store in the git common directory of their clone keeps, for no longer than 30 days, the w
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+orktree and branch that each waiting call goes to, a session's id, a transcript's path, a `tool_use_id` and the fingerprint of the files that hold the opt-in, each as a hash, and, only until a run resolves a staged or taken-back ledger file, that file's path and its worktree's name, and for a staged one its transcript's path, which carries the session's id, and nothing in the store leaves that directory
 ~~~~
 
 Clause, the new unit:
@@ -14277,13 +14283,19 @@ Old:
 New:
 
 ~~~~text
-- the notes that capture keeps for its own use never leave the git common directory of the person's clone, where its store is readable and writable by that person alone, except on Windows, keeps nothing past 30 days, holds a session's id, a transcript's path, a worktree, a branch and a `tool_use_id` only as hashes, and holds plain names only for a staged or taken-back ledger file, until a run resolves it, a staged one's transcript path among them, which carries the session's id, and capture keeps no copy of a transcript (R47, R149, R150, R152, R154, R170);
+- the notes that capture keeps for its own use never leave the git common directory of the person's clone, where its store is readable and writable by that person alone, except on Windows, keeps nothing past 30 days, the window that DR-175 sets, holds a session's id, a transcript's path, a worktree, a branch and a `tool_use_id` only as hashes, and holds plain names only for a staged or taken-back ledger file, until a run resolves it, a staged one's transcript path among them, which carries the session's id, and capture keeps no copy of a transcript (R47, R149, R150, R152, R154, R170);
 ~~~~
 
 Clause, the new unit:
 
 ~~~~text
-- the notes that capture keeps for its own use never leave the git common directory of the person's clone, where its store is readable and writable by that person alone, except on Windows, keeps nothing past 30 days, holds a session's id, a transcript's path, a worktree, a branch and a `tool_use_id` only as hashes, and holds plain names only for a staged or taken-back ledger file, until a run resolves it, a staged one's transcript path among them, which carries the session's id, and capture keeps no copy of a transcript
+- the notes that capture keeps for its own use never leave the git common directory of the person's clone, where its store is readable and writable by that person alone, except on Windows, keeps nothing past 30 days,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+holds a session's id, a transcript's path, a worktree, a branch and a `tool_use_id` only as hashes, and holds plain names only for a staged or taken-back ledger file, until a run resolves it, a staged one's transcript path among them, which carries the session's id, and capture keeps no copy of a transcript
 ~~~~
 
 Clause, the new unit:

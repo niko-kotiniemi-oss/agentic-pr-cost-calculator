@@ -335,7 +335,7 @@ The specs are the single source of what the tool does, and every other document 
 
 **The checks of the documentation.** The sweep changes no file under `tests/` other than the script's own tests. A check that fails once a unit is gone keeps the unit, which the mapping gives as kept, and a change to the check waits for a pull request of its own (DR-251).
 
-**Order.** One commit for the script and its tests, then one for each page or group of pages: the threat model, a commit for each trust boundary, then the design's risks and decisions, the feature pages, the page on how the tool works, and the README, `CONTRIBUTING.md` and `SECURITY.md`, each with its part of the mapping, so that each commit can be read alone.
+**Order.** One commit for the script and its tests, then one for each page or group of pages: the threat model, in commits that each take a run of threats in the order of their numbers, since a boundary's threats lie in several places of the page under headings that continue it, then the design's risks and decisions, the feature pages, the page on how the tool works, and the README, `CONTRIBUTING.md` and `SECURITY.md`, each with its part of the mapping, so that each commit can be read alone.
 
 ## Risks / Trade-offs
 
