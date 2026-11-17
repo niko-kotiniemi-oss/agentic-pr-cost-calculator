@@ -12756,6 +12756,1254 @@ Clause, R143:
 and a page of the assumptions gives no other web address.
 ~~~~
 
+## `docs/how-it-works.md`
+
+### Entry
+
+Old:
+
+~~~~text
+Where the transcript gave no cache lifetime, the cost is a range between the two lifetimes' rates.
+~~~~
+
+New:
+
+~~~~text
+Where the transcript gave no cache lifetime, the cost is a range between the two lifetimes' rates (R15).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+Where the transcript gave no cache lifetime, the cost is a range between the two lifetimes' rates
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+An entry whose model, attribute or day has no price is counted in tokens and left out of the cost, and the comment names it.
+~~~~
+
+New:
+
+~~~~text
+An entry whose model, attribute or day has no price is counted in tokens and left out of the cost, and the comment names it (R14, R17, R61).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+An entry whose model, attribute or day has no price is counted in tokens and left out of the cost, and the comment names it
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+The runs counted are those on the pull request's own commits that no push to the default branch started and that were created before the merge.
+~~~~
+
+New:
+
+~~~~text
+The runs counted are those on the pull request's own commits that no push to the default branch started and that were created before the merge (R62, R120).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+The runs counted are those on the pull request's own commits that no push to the default branch started and that were created before the merge
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+A job on a runner that `prices/github-actions.json` does not list is counted in minutes and left out of the cost.
+~~~~
+
+New:
+
+~~~~text
+A job on a runner that `prices/github-actions.json` does not list is counted in minutes and left out of the cost (R63).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+A job on a runner that `prices/github-actions.json` does not list is counted in minutes and left out of the cost
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+`rate` is the latest row in `prices/models.json` dated on or before *d*, with every modifier that the table lists for the entry's attributes, combined as the table states: long-prompt rates, where a prompt's length is its input, cache-write and cache-read tokens together; the inference region's multiplier; and the rates for speed and service tier.
+~~~~
+
+New:
+
+~~~~text
+`rate` is the latest row in `prices/models.json` dated on or before *d*, with every modifier that the table lists for the entry's attributes, combined as the table states (R14, R16).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+`rate` is the latest row in `prices/models.json` dated on or before *d*, with every modifier that the table lists for the entry's attributes, combined as the table states
+~~~~
+
+Clause, `pricing`: "A long prompt is priced at its higher rates":
+
+~~~~text
+: long-prompt rates, where a prompt's length is its input, cache-write and cache-read tokens together;
+~~~~
+
+Clause, `pricing`: "A region multiplier applies to every token type":
+
+~~~~text
+the inference region's multiplier;
+~~~~
+
+Clause, R16:
+
+~~~~text
+and the rates for speed and service tier
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- Ledger files: a first line that states the ledger format's version, the release of the capture step that wrote it, the count of refused calls and three flags for calls left out, for consent, for their age or because their repository could not be told, with no count; then one entry per call: UTC day, model, a SHA-256 hash of the message id in a field whose name ends in `_id`, main agent or subagent, the token counts, the price attributes, the activity type, and marks for a call read without a stop reason or with a usage field that capture does not know.
+~~~~
+
+New:
+
+~~~~text
+- Ledger files: a first line that states the ledger format's version, the release of the capture step that wrote it, the count of refused calls and three flags for calls left out, for consent, for their age or because their repository could not be told, with no count; then one entry per call: UTC day, model, a SHA-256 hash of the message id in a field whose name ends in `_id`, main agent or subagent, the token counts, the price attributes, the activity type, and marks for a call read without a stop reason or with a usage field that capture does not know (R2, R4, R6, R42, R43, R155, R156).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- Ledger files: a first line that states the ledger format's version, the release of the capture step that wrote it, the count of refused calls and three flags for calls left out, for consent, for their age or because their repository could not be told, with no count; then one entry per call: UTC day, model, a SHA-256 hash of the message id in a field whose name ends in `_id`, main agent or subagent, the token counts, the price attributes, the activity type, and marks for a call read without a stop reason or with a usage field that capture does not know
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+It reads the person's two global git configuration files for `pr-cost.capture`, and asks git for each value of it that git reads in the repository, which can only turn capture off.
+~~~~
+
+New:
+
+~~~~text
+It reads the person's two global git configuration files for `pr-cost.capture`, and asks git for each value of it that git reads in the repository, which can only turn capture off (R37, R160).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+It reads the person's two global git configuration files for `pr-cost.capture`, and asks git for each value of it that git reads in the repository, which can only turn capture off
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+It writes only its store inside the git common directory, a file of its own, in a folder of its own, that its owner alone can read and write, except on Windows, and the ledger file it stages, and touches the index only to stage, take back or put back that one file, which a run of the plugin does outside the repository that holds the project directory only before or after a git command of its session there, or to take back a file that its own session staged there.
+~~~~
+
+New:
+
+~~~~text
+It writes only its store inside the git common directory, a file of its own, in a folder of its own, that its owner alone can read and write, except on Windows, and the ledger file it stages, and touches the index only to stage, take back or put back that one file, which a run of the plugin does outside the repository that holds the project directory only before or after a git command of its session there, or to take back a file that its own session staged there (R47, R152, R56, R197).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+It writes only its store inside the git common directory, a file of its own, in a folder of its own, that its owner alone can read and write, except on Windows, and the ledger file it stages, and touches the index only to stage, take back or put back that one file, which a run of the plugin does outside the repository that holds the project directory only before or after a git command of its session there, or to take back a file that its own session staged there
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+**The report's workflow**, as an adopter calls it, uses the workflow's own `GITHUB_TOKEN` and no other secret.
+~~~~
+
+New:
+
+~~~~text
+**The report's workflow**, as an adopter calls it, uses the workflow's own `GITHUB_TOKEN` and no other secret (R24).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+**The report's workflow**, as an adopter calls it, uses the workflow's own `GITHUB_TOKEN` and no other secret
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+**The release workflow**, in this repository only, holds `contents: write` in its release job alone, to create the release as a draft, attach the bill of materials and the plugin's zip, read them back and then publish the release, and runs only for a pushed tag.
+~~~~
+
+New:
+
+~~~~text
+**The release workflow**, in this repository only, holds `contents: write` in its release job alone, to create the release as a draft, attach the bill of materials and the plugin's zip, read them back and then publish the release, and runs only for a pushed tag (R189).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+**The release workflow**, in this repository only, holds `contents: write` in its release job alone, to create the release as a draft, attach the bill of materials and the plugin's zip, read them back and then publish the release, and runs only for a pushed tag
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+| Capture step | Nothing | None | The hook opens no network connection. | None |
+~~~~
+
+New:
+
+~~~~text
+| Capture step | Nothing | None | The hook opens no network connection (R30). | None |
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+| Capture step | Nothing | None | The hook opens no network connection
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+. | None |
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+| Report | GitHub's REST API, at the host in `GITHUB_API_URL` (`api.github.com` on github.com) | HTTPS | Find the merged pull request, list its runs and jobs, post or update its comment | `GITHUB_TOKEN` |
+~~~~
+
+New:
+
+~~~~text
+| Report | GitHub's REST API, at the host in `GITHUB_API_URL` (`api.github.com` on github.com) | HTTPS | Find the merged pull request, list its runs and jobs, post or update its comment (R30) | `GITHUB_TOKEN` |
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+| Report | GitHub's REST API, at the host in `GITHUB_API_URL` (`api.github.com` on github.com) | HTTPS | Find the merged pull request, list its runs and jobs, post or update its comment
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+| `GITHUB_TOKEN` |
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+| Report | GitHub, by git, through `actions/checkout` and `git fetch` | HTTPS | Fetch the tool's own code at its commit, and the adopter's repository to read as data: the default branch's history up to the push's commit and the pull request's head as `refs/pull/<number>/head` | `GITHUB_TOKEN` |
+~~~~
+
+New:
+
+~~~~text
+| Report | GitHub, by git, through `actions/checkout` and `git fetch` | HTTPS | Fetch the tool's own code at its commit, and the adopter's repository to read as data: the default branch's history up to the push's commit and the pull request's head as `refs/pull/<number>/head` (R30) | `GITHUB_TOKEN` |
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+| Report | GitHub, by git, through `actions/checkout` and `git fetch` | HTTPS | Fetch the tool's own code at its commit, and the adopter's repository to read as data: the default branch's history up to the push's commit and the pull request's head as `refs/pull/<number>/head`
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+| `GITHUB_TOKEN` |
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+| Release workflow | GitHub's REST API | HTTPS | Create the release as a draft, upload the bill of materials and the plugin's zip, download each to check it, and publish the release | `GITHUB_TOKEN` |
+~~~~
+
+New:
+
+~~~~text
+| Release workflow | GitHub's REST API | HTTPS | Create the release as a draft, upload the bill of materials and the plugin's zip, download each to check it, and publish the release (R189) | `GITHUB_TOKEN` |
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+| Release workflow | GitHub's REST API | HTTPS | Create the release as a draft, upload the bill of materials and the plugin's zip, download each to check it, and publish the release
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+| `GITHUB_TOKEN` |
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+Prices are never fetched: the price table is a file at the tool's commit, changed only by a pull request.
+~~~~
+
+New:
+
+~~~~text
+Prices are never fetched: the price table is a file at the tool's commit, changed only by a pull request (R30).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+Prices are never fetched: the price table is a file at the tool's commit, changed only by a pull request
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+It sets `GIT_NO_LAZY_FETCH=1` and `GIT_TERMINAL_PROMPT=0` for every git command it runs, so that git fetches nothing and asks for no credentials.
+~~~~
+
+New:
+
+~~~~text
+It sets `GIT_NO_LAZY_FETCH=1` and `GIT_TERMINAL_PROMPT=0` for every git command it runs, so that git fetches nothing and asks for no credentials (R111).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+It sets `GIT_NO_LAZY_FETCH=1` and `GIT_TERMINAL_PROMPT=0` for every git command it runs, so that git fetches nothing and asks for no credentials
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+Its own reading of the opt-in ignores the variables that point git at other configuration files or add settings.
+~~~~
+
+New:
+
+~~~~text
+Its own reading of the opt-in ignores the variables that point git at other configuration files or add settings (R37).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+Its own reading of the opt-in ignores the variables that point git at other configuration files or add settings
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+Every git command that it starts runs without `PWD`, so that git matches a condition on a repository's folder against its real path, and without the session's variables whose names begin with `GIT_`, but those that it sets itself, so that they choose neither the repository, its index nor the files that git reads its settings from, save for one of the two git commands that ask for each value of the opt-in key, which runs in the session's own environment, its `PWD` included, where those variables and `PWD` can only turn capture off, and which the hook stops at its time budget, taking capture to be off, when a file that they name holds it up.
+~~~~
+
+New:
+
+~~~~text
+Every git command that it starts runs without `PWD`, so that git matches a condition on a repository's folder against its real path, and without the session's variables whose names begin with `GIT_`, but those that it sets itself, so that they choose neither the repository, its index nor the files that git reads its settings from, save for one of the two git commands that ask for each value of the opt-in key, which runs in the session's own environment, its `PWD` included, where those variables and `PWD` can only turn capture off, and which the hook stops at its time budget, taking capture to be off, when a file that they name holds it up (R169, R160).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+Every git command that it starts runs without `PWD`, so that git matches a condition on a repository's folder against its real path, and without the session's variables whose names begin with `GIT_`, but those that it sets itself, so that they choose neither the repository, its index nor the files that git reads its settings from, save for one of the two git commands that ask for each value of the opt-in key, which runs in the session's own environment, its `PWD` included, where those variables and `PWD` can only turn capture off, and which the hook stops at its time budget, taking capture to be off, when a file that they name holds it up
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- Put a prompt, a response, code, a file's contents, a tool's name, input or output, a path, a working directory, a branch name, a user name, a session identifier, a transcript's path, a `tool_use_id` or a time of day, or a hash of any of them, in a ledger file or in anything it publishes. For its own use, the person's store in the git common directory of their clone keeps, for no longer than 30 days, the worktree and branch that each waiting call goes to, a session's id, a transcript's path, a `tool_use_id` and the fingerprint of the files that hold the opt-in, each as a hash, and, only until a run resolves a staged or taken-back ledger file, that file's path and its worktree's name, and for a staged one its transcript's path, which carries the session's id, and nothing in the store leaves that directory.
+~~~~
+
+New:
+
+~~~~text
+- Put a prompt, a response, code, a file's contents, a tool's name, input or output, a path, a working directory, a branch name, a user name, a session identifier, a transcript's path, a `tool_use_id` or a time of day, or a hash of any of them, in a ledger file or in anything it publishes. For its own use, the person's store in the git common directory of their clone keeps, for no longer than 30 days, the worktree and branch that each waiting call goes to, a session's id, a transcript's path, a `tool_use_id` and the fingerprint of the files that hold the opt-in, each as a hash, and, only until a run resolves a staged or taken-back ledger file, that file's path and its worktree's name, and for a staged one its transcript's path, which carries the session's id, and nothing in the store leaves that directory (R4, R47, R149, R150, R170).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- Put a prompt, a response, code, a file's contents, a tool's name, input or output, a path, a working directory, a branch name, a user name, a session identifier, a transcript's path, a `tool_use_id` or a time of day, or a hash of any of them, in a ledger file or in anything it publishes. For its own use, the person's store in the git common directory of their clone keeps, for no longer than 30 days, the worktree and branch that each waiting call goes to, a session's id, a transcript's path, a `tool_use_id` and the fingerprint of the files that hold the opt-in, each as a hash, and, only until a run resolves a staged or taken-back ledger file, that file's path and its worktree's name, and for a staged one its transcript's path, which carries the session's id, and nothing in the store leaves that directory
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- Record the usage of anyone whose opt-in is not on, as they set it themselves, or as the cloud environment that they use or their organization's managed settings set it for them, or a call that it cannot show was made while both switches were on. The plugin, however it came to a session, opts no one in. A run that finds a switch off creates no store and adds nothing of its session to one, so someone who has never opted in leaves nothing in the git common directory, and an opt-out empties the store of everything but what a take-back or a put-back still needs, at a run of a release that knows the store's version.
+~~~~
+
+New:
+
+~~~~text
+- Record the usage of anyone whose opt-in is not on, as they set it themselves, or as the cloud environment that they use or their organization's managed settings set it for them, or a call that it cannot show was made while both switches were on. The plugin, however it came to a session, opts no one in. A run that finds a switch off creates no store and adds nothing of its session to one, so someone who has never opted in leaves nothing in the git common directory, and an opt-out empties the store of everything but what a take-back or a put-back still needs, at a run of a release that knows the store's version (R1, R40, R109, R145, R182).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- Record the usage of anyone whose opt-in is not on, as they set it themselves, or as the cloud environment that they use or their organization's managed settings set it for them, or a call that it cannot show was made while both switches were on. The plugin, however it came to a session, opts no one in. A run that finds a switch off creates no store and adds nothing of its session to one, so someone who has never opted in leaves nothing in the git common directory, and an opt-out empties the store of everything but what a take-back or a put-back still needs, at a run of a release that knows the store's version
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- Keep a copy of a transcript, or of any line of one, in any file.
+~~~~
+
+New:
+
+~~~~text
+- Keep a copy of a transcript, or of any line of one, in any file (R154).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- Keep a copy of a transcript, or of any line of one, in any file
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- Look for repositories below a session's project directory deeper than directly inside it: a run of the plugin meets a repository only through the project directory, Claude's current directory or a git command run there.
+~~~~
+
+New:
+
+~~~~text
+- Look for repositories below a session's project directory deeper than directly inside it: a run of the plugin meets a repository only through the project directory, Claude's current directory or a git command run there (R180).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- Look for repositories below a session's project directory deeper than directly inside it: a run of the plugin meets a repository only through the project directory, Claude's current directory or a git command run there
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- Start a git command that can start a program that a repository's own configuration names, such as `core.fsmonitor` or `gpg.program`, in a repository that a run of the plugin only meets or moves into, outside the one that holds the project directory: it starts one there only before or after a git command of the session there, or to take back a file that the session staged there.
+~~~~
+
+New:
+
+~~~~text
+- Start a git command that can start a program that a repository's own configuration names, such as `core.fsmonitor` or `gpg.program`, in a repository that a run of the plugin only meets or moves into, outside the one that holds the project directory: it starts one there only before or after a git command of the session there, or to take back a file that the session staged there (R197).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- Start a git command that can start a program that a repository's own configuration names, such as `core.fsmonitor` or `gpg.program`, in a repository that a run of the plugin only meets or moves into, outside the one that holds the project directory: it starts one there only before or after a git command of the session there, or to take back a file that the session staged there
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- Unpublish what was pushed. An opt-out, a removed ledger file or a removed store leaves each pushed ledger file in its branch's history, in every clone and fork that holds it, and in the comments already posted.
+~~~~
+
+New:
+
+~~~~text
+- Unpublish what was pushed. An opt-out, a removed ledger file or a removed store leaves each pushed ledger file in its branch's history, in every clone and fork that holds it, and in the comments already posted (R146).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- Unpublish what was pushed. An opt-out, a removed ledger file or a removed store leaves each pushed ledger file in its branch's history, in every clone and fork that holds it, and in the comments already posted
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- Send anything from the session's machine anywhere. The ledger leaves the machine only in the person's own commits, when they push.
+~~~~
+
+New:
+
+~~~~text
+- Send anything from the session's machine anywhere. The ledger leaves the machine only in the person's own commits, when they push (R30, R111).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- Send anything from the session's machine anywhere. The ledger leaves the machine only in the person's own commits, when they push
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- Run, import or install anything from the pull request it reports on.
+~~~~
+
+New:
+
+~~~~text
+- Run, import or install anything from the pull request it reports on (R24).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- Run, import or install anything from the pull request it reports on
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- Write to the repository, beyond the ledger file staged for the agent's own commit.
+~~~~
+
+New:
+
+~~~~text
+- Write to the repository, beyond the ledger file staged for the agent's own commit (R22, R56).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- Write to the repository, beyond the ledger file staged for the agent's own commit
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- Fetch prices, or contact any service other than GitHub.
+~~~~
+
+New:
+
+~~~~text
+- Fetch prices, or contact any service other than GitHub (R30).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- Fetch prices, or contact any service other than GitHub
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+.
+~~~~
+
+## `README.md`
+
+### Entry
+
+Old:
+
+~~~~text
+- capture the tokens the agent spent while its session was working in the repository, per model and by type: input, output, cache writes and cache reads, and carry them to the pull request with the agent's own commits;
+~~~~
+
+New:
+
+~~~~text
+- capture the tokens the agent spent while its session was working in the repository, per model and by type: input, output, cache writes and cache reads, and carry them to the pull request with the agent's own commits (R2, R3, R7);
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- capture the tokens the agent spent while its session was working in the repository, per model and by type: input, output, cache writes and cache reads, and carry them to the pull request with the agent's own commits
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+;
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- price them from a dated price table kept in the tool's own repository, so the estimate uses the price that applied on the day the tokens were spent;
+~~~~
+
+New:
+
+~~~~text
+- price them from a dated price table kept in the tool's own repository, so the estimate uses the price that applied on the day the tokens were spent (R14, R15);
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- price them from a dated price table kept in the tool's own repository, so the estimate uses the price that applied on the day the tokens were spent
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+;
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- add the GitHub Actions minutes the pull request's CI used, priced at GitHub's published rate;
+~~~~
+
+New:
+
+~~~~text
+- add the GitHub Actions minutes the pull request's CI used, priced at GitHub's published rate (R18, R62);
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- add the GitHub Actions minutes the pull request's CI used, priced at GitHub's published rate
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+;
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- where the data allows, split the cost by activity: code generation, file reading, tooling, MCP calls, subagents and conversation, with any tool it does not know counted as other;
+~~~~
+
+New:
+
+~~~~text
+- where the data allows, split the cost by activity: code generation, file reading, tooling, MCP calls, subagents and conversation, with any tool it does not know counted as other (R6);
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- where the data allows, split the cost by activity: code generation, file reading, tooling, MCP calls, subagents and conversation, with any tool it does not know counted as other
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+;
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- post a short report comment when the pull request merges, and keep the ledger in the repository as the record;
+~~~~
+
+New:
+
+~~~~text
+- post a short report comment when the pull request merges, and keep the ledger in the repository as the record (R20, R22);
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- post a short report comment when the pull request merges, and keep the ledger in the repository as the record
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+;
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- record a project's cloud threads too, through a Claude Code plugin that a person adds from a release's zip or from this repository as a marketplace.
+~~~~
+
+New:
+
+~~~~text
+- record a project's cloud threads too, through a Claude Code plugin that a person adds from a release's zip or from this repository as a marketplace (R179, R183, R184).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- record a project's cloud threads too, through a Claude Code plugin that a person adds from a release's zip or from this repository as a marketplace
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+A repository turns it on or off with one file, its configuration file, and each person's own opt-in, which they set themselves or which the cloud environment that they use sets, decides whether their own sessions are recorded.
+~~~~
+
+New:
+
+~~~~text
+A repository turns it on or off with one file, its configuration file, and each person's own opt-in, which they set themselves or which the cloud environment that they use sets, decides whether their own sessions are recorded (R19, R1).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+A repository turns it on or off with one file, its configuration file, and each person's own opt-in, which they set themselves or which the cloud environment that they use sets, decides whether their own sessions are recorded
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+Usage is recorded by the directory that Claude is in when it makes each call, not by which files it touches.
+~~~~
+
+New:
+
+~~~~text
+Usage is recorded by the directory that Claude is in when it makes each call, not by which files it touches (R3, R147).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+Usage is recorded by the directory that Claude is in when it makes each call, not by which files it touches
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+The figure is an **API-equivalent estimate**, meaning what the same tokens would cost at list prices.
+~~~~
+
+New:
+
+~~~~text
+The figure is an **API-equivalent estimate**, meaning what the same tokens would cost at list prices (R94).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+The figure is an **API-equivalent estimate**, meaning what the same tokens would cost at list prices
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+The tool runs on Python 3.11 and every later release, with the standard library only, so it fits into other projects without pulling anything in.
+~~~~
+
+New:
+
+~~~~text
+The tool runs on Python 3.11 and every later release, with the standard library only, so it fits into other projects without pulling anything in (R25).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+The tool runs on Python 3.11 and every later release, with the standard library only, so it fits into other projects without pulling anything in
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+Versions follow [Semantic Versioning](https://semver.org/), and each release on GitHub carries a CycloneDX software bill of materials and the plugin's zip, and names the commit to pin.
+~~~~
+
+New:
+
+~~~~text
+Versions follow [Semantic Versioning](https://semver.org/), and each release on GitHub carries a CycloneDX software bill of materials and the plugin's zip, and names the commit to pin (R27, R28, R71, R183).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+Versions follow [Semantic Versioning](https://semver.org/), and each release on GitHub carries a CycloneDX software bill of materials and the plugin's zip, and names the commit to pin
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+.
+~~~~
+
+## `SECURITY.md`
+
+### Entry
+
+Old:
+
+~~~~text
+The tool supports Python 3.11 and every later release, and each release carries a CycloneDX software bill of materials, and the capture step as a Claude Code plugin in a zip whose SHA-256 the README at the release's commit gives.
+~~~~
+
+New:
+
+~~~~text
+The tool supports Python 3.11 and every later release, and each release carries a CycloneDX software bill of materials, and the capture step as a Claude Code plugin in a zip whose SHA-256 the README at the release's commit gives (R25, R28, R183).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+The tool supports Python 3.11 and every later release, and each release carries a CycloneDX software bill of materials, and the capture step as a Claude Code plugin in a zip whose SHA-256 the README at the release's commit gives
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- it needs no secret beyond the `GITHUB_TOKEN` a workflow already has, with the narrowest permissions that work;
+~~~~
+
+New:
+
+~~~~text
+- it needs no secret beyond the `GITHUB_TOKEN` a workflow already has, with the narrowest permissions that work (R24);
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- it needs no secret beyond the `GITHUB_TOKEN` a workflow already has, with the narrowest permissions that work
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+;
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- the ledger entries it writes hold counts, the model, the price attributes, the UTC day, the activity type, whether the main agent or a subagent made the call, and a hash of the call's message id, and never prompts, code, tool names, transcript text or any session identifier, and each ledger file's first line holds only its format's version, the release of the capture step that wrote it, its count of refused calls and flags, with no count, for calls left out;
+~~~~
+
+New:
+
+~~~~text
+- the ledger entries it writes hold counts, the model, the price attributes, the UTC day, the activity type, whether the main agent or a subagent made the call, and a hash of the call's message id, and never prompts, code, tool names, transcript text or any session identifier, and each ledger file's first line holds only its format's version, the release of the capture step that wrote it, its count of refused calls and flags, with no count, for calls left out (R2, R4, R155, R156);
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- the ledger entries it writes hold counts, the model, the price attributes, the UTC day, the activity type, whether the main agent or a subagent made the call, and a hash of the call's message id, and never prompts, code, tool names, transcript text or any session identifier, and each ledger file's first line holds only its format's version, the release of the capture step that wrote it, its count of refused calls and flags, with no count, for calls left out
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+;
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- the notes that capture keeps for its own use never leave the git common directory of the person's clone, where its store is readable and writable by that person alone, except on Windows, keeps nothing past 30 days, holds a session's id, a transcript's path, a worktree, a branch and a `tool_use_id` only as hashes, and holds plain names only for a staged or taken-back ledger file, until a run resolves it, a staged one's transcript path among them, which carries the session's id, and capture keeps no copy of a transcript;
+~~~~
+
+New:
+
+~~~~text
+- the notes that capture keeps for its own use never leave the git common directory of the person's clone, where its store is readable and writable by that person alone, except on Windows, keeps nothing past 30 days, holds a session's id, a transcript's path, a worktree, a branch and a `tool_use_id` only as hashes, and holds plain names only for a staged or taken-back ledger file, until a run resolves it, a staged one's transcript path among them, which carries the session's id, and capture keeps no copy of a transcript (R47, R149, R150, R152, R154, R170);
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- the notes that capture keeps for its own use never leave the git common directory of the person's clone, where its store is readable and writable by that person alone, except on Windows, keeps nothing past 30 days, holds a session's id, a transcript's path, a worktree, a branch and a `tool_use_id` only as hashes, and holds plain names only for a staged or taken-back ledger file, until a run resolves it, a staged one's transcript path among them, which carries the session's id, and capture keeps no copy of a transcript
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+;
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- it records a person's usage only when that person's opt-in is on, as they set it themselves, or as the cloud environment that they use or their organization's managed settings set it for them, and never because the plugin is there, only for calls made while both switches were on, and only for calls made while Claude's current directory is in the repository that publishes it, which includes work on other repositories from there, apart from a line too long to read, which a run of the plugin counts, as refused, in each repository that it works on;
+~~~~
+
+New:
+
+~~~~text
+- it records a person's usage only when that person's opt-in is on, as they set it themselves, or as the cloud environment that they use or their organization's managed settings set it for them, and never because the plugin is there, only for calls made while both switches were on, and only for calls made while Claude's current directory is in the repository that publishes it, which includes work on other repositories from there, apart from a line too long to read, which a run of the plugin counts, as refused, in each repository that it works on (R1, R3, R40, R44, R147, R182);
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- it records a person's usage only when that person's opt-in is on, as they set it themselves, or as the cloud environment that they use or their organization's managed settings set it for them, and never because the plugin is there, only for calls made while both switches were on, and only for calls made while Claude's current directory is in the repository that publishes it, which includes work on other repositories from there, apart from a line too long to read, which a run of the plugin counts, as refused, in each repository that it works on
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+;
+~~~~
+
+## `CONTRIBUTING.md`
+
+### Entry
+
+Old:
+
+~~~~text
+The tool supports Python 3.11 and later, so use Python 3.11 locally if you can: CI tests on 3.11 and on the newest release.
+~~~~
+
+New:
+
+~~~~text
+The tool supports Python 3.11 and later, so use Python 3.11 locally if you can: CI tests on 3.11 and on the newest release (R25).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+The tool supports Python 3.11 and later, so use Python 3.11 locally if you can: CI tests on 3.11 and on the newest release
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+1. **The change first.** Update or add the OpenSpec change that says what must hold, with its requirements and scenarios. A change that makes or reverses a decision adds its record to [`docs/decisions/`](docs/decisions/README.md), and closes the record of any decision it reverses; a record that the default branch holds is never edited otherwise, except that a closed record's lines may become `[removed]`.
+~~~~
+
+New:
+
+~~~~text
+1. **The change first.** Update or add the OpenSpec change that says what must hold, with its requirements and scenarios. A change that makes or reverses a decision adds its record to [`docs/decisions/`](docs/decisions/README.md), and closes the record of any decision it reverses; a record that the default branch holds is never edited otherwise, except that a closed record's lines may become `[removed]` (R124, R129).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+1. **The change first.** Update or add the OpenSpec change that says what must hold, with its requirements and scenarios. A change that makes or reverses a decision adds its record to [`docs/decisions/`](docs/decisions/README.md), and closes the record of any decision it reverses; a record that the default branch holds is never edited otherwise, except that a closed record's lines may become `[removed]`
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+2. **Threats at design.** Read [`docs/threat-model.md`](docs/threat-model.md) against the change. Add the threats it brings, each rated for impact and likelihood, with its answer.
+~~~~
+
+New:
+
+~~~~text
+2. **Threats at design.** Read [`docs/threat-model.md`](docs/threat-model.md) against the change. Add the threats it brings, each rated for impact and likelihood, with its answer (R31).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+2. **Threats at design.** Read [`docs/threat-model.md`](docs/threat-model.md) against the change. Add the threats it brings, each rated for impact and likelihood, with its answer
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+.
+~~~~
+
 ## For B-007
 
 - `docs/threat-model.md`: the configuration is read only as a blob at each commit (T49: R19's requirement states it, but none of its scenarios does)
@@ -12786,6 +14034,11 @@ and a page of the assumptions gives no other web address.
 - `openspec/changes/add-pr-cost-calculator/design.md`: a run checks each waiting call's entry again when it stages it, by the rules that it records by, so that an entry that someone wrote into the store carries nothing into a ledger file (No scenario has a run check a waiting entry again when it stages it.)
 - `openspec/changes/add-pr-cost-calculator/design.md`: timeouts as the hook file's registration (R179 gives the plugin's hooks the same events and condition as the registration, but no scenario gives them the same timeouts.)
 - `openspec/changes/add-pr-cost-calculator/design.md`: following no link and taking as a count only a whole number from zero to below a bound (R241 says what the skeleton's report counts, but no scenario has it follow no link or bound a count.)
+- `docs/how-it-works.md`: The comment splits the token cost by model, by token type and by activity type. (R20's text gives the split, but no scenario of R20 or of activity-types states it; the page keeps it unchanged.)
+- `docs/how-it-works.md`: Every figure can be recomputed from the ledger, the price table and the jobs API. (No scenario states that the comment's figures can be recomputed from those three sources; the page keeps it unchanged.)
+- `docs/how-it-works.md`: or their organization's managed settings set it for them (R1's text names an organization's managed settings, but no scenario shows them opting a member in; R182's scenario covers only a required plugin without the opt-in.)
+- `README.md`: An organization can also set it for its members. (No capture scenario shows an organization setting the opt-in for a member; R186 obliges only the README's words about it.)
+- `SECURITY.md`: or their organization's managed settings set it for them (Same clause as on the page on how the tool works: R1's text holds it and no scenario does.)
 
 ## Left as it is
 
