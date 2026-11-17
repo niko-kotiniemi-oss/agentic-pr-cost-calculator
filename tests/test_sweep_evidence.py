@@ -97,9 +97,12 @@ def write(root: Path, files: Mapping[str, str | None]) -> None:
         target.write_text(text, encoding="utf-8")
 
 
-def history(root: Path, after: Mapping[str, str | None]) -> None:
-    """`main` holds BEFORE, fetched as `origin/main`; a branch changes it to `after`."""
-    write(root, BEFORE)
+def history(
+    root: Path, after: Mapping[str, str | None], before: Mapping[str, str] | None = None
+) -> None:
+    """`main` holds BEFORE and `before`, fetched as `origin/main`; a branch changes it to
+    `after`."""
+    write(root, {**BEFORE, **(before or {})})
     git(root, "init", "-q", "-b", "main")
     git(root, "add", "-A")
     git(root, "commit", "-q", "-m", "Before")
@@ -306,6 +309,46 @@ def test_a_change_to_a_spec_is_reported(
     code, out = run(tmp_path, monkeypatch, capsys)
     assert code == 1
     assert "`openspec/changes/demo/specs/ledger/spec.md`: the sweep changes a spec" in out
+
+
+@pytest.mark.parametrize(
+    "path",
+    ["docs/a page.md", "docs/sivu-\u00e4.md", "docs/page.markdown", "docs/PAGE.MD", "docs/b.mdx"],
+)
+def test_a_page_whose_path_git_quotes_or_whose_extension_is_not_md_is_read(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str], path: str
+) -> None:
+    history(tmp_path, {"docs/page.md": SWEPT, MAPPING: COMPLETE, path: SWEPT}, {path: PAGE})
+    code, out = run(tmp_path, monkeypatch, capsys)
+    assert code == 1
+    assert f"`{path}`: no entry for a unit that HEAD does not hold: The ledger keeps counts." in out
+
+
+def test_a_change_to_a_spec_whose_path_git_quotes_is_reported(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    spec = "openspec/specs/a b/spec.md"
+    history(
+        tmp_path,
+        {"docs/page.md": SWEPT, MAPPING: COMPLETE, spec: SPEC + "\nA moved clause.\n"},
+        {spec: SPEC},
+    )
+    code, out = run(tmp_path, monkeypatch, capsys)
+    assert code == 1
+    assert f"`{spec}`: the sweep changes a spec" in out
+
+
+def test_a_file_that_is_not_markdown_is_not_read(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    history(
+        tmp_path,
+        {"docs/page.md": SWEPT, MAPPING: COMPLETE, "docs/a.txt": "b\n"},
+        {"docs/a.txt": "a\n"},
+    )
+    code, out = run(tmp_path, monkeypatch, capsys)
+    assert code == 0
+    assert "docs/a.txt" not in out
 
 
 def test_a_changed_file_read_as_no_units_is_reported(

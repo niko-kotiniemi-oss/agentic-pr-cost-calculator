@@ -3,20 +3,22 @@
     python3 scripts/sweep_evidence.py [DEFAULT]
 
 Run in the repository, it compares HEAD with its merge base with DEFAULT, which is
-`refs/remotes/origin/main` unless given, in every Markdown file that changed between
-them other than the mapping, `docs/evidence/B-022-mapping.md`, read from git and not
-from the working tree (design decision 19; T173, T195, T198, T199). It reads each file
-as units: a heading, a table row, a list item with the lines that continue it, a fenced
-block taken whole, and each sentence of a paragraph. For each unit that the base holds
-and HEAD does not, the mapping, as HEAD holds it, must give an entry whose clauses, each
-quoted from the unit, cover every word of it, and each clause must have a place that
-exists at HEAD: the entry's new unit, which HEAD's page must hold; the page itself; a
-requirement of the register; a scenario of a spec, as `capability`: "name"; a decision
-record; a task of a change; or, for a clause that the pull request's own work changes
-rather than the sweep, such as a status or a count, `changed, ` and why, which the output
-lists apart for the review. It fails on a change to a spec, since the sweep writes
-none, on a changed file read as no units, on an entry for a unit that HEAD still holds,
-and on a mapping out of its form.
+`refs/remotes/origin/main` unless given, in every file that GitHub shows as Markdown, by
+the extensions that `scripts/wording.py` lists, that changed between them other than the
+mapping, `docs/evidence/B-022-mapping.md`, read from git and not from the working tree
+(design decision 19; T173, T195, T198, T199). It serves the one pull request that sweeps
+B-022 and finishes it: at a later head the mapping no longer describes the diff. It
+reads each file as units: a heading, a table row, a list item with the lines that
+continue it, a fenced block taken whole, and each sentence of a paragraph. For each unit
+that the base holds and HEAD does not, the mapping, as HEAD holds it, must give an entry
+whose clauses, each quoted from the unit, cover every word of it, and each clause must
+have a place that exists at HEAD: the entry's new unit, which HEAD's page must hold; the
+page itself; a requirement of the register; a scenario of a spec, as `capability`:
+"name"; a decision record; a task of a change; or, for a clause that the pull request's
+own work changes rather than the sweep, such as a status or a count, `changed, ` and
+why, which the output lists apart for the review. It fails on a change to a spec, since
+the sweep writes none, on a changed file read as no units, on an entry for a unit that
+HEAD still holds, and on a mapping out of its form.
 
 It prints Markdown for the pull request: both commits by their full hashes, each file
 with the units that it read at the base and at HEAD and its entries, and each problem.
@@ -35,9 +37,11 @@ from collections import Counter
 from collections.abc import Iterator, Sequence
 from dataclasses import dataclass, field
 
+from wording import MARKDOWN
+
 MAPPING = "docs/evidence/B-022-mapping.md"
 DEFAULT = "refs/remotes/origin/main"
-SPEC = re.compile(r"(?:^|/)specs/.+\.md$")
+SPEC = re.compile(r"^openspec/(?:.+/)?specs/")
 FENCE = re.compile(r"^( *)(`{3,}|~{3,})")
 LIST_ITEM = re.compile(r"^( *)(?:[-*+]|\d+[.)]) ")
 SENTENCE_END = re.compile(r"(?<=[.!?])\s+(?=[A-Z0-9`*\[(_\"])")
@@ -292,15 +296,16 @@ def compare(reference: str) -> tuple[str, str, Rows, list[str], list[str]]:
     if mapping_text is None:
         raise Unreadable(f"HEAD holds no {MAPPING}")
     entries = parse(mapping_text)
-    changed = (git("diff", "--name-only", "--no-renames", base, head) or "").split()
+    listed = git("diff", "-z", "--name-only", "--no-renames", base, head, "--", *MARKDOWN)
+    changed = [path for path in (listed or "").split("\0") if path]
     places = head_places()
     rows: Rows = []
     problems: list[str] = []
     changes: list[str] = []
     for path in sorted(set(changed)):
-        if not path.endswith(".md") or path == MAPPING:
+        if path == MAPPING:
             continue
-        if SPEC.search(path) and path.startswith("openspec/"):
+        if SPEC.match(path):
             problems.append(f"`{path}`: the sweep changes a spec")
             continue
         before_text = git("show", f"{base}:{path}")
