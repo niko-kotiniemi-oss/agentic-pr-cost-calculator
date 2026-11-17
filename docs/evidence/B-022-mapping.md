@@ -7817,6 +7817,38 @@ Clause, R239:
 Old:
 
 ~~~~text
+`CLAUDE.md` steers by it from the pull request that records it, and a pull request of its own, the one that delivers B-022, brings the documents that state behaviour today to it, showing for each sentence that it removes the scenario that holds it or the spec that it moved into (T173).
+~~~~
+
+New:
+
+~~~~text
+`CLAUDE.md` steers by it from the pull request that records it, and a pull request of its own, the one that delivers B-022, brings the pages that state behaviour today to it, as design decision 19 gives it, showing for each unit that it removes or rewrites where each of its clauses now is (T173).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+`CLAUDE.md` steers by it from the pull request that records it, and a pull request of its own, the one that delivers B-022, brings the
+~~~~
+
+Clause, changed, design decision 19, as the owner approved it on 2026-11-17, gives the pages that the sweep brings, writes nothing into the specs and shows where each clause now is:
+
+~~~~text
+documents that state behaviour today to it, showing for each sentence that it removes the scenario that holds it or the spec that it moved into
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+(T173).
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
 The run at `SessionStart`, a start run, reads no transcript, since Claude's first response waits for it (see Context), and writes nothing to standard output, which Claude Code gives Claude as context: it takes back and puts back what is due and, when it finds both switches on, begins the session's interval when both were on (decision 6).
 ~~~~
 
