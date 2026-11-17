@@ -1,11 +1,11 @@
 # B-022: The specs as the single source
 
-- **Status:** Planned
-- **Last changed:** 2026-11-14
+- **Status:** In progress
+- **Last changed:** 2026-11-17
 - **Brief:** The documents that state what the tool does today, such as the threat model, the design's risks, the feature pages and the register, brought to cite the specs instead of stating it again.
 - **Rests on:** DR-232, T173
 - **Issue:** none
-- **Pull requests:** none
+- **Pull requests:** 41
 
 ## Problem
 
