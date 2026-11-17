@@ -2348,9 +2348,1537 @@ Clause, the new unit:
 and the README says that calls Claude Code makes for its own tools without writing them to the transcript are not counted
 ~~~~
 
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** the step finds the home folder the way git for Windows does: `HOME` when it holds an absolute path, and otherwise `HOMEDRIVE` and `HOMEPATH` together where they name a folder that exists and is not Windows' system folder, and the profile folder where they do not; it never reads a relative path.
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** the step finds the home folder the way git for Windows does, and never reads a relative path (R104).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:** the step finds the home folder the way git for Windows does
+~~~~
+
+Clause, R104:
+
+~~~~text
+: `HOME` when it holds an absolute path, and otherwise `HOMEDRIVE` and `HOMEPATH` together where they name a folder that exists and is not Windows' system folder, and the profile folder where they do not;
+~~~~
+
+Clause, R104:
+
+~~~~text
+it never reads a relative path.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** a run reads only complete lines and leaves a half-written last line for a later run. A line that a whole budget cannot read is skipped and counted, and a run of the plugin that works on several repositories counts it in the next ledger file of each, since it cannot tell whose call it was. The store is replaced whole, under a lock that the operating system releases when the process dies, and a ledger file is noted in the store before it is written, so a later run takes back a file that a killed run left.
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** a run reads only complete lines, and no one line holds capture back (R44); a run of the plugin that works on several repositories counts a line that it skips in each, since it cannot tell whose call it was. A run killed while it writes leaves the store whole (R11), and a ledger file is noted in the store before it is written, so a later run takes back a file that a killed run left (R57).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:** a run reads only complete lines
+~~~~
+
+Clause, R44:
+
+~~~~text
+and leaves a half-written last line for a later run.
+~~~~
+
+Clause, R44:
+
+~~~~text
+A line that a whole budget cannot read is skipped and counted, and a run of the plugin that works on several repositories counts it in the next ledger file of each,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+since it cannot tell whose call it was.
+~~~~
+
+Clause, R11:
+
+~~~~text
+The store is replaced whole, under a lock that the operating system releases when the process dies,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+and a ledger file is noted in the store before it is written, so a later run takes back a file that a killed run left
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** the store carries a format version from the first release, in a field that every release reads in the same way, so that no release takes a later one's store for a broken one, and a run that finds a version it does not know records, stages, takes back and puts back nothing, leaves the store as it was, whatever the switches say, and exits with success, while a run that finds an earlier version rewrites the store in its own version, keeping its waiting calls and its notes of taken calls and of ledger files, and begins every session's interval anew. The store's format is part of the public surface whose change raises the major number. Every release that writes a version of the store keeps its path, its lock and its fields, and makes its fingerprint the same way, which a test holds to the hash recorded for each version, while the checks fail when a change alters the hash recorded for a version that a published release wrote, whatever the major number, so that copies of two releases that share a store version read each other's notes as their own, and a release that changes any of these writes a new version, which the surface manifest names, so that the release check asks for a raised major number. Each run that finds both switches on notes, for its session, the latest release whose copy has run in it, and a run of an earlier release than that leaves the session there to the later release's copy, but for an opt-out (T130).
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** the store carries a format version from the first release, so that no release takes a later one's store for a broken one, and a run leaves a store of a version that it does not know as it was, whatever the switches say, and upgrades one of an earlier version (R55). The store's format is part of the public surface whose change raises the major number (R71, R122). Every release that writes a version of the store keeps its path, its lock and its fields, and makes its fingerprint the same way (R192), so that copies of two releases that share a store version read each other's notes as their own, and a release that changes any of these writes a new version, which the surface manifest names, so that the release check asks for a raised major number. A run of an earlier release than the latest whose copy has run in a session leaves the session to the later release's copy, but for an opt-out (R191, T130).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:** the store carries a format version from the first release,
+~~~~
+
+Clause, R55:
+
+~~~~text
+in a field that every release reads in the same way,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+so that no release takes a later one's store for a broken one,
+~~~~
+
+Clause, R55:
+
+~~~~text
+and a run that finds a version it does not know records, stages, takes back and puts back nothing, leaves the store as it was,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+whatever the switches say,
+~~~~
+
+Clause, R55:
+
+~~~~text
+and exits with success, while a run that finds an earlier version rewrites the store in its own version, keeping its waiting calls and its notes of taken calls and of ledger files, and begins every session's interval anew.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+The store's format is part of the public surface whose change raises the major number
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+Every release that writes a version of the store keeps its path, its lock and its fields, and makes its fingerprint the same way
+~~~~
+
+Clause, R192:
+
+~~~~text
+which a test holds to the hash recorded for each version, while the checks fail when a change alters the hash recorded for a version that a published release wrote, whatever the major number,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+so that copies of two releases that share a store version read each other's notes as their own, and a release that changes any of these writes a new version, which the surface manifest names, so that the release check asks for a raised major number.
+~~~~
+
+Clause, R191:
+
+~~~~text
+Each run that finds both switches on notes, for its session, the latest release whose copy has run in it, and a run of an earlier release than that leaves the session there to the later release's copy,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+but for an opt-out
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+T130
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** every git command the step runs has `GIT_NO_LAZY_FETCH=1` and `GIT_TERMINAL_PROMPT=0`, and a blob that the clone lacks is skipped, as an oversized one is.
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** no git command that the step runs can fetch what the clone lacks (R111), and the step skips a ledger file whose blob the clone lacks, as it skips an oversized one (R45).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:**
+~~~~
+
+Clause, R111:
+
+~~~~text
+every git command the step runs has `GIT_NO_LAZY_FETCH=1` and `GIT_TERMINAL_PROMPT=0`,
+~~~~
+
+Clause, R45:
+
+~~~~text
+and a blob that the clone lacks is skipped, as an oversized one is.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** the step finds git at an absolute path, from `PATH`'s absolute entries only, skipping any that names a folder inside the working trees or the git common directory of this repository, or, for a run of the plugin, of any repository that it works on, as a tool that sets up a folder's environment can add, which it learns from the project directory's `.git`, the `commondir` file in the git folder that it names, which is the git common directory itself when it holds none, and each linked worktree's `gitdir` file, each opened only when it is a regular file, starting no program, and saying so, when it cannot read one of them, finds a folder in `worktrees/` with no `gitdir` file, or runs in a linked worktree whose git common directory is not named `.git`, as a submodule's is not, nor a bare repository's in a folder such as `repo.git`, since it then cannot tell where the main worktree is, or that there is none. It sets its own working directory to a folder that only an administrator can write, passes each git command its repository with `-C` and without the session's `GIT_` variables (T119), and reads both switches before it starts any program. A run of the plugin that cannot read a clone's files in this way leaves that clone out, saying so on standard error, and skips any entry of `PATH` inside that clone's folder too, so that one unusual clone neither stops a run over the others nor lends it a git (DR-198).
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** the step starts only git, found at an absolute path in a folder that no repository that it works on holds, and starts no program where it cannot read the git files that name those folders, or runs in a linked worktree whose git common directory is not named `.git` (R54), since it then cannot tell where the main worktree is, or that there is none. It passes each git command its repository with `-C` and without the session's `GIT_` variables (T119), and reads both switches before it starts any program (R118). A run of the plugin leaves out a clone whose files it cannot read, and runs no git inside it (R54, R180), so that one unusual clone neither stops a run over the others nor lends it a git (DR-198).
+~~~~
+
+Clause, R54:
+
+~~~~text
+- **Answer:** the step finds git at an absolute path, from `PATH`'s absolute entries only, skipping any that names a folder inside the working trees or the git common directory of this repository, or, for a run of the plugin, of any repository that it works on, as a tool that sets up a folder's environment can add, which it learns from the project directory's `.git`, the `commondir` file in the git folder that it names, which is the git common directory itself when it holds none, and each linked worktree's `gitdir` file, each opened only when it is a regular file, starting no program, and saying so, when it cannot read one of them, finds a folder in `worktrees/` with no `gitdir` file,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+or runs in a linked worktree whose git common directory is not named `.git`
+~~~~
+
+Clause, R54:
+
+~~~~text
+, as a submodule's is not, nor a bare repository's in a folder such as `repo.git`,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+since it then cannot tell where the main worktree is, or that there is none.
+~~~~
+
+Clause, R54:
+
+~~~~text
+It sets its own working directory to a folder that only an administrator can write,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+passes each git command its repository with `-C` and without the session's `GIT_` variables (T119), and reads both switches before it starts any program
+~~~~
+
+Clause, R54:
+
+~~~~text
+A run of the plugin that cannot read a clone's files in this way leaves that clone out, saying so on standard error, and skips any entry of `PATH` inside that clone's folder too,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+so that one unusual clone neither stops a run over the others nor lends it a git (DR-198).
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** the report counts no entry whose call any ledger file in the default branch's first-parent history held before the merge, and counts such files as restored.
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** a ledger file that comes back holds calls that the default branch held before the merge, so the report counts none of them again (R59) and counts the file as restored (R119).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:**
+~~~~
+
+Clause, R59:
+
+~~~~text
+the report counts no entry whose call any ledger file in the default branch's first-parent history held before the merge,
+~~~~
+
+Clause, R119:
+
+~~~~text
+and counts such files as restored.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** the report holds files that the default branch already holds to capture's rules: it skips a path that is not a regular file and a file above the per-file bound, and skips an unreadable line without stopping. Such a line is counted neither as an entry nor as refused, so that later pull requests' comments do not repeat a refusal that is not theirs.
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** the report holds files that the default branch already holds to capture's rules (R67), so that later pull requests' comments do not repeat a refusal that is not theirs.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:** the report holds files that the default branch already holds to capture's rules
+~~~~
+
+Clause, R67:
+
+~~~~text
+: it skips a path that is not a regular file and a file above the per-file bound, and skips an unreadable line without stopping. Such a line is counted neither as an entry nor as refused,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+so that later pull requests' comments do not repeat a refusal that is not theirs.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** the configuration is read only as a blob at each commit, within a small bound, and a missing, non-regular, oversized or unparseable file, or one that holds a key that the configuration's format does not document, gives a key twice or has no `enabled` of `true` or `false`, counts as not turning the tool on at that commit, without stopping the report. The change is flagged, and the comment says when the tool is off after the merge, and why, as the job summary does for a merge that finds it off at both commits. Capture treats a configuration file that is not a regular file, or that is not valid, as turning capture off.
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** the configuration is read only as a blob at each commit, within a small bound, and a file that is not valid counts as not turning the tool on at that commit, without stopping the report (R92, R171). The change is flagged (R93), and the comment says when the tool is off after the merge (R172). Capture treats such a file as turning capture off (R36, R171).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:** the configuration is read only as a blob at each commit, within a small bound,
+~~~~
+
+Clause, R92:
+
+~~~~text
+and a missing, non-regular, oversized or unparseable file,
+~~~~
+
+Clause, R171:
+
+~~~~text
+or one that holds a key that the configuration's format does not document, gives a key twice or has no `enabled` of `true` or `false`,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+counts as not turning the tool on at that commit, without stopping the report
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+The change is flagged
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+and the comment says when the tool is off after the merge
+~~~~
+
+Clause, R172:
+
+~~~~text
+, and why, as the job summary does for a merge that finds it off at both commits.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+Capture treats
+~~~~
+
+Clause, R36:
+
+~~~~text
+a configuration file that is not a regular file,
+~~~~
+
+Clause, R171:
+
+~~~~text
+or that is not valid,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+as turning capture off
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** the report keeps to a documented call budget and its job has a `timeout-minutes`. A pull request with more commits than the budget allows has its CI cost marked incomplete, and a push with more commits than it allows gets no comment. A runs listing that GitHub cuts short is not taken as whole.
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** the report keeps to a documented call budget and its job has a `timeout-minutes` (R70); a CI cost that the budget leaves partly unread is marked incomplete (R64, R121), and a push that it cannot follow gets no comment (R70).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:** the report keeps to a documented call budget and its job has a `timeout-minutes`
+~~~~
+
+Clause, R64:
+
+~~~~text
+A pull request with more commits than the budget allows has its CI cost marked incomplete,
+~~~~
+
+Clause, R70:
+
+~~~~text
+and a push with more commits than it allows gets no comment.
+~~~~
+
+Clause, R121:
+
+~~~~text
+A runs listing that GitHub cuts short is not taken as whole.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** the rule that the comment shows only what the report computed covers the job summary and the log too, workflow commands included, and so does the rule that the token never reaches the output. The property test over planted strings covers all three.
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** the rule that the comment shows only what the report computed covers the job summary and the log too (R21, R97, R98), and so does the rule that the token never reaches the output (R24). The property test over planted strings covers all three.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:** the rule that the comment shows only what the report computed covers the job summary and the log too
+~~~~
+
+Clause, R97:
+
+~~~~text
+, workflow commands included,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+and so does the rule that the token never reaches the output
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+The property test over planted strings covers all three.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** the public surface names everything adopters configure or depend on, a manifest of it is kept in the repository, and the release check compares it between the previous release's commit and the tag, refusing a release whose surface changed without a raised major number and a `### Breaking` section. A newer report reads every ledger format that an earlier release's hook wrote, with one fixture per released format. The surface names the hook's registration whole, by the events and matchers that it names and its command's form, the plugin's name, the events and matchers that its hooks name and their command's form, the marketplace's name, each key that the configuration's format documents, with the values that each takes, each released ledger version's schema by its hash, and each store version with the hash that its fingerprint gives for a fixed set of files, and a run that finds a store that an earlier release wrote rewrites it in its own version. A test fails when the configuration's reader takes a key or a value that the manifest does not name, or refuses a key or a value of the configuration that it names, so that a release that changes what the reader takes changes the manifest too. A person's plugin follows their account rather than a repository's pin, so a report also meets ledger files of a later release than its own, which each name the release that wrote them, and the comment says so (T136).
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** the public surface names everything adopters configure or depend on, a manifest of it is kept in the repository (R122), and the release check compares it between the previous release's commit and the tag (R71, R123). A newer report reads every ledger format that an earlier release's hook wrote (R158), with one fixture per released format. The surface names the hook's registration, the plugin, the marketplace, the configuration's keys, each released ledger version's schema and each store version's fingerprint (R122, R156, R192), and a run that finds a store that an earlier release wrote rewrites it in its own version (R55). A test fails when the configuration's reader takes a key or a value that the manifest does not name, or refuses a key or a value of the configuration that it names, so that a release that changes what the reader takes changes the manifest too. A person's plugin follows their account rather than a repository's pin, so a report also meets ledger files of a later release than its own, and the comment says so (R156, R193, T136).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:** the public surface names everything adopters configure or depend on, a manifest of it is kept in the repository
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+, and the release check compares it between the previous release's commit and the tag
+~~~~
+
+Clause, R123:
+
+~~~~text
+, refusing a release whose surface changed without a raised major number and a `### Breaking` section.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+A newer report reads every ledger format that an earlier release's hook wrote
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+with one fixture per released format.
+~~~~
+
+Clause, R122:
+
+~~~~text
+The surface names the hook's registration whole, by the events and matchers that it names and its command's form, the plugin's name, the events and matchers that its hooks name and their command's form, the marketplace's name, each key that the configuration's format documents, with the values that each takes,
+~~~~
+
+Clause, R156:
+
+~~~~text
+each released ledger version's schema by its hash,
+~~~~
+
+Clause, R192:
+
+~~~~text
+and each store version with the hash that its fingerprint gives for a fixed set of files,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+and a run that finds a store that an earlier release wrote rewrites it in its own version
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+A test fails when the configuration's reader takes a key or a value that the manifest does not name, or refuses a key or a value of the configuration that it names, so that a release that changes what the reader takes changes the manifest too.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+A person's plugin follows their account rather than a repository's pin, so a report also meets ledger files of a later release than its own,
+~~~~
+
+Clause, R156:
+
+~~~~text
+which each name the release that wrote them,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+and the comment says so
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+T136
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** the hook file names its release in its first line, the comment says when the hook in the merged commit differs from the one at the report's own commit, quoting nothing from the file, and the README tells adopters to update the file, its checksum and the pin together, in one pull request. Each ledger file's first line names the release that wrote it, and the comment says when a ledger file that the merge adds names a later release than the report's, as a person's plugin can, since it follows their account rather than the repository's pin (T136).
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** the hook file names its release (R53), the comment names a hook in the merged commit that differs from the one at the report's own commit (R65), and the README tells adopters to update the file, its checksum and the pin together, in one pull request. Each ledger file names the release that wrote it (R156), and the comment says when one names a later release than the report's (R193), as a person's plugin can, since it follows their account rather than the repository's pin (T136).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:** the hook file names its release
+~~~~
+
+Clause, R53:
+
+~~~~text
+in its first line,
+~~~~
+
+Clause, R65:
+
+~~~~text
+the comment says when the hook in the merged commit differs from the one at the report's own commit, quoting nothing from the file,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+and the README tells adopters to update the file, its checksum and the pin together, in one pull request.
+~~~~
+
+Clause, R156:
+
+~~~~text
+Each ledger file's first line names the release that wrote it,
+~~~~
+
+Clause, R193:
+
+~~~~text
+and the comment says when a ledger file that the merge adds names a later release than the report's,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+as a person's plugin can, since it follows their account rather than the repository's pin (T136).
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** `requires-python` is the one source, and a test fails when any other copy disagrees, or when the CI matrix lacks either the oldest version or the newest release.
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** `requires-python` is the one source, and a test holds every other copy to it and the CI matrix to the oldest version and the newest release (R25, R99).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:** `requires-python` is the one source,
+~~~~
+
+Clause, R99:
+
+~~~~text
+and a test fails when any other copy disagrees, or when the CI matrix lacks either the oldest version
+~~~~
+
+Clause, R25:
+
+~~~~text
+or the newest release.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** the step checks, before anything else, that Python is 3.11 or later, and before its first other git command that git is 2.43 or later, the oldest git that CI tests. Below either floor it records nothing, stages nothing, prints nothing and exits with success. Both floors are part of the public surface.
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** the step checks its floors, the oldest Python that the tool supports and the oldest git that CI tests, and does nothing below either (R32). Both floors are part of the public surface (R122).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:** the step checks
+~~~~
+
+Clause, R32:
+
+~~~~text
+, before anything else, that Python is 3.11 or later, and before its first other git command that git is 2.43 or later,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+the oldest git that CI tests
+~~~~
+
+Clause, R32:
+
+~~~~text
+Below either floor it records nothing, stages nothing, prints nothing and exits with success.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+Both floors are part of the public surface
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** the test compares the page's table of permissions, per workflow and per job, with every workflow, `.yml` and `.yaml` alike, in both directions, and compares every action and image the workflows use with the connections the page names. A requirement that a later change removes leaves the register, and its ID is retired.
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** the test compares the page's table of permissions with every workflow, in both directions, and every action and image that the workflows use with the connections that the page names (R101). A requirement that a later change removes leaves the register, and its ID is retired.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:** the test compares the page's table of permissions
+~~~~
+
+Clause, R101:
+
+~~~~text
+per workflow and per job,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+with every workflow,
+~~~~
+
+Clause, R101:
+
+~~~~text
+`.yml` and `.yaml` alike,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+in both directions,
+~~~~
+
+Clause, R101:
+
+~~~~text
+and compares every action and image the workflows use with the connections the page names.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+A requirement that a later change removes leaves the register, and its ID is retired.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** the README tells adopters to pin only a commit that a release of this repository names, and to check it in a clone of this repository with `git merge-base --is-ancestor <commit> origin/main`, which fails for a commit that only a fork holds. A release names only a commit in the default branch's first-parent history. The README's short start says to pin a release, and links the section that gives the check.
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** the README tells adopters to pin only a commit that a release of this repository names, and to check it in a clone of this repository with `git merge-base --is-ancestor <commit> origin/main`, which fails for a commit that only a fork holds. A release names only a commit in the default branch's first-parent history (R27). The README's short start says to pin a release, and links the section that gives the check (R198).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:** the README tells adopters to pin only a commit that a release of this repository names, and to check it in a clone of this repository with `git merge-base --is-ancestor <commit> origin/main`, which fails for a commit that only a fork holds. A release names only a commit in the default branch's first-parent history
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+The README's short start says to pin a release, and links the section that gives the check
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** the registered command carries the hook file's SHA-256, reads the file once and runs what it read only when it matches, with each CRLF taken as LF, in every shell the command runs in. The plugin's command carries the SHA-256 of the capture step in the plugin's own folder and runs it only when it matches in the same way, since a copied plugin's folder is a copy that no checkout changes, while one loaded in place runs from its source folder (DR-197). The README says to install the plugin only from a release's zip or from this repository's GitHub address. The README tells maintainers to review a pull request from another worktree, or from its diff.
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** the registered command runs the hook file only when it matches the checksum that the command carries (R88), and the plugin's command does the same for the capture step in the plugin's own folder (R179), since a copied plugin's folder is a copy that no checkout changes, while one loaded in place runs from its source folder (DR-197). The README says to install the plugin only from a release's zip or from this repository's GitHub address (R187). The README tells maintainers to review a pull request from another worktree, or from its diff.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:** the registered command
+~~~~
+
+Clause, R88:
+
+~~~~text
+carries the hook file's SHA-256, reads the file once and runs what it read only when it matches, with each CRLF taken as LF, in every shell the command runs in.
+~~~~
+
+Clause, R179:
+
+~~~~text
+The plugin's command carries the SHA-256 of the capture step in the plugin's own folder and runs it only when it matches in the same way,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+since a copied plugin's folder is a copy that no checkout changes, while one loaded in place runs from its source folder (DR-197).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+The README says to install the plugin only from a release's zip or from this repository's GitHub address
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+The README tells maintainers to review a pull request from another worktree, or from its diff.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** the hook file's path is fixed by the README, a pull request that changes it, or `.claude/settings.json` or `.claude/settings.local.json`, the project settings files that can register it and set its environment, has that flagged in its comment, and a hook file that differs from the one at the report's own commit is named.
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** the hook file's path is fixed by the README, so a pull request that changes the hook file, or a project settings file that can register it and set its environment, has that flagged in its comment (R93), and a hook file that differs from the one at the report's own commit is named (R65).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:** the hook file's path is fixed by the README,
+~~~~
+
+Clause, R93:
+
+~~~~text
+a pull request that changes it, or `.claude/settings.json` or `.claude/settings.local.json`, the project settings files that can register it and set its environment, has that flagged in its comment,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+and a hook file that differs from the one at the report's own commit is named
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** every action and container image that a workflow uses is pinned to a commit or digest that a tag of its source names, and CI fails on anything else, checked against a local fixture.
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** CI holds every action and container image that a workflow uses to a commit or digest that a tag of its source names (R34), checked against a local fixture.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:**
+~~~~
+
+Clause, R34:
+
+~~~~text
+every action and container image that a workflow uses is pinned to a commit or digest that a tag of its source names, and CI fails on anything else,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+checked against a local fixture.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** each control that is the owner's alone names an identity that agent sessions never hold, wherever there is one, such as the deploy key that alone may bypass the tag ruleset. Where there is none, as for dashboard approvals, and for merges while the only code owner's account also opens pull requests here, `CLAUDE.md`'s section on what an agent never does here keeps them with the owner. Adopters pin only a commit that a release names, and the marketplace serves only a published release's plugin, as its tag builds it (T132), so an agent's merge reaches no adopter, and no person who added the marketplace, before the owner releases it.
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** each control that is the owner's alone names an identity that agent sessions never hold, wherever there is one, such as the deploy key that alone may bypass the tag ruleset. Where there is none, as for dashboard approvals, and for merges while the only code owner's account also opens pull requests here, `CLAUDE.md`'s section on what an agent never does here keeps them with the owner. Adopters pin only a commit that a release names, and the marketplace serves only a published release's plugin (R184, T132), so an agent's merge reaches no adopter, and no person who added the marketplace, before the owner releases it.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:** each control that is the owner's alone names an identity that agent sessions never hold, wherever there is one, such as the deploy key that alone may bypass the tag ruleset. Where there is none, as for dashboard approvals, and for merges while the only code owner's account also opens pull requests here, `CLAUDE.md`'s section on what an agent never does here keeps them with the owner.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+Adopters pin only a commit that a release names, and the marketplace serves only a published release's plugin
+~~~~
+
+Clause, R184:
+
+~~~~text
+as its tag builds it
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+T132
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+so an agent's merge reaches no adopter, and no person who added the marketplace, before the owner releases it.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** a CI job checks a pull request's title and body against the same private patterns and name hashes as tracked files, whenever the pull request is opened, edited, reopened or updated, and fails naming the pattern and quoting none of the text. `CLAUDE.md` says that no such link or identifier goes into a commit, a pull request's text, an issue or a comment here, whatever a tool adds.
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** a CI job checks a pull request's title and body against the same private patterns and name hashes as tracked files (R33). `CLAUDE.md` says that no such link or identifier goes into a commit, a pull request's text, an issue or a comment here, whatever a tool adds.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:** a CI job checks a pull request's title and body against the same private patterns and name hashes as tracked files
+~~~~
+
+Clause, R33:
+
+~~~~text
+whenever the pull request is opened, edited, reopened or updated, and fails naming the pattern and quoting none of the text.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+`CLAUDE.md` says that no such link or identifier goes into a commit, a pull request's text, an issue or a comment here, whatever a tool adds.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** a release is made only from a tag that names a commit in the default branch's first-parent history, which is a guard against mistakes, not the control. The control is who can create a tag or a release: a tag ruleset whose only bypass is an identity that agent sessions never hold, and immutable releases (see Settings the owner keeps). The release's text names the tag and the commit in the workflow's own fixed words. `CLAUDE.md` says that agents never create, move or delete a tag or a release. The marketplace's folder holds only a published release's plugin, its tag taken by its full name and its commit in the default branch's first-parent history, so a tag whose release the workflow refused, which stays, gives the marketplace no version, and the owner deletes such a tag, with its draft, and never tags its version again (T138).
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** a release is made only from a tag that names a commit in the default branch's first-parent history (R27), which is a guard against mistakes, not the control. The control is who can create a tag or a release: a tag ruleset whose only bypass is an identity that agent sessions never hold, and immutable releases (see Settings the owner keeps). The release's text names the tag and the commit in the workflow's own fixed words (R27). `CLAUDE.md` says that agents never create, move or delete a tag or a release. The marketplace's folder holds only a published release's plugin (R184), so a tag whose release the workflow refused, which stays, gives the marketplace no version, and the owner deletes such a tag, with its draft, and never tags its version again (T138).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:** a release is made only from a tag that names a commit in the default branch's first-parent history
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+which is a guard against mistakes, not the control. The control is who can create a tag or a release: a tag ruleset whose only bypass is an identity that agent sessions never hold, and immutable releases (see Settings the owner keeps). The release's text names the tag and the commit in the workflow's own fixed words
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+`CLAUDE.md` says that agents never create, move or delete a tag or a release. The marketplace's folder holds only a published release's plugin
+~~~~
+
+Clause, R184:
+
+~~~~text
+its tag taken by its full name and its commit in the default branch's first-parent history,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+so a tag whose release the workflow refused, which stays, gives the marketplace no version, and the owner deletes such a tag, with its draft, and never tags its version again (T138).
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** the release job alone holds `contents: write`, runs only for a pushed tag, checks the tag's form before any other step, installs nothing, restores no cache, checks out without keeping credentials, runs only `python3 -I` on the tagged commit's standard-library scripts and actions pinned by commit, and passes event data only through `env:`. It needs a read-only job that runs the tests on the oldest and newest Python. Actions' default workflow permissions stay read-only as a backstop (see Settings the owner keeps).
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** the release job alone holds `contents: write`, runs only for a pushed tag, checks the tag's form before any other step (R27), installs nothing, restores no cache, checks out without keeping credentials, runs only `python3 -I` on the tagged commit's standard-library scripts and actions pinned by commit, and passes event data only through `env:`. It needs a read-only job that runs the tests on the oldest and newest Python. Actions' default workflow permissions stay read-only as a backstop (see Settings the owner keeps).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:** the release job alone holds `contents: write`, runs only for a pushed tag, checks the tag's form before any other step
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+installs nothing, restores no cache, checks out without keeping credentials, runs only `python3 -I` on the tagged commit's standard-library scripts and actions pinned by commit, and passes event data only through `env:`. It needs a read-only job that runs the tests on the oldest and newest Python. Actions' default workflow permissions stay read-only as a backstop (see Settings the owner keeps).
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** the bill of materials is written from the tagged tree, never from a working tree, and names the tool, its version, commit and licence, the oldest supported Python, the hook file's SHA-256 and the plugin zip's, each action the reusable workflow uses at its pinned commit, and the vendored and generated parts as development-only components. A release is not published when it cannot be written, when the workflow uses an action it does not list, when a checksum in it differs from the file's or the README's, or when the private-reference check matches it or the release's text. The release is created as a draft and published only once its zip and its bill of materials are attached and each, downloaded again, has the size and SHA-256 of the file that the workflow built (T139).
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** the bill of materials is written from the tagged tree, never from a working tree, and describes the release (R28). A release is not published when its bill of materials is missing or fails a check (R72), nor before its files are attached and checked (R189, T139).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:** the bill of materials is written from the tagged tree, never from a working tree,
+~~~~
+
+Clause, R28:
+
+~~~~text
+and names the tool, its version, commit and licence, the oldest supported Python, the hook file's SHA-256 and the plugin zip's, each action the reusable workflow uses at its pinned commit, and the vendored and generated parts as development-only components.
+~~~~
+
+Clause, R72:
+
+~~~~text
+A release is not published when it cannot be written, when the workflow uses an action it does not list, when a checksum in it differs from the file's or the README's, or when the private-reference check matches it or the release's text.
+~~~~
+
+Clause, R189:
+
+~~~~text
+The release is created as a draft and published only once its zip and its bill of materials are attached and each, downloaded again, has the size and SHA-256 of the file that the workflow built
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+T139
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** the check compares git trees, never the working tree: every file with a record's name anywhere in the base's tree, by path, mode and object, against HEAD's, with no rename detection, so a rename, a move or anything else put in a record's place counts as removed or changed. It compares with the merge base of HEAD and `refs/remotes/origin/main`, resolved by its full name so that neither a tag nor a local branch can take its place, and in CI also with the base that the workflow names through `env:` as `BASE_COMMIT`: the pull request's base commit, or the commit that a push to the default branch replaced. CI fetches the whole history, and runs again when a pull request's base changes. The check fails when a base is not a full commit ID, is not in the clone or cannot be found, and says how to fetch it. It skips only while no base's tree holds `docs/decisions/`, and fails when a base holds that folder with no file in it named as a record. The release's test job names the commit of the previous release's tag as its base (task 6.3), and tasks 1.9 and 3.1 compare with the same base as this check.
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** the check compares git trees, never the working tree, with no rename detection, so a rename, a move or anything else put in a record's place counts as removed or changed (R129). It compares with the merge base of HEAD and `refs/remotes/origin/main`, resolved by its full name so that neither a tag nor a local branch can take its place, and in CI also with the base that the workflow names through `env:` as `BASE_COMMIT`, and fails, saying how to fetch it, when a base cannot be found (R129). It skips only while no base's tree holds `docs/decisions/`, and fails when a base holds that folder with no file in it named as a record (R129). The release's test job names the commit of the previous release's tag as its base (task 6.3), and tasks 1.9 and 3.1 compare with the same base as this check.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:** the check compares git trees, never the working tree
+~~~~
+
+Clause, R129:
+
+~~~~text
+: every file with a record's name anywhere in the base's tree, by path, mode and object, against HEAD's,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+with no rename detection, so a rename, a move or anything else put in a record's place counts as removed or changed
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+It compares with the merge base of HEAD and `refs/remotes/origin/main`, resolved by its full name so that neither a tag nor a local branch can take its place, and in CI also with the base that the workflow names through `env:` as `BASE_COMMIT`
+~~~~
+
+Clause, R129:
+
+~~~~text
+: the pull request's base commit, or the commit that a push to the default branch replaced. CI fetches the whole history, and runs again when a pull request's base changes.
+~~~~
+
+Clause, R129:
+
+~~~~text
+The check fails when a base is not a full commit ID, is not in the clone or cannot be found, and says how to fetch it.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+It skips only while no base's tree holds `docs/decisions/`, and fails when a base holds that folder with no file in it named as a record
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+The release's test job names the commit of the previous release's tag as its base (task 6.3), and tasks 1.9 and 3.1 compare with the same base as this check.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** the check's failure messages name the record and the change that is allowed, closing it with a record that replaces it, and say how to fetch what the clone lacks: `git fetch --unshallow` in a shallow clone, and `git fetch origin main:refs/remotes/origin/main` where it lacks the default branch. `CLAUDE.md` says that an accepted record changes only by being closed, and its rule against weakening an acceptance test covers this test, which holds a requirement's scenarios.
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** the check's failure messages name the record and the change that is allowed, closing it with a record that replaces it, and say how to fetch what the clone lacks: `git fetch --unshallow` in a shallow clone, and `git fetch origin main:refs/remotes/origin/main` where it lacks the default branch. `CLAUDE.md` says that an accepted record changes only by being closed, and its rule against weakening an acceptance test covers this test, which holds a requirement's scenarios (R129).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:** the check's failure messages name the record and the change that is allowed, closing it with a record that replaces it, and say how to fetch what the clone lacks: `git fetch --unshallow` in a shallow clone, and `git fetch origin main:refs/remotes/origin/main` where it lacks the default branch. `CLAUDE.md` says that an accepted record changes only by being closed, and its rule against weakening an acceptance test covers this test, which holds a requirement's scenarios
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** "Decided by" takes one of three fixed forms: the owner, with the dates of the decision; the change that made it; or that change, with the dates on which the owner asked for what it decided. Each date must be a real one, no later than the day the tests run, the change must exist, and no link, quotation or identifier fits in the field. The index's column of deciders puts every attribution in one diff, for the owner to read before merging. `CLAUDE.md` says that a record the default branch does not hold is a proposal, whatever its status says, and that the owner's present word decides, not a record's attribution.
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** "Decided by" takes one of three fixed forms: the owner, with the dates of the decision; the change that made it; or that change, with the dates on which the owner asked for what it decided. Each date must be a real one and the change must exist (R126), and no link, quotation or identifier fits in the field. The index's column of deciders puts every attribution in one diff, for the owner to read before merging (R125). `CLAUDE.md` says that a record the default branch does not hold is a proposal, whatever its status says, and that the owner's present word decides, not a record's attribution.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:** "Decided by" takes one of three fixed forms: the owner, with the dates of the decision; the change that made it; or that change, with the dates on which the owner asked for what it decided. Each date must be a real one
+~~~~
+
+Clause, R126:
+
+~~~~text
+, no later than the day the tests run,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+the change must exist
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+and no link, quotation or identifier fits in the field
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+The index's column of deciders puts every attribution in one diff, for the owner to read before merging
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+`CLAUDE.md` says that a record the default branch does not hold is a proposal, whatever its status says, and that the owner's present word decides, not a record's attribution.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** `CLAUDE.md` says that records describe and never instruct, and that where a record and `CLAUDE.md` disagree, `CLAUDE.md` steers and the agent tells the owner. A record's last section says what reversing the decision would change, not how to do it. CI fails on a record or an index that holds anything but printable ASCII characters and line breaks, or `&`, a backslash, `@`, a fenced block, a web address, a link reference definition, `<` or `][` outside inline code, or a link but from a record's ID to that record's file, and on a record that holds `|` outside inline code, with which Markdown makes a table, or a line other than its headings that starts with `#`. A record about what agents may do lands in the same pull request as the `CLAUDE.md` change that steers by it.
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** `CLAUDE.md` says that records describe and never instruct, and that where a record and `CLAUDE.md` disagree, `CLAUDE.md` steers and the agent tells the owner. A record's last section says what reversing the decision would change, not how to do it. CI fails on a record or an index that holds anything but plain text (R128). A record about what agents may do lands in the same pull request as the `CLAUDE.md` change that steers by it.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:** `CLAUDE.md` says that records describe and never instruct, and that where a record and `CLAUDE.md` disagree, `CLAUDE.md` steers and the agent tells the owner. A record's last section says what reversing the decision would change, not how to do it.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+CI fails on a record or an index that holds anything but
+~~~~
+
+Clause, R128:
+
+~~~~text
+printable ASCII characters and line breaks, or `&`, a backslash, `@`, a fenced block, a web address, a link reference definition, `<` or `][` outside inline code, or a link but from a record's ID to that record's file, and on a record that holds `|` outside inline code, with which Markdown makes a table, or a line other than its headings that starts with `#`.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+A record about what agents may do lands in the same pull request as the `CLAUDE.md` change that steers by it.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** only the records, their index, the changelog and archived changes may name a closed record, each by its exact path, and CI fails on any other tracked file that names one, `CLAUDE.md` and this threat model included. CI also fails on an accepted record whose cited requirements are all retired, so the change that retires them closes it. A record that replaces another starts an assessment of what rests on the closed one, and a record that no longer holds is closed in the same change, a backlog item that names it being kept only for one whose standing the assessment cannot settle (DR-230, T168). `CLAUDE.md` says that a closed record holds nothing.
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** only the records, their index, the changelog and archived changes may name a closed record, each by its exact path, and CI fails on any other tracked file that names one, `CLAUDE.md` and this threat model included (R127). CI also fails on an accepted record whose cited requirements are all retired (R126), so the change that retires them closes it. A record that replaces another starts an assessment of what rests on the closed one, and a record that no longer holds is closed in the same change, a backlog item that names it being kept only for one whose standing the assessment cannot settle (DR-230, T168). `CLAUDE.md` says that a closed record holds nothing.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:** only the records, their index, the changelog and archived changes may name a closed record, each by its exact path, and CI fails on any other tracked file that names one, `CLAUDE.md` and this threat model included
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+CI also fails on an accepted record whose cited requirements are all retired
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+so the change that retires them closes it. A record that replaces another starts an assessment of what rests on the closed one, and a record that no longer holds is closed in the same change, a backlog item that names it being kept only for one whose standing the assessment cannot settle (DR-230, T168). `CLAUDE.md` says that a closed record holds nothing.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** threat IDs are retired, never reused or renumbered, as requirement IDs already are, and the threat model's test accepts only the gaps that its list of retired IDs names. An ID that the default branch's register, threat model or assumptions' index holds or retires must stay held or retired. A record names requirements, threats and records by ID, its change by name, and that change's design decisions and tasks by number, and CI fails on any of them that does not exist, finding a design decision or a task named without its change in any change, active or archived; it links only to other records. A mistaken merge's records are undone by new records that close them, and the check's message on a removal says that a record is only ever closed.
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** threat IDs are retired, never reused or renumbered, as requirement IDs already are (R132), and an ID that the default branch's register, threat model or assumptions' index holds or retires must stay held or retired (R130). A record names requirements, threats and records by ID, its change by name, and that change's design decisions and tasks by number, and CI fails on any of them that does not exist, finding a design decision or a task named without its change in any change, active or archived (R126); it links only to other records (R128). A mistaken merge's records are undone by new records that close them, and the check's message on a removal says that a record is only ever closed.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:** threat IDs are retired, never reused or renumbered, as requirement IDs already are
+~~~~
+
+Clause, R132:
+
+~~~~text
+, and the threat model's test accepts only the gaps that its list of retired IDs names.
+~~~~
+
+Clause, R130:
+
+~~~~text
+An ID that the default branch's register, threat model or assumptions' index holds or retires must stay held or retired.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+A record names requirements, threats and records by ID, its change by name, and that change's design decisions and tasks by number, and CI fails on any of them that does not exist, finding a design decision or a task named without its change in any change, active or archived
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+it links only to other records
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+A mistaken merge's records are undone by new records that close them, and the check's message on a removal says that a record is only ever closed.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** `main`'s ruleset requires branches to be up to date before merging (see Settings the owner keeps), so the later pull request's CI runs on what the default branch holds and fails while its record can still be renumbered. The check names a number held twice as such, and CI's run on the push to the default branch reports it at once.
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** `main`'s ruleset requires branches to be up to date before merging (see Settings the owner keeps), so the later pull request's CI runs on what the default branch holds and fails while its record can still be renumbered. The check names a number held twice as such (R124), and CI's run on the push to the default branch reports it at once.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:** `main`'s ruleset requires branches to be up to date before merging (see Settings the owner keeps), so the later pull request's CI runs on what the default branch holds and fails while its record can still be renumbered. The check names a number held twice as such
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+and CI's run on the push to the default branch reports it at once.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** once a record is closed, any line of text under its sections may become `[removed]`, and nothing else in it may change, while the record that closes it restates what still holds. The private-reference check reads tracked path names as well as what the files hold (T32).
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** a closed record's text can be cleared, line by line (R129), while the record that closes it restates what still holds. The private-reference check reads tracked path names as well as what the files hold (T32).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:**
+~~~~
+
+Clause, R129:
+
+~~~~text
+once a record is closed, any line of text under its sections may become `[removed]`, and nothing else in it may change,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+while the record that closes it restates what still holds. The private-reference check reads tracked path names as well as what the files hold (T32).
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** sentences move word for word. A script, run once in the pull request that makes the move, shows that every sentence of the design before the move is in the design or a record after it, apart from the changes it lists, and its result is evidence in that pull request. Every mention of a record or a design decision in tracked prose must resolve, and a threat that cites a record that the default branch does not hold yet must be listed among that record's threats.
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** sentences move word for word. A script, run once in the pull request that makes the move, shows that every sentence of the design before the move is in the design or a record after it, apart from the changes it lists, and its result is evidence in that pull request. Every mention of a record or a design decision in tracked prose must resolve (R127), and a threat that cites a record that the default branch does not hold yet must be listed among that record's threats (R131).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:** sentences move word for word. A script, run once in the pull request that makes the move, shows that every sentence of the design before the move is in the design or a record after it, apart from the changes it lists, and its result is evidence in that pull request. Every mention of a record or a design decision in tracked prose must resolve
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+and a threat that cites a record that the default branch does not hold yet must be listed among that record's threats
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** a record's number is written in ASCII digits, padded to three and no further. CI fails on any folder, link or file in `docs/decisions/` but the records and their index, and on a file named as a record anywhere else. Every line of the index's table, which runs to its first blank line, must be a row that the check reads, and a later line that holds `|` fails, and a link whose text is a record's ID must lead to that record's file.
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** a record's number, the records' folder, the index's table and the links in a record each take only the form that the checks read (R124, R125, R128, R133).
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:**
+~~~~
+
+Clause, R124:
+
+~~~~text
+a record's number is written in ASCII digits, padded to three and no further.
+~~~~
+
+Clause, R133:
+
+~~~~text
+CI fails on any folder, link or file in `docs/decisions/` but the records and their index, and on a file named as a record anywhere else.
+~~~~
+
+Clause, R125:
+
+~~~~text
+Every line of the index's table, which runs to its first blank line, must be a row that the check reads, and a later line that holds `|` fails,
+~~~~
+
+Clause, R128:
+
+~~~~text
+and a link whose text is a record's ID must lead to that record's file.
+~~~~
+
+### Entry
+
+Old:
+
+~~~~text
+- **Answer:** each threat that an accepted record lists names that record in its Held by line, so the change that closes the record finds the threat model naming a closed record, which fails CI until the threat is revisited. A threat that names a record the default branch does not hold yet must be listed in that record, and a field of a threat that runs onto a second line fails CI, so that every name in a Held by line is read.
+~~~~
+
+New:
+
+~~~~text
+- **Answer:** each threat that an accepted record lists names that record in its Held by line (R131), so the change that closes the record finds the threat model naming a closed record, which fails CI until the threat is revisited (R127). A threat that names a record the default branch does not hold yet must be listed in that record, and a field of a threat that runs onto a second line fails CI (R131), so that every name in a Held by line is read.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+- **Answer:** each threat that an accepted record lists names that record in its Held by line
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+so the change that closes the record finds the threat model naming a closed record, which fails CI until the threat is revisited
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+A threat that names a record the default branch does not hold yet must be listed in that record, and a field of a threat that runs onto a second line fails CI
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+so that every name in a Held by line is read.
+~~~~
+
 ## For B-007
 
-None yet.
+- `docs/threat-model.md`: the configuration is read only as a blob at each commit (T49: R19's requirement states it, but none of its scenarios does)
+- `docs/threat-model.md`: the bill of materials is written from the tagged tree, never from a working tree, (T69: R28's requirement states it, but its scenario does not)
+- `docs/threat-model.md`: A test fails when the configuration's reader takes a key or a value that the manifest does not name, or refuses a key or a value of the configuration that it names, (T53: no scenario holds this test; R122's scenario holds only what the manifest names)
+- `docs/threat-model.md`: It skips only while no base's tree holds `docs/decisions/`, (T70: no scenario of R129 says when the check skips)
+- `docs/threat-model.md`: finding a design decision or a task named without its change in any change, active or archived (T75: no scenario of R126 or R127 says how a design decision or a task named without its change is found)
+- `docs/threat-model.md`: "Decided by" takes one of three fixed forms: the owner, with the dates of the decision; the change that made it; or that change, with the dates on which the owner asked for what it decided. (T72: R124 holds a field's form only in general; no scenario names the three forms, which DR-108 and DR-151 give)
+- `docs/threat-model.md`: and no link, quotation or identifier fits in the field. (T72: no scenario of R124 states it)
 
 ## Left as it is
 
