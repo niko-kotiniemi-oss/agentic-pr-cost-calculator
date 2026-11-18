@@ -14,16 +14,16 @@ A threat's likelihood is rated with its answer in place (DR-112), so the threat 
 
 ## Decision
 
-Each threat also carries a raw impact and a raw likelihood, rated as if nothing that its Answer and its Held by cite were built, while the rest of the design stands, and a raw risk that is their product (R244). The threat's impact, likelihood and risk stay as they are, rated with the answer in place (DR-112). Both kinds of rating stay in the threat model, so that each lives in one place.
+Each threat also carries a raw impact and a raw likelihood, rated as if what its Answer, its Held by and any further answer cite were not built, while the rest of the design stands, and a raw risk that is their product (R244). Where what a threat cites also answers other threats, such as `CLAUDE.md` or a test file, only the part that the threat's Answer names is taken away. The threat's impact, likelihood and risk stay as they are, rated with the answer in place (DR-112). Both kinds of rating stay in the threat model, so that each lives in one place.
 
-The raw ratings are first made by reviewers who did not write the threat model's ratings, one per trust boundary, each in a context of its own, as the threat model's method has reviewers model threats. Each reviewer reads the method and each threat's kind, what could happen and its answer, but not its ratings, so that the rating with the answer in place does not anchor the raw one. A raw rating below the rating with the answer in place is a disagreement that a second reviewer settles, and the pull request lists each.
+The raw ratings are first made by reviewers who did not write the threat model's ratings, one per trust boundary, each in a context of its own. Each works from a copy of its boundary's threats that the script of the risk register writes with every rating line, the risk matrix and the list of the highest risks taken out, so that the rating with the answer in place does not anchor the raw one, and the pull request says that they did. A raw rating below the rating with the answer in place is a disagreement that a second reviewer settles, and the pull request lists each.
 
 An answer can lower an impact as well as a likelihood, such as a comment that says that its figure is a lower bound, so the raw impact is rated too, and neither raw rating may be lower than its rating with the answer in place.
 
 ## Alternatives
 
 - A raw likelihood alone, with the impact taken as it stands: simpler, but it would count as raw an impact that an answer has already lowered.
-- Raw ratings made by the author of the threat model's ratings: quicker, but rated by someone who already knows the answer and its rating, which the raw rating exists to set aside.
+- Raw ratings made by the author of the threat model's ratings, or by reviewers who read the whole threat model: quicker, but rated by someone who already knows each rating with the answer in place, which the raw rating exists to set aside.
 - Raw ratings kept on the risk register rather than in the threat model: each threat's ratings would then live in two files.
 
 ## Consequences

@@ -434,9 +434,9 @@ The threat model SHALL number its threats from T1 in order, and a threat that a 
 - **WHEN** `docs/decisions/` holds a folder, a link, or a file that is neither a record nor the index, or a file elsewhere is named as a record
 - **THEN** a test fails and names the file
 
-### Requirement: No attribute hides the diff of a record, the README, `CLAUDE.md`, the guide, a change's tasks or what the marketplace serves, or changes the plugin's checkout
+### Requirement: No attribute hides the diff of a record, the README, `CLAUDE.md`, the guide, the threat model, a change's tasks or what the marketplace serves, or changes the plugin's checkout
 
-No attribute that the repository sets SHALL make git show as binary, or GitHub hide as generated, the diff of a record, the index, the README, `CLAUDE.md`, the guide, a change's `tasks.md`, the root marketplace file or a file in the plugin folder that it names, so that whoever merges a pull request reads each change that it makes to them, nor make git's checkout of the hook file or of a file in that folder write more than other line endings.
+No attribute that the repository sets SHALL make git show as binary, or GitHub hide as generated, the diff of a record, the index, the README, `CLAUDE.md`, the guide, the threat model, a change's `tasks.md`, the root marketplace file or a file in the plugin folder that it names, so that whoever merges a pull request reads each change that it makes to them, nor make git's checkout of the hook file or of a file in that folder write more than other line endings.
 
 #### Scenario: An attribute that hides a record's diff fails CI
 
@@ -456,6 +456,11 @@ No attribute that the repository sets SHALL make git show as binary, or GitHub h
 #### Scenario: An attribute that hides the guide's diff fails CI
 
 - **WHEN** the repository's attributes give `docs/patterns.md` `binary`, `diff` or `linguist-generated`, in any state
+- **THEN** a test fails and names the file and the attribute
+
+#### Scenario: An attribute that hides the threat model's diff fails CI
+
+- **WHEN** the repository's attributes give `docs/threat-model.md` `binary`, `diff` or `linguist-generated`, in any state
 - **THEN** a test fails and names the file and the attribute
 
 #### Scenario: An attribute that hides `CLAUDE.md`'s diff fails CI
@@ -1565,7 +1570,7 @@ The release workflow SHALL refuse a tag whose tree holds a `skeleton/` folder, s
 
 ### Requirement: Every threat is also rated as if its answer were not built
 
-Every threat in the threat model SHALL carry, beside its ratings with its answer in place, a raw impact and a raw likelihood, each from 1 to 3 with the level's name as the threat model's method defines them, rated as if nothing that its Answer and its Held by cite were built, and a raw risk that is their product. Neither raw rating SHALL be lower than its rating with the answer in place, since an answer only lowers a risk. Tests SHALL fail otherwise.
+Every threat in the threat model SHALL carry, beside its ratings with its answer in place, a raw impact and a raw likelihood, each from 1 to 3 with the level's name as the threat model's method defines them, rated as if what its Answer, its Held by and any further answer cite were not built, and a raw risk that is their product. Neither raw rating SHALL be lower than its rating with the answer in place. Tests SHALL fail otherwise.
 
 #### Scenario: A threat without its raw ratings fails CI
 
@@ -1584,7 +1589,7 @@ Every threat in the threat model SHALL carry, beside its ratings with its answer
 
 ### Requirement: The risk register is written from the threat model
 
-The repository SHALL keep a risk register, `docs/risk-register.md`, that a script here writes from the threat model, the specs and the register of requirements alone, and CI SHALL fail when the page differs from what the script writes. The page SHALL say that the script writes it, and SHALL hold to the rules that "The roadmap and the backlog link only this repository's own files" and "The roadmap, the backlog and the feature pages' roadmap sections hold no hidden text" give the roadmap.
+The repository SHALL keep a risk register, `docs/risk-register.md`, that a script here writes from the threat model, the specs and the register of requirements alone, and CI SHALL fail when the page differs from what the script writes. The page SHALL open by saying that the script writes it, and that a rating with the answer in place takes the answer as built as specified, before any code is built.
 
 #### Scenario: A register that differs from the threat model fails CI
 
@@ -1596,19 +1601,43 @@ The repository SHALL keep a risk register, `docs/risk-register.md`, that a scrip
 - **WHEN** a threat's Held by cites a scenario that the specs and the register of requirements cannot place under a requirement
 - **THEN** the script writes nothing, fails and names the threat and the scenario
 
+#### Scenario: The page says what its ratings take as built
+
+- **WHEN** the script writes the register
+- **THEN** its opening says that the script writes it from the threat model, that it is not edited by hand, and that each rating with the answer in place takes the answer as built as specified, until the review of what was built rates it again
+
+### Requirement: The risk register holds no hidden text
+
+The risk register SHALL hold to the rule that "The roadmap, the backlog and the feature pages' roadmap sections hold no hidden text" gives the roadmap, but for the `|` of its tables, each row of which holds as many cells as its header, and SHALL link only this repository's own files. The script SHALL write nothing and fail on a threat's title that holds a character that the rule forbids. Tests SHALL fail otherwise.
+
+#### Scenario: Text that GitHub hides in the register fails a test
+
+- **WHEN** the register holds, outside its tables' cell separators, a character or a form that the roadmap's rule forbids, a table row whose cells differ in number from its header's, or a link to anything but a file of this repository
+- **THEN** a test fails and names the line
+
+#### Scenario: A title that the rule forbids stops the script
+
+- **WHEN** a threat's title holds a `|`, a `<`, a `&`, a backslash or a character that is not printable ASCII
+- **THEN** the script writes nothing, fails and names the threat
+
 ### Requirement: The risk register gives each risk its band
 
-The risk register SHALL give the bands of risk, a score of 1 or 2 being low, 3 or 4 medium, 6 high and 9 critical; how many threats each band holds, raw and with their answers in place; a matrix of the raw ratings and one of the ratings with the answers in place; and each high and critical risk with its further answer or its acceptance.
+The risk register SHALL give the bands of the overall risk severity of OWASP's Risk Rating Methodology, read for each score of impact times likelihood: 1 note, 2 low, 3 and 4 medium, 6 high and 9 critical; how many threats each band holds, raw and with the answers in place; a matrix of the raw ratings and one of the ratings with the answers in place; and each high and critical risk with its further answer or its acceptance.
 
 #### Scenario: A band follows its score
 
 - **WHEN** the script writes a risk of 1, 2, 3, 4, 6 or 9
-- **THEN** it gives it the band low, low, medium, medium, high or critical
+- **THEN** it gives it the band note, low, medium, medium, high or critical
 
 #### Scenario: Each band's count adds up to the threats
 
 - **WHEN** the script writes how many threats each band holds, raw and with the answers in place
 - **THEN** each set of counts adds up to the number of threats in the threat model
+
+#### Scenario: A threat in the wrong cell of a matrix fails a test
+
+- **WHEN** the script places a threat in a cell of either matrix other than the one that its ratings name, or leaves it out of one
+- **THEN** a test fails and names the threat and the matrix
 
 ### Requirement: The risk register gives a row for each threat
 
@@ -1626,16 +1655,21 @@ The risk register SHALL give a row for each threat, the highest risk with its an
 
 ### Requirement: Every high or critical risk has a further answer
 
-Every threat whose risk with its answer in place is high or critical SHALL carry a further answer, beyond its answer, that cites what holds it as Held by does, or the backlog item that is to build it; or else, for a high risk only, an acceptance that cites a decision record of the owner's that gives the reason. A critical risk SHALL hold back every release while it stands. Tests SHALL fail otherwise.
+A threat whose risk with its answer in place is high or critical SHALL carry a further answer that cites what holds it, beyond what its Held by cites, or a backlog item, `Planned` or `In progress` at the base that the records' check uses, whose What done looks like names the threat; or else, for a high risk only, an acceptance citing an owner's record that lists the threat. Neither line SHALL hold text that the roadmap's rule forbids. Tests SHALL fail otherwise.
 
 #### Scenario: A high or critical risk with neither a further answer nor an acceptance fails CI
 
 - **WHEN** a threat whose risk with its answer in place is 6 or 9 carries neither a further answer nor an acceptance
 - **THEN** a test fails and names the threat
 
-#### Scenario: A further answer or an acceptance that cites nothing that holds fails CI
+#### Scenario: A further answer that adds nothing fails CI
 
-- **WHEN** a further answer cites nothing that resolves, or only a backlog item that the default branch does not give as Planned or In progress, or an acceptance cites no record, a closed record, or a record whose decider is not the owner
+- **WHEN** a further answer cites nothing that resolves, nothing that the threat's Held by does not already cite, or a backlog item that the base does not give as `Planned` or `In progress` or whose What done looks like does not name the threat by its ID
+- **THEN** a test fails and names the threat and the citation
+
+#### Scenario: An acceptance that the owner did not give for the threat fails CI
+
+- **WHEN** an acceptance cites no record, a closed record, a record whose decider is not the owner, or a record whose Threats do not list the threat
 - **THEN** a test fails and names the threat and the citation
 
 #### Scenario: An accepted critical risk fails CI
@@ -1643,7 +1677,21 @@ Every threat whose risk with its answer in place is high or critical SHALL carry
 - **WHEN** a threat whose risk with its answer in place is 9 carries an acceptance
 - **THEN** a test fails and names the threat
 
-#### Scenario: A release is refused while a critical risk stands
+#### Scenario: Hidden text in a further answer or an acceptance fails CI
 
-- **WHEN** a tag's threat model holds a threat whose risk with its answer in place is 9
-- **THEN** the release workflow refuses the tag and names the threat
+- **WHEN** a further answer or an acceptance holds a character or a form that the roadmap's rule forbids
+- **THEN** a test fails and names the threat
+
+### Requirement: A high or critical risk is lowered only with what lowers it
+
+Compared with the base that the records' check uses, a pull request that rates a threat that the base gives a high or critical risk lower, raw or with its answer in place, SHALL also change that threat's What could happen, Answer, Held by or further answer, so that the reason for a lower rating shows in the same diff. Tests SHALL fail otherwise.
+
+#### Scenario: A rating lowered alone fails CI
+
+- **WHEN** a pull request lowers the likelihood or the impact of a threat that the base rates 6 or 9, and changes none of its What could happen, Answer, Held by and further answer
+- **THEN** a test fails and names the threat
+
+#### Scenario: A rating lowered with its reason passes
+
+- **WHEN** a pull request lowers such a rating and changes the threat's Answer or Held by in the same diff
+- **THEN** this check passes it

@@ -6,7 +6,7 @@ The tool is meant to be used inside other projects, so it keeps to old enough Py
 
 **Spec:** `releases-and-compatibility`
 
-**Requirements:** R25, R99, R26, R27, R230, R71, R122, R123, R28, R72, R183, R188, R189, R184, R190, R32
+**Requirements:** R25, R99, R26, R27, R230, R71, R122, R123, R28, R72, R183, R188, R189, R184, R190, R32, R251
 
 ## Expected behaviour
 
