@@ -100,9 +100,9 @@ The entries are read again at each assessment and before each release, and were 
 - **Implications:** A threat's answer is a scenario wherever it can be one, so that a test holds it, as the rule on the threat model in `CLAUDE.md` gives it.
 - **Pattern:** STRIDE per interaction. Source: Loren Kohnfelder and Praerit Garg, The threats to our products (Microsoft, 1999), and Adam Shostack, Threat Modeling: Designing for Security (2014).
 - **Anti-patterns:** Ratings only with the answers in place, recognised by a risk matrix in which nothing rates high because every answer is taken as built; rate each threat as if its answer were not built, too.
-- **Held by:** `tests/test_threat_model.py`, DR-094, DR-095 and `add-pr-cost-calculator` task 5.2.
+- **Held by:** `tests/test_threat_model.py`, `tests/test_risk_register.py`, DR-094, DR-095, DR-254 and `add-pr-cost-calculator` task 5.2.
 - **Rests on:** DR-094, DR-095, DR-112, B-002
-- **Where we stand:** Gap. Before the build. B-002 gives each threat its rating as if its answer were not built, beside its rating with the answer in place, which DR-112, the change's own choice, gives alone.
+- **Where we stand:** Designed. Each threat gives a raw rating, made by reviewers who did not write its rating with the answer in place, beside that rating, and the risk register, `docs/risk-register.md`, shows both (B-002, DR-254). The review of what was built rates each threat again with task 5.2.
 
 ## Privacy
 

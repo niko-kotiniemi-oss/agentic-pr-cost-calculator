@@ -1,11 +1,11 @@
 # B-002: A risk register
 
-- **Status:** Planned
-- **Last changed:** 2026-11-13
+- **Status:** Done
+- **Last changed:** 2026-11-18
 - **Brief:** Each threat rated as if its answer were not built, beside its rating with the answer in place, on a page generated from the threat model. Every high or critical risk gets a further answer.
 - **Rests on:** DR-112
 - **Issue:** none
-- **Pull requests:** none
+- **Pull requests:** 44
 
 ## Problem
 
