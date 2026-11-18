@@ -945,6 +945,47 @@ def test_an_html_comment_in_a_page_that_did_not_change_is_not_read(
     assert code == 0, out
 
 
+def test_a_clause_held_only_in_a_link_reference_definition_of_the_page_is_reported(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    hidden = SWEPT + '\n[//]: # "The ledger keeps counts."\n'
+    history(
+        tmp_path,
+        {"docs/page.md": hidden, MAPPING: COMPLETE.replace("Clause, R12:", "Clause, the page:")},
+    )
+    code, out = run(tmp_path, monkeypatch, capsys)
+    assert code == 1
+    assert (
+        "`docs/page.md`: HEAD's page holds a link reference definition, whose text GitHub"
+        " does not show\n" in out
+    )
+
+
+def test_a_link_a_footnote_or_an_indented_line_defines_no_link_reference(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    shown = SWEPT + (
+        "\n[The guide](guide.md) shows how counts are kept[^1].\n"
+        "\n[^1]: A note that GitHub shows.\n"
+        "\n    [code]: a line that GitHub shows as code\n"
+    )
+    history(tmp_path, {"docs/page.md": shown, MAPPING: COMPLETE})
+    code, out = run(tmp_path, monkeypatch, capsys)
+    assert code == 0, out
+
+
+def test_a_link_reference_definition_in_a_page_that_did_not_change_is_not_read(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    history(
+        tmp_path,
+        {"docs/page.md": SWEPT, MAPPING: COMPLETE},
+        before={"docs/template.md": "[//]: # (Say what changes.)\n"},
+    )
+    code, out = run(tmp_path, monkeypatch, capsys)
+    assert code == 0, out
+
+
 def test_a_word_of_its_own_on_the_new_unit_is_listed_apart_but_an_id_or_punctuation_is_not(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
@@ -983,6 +1024,7 @@ def test_a_word_of_its_own_on_the_new_unit_is_listed_apart_but_an_id_or_punctuat
         ("No", "the new unit", True),
         ("30", "the new unit", True),
         ("CI", "the new unit", True),
+        ("R4's", "the new unit", True),
         ("(T4).", "the new unit", False),
         ("DR-196)", "the new unit", False),
         ("(B-022)", "the new unit", False),

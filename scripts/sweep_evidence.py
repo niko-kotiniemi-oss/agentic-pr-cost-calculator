@@ -21,9 +21,9 @@ change; or, for a clause that the pull request's own work changes rather than th
 sweep, such as a status or a count, `changed, ` and why, which the output lists apart
 for the review, as it lists a clause of one word or none, but an ID or punctuation
 placed on the new unit. It fails on a change to a spec, since the sweep writes none, on
-a changed file read as no units, on a changed page that holds an HTML comment at HEAD,
-whose text GitHub does not show, on a run that compares no page, on an entry for a
-unit that HEAD still holds, and on a mapping out of its form.
+a changed file read as no units, on a changed page that holds an HTML comment or a link
+reference definition at HEAD, whose text GitHub does not show, on a run that compares no
+page, on an entry for a unit that HEAD still holds, and on a mapping out of its form.
 
 It prints Markdown for the pull request: both commits by their full hashes, each file
 with the number of units that it read at the base and at HEAD and of its entries, and
@@ -60,6 +60,7 @@ TASK = re.compile(r"task (\d+\.\d+)")
 SCENARIO = re.compile(r'`([a-z0-9-]+)`: "(.+)"')
 CITED = re.compile(r"\bR(\d+)\b")
 CITED_RANGE = re.compile(r"\bR(\d+) to R(\d+)\b")
+DEFINITION = re.compile(r"^ {0,3}\[(?!\^)[^\]]+\]:", re.MULTILINE)
 NEW_UNIT = "the new unit"
 PAGE = "the page"
 CHANGED = "changed, "
@@ -410,6 +411,11 @@ def compare(reference: str) -> Comparison:
         if "<!--" in (after_text or ""):
             found.problems.append(
                 f"`{path}`: HEAD's page holds an HTML comment, whose text GitHub does not show"
+            )
+        if DEFINITION.search(after_text or ""):
+            found.problems.append(
+                f"`{path}`: HEAD's page holds a link reference definition, whose text GitHub"
+                " does not show"
             )
         held = Counter(after)
         gone = Counter(before) - held
