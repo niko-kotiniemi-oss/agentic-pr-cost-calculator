@@ -1655,7 +1655,7 @@ The risk register SHALL give a row for each threat, the highest risk with its an
 
 ### Requirement: Every high or critical risk has a further answer
 
-A threat whose risk with its answer in place is high or critical SHALL carry a further answer that cites what holds it, beyond what its Held by cites, or a backlog item, `Planned` or `In progress` at the base that the records' check uses, whose What done looks like names the threat; or else, for a high risk only, an acceptance citing an owner's record that lists the threat. Neither line SHALL hold text that the roadmap's rule forbids. Tests SHALL fail otherwise.
+A threat whose risk with its answer in place is high or critical SHALL carry a further answer citing what holds it beyond its Held by, or a backlog item, `Planned` or `In progress` at the records' check's base, or at the tag in a release's tests, whose What done looks like names the threat; or, for a high risk only, an acceptance citing an owner's record that lists the threat. Neither line SHALL hold text that the roadmap's rule forbids. Tests SHALL fail otherwise.
 
 #### Scenario: A high or critical risk with neither a further answer nor an acceptance fails CI
 
@@ -1664,7 +1664,7 @@ A threat whose risk with its answer in place is high or critical SHALL carry a f
 
 #### Scenario: A further answer that adds nothing fails CI
 
-- **WHEN** a further answer cites nothing that resolves, nothing that the threat's Held by does not already cite, or a backlog item that the base does not give as `Planned` or `In progress` or whose What done looks like does not name the threat by its ID
+- **WHEN** a further answer cites nothing that resolves, nothing that the threat's Held by does not already cite, or a backlog item that the base, or the tag in a release's tests, does not give as `Planned` or `In progress`, or whose What done looks like does not name the threat by its ID
 - **THEN** a test fails and names the threat and the citation
 
 #### Scenario: An acceptance that the owner did not give for the threat fails CI
