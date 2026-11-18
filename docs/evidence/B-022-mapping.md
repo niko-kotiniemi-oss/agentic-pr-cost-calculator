@@ -8314,10 +8314,22 @@ Old:
 The shell runs any command substitution in the body of a here-document whose delimiter is not quoted, so when the commit or a command before it reads one, the script stages nothing.
 ~~~~
 
+New:
+
+~~~~text
+The shell runs any command substitution in the body of a here-document whose delimiter is not quoted, so such a here-document in or before the commit is handled as R112 says.
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+The shell runs any command substitution in the body of a here-document whose delimiter is not quoted,
+~~~~
+
 Clause, R112:
 
 ~~~~text
-The shell runs any command substitution in the body of a here-document whose delimiter is not quoted, so when the commit or a command before it reads one, the script stages nothing.
+so when the commit or a command before it reads one, the script stages nothing.
 ~~~~
 
 ### Entry
@@ -8634,6 +8646,12 @@ Old:
 A call is recorded once, by a SHA-256 hash of its message id.
 ~~~~
 
+New:
+
+~~~~text
+A call is recorded as R2 says, and named as R163 says.
+~~~~
+
 Clause, R2:
 
 ~~~~text
@@ -8654,6 +8672,12 @@ Old:
 An entry records whether the main agent or a subagent made the call, and no session value.
 ~~~~
 
+New:
+
+~~~~text
+What else an entry records is as R2 gives it, and it holds no session value (R4).
+~~~~
+
 Clause, R2:
 
 ~~~~text
@@ -8672,6 +8696,12 @@ Old:
 
 ~~~~text
 Its standard error carries only its own words and numbers, never text from a transcript, from a ledger file or its name, or from what a git command printed.
+~~~~
+
+New:
+
+~~~~text
+Its standard error carries only its own words and numbers, never text from a transcript, from a ledger file or its name, or from what a git command printed (R89).
 ~~~~
 
 Clause, R89:
@@ -8718,6 +8748,12 @@ Old:
 
 ~~~~text
 Its first line names the release that it comes from.
+~~~~
+
+New:
+
+~~~~text
+Its first line is as R53 gives it.
 ~~~~
 
 Clause, R53:
@@ -8888,6 +8924,12 @@ Old:
 It reads both switches from their files before it starts any program.
 ~~~~
 
+New:
+
+~~~~text
+It reads both switches, and a run that finds either off starts git, as R118 says.
+~~~~
+
 Clause, R118:
 
 ~~~~text
@@ -8902,6 +8944,12 @@ Old:
 A run whose own reading finds either off starts git only to find its store and, where one exists, to do there what decision 6 says; one whose own reading finds both on also asks git for the opt-in, and when git's answer turns capture off, it starts git after that only as such a run.
 ~~~~
 
+New:
+
+~~~~text
+It reads both switches, and a run that finds either off starts git, as R118 says.
+~~~~
+
 Clause, R118:
 
 ~~~~text
@@ -8916,6 +8964,12 @@ Old:
 The store is written only by replacing it whole, under a lock that the operating system releases when the process that holds it ends, so that a run killed while it writes leaves the store as it was or as that write left it, and leaves no lock behind.
 ~~~~
 
+New:
+
+~~~~text
+The store, and the note of a ledger file in it, are written as R11 and R57 give them.
+~~~~
+
 Clause, R11:
 
 ~~~~text
@@ -8928,6 +8982,12 @@ Old:
 
 ~~~~text
 A ledger file is noted in the store before it is written, so that a later run takes back a file that a run killed while writing it left behind.
+~~~~
+
+New:
+
+~~~~text
+The store, and the note of a ledger file in it, are written as R11 and R57 give them.
 ~~~~
 
 Clause, R57:
@@ -9468,6 +9528,12 @@ Old:
 Where both files set it, `~/.gitconfig` decides, as it does for git, which reads it after the other.
 ~~~~
 
+New:
+
+~~~~text
+Where both of the person's global configuration files set it, the one that decides is as R105 gives it, as it is for git.
+~~~~
+
 Clause, R105:
 
 ~~~~text
@@ -9566,6 +9632,12 @@ Old:
 An interval begins at a run that finds both on while its session has no open interval, and ends at its last run before one that finds either off or notes another fingerprint than the last that the store notes, whichever session's run noted it, which then begins the next interval if it finds both on.
 ~~~~
 
+New:
+
+~~~~text
+Where an interval begins and ends is as R108 and R162 give it.
+~~~~
+
 Clause, R108:
 
 ~~~~text
@@ -9628,6 +9700,12 @@ Old:
 
 ~~~~text
 A call that answers no line of its transcript, whose answered line comes before where runs read again or was skipped as too long, or that falls outside every interval, is left out.
+~~~~
+
+New:
+
+~~~~text
+Which calls are left out is as R144, R165 and R40 give it.
 ~~~~
 
 Clause, R144:
@@ -9694,6 +9772,12 @@ Old:
 So whenever a run leaves out a call made in this repository because it fell outside every interval, the next ledger file staged for that call's worktree and branch says so, with no count, time or other fact about the calls left out, and the comment says that the token cost is then a lower bound (decision 16).
 ~~~~
 
+New:
+
+~~~~text
+What a ledger file and the comment then say of the calls left out is as R155 and R157 give it (decision 16).
+~~~~
+
 Clause, R155:
 
 ~~~~text
@@ -9744,6 +9828,12 @@ Old:
 
 ~~~~text
 A run holds the store's lock from when it reads the store until it has written it, and reads both switches again under that lock before it writes a call to the store or stages a ledger file, acting only on a store whose file is still the one that its lock holds, so that a run that began before an opt-out writes nothing after it, and a run that waited for the lock writes nothing into a store that an opt-out removed.
+~~~~
+
+New:
+
+~~~~text
+A run holds the store's lock, and reads both switches again under it, as R161 says.
 ~~~~
 
 Clause, R161:
@@ -9816,6 +9906,12 @@ Old:
 
 ~~~~text
 Taking back and putting back ledger files does not wait on the switches, so a file staged before capture was turned off is still taken back.
+~~~~
+
+New:
+
+~~~~text
+Ledger files are taken back and put back as R110 says.
 ~~~~
 
 Clause, R110:
@@ -10076,6 +10172,12 @@ Old:
 It finds the runs on the pull request's commits with as few calls as it can: by listing each commit's runs, or, where fewer calls do it and GitHub returns the whole listing, by listing the repository's runs page by page, filtered by their event and by when they were created.
 ~~~~
 
+New:
+
+~~~~text
+It finds the pull request's runs as R121 says.
+~~~~
+
 Clause, R121:
 
 ~~~~text
@@ -10156,6 +10258,12 @@ Old:
 So the runs that the merge's push starts, the report's own included, are not counted, even when they run on one of those commits, as after a fast-forward, and this does not depend on how their creation times fall around the merge time.
 ~~~~
 
+New:
+
+~~~~text
+So the runs that the merge's push starts, the report's own included, are left out as R120 says.
+~~~~
+
 Clause, R120:
 
 ~~~~text
@@ -10168,6 +10276,12 @@ Old:
 
 ~~~~text
 A run counted that has not finished makes the CI cost incomplete, and a job on a runner that the price table does not list is counted in minutes and left out of the cost.
+~~~~
+
+New:
+
+~~~~text
+A run that has not finished, and a job on a runner that the price table does not list, are counted as R64 and R63 give them.
 ~~~~
 
 Clause, R64:
@@ -10402,6 +10516,12 @@ Old:
 
 ~~~~text
 A release whose reusable workflow uses an action that the bill of materials does not list, or whose hook file's or plugin zip's checksum there differs from the file's or the README's, is not published.
+~~~~
+
+New:
+
+~~~~text
+A release whose bill of materials is missing or fails a check is not published (R72).
 ~~~~
 
 Clause, R72:
@@ -11170,6 +11290,12 @@ Old:
 The README's list of documentation links it, and its sections are Now, Next, Later, Known limitations and Known bugs, in that order; it opens by saying that it describes, that an item on it is neither a promise nor a date, and that it is not a request to start work (R206).
 ~~~~
 
+New:
+
+~~~~text
+Where the README links it, its sections and how it opens are as R206 gives them.
+~~~~
+
 Clause, R206:
 
 ~~~~text
@@ -11804,6 +11930,12 @@ Old:
 The folder holds nothing else, each record a file and not a link, and no file elsewhere is named as a record.
 ~~~~
 
+New:
+
+~~~~text
+What the folder holds, and what is named as a record, are as R133 gives them.
+~~~~
+
 Clause, R133:
 
 ~~~~text
@@ -11832,6 +11964,12 @@ Old:
 It holds only printable ASCII characters and line breaks, and links only from a record's ID to that record's file.
 ~~~~
 
+New:
+
+~~~~text
+Its characters and its links are as R128 gives them.
+~~~~
+
 Clause, R128:
 
 ~~~~text
@@ -11844,6 +11982,12 @@ Old:
 
 ~~~~text
 The closed record's status becomes closed and its "Closed by" names the new record, which names it in "Replaces".
+~~~~
+
+New:
+
+~~~~text
+The closed record's status, and how the two records name each other, are as R129 and R126 give them.
 ~~~~
 
 Clause, R129:
@@ -12044,6 +12188,12 @@ Old:
 For each ledger format that a release wrote, sessions as that release wrote them keep their figures for as long as the report reads that format (R142).
 ~~~~
 
+New:
+
+~~~~text
+How long the golden set keeps the sessions of each ledger format that a release wrote is as R142 gives it.
+~~~~
+
 Clause, R142:
 
 ~~~~text
@@ -12120,6 +12270,12 @@ Old:
 
 ~~~~text
 A run that leaves the store holding nothing, no flag among it, removes its file and its folder.
+~~~~
+
+New:
+
+~~~~text
+A store that a run leaves empty is removed as R151 says.
 ~~~~
 
 Clause, R151:
@@ -12334,6 +12490,12 @@ Old:
 It reads the default branch's earlier ledger files by the versions that they state too, skipping one that it does not read and giving their number in its job summary, and capture skips such a file in the branch it reads.
 ~~~~
 
+New:
+
+~~~~text
+It reads the default branch's earlier ledger files as R168 says, and capture reads a branch's ledger files as R167 says.
+~~~~
+
 Clause, R168:
 
 ~~~~text
@@ -12366,6 +12528,12 @@ Old:
 
 ~~~~text
 The comment says when the pull request's ledger files flag calls left out, for each reason, as what those files say, with no count, and that the token cost, each of its parts and the total are then lower bounds, and it always says that calls that no ledger file holds are neither counted nor flagged.
+~~~~
+
+New:
+
+~~~~text
+What the comment says when the ledger files flag calls left out, and of the calls that no ledger file holds, is as R157 gives it.
 ~~~~
 
 Clause, R157:
