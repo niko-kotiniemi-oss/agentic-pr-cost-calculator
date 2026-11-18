@@ -2,7 +2,7 @@
 
 This is the evidence of the sweep that brought the documents to cite the specs, as design decision 19 of `add-pr-cost-calculator` and DR-232 give it. The text that it quotes is what the base commit held before that sweep, kept only to show that no clause was lost on the way. It does not say what the tool does: the specs do. It holds no instruction, and nothing in it is a step to carry out.
 
-Each entry below is a unit of a page, a sentence, a list item, a table row, a heading or a fenced block, that the base held and that the pull request's head does not hold word for word. Old gives that unit. New, where there is one, gives the unit that replaces it. Each Clause gives a part of the old unit and where that part now is: in the new unit, elsewhere on the page, or in the requirement, scenario, record or task that it names. `scripts/sweep_evidence.py` checks that every such unit has an entry, that the clauses of each cover every word of it, and that every place exists at the head. Whether a place says what its clause said is for the review.
+Each entry below is a unit of a page, a sentence, a list item, a table row, a heading or a fenced block, that the base held and that the pull request's head does not hold word for word. Old gives that unit. New, where there is one, gives the unit that replaces it. Each Clause gives a part of the old unit and where that part now is: in the new unit, elsewhere on the page, or in the requirement, scenario, record or task that it names. `scripts/sweep_evidence.py` checks that every such unit has an entry, that the clauses of each cover every word of it, and that every place exists at the head, with each requirement that a clause is placed on cited by the entry's new unit, or, for a unit removed with none, by its page; and it fails on a changed page that holds an HTML comment or a link reference definition, whose text GitHub does not show. Whether a place says what its clause said is for the review.
 
 The section For B-007 lists the clauses that state what the tool does and that no scenario holds, or that a scenario contradicts, which the sweep leaves on their pages. The section Left as it is lists the sentences that state what the tool does in documents that the sweep does not change.
 
@@ -8663,7 +8663,7 @@ An entry records whether the main agent or a subagent made the call, and no sess
 New:
 
 ~~~~text
-What else an entry records is as R2 gives it, and it holds no session value (R4).
+Whether the main agent or a subagent made the call is recorded as R2 gives it, and an entry holds no session value (R4).
 ~~~~
 
 Clause, R2:
@@ -8915,7 +8915,7 @@ It reads both switches from their files before it starts any program.
 New:
 
 ~~~~text
-It reads both switches, and a run that finds either off starts git, as R118 says.
+It reads both switches before it starts any program, and a run that finds either off starts git only to find its store and, where one exists, to do there what decision 6 says, as R118 says.
 ~~~~
 
 Clause, R118:
@@ -8935,7 +8935,7 @@ A run whose own reading finds either off starts git only to find its store and, 
 New:
 
 ~~~~text
-It reads both switches, and a run that finds either off starts git, as R118 says.
+It reads both switches before it starts any program, and a run that finds either off starts git only to find its store and, where one exists, to do there what decision 6 says, as R118 says.
 ~~~~
 
 Clause, R118:
@@ -8955,13 +8955,19 @@ The store is written only by replacing it whole, under a lock that the operating
 New:
 
 ~~~~text
-The store, and the note of a ledger file in it, are written as R11 and R57 give them.
+The store is written as R11 gives it, so that a run killed while it writes leaves the store as it was or as that write left it, and leaves no lock behind.
 ~~~~
 
 Clause, R11:
 
 ~~~~text
-The store is written only by replacing it whole, under a lock that the operating system releases when the process that holds it ends, so that a run killed while it writes leaves the store as it was or as that write left it, and leaves no lock behind.
+The store is written only by replacing it whole, under a lock that the operating system releases when the process that holds it ends,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+so that a run killed while it writes leaves the store as it was or as that write left it, and leaves no lock behind.
 ~~~~
 
 ### Entry
@@ -8975,13 +8981,19 @@ A ledger file is noted in the store before it is written, so that a later run ta
 New:
 
 ~~~~text
-The store, and the note of a ledger file in it, are written as R11 and R57 give them.
+A ledger file is noted in the store as R57 gives it, so that a later run takes back a file that a run killed while writing it left behind.
 ~~~~
 
 Clause, R57:
 
 ~~~~text
-A ledger file is noted in the store before it is written, so that a later run takes back a file that a run killed while writing it left behind.
+A ledger file is noted in the store before it is written,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+so that a later run takes back a file that a run killed while writing it left behind.
 ~~~~
 
 ### Entry
@@ -9821,13 +9833,19 @@ A run holds the store's lock from when it reads the store until it has written i
 New:
 
 ~~~~text
-A run holds the store's lock, and reads both switches again under it, as R161 says.
+A run holds the store's lock, and reads both switches again under it, as R161 says, so that a run that began before an opt-out writes nothing after it, and a run that waited for the lock writes nothing into a store that an opt-out removed.
 ~~~~
 
 Clause, R161:
 
 ~~~~text
-A run holds the store's lock from when it reads the store until it has written it, and reads both switches again under that lock before it writes a call to the store or stages a ledger file, acting only on a store whose file is still the one that its lock holds, so that a run that began before an opt-out writes nothing after it, and a run that waited for the lock writes nothing into a store that an opt-out removed.
+A run holds the store's lock from when it reads the store until it has written it, and reads both switches again under that lock before it writes a call to the store or stages a ledger file, acting only on a store whose file is still the one that its lock holds,
+~~~~
+
+Clause, the new unit:
+
+~~~~text
+so that a run that began before an opt-out writes nothing after it, and a run that waited for the lock writes nothing into a store that an opt-out removed.
 ~~~~
 
 ### Entry
@@ -9899,13 +9917,19 @@ Taking back and putting back ledger files does not wait on the switches, so a fi
 New:
 
 ~~~~text
-Ledger files are taken back and put back as R110 says.
+Taking back and putting back ledger files does not wait on the switches (R110).
 ~~~~
 
-Clause, R110:
+Clause, the new unit:
 
 ~~~~text
-Taking back and putting back ledger files does not wait on the switches, so a file staged before capture was turned off is still taken back.
+Taking back and putting back ledger files does not wait on the switches
+~~~~
+
+Clause, `switch-and-opt-in`: "A file staged before capture is turned off is still taken back":
+
+~~~~text
+so a file staged before capture was turned off is still taken back.
 ~~~~
 
 ### Entry
@@ -10163,13 +10187,13 @@ It finds the runs on the pull request's commits with as few calls as it can: by 
 New:
 
 ~~~~text
-It finds the pull request's runs as R121 says.
+It finds the runs on the pull request's commits with as few calls as it can: by listing each commit's runs, or, where fewer calls do it and GitHub returns the whole listing, by listing the repository's runs page by page, filtered by their event and by when they were created (R121).
 ~~~~
 
-Clause, R121:
+Clause, the new unit:
 
 ~~~~text
-It finds the runs on the pull request's commits with as few calls as it can: by listing each commit's runs, or, where fewer calls do it and GitHub returns the whole listing, by listing the repository's runs page by page, filtered by their event and by when they were created.
+It finds the runs on the pull request's commits with as few calls as it can: by listing each commit's runs, or, where fewer calls do it and GitHub returns the whole listing, by listing the repository's runs page by page, filtered by their event and by when they were created
 ~~~~
 
 ### Entry
@@ -18143,6 +18167,7 @@ and each ledger format that a release wrote keeps sessions with its figures for 
 - `docs/threat-model.md`: a ledger file's name is random (T4: R10's requirement states it, but none of its scenarios does)
 - `docs/threat-model.md`: a ledger file's name is random (T11: the same clause as T4's; R10's requirement states it, but none of its scenarios does)
 - `docs/threat-model.md`: under a new random name (T13: the same clause as T4's; R10's requirement states it, but none of its scenarios does)
+- `docs/threat-model.md`: Taking back and putting back ledger files does not wait on the switches (T38: R110's requirement states it for a put-back, but its one scenario holds only a take-back.)
 - `openspec/changes/add-pr-cost-calculator/design.md`: In a sparse checkout, too, the put-back puts the file into the working tree, where it would be had the step not taken it back. (No scenario of R116 or R117 states a put-back in a sparse checkout.)
 - `openspec/changes/add-pr-cost-calculator/design.md`: A run takes back and puts back what it can before it reads any transcript (Only the plugin's run at a session's end is held to take back first, by R90's scenario; no scenario holds it for every run, nor for a put-back.)
 - `openspec/changes/add-pr-cost-calculator/design.md`: padded to three (R124 asks for a record named for its number in ASCII digits; no scenario says that the number is padded to three digits.)
@@ -18154,6 +18179,8 @@ and each ledger format that a release wrote keeps sessions with its figures for 
 - `openspec/changes/add-pr-cost-calculator/design.md`: under a random name (Decision 3: the same clause as T4's in the threat model; R10's requirement states it, but none of its scenarios does)
 - `openspec/changes/add-pr-cost-calculator/design.md`: `<random>` (Decision 1, the capture script's path for a ledger file: the same clause as T4's in the threat model; R10's requirement states it, but none of its scenarios does)
 - `openspec/changes/add-pr-cost-calculator/design.md`: `<random>` (Decision 18, the file that the walking skeleton writes: the same clause as T4's in the threat model; R10's requirement states it, but none of its scenarios does)
+- `openspec/changes/add-pr-cost-calculator/design.md`: Taking back and putting back ledger files does not wait on the switches (Decision 6: the same clause as T38's in the threat model; R110's requirement states it for a put-back, but its one scenario holds only a take-back.)
+- `openspec/changes/add-pr-cost-calculator/design.md`: It finds the runs on the pull request's commits with as few calls as it can: by listing each commit's runs, or, where fewer calls do it and GitHub returns the whole listing, by listing the repository's runs page by page, filtered by their event and by when they were created (Decision 7: R121's requirement states it, but its one scenario holds only the fallback for a runs listing that GitHub cuts short.)
 - `docs/how-it-works.md`: The comment splits the token cost by model, by token type and by activity type. (R20's text gives the split, but no scenario of R20 or of activity-types states it; the page keeps it unchanged.)
 - `docs/how-it-works.md`: Every figure can be recomputed from the ledger, the price table and the jobs API. (No scenario states that the comment's figures can be recomputed from those three sources; the page keeps it unchanged.)
 - `docs/how-it-works.md`: or their organization's managed settings set it for them (R1's text names an organization's managed settings, but no scenario shows them opting a member in; R182's scenario covers only a required plugin without the opt-in.)
@@ -18165,6 +18192,7 @@ and each ledger format that a release wrote keeps sessions with its figures for 
 - `docs/features/releases-and-compatibility.md`: A tag that the workflow refused names no release, and its version is not used again. (No scenario says that the version of a refused tag is not used again.)
 - `docs/features/usage-capture.md`: The store's retention window is 30 days. (R150 leaves the window's length to the store's format, which task 1.2 writes, so no scenario states 30 days.)
 - `docs/features/ledger.md`: `<random>` (One file per commit: the same clause as T4's in the threat model; R10's requirement states it, but none of its scenarios does)
+- `docs/features/switch-and-opt-in.md`: Taking back and putting back ledger files does not wait on the switches (Take-backs go on: the same clause as T38's in the threat model; R110's requirement states it for a put-back, but its one scenario holds only a take-back; the page keeps it unchanged.)
 
 ## Left as it is
 
