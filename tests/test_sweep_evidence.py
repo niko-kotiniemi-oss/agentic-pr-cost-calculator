@@ -968,6 +968,12 @@ DEFINED = "`docs/page.md`: HEAD's page holds a link reference definition, whose 
         f"\n- A point.\n\n    {HIDDEN}\n",
         '\n[a\\]b]: # "The ledger keeps counts."\n',
         "\n[^1]: The ledger keeps counts.\n",
+        f"\n- A point.\n  - Another.\n    - {HIDDEN}\n",
+        f"\n100. A point.\n\n     {HIDDEN}\n",
+        f"\n> > - {HIDDEN}\n",
+        f"\n>{HIDDEN}\n",
+        f"\r{HIDDEN}\r",
+        '\n[a\\\nb]: # "The ledger keeps counts."\n',
     ],
     ids=[
         "at the start of a line",
@@ -986,6 +992,12 @@ DEFINED = "`docs/page.md`: HEAD's page holds a link reference definition, whose 
         "continuing a list item at four spaces",
         "with an escaped bracket in its label",
         "a footnote's definition that nothing refers to",
+        "in a list item nested twice",
+        "continuing an item numbered 100 at five spaces",
+        "in a list item in a block quote in a block quote",
+        "after a block quote's marker with no space",
+        "after a carriage return that no line feed follows",
+        "with a backslash before a line break in its label",
     ],
 )
 def test_a_clause_held_only_in_a_link_reference_definition_of_the_page_is_reported(
@@ -995,6 +1007,21 @@ def test_a_clause_held_only_in_a_link_reference_definition_of_the_page_is_report
         tmp_path,
         {
             "docs/page.md": SWEPT + hidden,
+            MAPPING: COMPLETE.replace("Clause, R12:", "Clause, the page:"),
+        },
+    )
+    code, out = run(tmp_path, monkeypatch, capsys)
+    assert code == 1
+    assert f"{DEFINED} does not show\n" in out
+
+
+def test_a_definition_on_the_first_line_after_a_byte_order_mark_is_reported(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    history(
+        tmp_path,
+        {
+            "docs/page.md": f"\ufeff{HIDDEN}\n\n{SWEPT}",
             MAPPING: COMPLETE.replace("Clause, R12:", "Clause, the page:"),
         },
     )

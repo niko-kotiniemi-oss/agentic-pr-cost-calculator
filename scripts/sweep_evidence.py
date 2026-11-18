@@ -27,7 +27,10 @@ page, on an entry for a unit that HEAD still holds, and on a mapping out of its 
 takes as a link reference definition any line that starts with a label in brackets,
 followed by a colon, after any indentation and any markers of a block quote or a list
 item, since those can hold one, and so takes a footnote's definition too, which GitHub
-hides when nothing refers to it (T151), and such a line in code.
+hides when nothing refers to it (T151), and such a line in code. It ends the page's
+lines where CommonMark does, at a carriage return too, drops a byte-order mark at its
+start, and reads a backslash in a label together with the character after it, a line
+break included.
 
 It prints Markdown for the pull request: both commits by their full hashes, each file
 with the number of units that it read at the base and at HEAD and of its entries, and
@@ -65,7 +68,7 @@ SCENARIO = re.compile(r'`([a-z0-9-]+)`: "(.+)"')
 CITED = re.compile(r"\bR(\d+)\b")
 CITED_RANGE = re.compile(r"\bR(\d+) to R(\d+)\b")
 DEFINITION = re.compile(
-    r"^(?:[ \t]*(?:>|[-*+][ \t]|\d+[.)][ \t]))*[ \t]*\[(?:[^\]\\]|\\.)+\]:", re.MULTILINE
+    r"^(?:[ \t]*(?:>|[-*+][ \t]|\d+[.)][ \t]))*[ \t]*\[(?:[^\]\\]|\\[\s\S])+\]:", re.MULTILINE
 )
 NEW_UNIT = "the new unit"
 PAGE = "the page"
@@ -418,7 +421,7 @@ def compare(reference: str) -> Comparison:
             found.problems.append(
                 f"`{path}`: HEAD's page holds an HTML comment, whose text GitHub does not show"
             )
-        if DEFINITION.search(after_text or ""):
+        if DEFINITION.search((after_text or "").removeprefix("\ufeff").replace("\r", "\n")):
             found.problems.append(
                 f"`{path}`: HEAD's page holds a link reference definition, whose text GitHub"
                 " does not show"
