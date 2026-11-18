@@ -41,6 +41,7 @@ from pathlib import Path
 
 import pytest
 import test_backlog
+from risk_register import citations
 from test_backlog import (
     AGREED,
     DONE,
@@ -82,7 +83,7 @@ from test_roadmap import (
     sections,
     tasks,
 )
-from test_threat_model import citation_problems, citations, index
+from test_threat_model import citation_problems, index
 
 ROOT = Path(__file__).resolve().parents[1]
 
