@@ -1424,7 +1424,7 @@ The trust boundaries:
 - **Likelihood:** 1 (unlikely)
 - **Risk:** 1
 - **What could happen:** a run that noted its session when it found a switch off, as the design had it before, would create a store, with a note of each session, in the git common directory of everyone who works in a repository that turns the tool on, whether they opted in or not.
-- **Answer:** a run that finds a switch off creates no store and adds no note of its session to one, and starts git only for a store that exists, where it does only what R145 says (R118).
+- **Answer:** a run that finds a switch off creates no store and adds no note of its session to one, and starts git only to find its store and, where one exists, to do there what R145 says (R118).
 - **Residual:** a store that a person's earlier opt-in left keeps the notes that take-backs and put-backs need until they are done, or until the retention window ends them.
 - **Held by:** `switch-and-opt-in`: "A person who has not opted in leaves no store"; `switch-and-opt-in`: "A run with the repository's switch off adds nothing of its session to a store"; `switch-and-opt-in`: "A run with a switch off still drops what the retention window ends"; `switch-and-opt-in`: "A run with a switch off removes a store that does not parse"; `usage-capture`: "A run that finds a switch off starts git only for its store"; DR-170; `add-pr-cost-calculator` task 2.4
 

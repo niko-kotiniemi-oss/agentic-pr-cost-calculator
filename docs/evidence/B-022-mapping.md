@@ -5435,7 +5435,7 @@ Old:
 New:
 
 ~~~~text
-- **Answer:** a run that finds a switch off creates no store and adds no note of its session to one, and starts git only for a store that exists, where it does only what R145 says (R118).
+- **Answer:** a run that finds a switch off creates no store and adds no note of its session to one, and starts git only to find its store and, where one exists, to do there what R145 says (R118).
 ~~~~
 
 Clause, the new unit:
