@@ -1,4 +1,4 @@
-# DR-252: What the sweep of B-022 left is brought to the specs' rule only through B-007 or a change that the owner asks for
+# DR-252: Each kind of sentence that the sweep of B-022 left reaches the specs' rule by its own route
 
 - **Type:** process
 - **Status:** accepted
@@ -14,7 +14,7 @@ DR-232 makes the specs the single source of what the tool does, and leaves to th
 
 ## Decision
 
-`CLAUDE.md` says that B-022 brought the pages that it swept to the rule, that a clause that its mapping lists for B-007 is brought to the rule only through B-007, and that a sentence that states what the tool does in a document that the sweep left as it is is brought to it only by a change of its own that the owner asks for, which brings its own evidence, as T202's answer has a later sweep do. B-007 has a postponed point that names the list, so that what it takes on shows in its own text (DR-239).
+`CLAUDE.md` says that B-022 brought the pages that it swept to the rule, that a clause that its mapping lists for B-007 is brought to the rule only through B-007, and that a sentence that states what the tool does in a document that the sweep left as it is is brought to it only by a change of its own that the owner asks for. B-007 has a postponed point that names the list as the pull request that delivers B-022 merges it, so that what it takes on shows in its own text, and a later change to the mapping does not widen it (DR-239).
 
 ## Alternatives
 
@@ -26,7 +26,7 @@ DR-232 makes the specs the single source of what the tool does, and leaves to th
 
 - T173's answer says the same, and design decision 19 names both routes.
 - Whether each listed clause becomes an obligation is decided in B-007, which corrects the requirements before the build.
-- A document that the sweep left as it is keeps its sentences until a change that the owner asks for brings them to the rule.
+- A document that the sweep left as it is keeps its sentences until a change that the owner asks for brings them to the rule, with its own evidence, as T202's answer has a later sweep do.
 
 ## Scope
 
