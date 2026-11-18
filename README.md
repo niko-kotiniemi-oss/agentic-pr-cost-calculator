@@ -12,18 +12,18 @@ release. Do not install or run it.
 
 For each pull request, the tool will:
 
-- capture the tokens the agent spent while its session was working in the repository, per model and by type: input, output, cache writes and cache reads, and carry them to the pull request with the agent's own commits;
-- price them from a dated price table kept in the tool's own repository, so the estimate uses the price that applied on the day the tokens were spent;
-- add the GitHub Actions minutes the pull request's CI used, priced at GitHub's published rate;
-- where the data allows, split the cost by activity: code generation, file reading, tooling, MCP calls, subagents and conversation, with any tool it does not know counted as other;
-- post a short report comment when the pull request merges, and keep the ledger in the repository as the record;
-- record a project's cloud threads too, through a Claude Code plugin that a person adds from a release's zip or from this repository as a marketplace.
+- capture the tokens the agent spent while its session was working in the repository, per model and by type: input, output, cache writes and cache reads, and carry them to the pull request with the agent's own commits (R2, R3, R7);
+- price them from a dated price table kept in the tool's own repository, so the estimate uses the price that applied on the day the tokens were spent (R14, R15);
+- add the GitHub Actions minutes the pull request's CI used, priced at GitHub's published rate (R18, R62);
+- where the data allows, split the cost by activity: code generation, file reading, tooling, MCP calls, subagents and conversation, with any tool it does not know counted as other (R6);
+- post a short report comment when the pull request merges, and keep the ledger in the repository as the record (R20, R22);
+- record a project's cloud threads too, through a Claude Code plugin that a person adds from a release's zip or from this repository as a marketplace (R179, R183, R184).
 
-A repository turns it on or off with one file, its configuration file, and each person's own opt-in, which they set themselves or which the cloud environment that they use sets, decides whether their own sessions are recorded. An organization can also set it for its members.
+A repository turns it on or off with one file, its configuration file, and each person's own opt-in, which they set themselves or which the cloud environment that they use sets, decides whether their own sessions are recorded (R19, R1). An organization can also set it for its members.
 
-Usage is recorded by the directory that Claude is in when it makes each call, not by which files it touches. A call made from the repository is recorded there even when it works on another repository, so work on other repositories, private ones above all, belongs in sessions of its own.
+Usage is recorded by the directory that Claude is in when it makes each call, not by which files it touches (R3, R147). A call made from the repository is recorded there even when it works on another repository, so work on other repositories, private ones above all, belongs in sessions of its own.
 
-The figure is an **API-equivalent estimate**, meaning what the same tokens would cost at list prices. It is not a bill: subscription plans and included CI minutes change what you actually pay.
+The figure is an **API-equivalent estimate**, meaning what the same tokens would cost at list prices (R94). It is not a bill: subscription plans and included CI minutes change what you actually pay.
 
 ## Not supported in this first version
 
@@ -49,7 +49,7 @@ Each line links the decision record that leaves it out. A later version may add 
 
 ## Compatibility and releases
 
-The tool runs on Python 3.11 and every later release, with the standard library only, so it fits into other projects without pulling anything in. The oldest supported version rises only when it nears its end of life, or when a security fix needs a newer one. Versions follow [Semantic Versioning](https://semver.org/), and each release on GitHub carries a CycloneDX software bill of materials and the plugin's zip, and names the commit to pin. No version has been released yet.
+The tool runs on Python 3.11 and every later release, with the standard library only, so it fits into other projects without pulling anything in (R25). The oldest supported version rises only when it nears its end of life, or when a security fix needs a newer one. Versions follow [Semantic Versioning](https://semver.org/), and each release on GitHub carries a CycloneDX software bill of materials and the plugin's zip, and names the commit to pin (R27, R28, R71, R183). No version has been released yet.
 
 ## Working on this repository
 

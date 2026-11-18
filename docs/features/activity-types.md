@@ -10,7 +10,7 @@ Each recorded call carries one label for the kind of work it did, so that the re
 
 ## Expected behaviour
 
-The label comes from the first tool the call used:
+The label comes from the first tool the call used, as R6 gives it:
 
 | The call's first tool | Activity type |
 |---|---|
@@ -22,7 +22,7 @@ The label comes from the first tool the call used:
 | A tool the classification does not know | other |
 | No tool at all | conversation |
 
-The name of the call's first tool is read only to choose the label. It is never recorded, because an MCP server's name can name a private service.
+The name of the call's first tool is read only to choose the label. It is never recorded, as R6 gives it, because an MCP server's name can name a private service.
 
 ## Not covered
 

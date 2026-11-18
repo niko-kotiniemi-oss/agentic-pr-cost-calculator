@@ -14,12 +14,12 @@ python3 -m venv .venv && .venv/bin/pip install -r requirements-dev.txt
 npm ci --ignore-scripts
 ```
 
-The tool supports Python 3.11 and later, so use Python 3.11 locally if you can: CI tests on 3.11 and on the newest release. Node is needed only for the OpenSpec CLI, which is a development tool.
+The tool supports Python 3.11 and later, so use Python 3.11 locally if you can: CI tests on 3.11 and on the newest release (R25). Node is needed only for the OpenSpec CLI, which is a development tool.
 
 ## Making a change
 
-1. **The change first.** Update or add the OpenSpec change that says what must hold, with its requirements and scenarios. A change that makes or reverses a decision adds its record to [`docs/decisions/`](docs/decisions/README.md), and closes the record of any decision it reverses; a record that the default branch holds is never edited otherwise, except that a closed record's lines may become `[removed]`.
-2. **Threats at design.** Read [`docs/threat-model.md`](docs/threat-model.md) against the change. Add the threats it brings, each rated for impact and likelihood, with its answer.
+1. **The change first.** Update or add the OpenSpec change that says what must hold, with its requirements and scenarios. A change that makes or reverses a decision adds its record to [`docs/decisions/`](docs/decisions/README.md), and closes the record of any decision it reverses; a record that the default branch holds is never edited otherwise, except that a closed record's lines may become `[removed]` (R124, R129).
+2. **Threats at design.** Read [`docs/threat-model.md`](docs/threat-model.md) against the change. Add the threats it brings, each rated for impact and likelihood, with its answer (R31).
 3. **Tests first.** Write the failing test, see it fail for the expected reason, then make it pass. Every change has positive and negative tests.
 4. **Documentation with the code.** Update [`docs/requirements.md`](docs/requirements.md), the feature's page in [`docs/features/`](docs/features/README.md) and [`docs/how-it-works.md`](docs/how-it-works.md) in the same pull request, and the backlog item and [`docs/roadmap.md`](docs/roadmap.md) when the change finishes, adds or moves one of its items, and add a line to `CHANGELOG.md` under `## [Unreleased]` for anything an adopter would notice.
 5. **Threats at implementation.** Before asking for review, read the threat model again against what you built, and update the ratings and answers.
