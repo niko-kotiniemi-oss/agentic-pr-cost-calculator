@@ -945,29 +945,81 @@ def test_an_html_comment_in_a_page_that_did_not_change_is_not_read(
     assert code == 0, out
 
 
+HIDDEN = '[//]: # "The ledger keeps counts."'
+DEFINED = "`docs/page.md`: HEAD's page holds a link reference definition, whose text GitHub"
+
+
+@pytest.mark.parametrize(
+    "hidden",
+    [
+        f"\n{HIDDEN}\n",
+        f"\n   {HIDDEN}\n",
+        f"\n> {HIDDEN}\n",
+        f"\n>\t{HIDDEN}\n",
+        f"\n- {HIDDEN}\n",
+        f"\n* {HIDDEN}\n",
+        f"\n+\t{HIDDEN}\n",
+        f"\n1. {HIDDEN}\n",
+        f"\n10)\t{HIDDEN}\n",
+        f"\n> - {HIDDEN}\n",
+        f"\n- A point.\n  - {HIDDEN}\n",
+        f"\n- A point.\n\t- {HIDDEN}\n",
+        f"\n- A point.\n\n  {HIDDEN}\n",
+        f"\n- A point.\n\n    {HIDDEN}\n",
+        '\n[a\\]b]: # "The ledger keeps counts."\n',
+    ],
+    ids=[
+        "at the start of a line",
+        "indented three spaces",
+        "in a block quote",
+        "after a block quote's marker and a tab",
+        "in a list item",
+        "in an item marked with an asterisk",
+        "in an item marked with a plus and a tab",
+        "in a numbered item",
+        "in an item numbered with a parenthesis and a tab",
+        "in a list item in a block quote",
+        "in a nested list item",
+        "in a list item nested with a tab",
+        "continuing a list item at two spaces",
+        "continuing a list item at four spaces",
+        "with an escaped bracket in its label",
+    ],
+)
 def test_a_clause_held_only_in_a_link_reference_definition_of_the_page_is_reported(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str], hidden: str
 ) -> None:
-    hidden = SWEPT + '\n[//]: # "The ledger keeps counts."\n'
     history(
         tmp_path,
-        {"docs/page.md": hidden, MAPPING: COMPLETE.replace("Clause, R12:", "Clause, the page:")},
+        {
+            "docs/page.md": SWEPT + hidden,
+            MAPPING: COMPLETE.replace("Clause, R12:", "Clause, the page:"),
+        },
     )
     code, out = run(tmp_path, monkeypatch, capsys)
     assert code == 1
-    assert (
-        "`docs/page.md`: HEAD's page holds a link reference definition, whose text GitHub"
-        " does not show\n" in out
-    )
+    assert f"{DEFINED} does not show\n" in out
 
 
-def test_a_link_a_footnote_or_an_indented_line_defines_no_link_reference(
+def test_a_line_indented_as_code_is_taken_as_a_definition_since_it_may_continue_a_list_item(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    shown = SWEPT + "\n    [code]: a line that GitHub shows as code, but hides in a list item\n"
+    history(tmp_path, {"docs/page.md": shown, MAPPING: COMPLETE})
+    code, out = run(tmp_path, monkeypatch, capsys)
+    assert code == 1
+    assert f"{DEFINED} does not show\n" in out
+
+
+def test_a_link_a_footnote_a_checkbox_or_inline_code_defines_no_link_reference(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
     shown = SWEPT + (
         "\n[The guide](guide.md) shows how counts are kept[^1].\n"
         "\n[^1]: A note that GitHub shows.\n"
-        "\n    [code]: a line that GitHub shows as code\n"
+        "\n- [ ] A task that GitHub shows with a box.\n"
+        "\nAs [the ledger]: its page says, counts are kept.\n"
+        "\n`[code]: a span that GitHub shows as code`\n"
     )
     history(tmp_path, {"docs/page.md": shown, MAPPING: COMPLETE})
     code, out = run(tmp_path, monkeypatch, capsys)
