@@ -14,14 +14,16 @@ that the base holds and HEAD does not, the mapping, as HEAD holds it, must give 
 whose clauses, each quoted from the unit, cover every word of it, and each clause must
 have a place that exists at HEAD: the entry's new unit, which HEAD's page must hold, or
 the page itself, either holding the clause as whole words; a requirement of the
-register, which a rewritten unit's new unit cites, by its ID or in a range; a scenario
-of a spec, as `capability`: "name"; a decision record; a task of a change; or, for a
-clause that the pull request's own work changes rather than the sweep, such as a status
-or a count, `changed, ` and why, which the output lists apart for the review, as it
-lists a clause of one word or none placed anywhere but the new unit. It fails on a
-change to a spec, since the sweep writes none, on a changed file read as no units, on a
-run that compares no page, on an entry for a unit that HEAD still holds, and on a
-mapping out of its form.
+register, which a rewritten unit's new unit cites, and a removed unit's page at HEAD,
+by its ID or in a range, since a sentence that states what the tool does becomes a
+citation; a scenario of a spec, as `capability`: "name"; a decision record; a task of a
+change; or, for a clause that the pull request's own work changes rather than the
+sweep, such as a status or a count, `changed, ` and why, which the output lists apart
+for the review, as it lists a clause of one word or none, but an ID or punctuation
+placed on the new unit. It fails on a change to a spec, since the sweep writes none, on
+a changed file read as no units, on a changed page that holds an HTML comment at HEAD,
+whose text GitHub does not show, on a run that compares no page, on an entry for a
+unit that HEAD still holds, and on a mapping out of its form.
 
 It prints Markdown for the pull request: both commits by their full hashes, each file
 with the number of units that it read at the base and at HEAD and of its entries, and
@@ -29,7 +31,9 @@ each problem. It exits 0 when there is none, 1 when there are problems, and 2, s
 why, when it cannot compare, as when git cannot list the changed files or the files at
 HEAD, cannot show a file that it lists, or gives output that is not UTF-8. Run it after
 the pull request's last rebase or push, and have the review in a context other than the
-builder's run it again at the head that the owner is asked to merge (T198).
+builder's run it again, in a fresh clone of its own, at the head that the owner is
+asked to merge, so that nothing that the builder's clone holds, such as a replace ref
+or a grafts file, reaches that run (T198).
 """
 
 from __future__ import annotations
@@ -50,6 +54,7 @@ LIST_ITEM = re.compile(r"^( *)(?:[-*+]|\d+[.)]) ")
 SENTENCE_END = re.compile(r"(?<=[.!?])\s+(?=[A-Z0-9`*\[(_\"])")
 WORD = re.compile(r"\w+")
 REQUIREMENT = re.compile(r"R\d+")
+ID = re.compile(r"\W*[A-Z]+-?\d+\W*")
 RECORD = re.compile(r"DR-\d{3,}")
 TASK = re.compile(r"task (\d+\.\d+)")
 SCENARIO = re.compile(r'`([a-z0-9-]+)`: "(.+)"')
@@ -272,6 +277,15 @@ def holds(text: str, clause: str) -> bool:
     return re.search(before + re.escape(clause) + after, text) is not None
 
 
+def short(clause: str, place: str) -> bool:
+    """Whether the output lists a clause apart for the review as of one word or none: one
+    placed anywhere but the new unit, and one placed there that is a word rather than an
+    ID or punctuation, since the new unit can hold such a word wherever it stands."""
+    if len(clause.split()) > 1:
+        return False
+    return place != NEW_UNIT or (WORD.search(clause) is not None and not ID.fullmatch(clause))
+
+
 def cited(text: str) -> set[int]:
     """The numbers of the requirements that a unit cites, each by its ID or in a range."""
     numbers = {int(number) for number in CITED.findall(text)}
@@ -296,6 +310,8 @@ def place_problem(place: str, clause: str, entry: Entry, page: str, head: Head) 
             return f"{place} is not in the register at HEAD"
         if entry.new is not None and int(place[1:]) not in cited(entry.new):
             return f"the new unit does not cite {place}: {clause}"
+        if int(place[1:]) not in cited(page):
+            return f"HEAD's page does not cite {place}: {clause}"
         return None
     if RECORD.fullmatch(place):
         return None if place in head.records else f"{place} is not a record at HEAD"
@@ -391,6 +407,10 @@ def compare(reference: str) -> Comparison:
         for name, text, read in (("the base", before_text, before), ("HEAD", after_text, after)):
             if text is not None and not read:
                 found.problems.append(f"`{path}`: read as no units at {name}")
+        if "<!--" in (after_text or ""):
+            found.problems.append(
+                f"`{path}`: HEAD's page holds an HTML comment, whose text GitHub does not show"
+            )
         held = Counter(after)
         gone = Counter(before) - held
         page = " ".join((after_text or "").split())
@@ -408,7 +428,7 @@ def compare(reference: str) -> Comparison:
                 reason = changed_reason(place)
                 if reason:
                     found.changes.append(f"`{path}`: {clause} ({reason})")
-                elif place != NEW_UNIT and len(clause.split()) <= 1:
+                elif short(clause, place):
                     found.short.append(f"`{path}`: {clause} ({place})")
             for problem in entry_problems(entry, page, held, places):
                 found.problems.append(f"`{path}`: {problem}")
@@ -440,7 +460,10 @@ def main(argv: Sequence[str]) -> int:
         print(f"| `{path}` | {before} | {after} | {given} |")
     for title, listed in (
         ("Changed by this pull request's own work", found.changes),
-        ("Clauses of one word or none placed outside the new unit", found.short),
+        (
+            "Clauses of one word or none, but IDs and punctuation placed on the new unit",
+            found.short,
+        ),
     ):
         if listed:
             print(f"\n## {title}\n")

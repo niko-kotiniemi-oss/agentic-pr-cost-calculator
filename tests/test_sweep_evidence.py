@@ -16,7 +16,7 @@ from collections.abc import Mapping
 from pathlib import Path
 
 import pytest
-from sweep_evidence import MAPPING, holds, main, units
+from sweep_evidence import MAPPING, cited, holds, main, short, units
 
 GIT_ENVIRONMENT = {
     "GIT_CONFIG_GLOBAL": os.devnull,
@@ -740,15 +740,16 @@ def test_a_clause_of_one_word_placed_outside_the_new_unit_is_listed_apart(
     code, out = run(tmp_path, monkeypatch, capsys)
     assert code == 0, out
     assert (
-        "## Clauses of one word or none placed outside the new unit\n\n"
+        "## Clauses of one word or none, but IDs and punctuation placed on the new unit\n\n"
         "- `docs/page.md`: The (DR-001)\n"
         "- `docs/page.md`: ledger (task 1.37)\n"
         "- `docs/page.md`: keeps (the page)\n"
         "- `docs/page.md`: counts. (R12)\n"
+        "- `docs/page.md`: It (the new unit)\n"
         '- `docs/page.md`: counts, (`ledger`: "Counts are kept")\n'
     ) in out
     assert "the ledger keeps (" not in out
-    assert "(the new unit)" not in out
+    assert "never keeps text (" not in out
 
 
 def test_a_clause_of_one_word_with_an_apostrophe_is_listed_apart(
@@ -864,3 +865,142 @@ def test_a_tree_that_git_cannot_list_at_head_makes_the_script_unable_to_compare(
     code, out = run(tmp_path, monkeypatch, capsys)
     assert code == 2
     assert "Cannot compare: git cannot list the files at HEAD." in out
+
+
+def test_a_removed_unit_placed_on_a_requirement_that_the_page_does_not_cite_is_reported(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    moved = COMPLETE.replace(
+        entry("The ledger keeps counts.", [("The ledger keeps counts.", "R12")]),
+        entry("The ledger keeps counts.", [("The ledger keeps counts.", "R13")]),
+    )
+    assert moved != COMPLETE
+    register = REGISTER + "| R13 | x | `ledger` | B |\n"
+    history(
+        tmp_path,
+        {"docs/page.md": SWEPT, MAPPING: moved},
+        before={"docs/requirements.md": register},
+    )
+    code, out = run(tmp_path, monkeypatch, capsys)
+    assert code == 1
+    assert "`docs/page.md`: HEAD's page does not cite R13: The ledger keeps counts.\n" in out
+
+
+@pytest.mark.parametrize("citation", ["(R13)", "(R11 to R14)"])
+def test_a_removed_unit_placed_on_a_requirement_that_the_page_cites_alone_or_in_a_range_passes(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+    citation: str,
+) -> None:
+    moved = COMPLETE.replace(
+        entry("The ledger keeps counts.", [("The ledger keeps counts.", "R12")]),
+        entry("The ledger keeps counts.", [("The ledger keeps counts.", "R13")]),
+    )
+    register = REGISTER + "| R13 | x | `ledger` | B |\n"
+    history(
+        tmp_path,
+        {"docs/page.md": SWEPT + f"\nCounts are kept {citation}.\n", MAPPING: moved},
+        before={"docs/requirements.md": register},
+    )
+    code, out = run(tmp_path, monkeypatch, capsys)
+    assert code == 0, out
+
+
+def test_a_clause_held_only_in_an_html_comment_of_the_page_is_reported(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    hidden = SWEPT + "\n<!-- The ledger keeps counts. -->\n"
+    history(
+        tmp_path,
+        {"docs/page.md": hidden, MAPPING: COMPLETE.replace("Clause, R12:", "Clause, the page:")},
+    )
+    code, out = run(tmp_path, monkeypatch, capsys)
+    assert code == 1
+    assert (
+        "`docs/page.md`: HEAD's page holds an HTML comment, whose text GitHub does not show\n"
+        in out
+    )
+
+
+def test_text_that_only_begins_as_an_html_comment_does_not_begin_one(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    history(
+        tmp_path, {"docs/page.md": SWEPT + "\nThe text <!- opens no comment.\n", MAPPING: COMPLETE}
+    )
+    code, out = run(tmp_path, monkeypatch, capsys)
+    assert code == 0, out
+
+
+def test_an_html_comment_in_a_page_that_did_not_change_is_not_read(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    history(
+        tmp_path,
+        {"docs/page.md": SWEPT, MAPPING: COMPLETE},
+        before={"docs/template.md": "<!-- Say what changes. -->\n"},
+    )
+    code, out = run(tmp_path, monkeypatch, capsys)
+    assert code == 0, out
+
+
+def test_a_word_of_its_own_on_the_new_unit_is_listed_apart_but_an_id_or_punctuation_is_not(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    clauses = [
+        ("No", "the new unit"),
+        ("text is kept", "the new unit"),
+        (",", "the new unit"),
+        ("ever", "the new unit"),
+        ("(T4).", "the new unit"),
+    ]
+    new = "No text is kept, ever, by the ledger (T4)."
+    history(
+        tmp_path,
+        {
+            "docs/other.md": new + "\n",
+            MAPPING: mapping(
+                ("docs/other.md", [entry("No text is kept, ever (T4).", clauses, new)])
+            ),
+        },
+        before={"docs/other.md": "No text is kept, ever (T4).\n"},
+    )
+    code, out = run(tmp_path, monkeypatch, capsys)
+    assert code == 0, out
+    assert (
+        "## Clauses of one word or none, but IDs and punctuation placed on the new unit\n\n"
+        "- `docs/other.md`: No (the new unit)\n"
+        "- `docs/other.md`: ever (the new unit)\n"
+    ) in out
+    assert "(T4). (the new unit)" not in out
+    assert ", (the new unit)" not in out
+
+
+@pytest.mark.parametrize(
+    ("clause", "place", "listed"),
+    [
+        ("No", "the new unit", True),
+        ("30", "the new unit", True),
+        ("CI", "the new unit", True),
+        ("(T4).", "the new unit", False),
+        ("DR-196)", "the new unit", False),
+        ("(B-022)", "the new unit", False),
+        (",", "the new unit", False),
+        ("", "the new unit", False),
+        ("no session value", "the new unit", False),
+        ("keeps", "the page", True),
+        ("(T4).", "R12", True),
+        (",", "DR-001", True),
+        ("", "R12", True),
+        ("never keeps text", "R12", False),
+    ],
+)
+def test_one_word_or_none_is_listed_apart_but_an_id_or_punctuation_in_the_new_unit(
+    clause: str, place: str, listed: bool
+) -> None:
+    assert short(clause, place) is listed
+
+
+def test_an_id_inside_a_longer_word_cites_no_requirement_alone_or_in_a_range() -> None:
+    assert cited("PR40, PR1 to R3, and R7 to R9") == {3, 7, 8, 9}
