@@ -967,6 +967,7 @@ DEFINED = "`docs/page.md`: HEAD's page holds a link reference definition, whose 
         f"\n- A point.\n\n  {HIDDEN}\n",
         f"\n- A point.\n\n    {HIDDEN}\n",
         '\n[a\\]b]: # "The ledger keeps counts."\n',
+        "\n[^1]: The ledger keeps counts.\n",
     ],
     ids=[
         "at the start of a line",
@@ -984,6 +985,7 @@ DEFINED = "`docs/page.md`: HEAD's page holds a link reference definition, whose 
         "continuing a list item at two spaces",
         "continuing a list item at four spaces",
         "with an escaped bracket in its label",
+        "a footnote's definition that nothing refers to",
     ],
 )
 def test_a_clause_held_only_in_a_link_reference_definition_of_the_page_is_reported(
@@ -1011,12 +1013,11 @@ def test_a_line_indented_as_code_is_taken_as_a_definition_since_it_may_continue_
     assert f"{DEFINED} does not show\n" in out
 
 
-def test_a_link_a_footnote_a_checkbox_or_inline_code_defines_no_link_reference(
+def test_a_link_a_checkbox_a_bracket_within_a_line_or_inline_code_defines_no_link_reference(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
     shown = SWEPT + (
-        "\n[The guide](guide.md) shows how counts are kept[^1].\n"
-        "\n[^1]: A note that GitHub shows.\n"
+        "\n[The guide](guide.md) shows how counts are kept.\n"
         "\n- [ ] A task that GitHub shows with a box.\n"
         "\nAs [the ledger]: its page says, counts are kept.\n"
         "\n`[code]: a span that GitHub shows as code`\n"

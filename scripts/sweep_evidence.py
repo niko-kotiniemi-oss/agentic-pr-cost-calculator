@@ -24,10 +24,10 @@ placed on the new unit. It fails on a change to a spec, since the sweep writes n
 a changed file read as no units, on a changed page that holds an HTML comment or a link
 reference definition at HEAD, whose text GitHub does not show, on a run that compares no
 page, on an entry for a unit that HEAD still holds, and on a mapping out of its form. It
-takes as a link reference definition any line that starts with a label in brackets that
-is not a footnote's, followed by a colon, after any indentation and any markers of a
-block quote or a list item, since those can hold one, and so takes such a line in code
-too.
+takes as a link reference definition any line that starts with a label in brackets,
+followed by a colon, after any indentation and any markers of a block quote or a list
+item, since those can hold one, and so takes a footnote's definition too, which GitHub
+hides when nothing refers to it (T151), and such a line in code.
 
 It prints Markdown for the pull request: both commits by their full hashes, each file
 with the number of units that it read at the base and at HEAD and of its entries, and
@@ -65,7 +65,7 @@ SCENARIO = re.compile(r'`([a-z0-9-]+)`: "(.+)"')
 CITED = re.compile(r"\bR(\d+)\b")
 CITED_RANGE = re.compile(r"\bR(\d+) to R(\d+)\b")
 DEFINITION = re.compile(
-    r"^(?:[ \t]*(?:>|[-*+][ \t]|\d+[.)][ \t]))*[ \t]*\[(?!\^)(?:[^\]\\]|\\.)+\]:", re.MULTILINE
+    r"^(?:[ \t]*(?:>|[-*+][ \t]|\d+[.)][ \t]))*[ \t]*\[(?:[^\]\\]|\\.)+\]:", re.MULTILINE
 )
 NEW_UNIT = "the new unit"
 PAGE = "the page"
