@@ -311,9 +311,9 @@ This repository keeps from the run only the shape, as `tests/fixtures/transcript
 
 ### 19. One sweep brings the other documents to cite the specs
 
-*Records:* DR-232, DR-250 and DR-251.
+*Records:* DR-232, DR-250, DR-251 and DR-252.
 
-The specs are the single source of what the tool does, and every other document cites the requirement or scenario that states a behaviour instead of stating it again (DR-232). The pages that stated behaviour before that rule are brought to it in one pull request, the one that delivers backlog item B-022, and by no other (T173).
+The specs are the single source of what the tool does, and every other document cites the requirement or scenario that states a behaviour instead of stating it again (DR-232). The pages that stated behaviour before that rule are brought to it in one pull request, the one that delivers backlog item B-022, but for two kinds of sentence that it leaves as they are: a clause that no scenario holds, which the mapping lists for B-007 and only B-007 brings to the rule, and a sentence in a document that the sweep leaves as it is, below, which only a change of its own that the owner asks for brings to the rule (T173, DR-252).
 
 **What each page keeps.** A page keeps what no scenario can say: why a behaviour is as it is, what remains once it holds, what was not chosen, and how the parts that the specs state work together. It also keeps, in words, what a reader acts on or relies on: each step and command that a person follows, such as how to stop capture in a running session, and each thing that the tool never does, each followed by the requirement that states it. A sentence that states what the tool does, that a scenario already holds and that no reader acts on, becomes a citation of the requirement that holds it, by its ID, which the check of mentions finds in the register, though that check also takes an ID that the register gives as retired, which issue 42 asks a check of its own to refuse (T200). A scenario is cited by name only in a threat's Held by, where the threat model's test resolves it, so that a scenario renamed later fails a check instead of leaving a citation that names nothing. Each page keeps its form, and the fields, sections, tables, code blocks and diagrams that its own requirements and tests read.
 
