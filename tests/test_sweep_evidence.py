@@ -974,6 +974,8 @@ DEFINED = "`docs/page.md`: HEAD's page holds a link reference definition, whose 
         f"\n>{HIDDEN}\n",
         f"\r{HIDDEN}\r",
         '\n[a\\\nb]: # "The ledger keeps counts."\n',
+        f"\nA note.\r\r{HIDDEN}\r",
+        '\n[a\\ b]: # "The ledger keeps counts."\n',
     ],
     ids=[
         "at the start of a line",
@@ -998,6 +1000,8 @@ DEFINED = "`docs/page.md`: HEAD's page holds a link reference definition, whose 
         "after a block quote's marker with no space",
         "after a carriage return that no line feed follows",
         "with a backslash before a line break in its label",
+        "after a paragraph and a blank line of lone carriage returns",
+        "with a backslash before a space in its label",
     ],
 )
 def test_a_clause_held_only_in_a_link_reference_definition_of_the_page_is_reported(
