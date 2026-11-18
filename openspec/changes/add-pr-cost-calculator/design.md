@@ -150,9 +150,11 @@ The testing tools that DR-086, DR-087 and DR-088 name are added to `requirements
 
 ### 9. Threats are rated for impact and likelihood, and modelled twice
 
-*Records:* DR-094, DR-095 and DR-112.
+*Records:* DR-094, DR-095, DR-112 and DR-254.
 
 The threat model's method section defines each level of impact and likelihood, and its risk matrix places every threat in the cell its two ratings name. `tests/test_threat_model.py` checks the ratings, their product and the matrix, so that a rating changed in one place and not the other is reported.
+
+Each threat is also rated as if its answer were not built, beside its ratings with the answer in place, and the risk register shows both (decision 20).
 
 ### 10. The oldest supported Python, and how dependencies move
 
@@ -336,6 +338,22 @@ The specs are the single source of what the tool does, and every other document 
 **The checks of the documentation.** The sweep changes no file under `tests/` other than the script's own tests. A check that fails once a unit is gone keeps the unit, which the mapping gives as kept, and a change to the check waits for a pull request of its own (DR-251).
 
 **Order.** One commit for the script and its tests, then one for each page or group of pages: the threat model, in commits that each take a run of threats in the order of their numbers, since a boundary's threats lie in several places of the page under headings that continue it, then the design's risks and decisions, the feature pages, the page on how the tool works, and the README, `CONTRIBUTING.md` and `SECURITY.md`, each with its part of the mapping, so that each commit can be read alone.
+
+### 20. A risk register rates each threat raw and with its answer in place
+
+*Records:* DR-253, DR-254, DR-255 and DR-256.
+
+The threat model rates each threat's likelihood with its answer in place (DR-112), which shows the risk that remains but not how much each answer removes. Backlog item B-002 adds a rating as if the answer were not built, a page that shows both, and a rule that every high or critical risk is answered further.
+
+**The raw rating, in the threat model.** Each threat gives a raw impact, a raw likelihood and a raw risk after its risk, rated as if nothing that its Answer and its Held by cite were built, while the rest of the design stands (R244, DR-254). The threat's impact, likelihood and risk keep their names and stay the ratings with the answer in place, so no other page or check that reads them changes. Neither raw rating may be lower than its rating with the answer in place. Reviewers who did not write the ratings make the raw ones, one per trust boundary, each in a context of its own and without being shown the ratings with the answers in place, and a disagreement is settled by a second reviewer and listed on the pull request.
+
+**The bands.** A risk of 1 or 2 is low, 3 or 4 medium, 6 high and 9 critical, raw and with the answer in place (DR-253).
+
+**The further answer.** A threat whose risk with its answer in place is high or critical gives a field `Further answer` after its Held by, which cites what holds it or the backlog item that is to build it, or else, for a high risk only, a field `Acceptance`, which cites the owner's record that accepts it (R248, DR-255). The further answers to the high risks are proposed by the reviewers of each threat's trust boundary, and each cites B-007, which writes it into the specs before the build; the threat is then rated again with it in place. A critical risk holds back every release while it stands, which the release workflow checks (task 6.3).
+
+**The register.** `scripts/risk_register.py`, run with `python3 -I`, reads the threat model, the specs and the register of requirements, and writes `docs/risk-register.md`; with `--check` it writes nothing and fails, naming the threat or the line, when the committed page differs (R245, DR-256). What the page gives is R246 and R247. It uses the standard library alone and opens no connection. The page opens by saying that the script writes it, and is never edited by hand. It gives the bands; how many threats each band holds, raw and with the answers in place; a matrix of each; the high and critical risks with their further answers or acceptances; and a table of every threat, highest risk with its answer in place first, whose row gives what answers the threat by ID: the requirement that holds each scenario that its Held by cites, through the specs and the register, and each record, task and file that it cites, so that a row stays one line. A threat's full answer stays in the threat model, which each row links. The tests of the tool's scenarios do not exist yet, so the register names requirements rather than tests, until the traceability test (task 1.3) can say which test holds each scenario.
+
+**What stays as it is.** The threat model's own risk matrix and the list of the threats with the highest risks stay, held by R31's checks. The register's matrix of the ratings with the answers in place is written from the same ratings, so the two cannot differ while both checks pass. Moving the matrix out of the threat model would change R31, `CLAUDE.md`'s rule on the threat model and the pages that name the matrix, which B-002 does not ask for.
 
 ## Risks / Trade-offs
 

@@ -255,6 +255,11 @@ The capability names the spec that holds the requirement. Each capability is one
 | R241 | functional | `project-standards` | The skeleton's report counts one merged pull request's calls once, at a test price |
 | R242 | non-functional | `project-standards` | The walking skeleton says what it is |
 | R243 | non-functional | `project-standards` | The skeleton's plugin declares nothing but its command hooks |
+| R244 | non-functional | `project-standards` | Every threat is also rated as if its answer were not built |
+| R245 | non-functional | `project-standards` | The risk register is written from the threat model |
+| R246 | non-functional | `project-standards` | The risk register gives each risk its band |
+| R247 | non-functional | `project-standards` | The risk register gives a row for each threat |
+| R248 | non-functional | `project-standards` | Every high or critical risk has a further answer |
 
 IDs are stable: a requirement keeps its ID while it exists, and a new one takes the next free number, so the rows follow the order in which requirements were added rather than the order of the specs. A requirement that a later change removes leaves the table, and its ID is listed below with the change that removed it, never to be used again.
 

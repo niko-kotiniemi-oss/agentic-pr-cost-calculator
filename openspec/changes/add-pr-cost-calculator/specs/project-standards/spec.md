@@ -1562,3 +1562,88 @@ The release workflow SHALL refuse a tag whose tree holds a `skeleton/` folder, s
 
 - **WHEN** a tag's tree holds no `skeleton/` folder
 - **THEN** this check of the release workflow passes it
+
+### Requirement: Every threat is also rated as if its answer were not built
+
+Every threat in the threat model SHALL carry, beside its ratings with its answer in place, a raw impact and a raw likelihood, each from 1 to 3 with the level's name as the threat model's method defines them, rated as if nothing that its Answer and its Held by cite were built, and a raw risk that is their product. Neither raw rating SHALL be lower than its rating with the answer in place, since an answer only lowers a risk. Tests SHALL fail otherwise.
+
+#### Scenario: A threat without its raw ratings fails CI
+
+- **WHEN** a threat lacks a raw impact or a raw likelihood, gives either without its level's name or with another level's name, or carries a raw risk that is not their product
+- **THEN** a test fails and names the threat
+
+#### Scenario: A raw rating below the rating with the answer in place fails CI
+
+- **WHEN** a threat's raw impact is lower than its impact, or its raw likelihood is lower than its likelihood
+- **THEN** a test fails and names the threat and the rating
+
+#### Scenario: A threat whose raw ratings equal its ratings passes
+
+- **WHEN** a threat's answer lowers neither its impact nor its likelihood, and its raw ratings equal its ratings
+- **THEN** this check passes it
+
+### Requirement: The risk register is written from the threat model
+
+The repository SHALL keep a risk register, `docs/risk-register.md`, that a script here writes from the threat model, the specs and the register of requirements alone, and CI SHALL fail when the page differs from what the script writes. The page SHALL say that the script writes it, and SHALL hold to the rules that "The roadmap and the backlog link only this repository's own files" and "The roadmap, the backlog and the feature pages' roadmap sections hold no hidden text" give the roadmap.
+
+#### Scenario: A register that differs from the threat model fails CI
+
+- **WHEN** a rating, a band, a title or a row of the committed register differs from what the script writes, or the register leaves out a threat or lists one that the threat model does not hold
+- **THEN** a test fails and names the threat, or the line, that differs
+
+#### Scenario: A scenario that no requirement holds stops the script
+
+- **WHEN** a threat's Held by cites a scenario that the specs and the register of requirements cannot place under a requirement
+- **THEN** the script writes nothing, fails and names the threat and the scenario
+
+### Requirement: The risk register gives each risk its band
+
+The risk register SHALL give the bands of risk, a score of 1 or 2 being low, 3 or 4 medium, 6 high and 9 critical; how many threats each band holds, raw and with their answers in place; a matrix of the raw ratings and one of the ratings with the answers in place; and each high and critical risk with its further answer or its acceptance.
+
+#### Scenario: A band follows its score
+
+- **WHEN** the script writes a risk of 1, 2, 3, 4, 6 or 9
+- **THEN** it gives it the band low, low, medium, medium, high or critical
+
+#### Scenario: Each band's count adds up to the threats
+
+- **WHEN** the script writes how many threats each band holds, raw and with the answers in place
+- **THEN** each set of counts adds up to the number of threats in the threat model
+
+### Requirement: The risk register gives a row for each threat
+
+The risk register SHALL give a row for each threat, the highest risk with its answer in place first, then the highest raw risk, then by ID, with its ID linked to the threat, its title, its trust boundary, its kind, its raw rating and its rating with the answer in place, each with its band, what answers it by ID, and the assumptions that it rests on.
+
+#### Scenario: A threat's row names what answers it by ID
+
+- **WHEN** the script writes the row of a threat whose Held by cites scenarios, records, tasks and files
+- **THEN** the row gives, once each and in order, the requirement that holds each scenario, each record, each task and each file, and the assumptions that the threat names
+
+#### Scenario: The rows follow the risk
+
+- **WHEN** two threats differ in their risk with the answer in place, or share it and differ in their raw risk
+- **THEN** the one with the higher risk comes first, and threats that share both come in the order of their IDs
+
+### Requirement: Every high or critical risk has a further answer
+
+Every threat whose risk with its answer in place is high or critical SHALL carry a further answer, beyond its answer, that cites what holds it as Held by does, or the backlog item that is to build it; or else, for a high risk only, an acceptance that cites a decision record of the owner's that gives the reason. A critical risk SHALL hold back every release while it stands. Tests SHALL fail otherwise.
+
+#### Scenario: A high or critical risk with neither a further answer nor an acceptance fails CI
+
+- **WHEN** a threat whose risk with its answer in place is 6 or 9 carries neither a further answer nor an acceptance
+- **THEN** a test fails and names the threat
+
+#### Scenario: A further answer or an acceptance that cites nothing that holds fails CI
+
+- **WHEN** a further answer cites nothing that resolves, or only a backlog item that the default branch does not give as Planned or In progress, or an acceptance cites no record, a closed record, or a record whose decider is not the owner
+- **THEN** a test fails and names the threat and the citation
+
+#### Scenario: An accepted critical risk fails CI
+
+- **WHEN** a threat whose risk with its answer in place is 9 carries an acceptance
+- **THEN** a test fails and names the threat
+
+#### Scenario: A release is refused while a critical risk stands
+
+- **WHEN** a tag's threat model holds a threat whose risk with its answer in place is 9
+- **THEN** the release workflow refuses the tag and names the threat
