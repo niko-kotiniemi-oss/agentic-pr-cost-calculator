@@ -8915,7 +8915,7 @@ It reads both switches from their files before it starts any program.
 New:
 
 ~~~~text
-It reads both switches before it starts any program, and a run that finds either off starts git only to find its store and, where one exists, to do there what decision 6 says, as R118 says.
+It reads both switches before it starts any program, and a run whose own reading finds either off starts git only to find its store and, where one exists, to do there what decision 6 says, as R118 says.
 ~~~~
 
 Clause, R118:
@@ -8935,7 +8935,7 @@ A run whose own reading finds either off starts git only to find its store and, 
 New:
 
 ~~~~text
-It reads both switches before it starts any program, and a run that finds either off starts git only to find its store and, where one exists, to do there what decision 6 says, as R118 says.
+It reads both switches before it starts any program, and a run whose own reading finds either off starts git only to find its store and, where one exists, to do there what decision 6 says, as R118 says.
 ~~~~
 
 Clause, R118:
