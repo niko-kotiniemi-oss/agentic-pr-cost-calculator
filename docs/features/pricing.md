@@ -10,11 +10,11 @@ The tokens are priced from a dated price table kept in this repository, at the p
 
 ## Expected behaviour
 
-- **Dated prices.** Every price has an effective date, and each call uses the latest price dated on or before its UTC day. A price change is a new row with a later date, so history is never rewritten (DR-020). The statements of how modifiers combine are dated the same way, so a changed combination reprices nothing earlier.
-- **Each token type at its own rate.** Input, output, cache-write and cache-read tokens are priced separately. Cache writes use the rate for their cache lifetime, and where the lifetime is unknown the report gives the range between the two.
-- **Modifiers.** Higher rates for long prompts, the inference region's multiplier, rates for speed and service tier, and a per-request rate for server-side tool requests such as web searches, all as the price table states them.
-- **Nothing is guessed.** A model, attribute or combination that the price table does not price is counted in tokens, left out of the cost and named by the report.
-- **Never fetched.** Prices are read from the table at the tool's own commit. The tool fetches no prices from anywhere, a rule that `project-standards` holds for the whole tool.
+- **Dated prices.** R14 gives how each price, and each statement of how modifiers combine, is dated, and which one a call uses. A price change is a new row with a later date, so history is never rewritten (DR-020).
+- **Each token type at its own rate.** R15 gives the rate of each token type, and the range that a cache write of unknown lifetime gets.
+- **Modifiers.** R16 gives the modifiers that apply, as the price table states them.
+- **Nothing is guessed.** A model, attribute or combination that the price table does not price is counted in tokens, left out of the cost and named by the report, as R17 and R61 give it.
+- **Never fetched.** Prices are read from the table at the tool's own commit. The tool fetches no prices from anywhere, as R30 gives it for the whole tool.
 
 ## How it is validated
 
@@ -22,6 +22,16 @@ This feature is validated first by its spec's scenarios: each gets an acceptance
 
 - A test that every price row has its date and its source, and that a pull request cannot change or remove an existing row or add one dated on or before the newest existing one for the same price (task 3.1).
 - Tests of each modifier and of their combinations, with property tests that a cost is never negative and adds up across any split of the ledger (task 3.2).
+
+## Known limitations and the roadmap
+
+The design's risks that concern this feature and are not on the roadmap, each with what it means:
+
+- **An adopter updates the hook and the workflow pin at different times**: something goes unpriced, and the comment says so instead of guessing.
+- **Cache writes recorded without their lifetime**: the report gives a range for those cache writes.
+- **Prices go stale, or a new model appears**: a model that the price table does not list is named rather than priced until the table is updated.
+
+The [roadmap](../roadmap.md) gives what is planned next and later, and the limitations that an adopter notices.
 
 ## See also
 

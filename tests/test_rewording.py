@@ -378,6 +378,53 @@ def test_claude_md_s_changes_come_before_every_other_file_s(
     ]
 
 
+def test_the_guide_s_changes_come_right_after_claude_md_s(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    before = {
+        "CLAUDE.md": "Rules for the calculator.\n",
+        "docs/patterns.md": "How the calculator builds.\n",
+        "AAA.md": "About the calculator.\n",
+        "docs/about.md": "The calculator's page.\n",
+    }
+    after = {
+        GLOSSARY: GLOSSARY_TEXT,
+        "CLAUDE.md": "Rules for the tool, always.\n",
+        "docs/patterns.md": "How the tool builds, always.\n",
+        "AAA.md": "All about the tool.\n",
+        "docs/about.md": "The page of the tool.\n",
+    }
+    history(tmp_path, after, before)
+    _, out, _ = rewording(tmp_path, monkeypatch, capsys)
+    listed = section(out, "Changed by more than a word to avoid")
+    headings = [line for line in listed.split("\n") if line.startswith("### ")]
+    assert headings == [
+        "### `CLAUDE.md`",
+        "### `docs/patterns.md`",
+        "### `AAA.md`",
+        "### `docs/about.md`",
+    ]
+
+
+def test_the_guide_renamed_with_changes_keeps_its_place(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    guide = "".join(f"Line {n} of how the project builds.\n" for n in range(9))
+    before = {"CLAUDE.md": "Rules.\n", "docs/patterns.md": guide, "AAA.md": "About it.\n"}
+    after = {
+        GLOSSARY: GLOSSARY_TEXT,
+        "CLAUDE.md": "Rules for the tool, always.\n",
+        "docs/patterns.md": None,
+        "docs/a-guide.md": guide + "How the tool builds, always.\n",
+        "AAA.md": "All about the tool.\n",
+    }
+    history(tmp_path, after, before)
+    _, out, _ = rewording(tmp_path, monkeypatch, capsys)
+    listed = section(out, "Changed by more than a word to avoid")
+    headings = [line for line in listed.split("\n") if line.startswith("### ")]
+    assert headings == ["### `CLAUDE.md`", "### `docs/a-guide.md`", "### `AAA.md`"]
+
+
 def test_a_hunk_whose_removed_and_added_lines_differ_in_number_is_listed_whole(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:

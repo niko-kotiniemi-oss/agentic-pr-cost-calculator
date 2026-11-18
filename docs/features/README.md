@@ -6,7 +6,7 @@ The tool is designed and not built yet, so each page describes the behaviour the
 
 | Feature | What it does |
 |---|---|
-| [Turning it on, and personal opt-in](switch-and-opt-in.md) | A repository turns the tool on with one file; each person decides whether their own sessions are recorded. |
+| [Turning it on, and personal opt-in](switch-and-opt-in.md) | A repository turns the tool on with one file; each person's opt-in, which they, their cloud environment or their organization set, decides whether their own sessions are recorded. |
 | [Usage capture](usage-capture.md) | Records each model call's token counts during a Claude Code session and commits them with the agent's work. |
 | [Activity types](activity-types.md) | Labels each call as code generation, file reading, tooling, MCP, subagent, conversation or other. |
 | [The ledger](ledger.md) | The small files that carry the counts to the pull request and stay as its record. |

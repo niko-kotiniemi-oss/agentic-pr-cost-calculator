@@ -1,0 +1,36 @@
+# The walking skeleton of the agentic PR cost calculator: not the tool or a release.
+# A workflow for the scratch repository only, copied there to `.github/workflows/`. It sits
+# outside this repository's workflows folder, so it never runs here (R237, design decision 18).
+# It can do no more than post its comment: it runs on a push to main, reads contents, writes
+# pull requests, checks out the push's two commits by SHA without keeping credentials, reads no
+# secret and puts no expression inside a command.
+name: Walking skeleton report
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        if: github.event.before != '0000000000000000000000000000000000000000'
+        with:
+          ref: ${{ github.event.before }}
+          path: before
+          persist-credentials: false
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: ${{ github.event.after }}
+          path: after
+          persist-credentials: false
+      - name: Report the figure at a test price
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python3 -I after/skeleton/report.py before after

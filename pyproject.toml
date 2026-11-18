@@ -2,7 +2,7 @@
 name = "agentic-pr-cost-calculator"
 version = "0.0.0"
 description = "Estimate what an agentic coding pull request cost in model tokens and CI minutes."
-license = "MIT"
+license = "LicenseRef-FCL-1.0-MIT"
 requires-python = ">=3.11"
 
 [tool.ruff]
@@ -17,7 +17,7 @@ select = ["E", "F", "W", "I", "B", "UP"]
 [tool.mypy]
 strict = true
 python_version = "3.11"
-files = ["tests", "scripts"]
+files = ["tests", "scripts", "skeleton"]
 
 [[tool.mypy.overrides]]
 module = ["yaml"]
@@ -27,4 +27,4 @@ ignore_missing_imports = false
 testpaths = ["tests"]
 addopts = "-q"
 # The wording test and the rewording script read the pages with the same module.
-pythonpath = ["scripts"]
+pythonpath = ["scripts", "skeleton"]

@@ -1,12 +1,12 @@
 # DR-062: The report runs its own pinned code
 
 - **Type:** security and privacy
-- **Status:** accepted
+- **Status:** closed
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** R24
 - **Threats:** T23, T28, T30
 - **Replaces:** none
-- **Closed by:** none
+- **Closed by:** DR-217
 
 ## Context
 

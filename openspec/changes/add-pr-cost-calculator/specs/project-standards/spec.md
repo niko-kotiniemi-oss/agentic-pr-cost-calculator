@@ -434,13 +434,43 @@ The threat model SHALL number its threats from T1 in order, and a threat that a 
 - **WHEN** `docs/decisions/` holds a folder, a link, or a file that is neither a record nor the index, or a file elsewhere is named as a record
 - **THEN** a test fails and names the file
 
-### Requirement: No attribute hides a record's diff
+### Requirement: No attribute hides the diff of a record, the README, `CLAUDE.md`, the guide, a change's tasks or what the marketplace serves, or changes the plugin's checkout
 
-No attribute that the repository sets SHALL make git show a record's or the index's diff as binary, or GitHub hide it as generated, so that whoever merges a pull request reads each change that it makes to a record.
+No attribute that the repository sets SHALL make git show as binary, or GitHub hide as generated, the diff of a record, the index, the README, `CLAUDE.md`, the guide, a change's `tasks.md`, the root marketplace file or a file in the plugin folder that it names, so that whoever merges a pull request reads each change that it makes to them, nor make git's checkout of the hook file or of a file in that folder write more than other line endings.
 
 #### Scenario: An attribute that hides a record's diff fails CI
 
 - **WHEN** the repository's attributes give a record or the index `binary`, `diff` or `linguist-generated`, in any state
+- **THEN** a test fails and names the file and the attribute
+
+#### Scenario: An attribute that hides the marketplace's diff fails CI
+
+- **WHEN** the repository's attributes give the root marketplace file, or a file in the plugin folder that it names, `binary`, `diff` or `linguist-generated`, in any state
+- **THEN** a test fails and names the file and the attribute
+
+#### Scenario: An attribute that hides the README's diff fails CI
+
+- **WHEN** the repository's attributes give `README.md` `binary`, `diff` or `linguist-generated`, in any state
+- **THEN** a test fails and names the file and the attribute
+
+#### Scenario: An attribute that hides the guide's diff fails CI
+
+- **WHEN** the repository's attributes give `docs/patterns.md` `binary`, `diff` or `linguist-generated`, in any state
+- **THEN** a test fails and names the file and the attribute
+
+#### Scenario: An attribute that hides `CLAUDE.md`'s diff fails CI
+
+- **WHEN** the repository's attributes give `CLAUDE.md` `binary`, `diff` or `linguist-generated`, in any state
+- **THEN** a test fails and names the file and the attribute
+
+#### Scenario: An attribute that hides a change's tasks' diff fails CI
+
+- **WHEN** the repository's attributes give a change's `tasks.md`, active or archived, `binary`, `diff` or `linguist-generated`, in any state
+- **THEN** a test fails and names the file and the attribute
+
+#### Scenario: An attribute that changes the plugin's checkout fails CI
+
+- **WHEN** the repository's attributes give the hook file, or a file in the plugin folder that the root marketplace file names, `working-tree-encoding`, `ident` or `filter`, in any state
 - **THEN** a test fails and names the file and the attribute
 
 #### Scenario: A person's own attributes are not read
@@ -656,12 +686,663 @@ The README, the opt-in's feature page and the ledger's SHALL say that an opt-out
 
 ### Requirement: The documentation says where an opt-in applies
 
-The README and the opt-in's feature page SHALL say that one opt-in covers every repository that turns the tool on, those that adopt it later among them, with no notice in any of them; that a repository's own setting that turns capture off holds only in that clone; and how a person turns capture off for a folder with git's own conditional includes, and where that stops.
+The README and the opt-in's feature page SHALL say that one opt-in covers every repository that turns the tool on, those that adopt it later among them, with no notice in any of them, and with the plugin each one where the person's sessions work or commit, whether or not it registers the hook; that a repository's own setting that turns capture off holds only in that clone; and how a person turns capture off for a folder with git's own conditional includes, and where that stops.
 
 #### Scenario: The opt-in's pages say where an opt-in applies
 
 - **WHEN** the README's section on the opt-in and the opt-in's feature page are read
-- **THEN** each says that one opt-in covers every repository that turns the tool on, later ones too, with no notice, that a repository's own setting that turns capture off holds only in that clone, and how to turn capture off for a folder and where that stops: in a linked worktree there whose repository lies elsewhere, for a folder named through a symbolic link, and when the file that the include names is missing
+- **THEN** each says that one opt-in covers every repository that turns the tool on, later ones too, with no notice, and with the plugin each one where the person's sessions work or commit, whether or not it registers the hook, that a repository's own setting that turns capture off holds only in that clone, and how to turn capture off for a folder and where that stops: in a linked worktree there whose repository lies elsewhere, for a folder named through a symbolic link, and when the file that the include names is missing
+
+### Requirement: The documentation says how capture covers a project's cloud threads
+
+The README and the capture's feature page SHALL say that a project's cloud threads run capture only through the plugin, give the setup script's line, which opts in each session in that environment in every repository that turns the tool on, and say that calls from the folder that holds the clones are left out and flagged, that a call from a clone counts there whatever clone it works on, how to keep a session in a repository, and that a machine not resumed loses calls that no commit took.
+
+#### Scenario: The pages say how a cloud thread is covered
+
+- **WHEN** the README's section on cloud threads and the capture's feature page are read
+- **THEN** each says that a project's cloud threads run capture only through the plugin, which is added in the project's settings and loads into the threads that start afterwards, gives the setup script's line and says that it opts in each session in that environment, in every repository that turns the tool on, says that calls made from the folder that holds the clones are left out and flagged, that a call made from one clone counts there whatever clone it works on, so that a project that holds a repository that turns the tool on should hold no repository whose work must stay private, says how to keep a session inside a repository, and that one `cd` into a clone does not keep it there, since Claude's current directory can go back to the thread's folder, and says that a machine that cannot be resumed loses the calls that no commit took
+
+### Requirement: The documentation says how to turn capture off in a session that is running, and how to check it
+
+The README SHALL say that removing the setup script's line, or using another environment, reaches only the sessions that start, or whose machines are rebuilt, afterwards; that `git config --global pr-cost.capture false` in a session turns capture off there, and the variables `GIT_CONFIG_COUNT=1`, `GIT_CONFIG_KEY_0=pr-cost.capture` and `GIT_CONFIG_VALUE_0=false` on an environment from each session's next restore; what can undo each; and how to see a session's opt-in.
+
+#### Scenario: The README says how to turn capture off in a running session
+
+- **WHEN** the README's section on turning capture off is read
+- **THEN** it says that removing the setup script's line, or using another environment, reaches only sessions that start, or whose machines are rebuilt, afterwards, gives `git config --global pr-cost.capture false` for a running session and the three `GIT_CONFIG_` variables for an environment, which each of its sessions reads at its next restore, says that the first holds until something writes the opt-in again, as the setup script does on a machine that is rebuilt and an organization's hook can at a session's start or resume, or after `/clear` or a compaction, and the variables unless a settings file that the session loads sets `GIT_CONFIG_COUNT` itself, says that the three are for an environment that sets no other `GIT_CONFIG_` variable and how one that does adds the pair, gives `git config --show-origin --get-all pr-cost.capture` to see each value of a session's opt-in and where it comes from, says that `git config --global --get pr-cost.capture` shows only the global file's value, gives `/hooks` to see the hooks that run, and says that a repository whose `.claude/settings.json` sets `remote.defaultEnvironmentId` chooses the environment of the cloud sessions that `claude --cloud` starts from its clone, over the person's own pick, which the person keeps with the same key in the clone's `.claude/settings.local.json`
+
+### Requirement: The documentation says how an organization turns capture on for its members
+
+The README SHALL say how an organization turns the plugin on for its members, with no `ref`, and puts the opt-in's line in a shared environment, which sessions it reaches, that sharing an environment shares its line, that a member cannot change it, how managed settings opt members in only in cloud sessions and what a hook without that limit leaves, that it tells members first and what is published, how a member sees and stops capture, and that Team and Enterprise plans have no Projects yet.
+
+#### Scenario: The README says what an organization's option does
+
+- **WHEN** the README's section on organizations is read
+- **THEN** it says how an organization turns the plugin on for its members, registering this repository's marketplace with no `ref`, since a release's own tag holds the release before it, and puts the opt-in's line in a shared environment, which sessions each reaches, that a member who has not picked an environment uses the organization's default, that sharing an environment, or making it the default, shares the line in its setup script with every member who uses it and with a Claude Tag channel's sessions, so that an Owner takes their own line out first, that a member sees a shared environment read-only, so that an opt-out in a session there holds only until its machine is rebuilt and a member refuses the line for good only by working in an environment of their own, and keeps an agent that a later release adds out only by turning all capture off, since no opt-in leaves one agent out, that the organization's managed settings can also opt members in, with a hook that writes the opt-in only when `CLAUDE_CODE_REMOTE` is `true`, which it is in cloud sessions alone, and `git config --global --get pr-cost.capture` does not already give `true`, since the hook runs again after `/clear` and a compaction, and a write of the person's global configuration ends every interval, that a hook without the first condition writes the opt-in into a member's own git configuration on their own computer, where it stays after the hook goes and after they leave, and records each agent that later releases add, so that an organization that stops tells its members to turn capture off on each computer, that the organization tells its members first what is then published, and that its opt-in also records each agent that a later release adds, with no step of theirs, that a person's own line belongs in an environment of their own, how a member sees what turns capture on, with git's `--show-origin` and `/hooks`, and turns it off, and that Projects are not offered on Team or Enterprise plans yet
+
+### Requirement: The documentation gives both ways to install the plugin, the zip first
+
+The README SHALL give the release's zip first, with the command that checks its SHA-256 against the README at the release's commit, then this repository as a marketplace, saying when its updates arrive and that nothing needs accepting once one has synced, that a fixed release comes from its zip, since a release's tag holds an earlier plugin, that a zip follows no address, that a plugin loaded in place runs whatever its folder holds, and that a repository still copies the hook file.
+
+#### Scenario: The README gives the zip first and the marketplace second
+
+- **WHEN** the README's section on installing the plugin, and its section on adopting the tool, are read
+- **THEN** the section on installing the plugin gives the release's zip first, with the command that checks its SHA-256, then the repository as a marketplace, on claude.ai or with Claude Code's command, says that a marketplace's update arrives when the person checks for updates, or by itself once they turn on syncing, with nothing to accept once it has synced, that a fixed release comes from its zip and not from a marketplace pinned to the release's tag, which holds an earlier release's plugin or none, since the marketplace's folder moves only after a release, that a zip follows no address, that the plugin is installed only from a release's zip or from this repository's GitHub address, since one loaded in place runs whatever its folder holds, and that a repository still copies the hook file, and the section on adopting the tool names the plugin and points to that section
+
+### Requirement: The documentation says which release of the plugin runs, and what that changes
+
+The README SHALL say that the release of the plugin that a session runs, not the repository's pinned report, writes that session's ledger files, what a later or an earlier plugin then does, as an earlier copy leaving a session or a store to a later one, that a repository keeps its pin current and a person keeps their plugin current, that one copy of a plugin's name runs its hooks, how to see which, and that a tag with no published release is not a version.
+
+#### Scenario: The README says which release of the plugin runs
+
+- **WHEN** the README's section on installing the plugin is read
+- **THEN** it says that the plugin's release, not the repository's pinned report, writes the ledger files of the sessions that run it, what a later plugin's ledger files do to an earlier report and what an earlier plugin does beside a later copy or store, that a repository keeps its pin current and a person keeps their plugin current, that only one copy of a plugin's name runs its hooks, how to see which one in a terminal session and what a cloud session shows, and that a tag with no published release is not a version to pin or install
+
+### Requirement: The documentation says where the plugin leaves a staged ledger file
+
+The README SHALL say that a plugin run meets a repository only through the project directory, Claude's directory or a git command run there, and outside the repository that holds the project directory takes back another session's file only where its own session runs git, so that a ledger file that a refused commit staged in a repository that the session then leaves stays staged until a later run of that session meets it, or a session runs git there, and how to look for one and take it back.
+
+#### Scenario: The README says how to find a ledger file left staged in a repository that a session left
+
+- **WHEN** the README's section on installing the plugin is read
+- **THEN** it says that a ledger file that a refused commit staged in a repository that the session then left stays staged until a later run of that session meets that repository, or a session runs git there, and how to look for one with `git status` and take it back
+
+### Requirement: The README opens with a short start
+
+The README SHALL open, after its first paragraph and its status, with a short start of at most 200 words outside code, with no HTML, that says how a repository turns the tool on, pinned to a published release, how a person opts in, also in a cloud environment only they use, and adds the plugin for a project's cloud threads, from a release's zip checked against its README or from this repository's marketplace, how an organization opts its members in, and how to stop, linking each step's detail.
+
+#### Scenario: The README opens with its short start
+
+- **WHEN** the README is read from its top
+- **THEN** the first section after its first paragraph and its status is the short start, which holds no HTML and at most 200 words outside code, counted as the runs of letters or digits, with any apostrophe or hyphen inside them, that are left once its heading, its code blocks, its inline code and each link's brackets and target are taken out, and says how a repository turns the tool on, pinned to a published release, how a person opts in on each machine, that a cloud environment that only they use takes the same line in its setup script, that a project's cloud threads also need the plugin, added in the project's settings, from the latest release's zip after checking its checksum against that release's README, or from this repository's marketplace, named by its address, whose updates need no approval, that an organization tells its members, then turns the plugin on and opts them in, and how to stop, on each machine and in each running session, and in a setup script or with another environment, and that an organization that opted a person in can do so again, linking for each step the README's section that gives its detail
+
+#### Scenario: A short start that grows, moves, holds HTML or links elsewhere fails a test
+
+- **WHEN** the short start holds more than 200 words outside code, counted as the runs of letters or digits, with any apostrophe or hyphen inside them, that are left once its heading, its code blocks, its inline code and each link's brackets and target are taken out, a section comes before it, the `.github` folder holds a README, which GitHub shows on the repository's page in place of this one, it holds HTML, such as a `<details>` element, an HTML comment or any other element, or one of its links names anything but a heading of the README or this repository's latest release by its full address
+- **THEN** a test fails and names what it found
+
+#### Scenario: A command of the short start that the detail or the specs do not give fails a test
+
+- **WHEN** a command in the short start's code is not given, as written, in the README's section that the short start links for that step, its opt-in's line in both the section on the opt-in and the section on cloud threads, its opt-in is not `git config --global pr-cost.capture true`, its way to stop is not `git config --global pr-cost.capture false`, or the marketplace's address that it gives is not the one that the section on installing the plugin gives
+- **THEN** a test fails and names the command
+
+### Requirement: The README's short start says what an opt-in records and publishes
+
+Before any step that opts anyone in, the short start SHALL say that the tool records only opted-in people's sessions, that one opt-in covers every repository that turns the tool on and every agent, later ones too, that a call counts in the repository it is made from, whatever it works on, and that what a session spends is committed with its work, traceable to the person, published once pushed, even after an opt-out, and stays published, and SHALL tell an organization to tell its members first.
+
+#### Scenario: The short start says what an opt-in records and publishes
+
+- **WHEN** the README's short start is read as GitHub shows it
+- **THEN** before any step that opts anyone in, it says that turning the tool on in a repository records only the sessions of people who are opted in, that one opt-in covers every repository that turns the tool on and every agent that the tool records, later ones too, that a call counts in the repository that it is made from, whatever repository it works on, that what a session spends is committed with its work and can be traced to the person, that pushing that work publishes it, even after an opt-out, and that it stays published, and its step for an organization says to tell its members before it opts them in
+
+#### Scenario: A short start that leaves out what an opt-in publishes, or says it late, fails a test
+
+- **WHEN** the README's short start, as GitHub shows it, leaves out that turning the tool on records only the sessions of people who are opted in, that one opt-in covers every repository that turns the tool on and every agent that the tool records, later ones too, that a call counts in the repository that it is made from, whatever repository it works on, that what a session spends is committed with its work and can be traced to the person, or that it is published when pushed, even after an opt-out, and stays published, gives one of these only after a step that opts anyone in, or tells an organization to tell its members only after it opts them in
+- **THEN** a test fails and names what is missing or late
+
+### Requirement: The README folds the detail that follows its short start
+
+The README's sections on adopting the tool, on the opt-in, on installing the plugin, on a project's cloud threads, on organizations and on turning capture off SHALL follow its short start, each with its heading shown and its text folded until a reader opens it, so that the README shows first its short start and a list of what the detail covers, and the README SHALL hold only printable ASCII and line breaks, and no other text that GitHub hides.
+
+#### Scenario: The detail is folded under headings that show
+
+- **WHEN** the README is read as GitHub shows it
+- **THEN** its sections on adopting the tool, on the opt-in, on installing the plugin, on a project's cloud threads, on organizations and on turning capture off come after the short start, each heading shows, and the text of each section is inside a `<details>` element that stays closed until a reader opens it
+
+#### Scenario: A section of detail that shows its text, or text that GitHub hides, fails a test
+
+- **WHEN** one of those sections holds text, other than its heading, outside a `<details>` element, gives that element or its `<summary>` element an attribute, such as `open`, or comes before the short start, or the README holds a character other than printable ASCII and a line break, such as a zero-width space, a bidirectional control or a variation selector, a code block whose opening fence gives anything but a language on the test's list, which holds none that GitHub draws as a diagram, a map, a model or mathematics, such as `mermaid` or `math`, or, outside code, a `<` that does not open or close one of the `<details>` and `<summary>` elements that fold those sections, as in an HTML comment, any other element, a processing instruction, a declaration or a CDATA section, a `]:`, as in a link reference definition or a footnote's definition, a character reference, a mathematical expression, an image, a link with a title, or a link whose target holds a query or a fragment that names no heading of the README
+- **THEN** a test fails and names the section, or the line and what it holds
+
+### Requirement: The README sends people only to this repository and to addresses that its test lists
+
+Every link, autolink and web address in the README, prose and code alike, and every repository that it names as `owner/repo`, SHALL name a heading of the README, a file of this repository by a relative path, an address on a list that its test keeps, or, on GitHub, only this repository, its latest release, or a release, a release's file, a file or a folder at a release's tag or a placeholder, since GitHub also serves under this repository's address what others write.
+
+#### Scenario: The README's addresses are this repository's or on the test's list
+
+- **WHEN** every link, autolink, web address and `owner/repo` in the README is read, in its opening, its short start, its folded detail and its code, an `owner/repo` being read where a `uses:` line, a marketplace's command or setting, or a `gh` command names a repository
+- **THEN** each names a heading of the README, a file of this repository by a relative path, an address on the test's list, or, at `github.com` or `raw.githubusercontent.com`, this repository, its latest release, or a release, a release's file, a file or a folder at a tag of the form `vMAJOR.MINOR.PATCH` or at a placeholder, such as `<commit>`
+
+#### Scenario: An address elsewhere, or a commit named by its ID, fails a test
+
+- **WHEN** the README gives, anywhere in it, a link, an autolink, a web address or an `owner/repo` that names another repository or site that the test's list does not hold, or anything else under this repository's address, such as a commit by its ID, a branch, a pull request's ref, such as `refs/pull/1/head`, a pull request, an issue or a comparison
+- **THEN** a test fails and names the address
+
+### Requirement: The README's section on adopting the tool takes the tool from a published release's commit
+
+The README's section on adopting the tool SHALL say to take the hook file, its registration and the calling workflow from the README at the commit that a published release names, SHALL give the calling workflow with its pin left for that commit, and SHALL say that a tag with no published release is not a version to pin, so that a pin, an update bot's included, is taken only once a published release names its commit.
+
+#### Scenario: The section on adopting the tool takes the tool from a published release's commit
+
+- **WHEN** the README's section on adopting the tool is read
+- **THEN** it says to take the hook file, its registration and the calling workflow from the README at the commit that a published release names, gives the calling workflow with a placeholder for its pin and says to fill it with that commit, and says that a tag with no published release is not a version to pin, so that a pin, an update bot's included, is taken only once a published release names its commit
+
+#### Scenario: A calling workflow pinned in the README, or a section that leaves out where the tool comes from, fails a test
+
+- **WHEN** the README's calling workflow gives a commit, a tag or a branch for its pin in place of the placeholder, or the section on adopting the tool leaves out that the hook file, its registration and the calling workflow come from the README at a published release's commit, or that a tag with no published release is not a version to pin
+- **THEN** a test fails and names what it found
+
+### Requirement: The README leaves each opt-in to the person, or to their organization
+
+The README's sections on the opt-in, on a project's cloud threads and on organizations SHALL say that a person sets their own opt-in, or their organization does once it has told them, and that an agent that sets the tool up turns capture on for no one, in a git configuration file, a setup script, an environment's variables or managed settings, and leaves the opt-in to whoever asked it.
+
+#### Scenario: The README leaves the opt-in to the person
+
+- **WHEN** the README's sections on the opt-in, on cloud threads and on organizations are read
+- **THEN** each says that a person sets their own opt-in, or their organization does once it has told them, and that an agent that sets the tool up turns capture on for no one, in a git configuration file, a setup script, an environment's variables or managed settings, and leaves the opt-in to whoever asked it
+
+### Requirement: The README's status says when this repository's marketplace does not serve the plugin yet
+
+While this repository's root marketplace file is missing, or holds no entry for the tool's plugin, the README's status SHALL say that this repository's marketplace does not serve the plugin yet.
+
+#### Scenario: The README's status says that the marketplace does not serve the plugin yet
+
+- **WHEN** this repository's root marketplace file is missing, or holds no entry for the tool's plugin, and the README is read
+- **THEN** its status says that this repository's marketplace does not serve the plugin yet
+
+#### Scenario: A status that leaves out that the marketplace does not serve the plugin fails a test
+
+- **WHEN** this repository's root marketplace file is missing, or holds no entry for the tool's plugin, as the file that lists the vendored Superpowers holds none, and the README's status does not say that this repository's marketplace does not serve the plugin yet
+- **THEN** a test fails and names the root marketplace file
+
+### Requirement: The roadmap says what is now, next and later
+
+The repository SHALL keep a roadmap, `docs/roadmap.md`, linked from the README's list of documentation, with the sections Now, Next, Later, Known limitations and Known bugs in that order. It SHALL open by saying that it describes, that an item on it is neither a promise nor a date, and that it is not a request to start work, and Now SHALL end with one line on the build that links the change's proposal and tasks. Tests SHALL fail otherwise.
+
+#### Scenario: The roadmap gives its sections in order
+
+- **WHEN** the README's list of documentation and `docs/roadmap.md` are read
+- **THEN** the list links the roadmap, the roadmap opens by saying that it describes, that an item is neither a promise nor a date and that it is not a request to start work, its sections are Now, Next, Later, Known limitations and Known bugs, in that order, and Now ends with the line on the build
+
+#### Scenario: A roadmap without its link, its opening, a section or the line on the build fails a test
+
+- **WHEN** `docs/roadmap.md` is missing, it does not open with what it says of its items, a section is missing or out of order, the README's list of documentation does not link it, or Now does not end with the line on the build
+- **THEN** a test fails and names what is missing
+
+### Requirement: Each backlog item says how far it is from being built
+
+Each backlog item SHALL give one of five statuses: `Open to feedback and contributions`, `Planned`, `In progress`, `Done` or `Dropped`. An item that is `In progress` or `Done` SHALL name at least one pull request, and an item that is `Dropped` SHALL have a section that says why. Tests SHALL fail otherwise.
+
+#### Scenario: Each item gives one of five statuses
+
+- **WHEN** the backlog items are read
+- **THEN** each gives one of the five statuses, each that is `In progress` or `Done` names a pull request, and each that is `Dropped` says why
+
+#### Scenario: An item without one of the five statuses fails a test
+
+- **WHEN** an item gives no status, or a status other than the five, such as `Planned.` with a stop or `Agreed`
+- **THEN** a test fails and names the item
+
+#### Scenario: An item in progress or done that names no pull request fails a test
+
+- **WHEN** an item that is `In progress` or `Done` gives `none` in its field Pull requests, or an item that is `Dropped` has no section that says why
+- **THEN** a test fails and names the item
+
+### Requirement: Every risk of the design is listed as a known limitation
+
+Each risk that the risks and trade-offs of any change's design give, active or archived, SHALL be listed, by its title as that design gives it, under the roadmap's Known limitations or in the section on known limitations and the roadmap of a page in `docs/features/` that is named for a spec. Each such page SHALL have that section, linking the roadmap, and Known limitations SHALL say that it is a short list and link each of those sections. Tests SHALL fail otherwise.
+
+#### Scenario: Every risk is listed
+
+- **WHEN** the risks and trade-offs of every change's design, the roadmap's Known limitations and the feature pages are read
+- **THEN** each risk's title, as its design gives it, is listed in at least one of them, and Known limitations says that it is a short list and links each feature page's section
+
+#### Scenario: A risk that no page lists fails a test
+
+- **WHEN** a risk of a design is listed neither under the roadmap's Known limitations nor on any feature page, a feature page has no section on known limitations and the roadmap, that section does not link the roadmap, or Known limitations does not link it
+- **THEN** a test fails and names the risk or the page
+
+#### Scenario: A listed title that no design gives fails a test
+
+- **WHEN** the roadmap's Known limitations or a feature page lists as a risk of the design a title that no change's design gives
+- **THEN** a test fails and names the page and the title
+
+#### Scenario: The risks are read from an archived change too
+
+- **WHEN** the change whose design gives a risk is archived
+- **THEN** the risk is still read from its archived design, and a page that no longer lists it fails a test
+
+### Requirement: The roadmap and the backlog link only this repository's own files
+
+Every link, image, autolink, web address, host and `owner/repo` in the roadmap, `docs/backlog/` and each feature page's section on known limitations and the roadmap, prose and code alike, SHALL name a heading of its own page or, by a relative path inside this repository, a tracked file of it outside `vendor/` and `.claude/skills/`. They SHALL name issues and pull requests by number alone, and give no `@`, commit ID, fenced or indented code, or space in inline code. Tests SHALL fail otherwise.
+
+#### Scenario: The roadmap's and the backlog's links stay within this repository's files
+
+- **WHEN** every link, autolink, web address and `owner/repo` in the roadmap, in the files in `docs/backlog/` and in those sections is read, each link from its `](` whatever its text holds, in prose and in inline code alike
+- **THEN** each names a heading of its own page, or a tracked file of this repository outside `vendor/` and `.claude/skills/` by a relative path that, resolved from the page's folder, stays inside the repository
+
+#### Scenario: A link elsewhere fails a test
+
+- **WHEN** the roadmap, a file in `docs/backlog/` or such a section gives a web address, a host such as `example.org`, in prose or in inline code, that is not a tracked file's path or a name that the test lists as not a host, among them, in prose, one that emphasis marks split, as `evil.*example*` is, which GitHub shows as one name, and four numbers joined by dots, as an IP address is, an image, an `@`, an `owner/repo`, a commit ID, read as seven or more hexadecimal digits that hold both a digit and a letter, a fenced or indented code block, inline code that holds a space, as a command such as `git config --global pr-cost.capture true` does, a relative path that leaves the repository or names no tracked file, as `../../../issues/15` does, or a link into `vendor/` or `.claude/skills/`, whose files others write
+- **THEN** a test fails and names the file and the line
+
+#### Scenario: A name that only looks like a host passes when the test lists it
+
+- **WHEN** the roadmap, a file in `docs/backlog/` or such a section gives, in prose or in inline code, a name that reads as a host, as two or more labels joined by dots whose last is made of letters, and that the test lists, with its reason, among the names that are not hosts, such as the git configuration key `core.autocrlf`
+- **THEN** the test passes it, and fails on that name once it is taken off the list
+
+### Requirement: The roadmap, the backlog and the feature pages' roadmap sections hold no hidden text
+
+The roadmap, each file in `docs/backlog/`, and each feature page's section on known limitations and the roadmap, SHALL hold only printable ASCII and line feeds, and nowhere, inline code included, a `<`, a `&`, a backslash, a `]:`, a `|` or a link with a title, so that what GitHub shows of them is all that an agent reads. Tests SHALL fail otherwise.
+
+#### Scenario: Text that GitHub hides fails a test
+
+- **WHEN** the roadmap, a file in `docs/backlog/` or such a section holds a character other than printable ASCII and a line feed, such as a carriage return, a zero-width space or a bidirectional control, or, inline code included, a `<`, as in an HTML comment, a `&`, as in a character reference, a backslash, as in an escape, a `]:`, as in a link reference definition, a `|`, as in a table whose row holds a cell more than its header, or a link with a title
+- **THEN** a test fails and names the file, the line and what it holds
+
+### Requirement: A backlog item has its form
+
+Each backlog item SHALL be a file `docs/backlog/B-NNN-words.md`, numbered from B-001 without a gap or a repeat, and the folder SHALL hold nothing else but `README.md`, which gives the form. An item SHALL open with `# B-NNN: title` and the fields Status, Last changed, Brief, Rests on, Issue and Pull requests, in that order, and then give the sections Problem, What done looks like and Postponed points, each once and in that order. Tests SHALL fail otherwise.
+
+#### Scenario: Each backlog item has its form
+
+- **WHEN** the files in `docs/backlog/` are read
+- **THEN** each but `README.md` is an item named `B-NNN-words.md`, numbered from B-001 without a gap, with its heading, its six fields in order, a date as `YYYY-MM-DD` in Last changed, a brief of one to three sentences, IDs or `none` in Rests on, a number or `none` in Issue and numbers or `none` in Pull requests, and its sections in order
+
+#### Scenario: An item out of form fails a test
+
+- **WHEN** an item's file name, heading, fields or sections are missing, repeated, out of order or in another form, its brief holds more than three sentences, its date is not a date, the numbers have a gap or a repeat, or the folder holds another file, a folder or a symbolic link
+- **THEN** a test fails and names the file and what is wrong
+
+### Requirement: The README briefs developers on how work flows
+
+The README's section on working here SHALL open, before its setup, with a briefing: anyone may open an issue with no approval needed; an issue is public at once and holds nothing private; what it proposes is not planned or committed to; and a backlog item changes only by a pull request that the owner merges. It SHALL give the stages of work in one table, which no other Markdown file gives, and `CONTRIBUTING.md` and `docs/backlog/README.md` SHALL link the section. Tests SHALL fail otherwise.
+
+#### Scenario: The README opens its section on working here with the briefing
+
+- **WHEN** the README's section on working on this repository is read
+- **THEN** before its setup it says that anyone may open an issue with no approval needed, that an issue is public at once and holds nothing private, a security problem going to `SECURITY.md` instead, that what an issue proposes is neither planned nor committed to, and that a backlog item changes only through a pull request that the owner merges, and it gives the table of stages, with the columns Step, Where it lives, What it holds and Who writes it, and the rows An idea or a bug, Agreed work, Order, Delivery and Result, in that order, each row linking a page of this repository
+
+#### Scenario: A briefing out of form, or a second copy of its table, fails a test
+
+- **WHEN** the briefing is missing or follows the setup, leaves out one of those statements, its table lacks a column or a row, or gives them out of order, a row links no page, another tracked Markdown file gives the table's header, or `CONTRIBUTING.md` or `docs/backlog/README.md` does not link the section
+- **THEN** a test fails and names what is wrong
+
+### Requirement: The roadmap is the index of the open backlog items
+
+Now, Next and Later SHALL give one line for each backlog item that is `Open to feedback and contributions`, `Planned` or `In progress`, in the order of the work, linking its file and giving its ID, title, status, date and brief as the item gives them, and no line for an item that is `Done` or `Dropped`. Now SHALL list only items that are `Planned` or `In progress`, and each item listed under Next or Later SHALL name at least one ID in Rests on. Tests SHALL fail otherwise.
+
+#### Scenario: The roadmap lists each open item as the item gives it
+
+- **WHEN** the roadmap's Now, Next and Later and the backlog items are read
+- **THEN** each item that is `Open to feedback and contributions`, `Planned` or `In progress` is listed once, by a line that links its file and gives its ID, title, status, date and brief as the item gives them, and no item that is `Done` or `Dropped` is listed
+
+#### Scenario: A line that differs from its item fails a test
+
+- **WHEN** a line under Now, Next or Later gives a title, a status, a date or a brief that differs from its item's, links no backlog item's file, or is in another form
+- **THEN** a test fails and names the line
+
+#### Scenario: An open item missing or listed twice, or a closed one still listed, fails a test
+
+- **WHEN** an item that is `Open to feedback and contributions`, `Planned` or `In progress` is listed in none of Now, Next and Later, or more than once, or an item that is `Done` or `Dropped` is listed
+- **THEN** a test fails and names the item
+
+#### Scenario: An item under Now that is not agreed fails a test
+
+- **WHEN** an item listed under Now is `Open to feedback and contributions`
+- **THEN** a test fails and names the item
+
+#### Scenario: An item under Next or Later that rests on nothing fails a test
+
+- **WHEN** an item listed under Next or Later gives `none` in its field Rests on
+- **THEN** a test fails and names the item
+
+### Requirement: Later says how work on an item starts
+
+Later SHALL open by saying that work on an item that is open to feedback and contributions starts with an issue, that an item is built only once it is `Planned`, which only a pull request that the owner merges makes it, and that some items need a spec, a threat review and the owner's decision first. Each record that the README's list of what the first version does not support links SHALL be named in Rests on by an item listed under Later. Tests SHALL fail otherwise.
+
+#### Scenario: Later opens with how work on an item starts
+
+- **WHEN** the roadmap's Later is read
+- **THEN** it opens, before its first line, with its sentence on how work on an item starts, and each record that the README's list of what the first version does not support links is named in Rests on by an item listed under Later
+
+#### Scenario: Later without its opening fails a test
+
+- **WHEN** Later does not open, before its first line, with its sentence on how work on an item starts
+- **THEN** a test fails and names the section
+
+#### Scenario: A record that the README leaves out and Later does not name fails a test
+
+- **WHEN** the README's list of what the first version does not support links a record that Rests on of no item listed under Later names
+- **THEN** a test fails and names the record
+
+### Requirement: A backlog item names only what exists, and is not stale
+
+Rests on SHALL hold only `none` or requirements (`R` and digits), records (`DR-` and three digits), threats (`T` and digits), assumptions (`A` and digits), backlog items (`B-` and three digits) and tasks (`task`, its number, `of` and its change's name as code), each of which SHALL exist, in active and archived changes alike. No item SHALL name a closed record, and an open item SHALL name no tasks that are all ticked. Tests SHALL fail otherwise.
+
+#### Scenario: An item that names what does not exist fails a test
+
+- **WHEN** an item's Rests on holds anything but `none` and those forms, or names a requirement that the register does not hold, a record that `docs/decisions/` does not hold, a threat that the threat model does not hold, an assumption that `docs/assumptions/` does not hold, a backlog item that `docs/backlog/` does not hold, or a task by a change and number that no change's `tasks.md`, active or archived, holds
+- **THEN** a test fails and names the item and what it names
+
+#### Scenario: A stale item fails a test
+
+- **WHEN** an item names a closed record, or an item that is neither `Done` nor `Dropped` names tasks that are all ticked in their change's `tasks.md`
+- **THEN** a test fails and names the item
+
+### Requirement: A backlog item keeps its file, and its date moves with its text
+
+Compared with the base commit that the records' check uses, no backlog item SHALL be removed, renamed or moved, an item whose text a branch changes SHALL give a later date in Last changed than the base's copy, or the same date when that is the day on which the test runs, and no item SHALL give a date later than that day, in UTC. Tests SHALL fail otherwise.
+
+#### Scenario: An item changed without a new date fails a test
+
+- **WHEN** a branch changes an item's text and leaves its date before the date that the base commit's copy gives, or at that date when it is not the day on which the test runs, or an item gives a date later than that day
+- **THEN** a test fails and names the item
+
+#### Scenario: A second change to an item on the day of the first passes
+
+- **WHEN** the base commit's copy of an item gives the day on which the test runs, and a branch changes the item again and gives the same date
+- **THEN** no test fails for its date
+
+#### Scenario: An item removed or renamed fails a test
+
+- **WHEN** the base commit holds an item that the branch removes, renames or moves
+- **THEN** a test fails and names the item, so that every link to an item still leads to it once it is done or dropped
+
+### Requirement: The backlog's page says what an item is and is not
+
+`docs/backlog/README.md` SHALL give an item's form, link the roadmap, and say that an item describes, that it is neither a promise nor a date, that it is not a request to start work, what each of the five statuses means, and that `Done` means that its pull requests have merged to the default branch, while `CHANGELOG.md` names the release that holds it. Tests SHALL fail otherwise.
+
+#### Scenario: The backlog's page says what an item is and is not
+
+- **WHEN** `docs/backlog/README.md` is read
+- **THEN** it links the roadmap, gives the form, and says that an item describes, is neither a promise nor a date and is not a request to start work, what each status means, and that `Done` means merged, with `CHANGELOG.md` naming the release
+
+#### Scenario: A backlog page that leaves one out fails a test
+
+- **WHEN** `docs/backlog/README.md` is missing, does not link the roadmap, or leaves out one of those statements or a status
+- **THEN** a test fails and names what is missing
+
+### Requirement: An item becomes agreed only by a change to its status
+
+Compared with the base commit that the records' check uses, an item that the base does not hold SHALL be `Open to feedback and contributions` or `Planned`, and an item that the base gives as `Open to feedback and contributions` or `Dropped` SHALL NOT become `In progress` or `Done`, so that an item is agreed by its status line before it is built. The check SHALL be skipped while no base holds `docs/backlog/`. Tests SHALL fail otherwise.
+
+#### Scenario: An item that skips agreement fails a test
+
+- **WHEN** a branch adds an item that is `In progress`, `Done` or `Dropped`, or moves an item that the base gives as `Open to feedback and contributions` or `Dropped` to `In progress` or `Done`
+- **THEN** a test fails and names the item and the two statuses
+
+#### Scenario: The first items pass before any base holds the backlog
+
+- **WHEN** no base commit holds `docs/backlog/`
+- **THEN** the check of status changes examines nothing and passes, and once a base holds it, the check reads every item
+
+### Requirement: The guide says how the project builds, concern by concern
+
+A guide, `docs/patterns.md`, SHALL be linked from the README's list of documentation, and `CLAUDE.md` SHALL give the sentence on the guide's rank that the first scenario gives. The guide SHALL open with the text that the scenario gives, word for word, and a last line that names the assessment, by its date, or the release, by its version, for which its entries were last read, and SHALL then give the sections that the scenario names, each holding one or more entries. Tests SHALL fail otherwise.
+
+#### Scenario: The guide opens with its text and gives its concerns in order
+
+- **WHEN** the README's list of documentation, `CLAUDE.md` and `docs/patterns.md` are read
+- **THEN** the list links the guide; `CLAUDE.md` gives the sentence "The guide is not one of the pages that only describe, but it steers below the specs and this file: where it differs from either, they win, so tell the owner, and it never widens what this file lets you do."; the guide opens, before its first section, with these lines, word for word, each followed by a blank line: "# How the project builds", "This guide says how the project builds, concern by concern: the principles that the project follows, each with the pattern that it applies and the anti-patterns that it steers clear of, what holds it, and where the project stands.", "The specs decide what the tool does, `CLAUDE.md` what an agent may do, and this guide how the project builds. Where the guide differs from the specs or `CLAUDE.md`, they win, and the owner is told. It never widens what `CLAUDE.md` lets an agent do, and an entry cites the requirement or the rule of `CLAUDE.md` that it rests on rather than stating it again. Where an entry and a step of a Superpowers skill differ, the step is followed, and the owner is told.", "The guide steers as the default branch holds it: an entry that a branch adds or changes is a proposal until the owner merges it, and a principle is added, removed, changed or moved to another concern only when the owner asks for it, in a pull request that changes nothing outside `docs/`, `openspec/`, `CLAUDE.md` and `CHANGELOG.md`. It speaks to work on this repository, not to setting the tool up, which is the README's section on adopting it: an agent that sets the tool up turns capture on for no one.", "Where we stand gives where the default branch stands, and a release's guide is the copy at its tag. It opens with `Followed.` when the default branch's code and checks hold the principle, `Designed.` when its specs and tasks hold it before it is built, `Knowingly accepted.` with the record that gives the reason, or `Gap.` with the backlog item that closes it, as `Gap. Before the build.` when the owner asked for it to be closed before the build." and "A gap is not, by being there, a request to start work: it closes only through the backlog item that it names, and work outside that item leaves what the gap concerns as it stands. A principle knowingly accepted is accepted only where its record says."; then a last line that is "The entries are read again at each assessment and before each release, and were last read for " followed by "the assessment of " and a date as `YYYY-MM-DD`, or by "release " and a version as `MAJOR.MINOR.PATCH`, and a full stop; and its sections are Architecture and integration, Security, Privacy, Identity and credentials, Supply chain and releases, Testing, Decisions and documentation, Working with agents, and Conventions, in that order, each holding one or more entries
+
+#### Scenario: A guide without its links, its opening or a concern fails a test
+
+- **WHEN** `docs/patterns.md` is missing, the README's list of documentation does not link it, `CLAUDE.md` does not give that sentence, the text before the guide's first section differs from that text or names no assessment or release in its last line, or a section is missing, repeated, out of order or holds no entry
+- **THEN** a test fails and names what is missing, or the first line that differs
+
+### Requirement: Each entry of the guide gives its principle and where the project stands
+
+Each entry SHALL be a `###` heading that names a principle, followed by the fields Statement, Rationale, Implications, Pattern, Anti-patterns, Held by, Rests on and Where we stand, each once, in that order, and nothing else, an entry under Working with agents citing `CLAUDE.md` in Held by. Where we stand SHALL open with `Followed.`, `Designed.`, `Knowingly accepted.` or `Gap.`, as "Where the guide says the project stands is held true" holds them. Tests SHALL fail otherwise.
+
+#### Scenario: Each entry gives its fields in order
+
+- **WHEN** the guide's entries are read
+- **THEN** each is a `###` heading followed by the fields Statement, Rationale, Implications, Pattern, Anti-patterns, Held by, Rests on and Where we stand, each once, in that order, none of them empty, and each section holds its entries and nothing else
+
+#### Scenario: An entry out of form fails a test
+
+- **WHEN** an entry leaves out a field, repeats one, gives them out of order or leaves one empty, or a section holds text outside its entries
+- **THEN** a test fails and names the entry, or the section and the line
+
+#### Scenario: An entry that does not say where the project stands fails a test
+
+- **WHEN** an entry's Where we stand opens with none of `Followed.`, `Designed.`, `Knowingly accepted.` and `Gap.`
+- **THEN** a test fails and names the entry
+
+#### Scenario: An entry on working with agents that does not cite `CLAUDE.md` fails a test
+
+- **WHEN** an entry under Working with agents does not cite `CLAUDE.md` in its Held by, so that an entry there could stand in for a rule of `CLAUDE.md`
+- **THEN** a test fails and names the entry
+
+### Requirement: The guide links only this repository's own files and holds no hidden text
+
+The guide SHALL hold to the rules that "The roadmap and the backlog link only this repository's own files" and "The roadmap, the backlog and the feature pages' roadmap sections hold no hidden text" give the roadmap, apart from inline code with a space in its opening, which is fixed word for word, and SHALL give no `$` and no `~` outside inline code and cite no file under `vendor/` or `.claude/skills/` in Held by, so that it leads no one to what others write or hide. Tests SHALL fail otherwise.
+
+#### Scenario: A link elsewhere in the guide fails a test
+
+- **WHEN** the guide gives a web address, a host such as `example.org`, in prose or in inline code, that is not a tracked file's path or a name that the test lists as not a host, among them, in prose, one that emphasis marks split and four numbers joined by dots, an image, an `@`, an `owner/repo`, a commit ID, a fenced or indented code block, inline code that holds a space after its opening, a relative path that leaves the repository or names no tracked file, or a link into `vendor/` or `.claude/skills/`, or an entry's Held by cites a file there, whose text others write
+- **THEN** a test fails and names the line
+
+#### Scenario: The guide's opening keeps its fixed words in inline code
+
+- **WHEN** the guide's opening, which is fixed word for word, gives `Knowingly accepted.` and `Gap. Before the build.` in inline code
+- **THEN** the test passes them, and fails on inline code that holds a space anywhere after the opening
+
+#### Scenario: Text that GitHub hides in the guide fails a test
+
+- **WHEN** the guide holds a character other than printable ASCII and a line feed, or, inline code included, a `<`, a `&`, a backslash, a `]:`, a `|` or a link with a title, or, outside inline code, a `$` or a `~`, with which GitHub shows mathematics or struck-through text
+- **THEN** a test fails and names the file, the line and what it holds
+
+### Requirement: Each entry of the guide gives its source, what holds it and what it rests on
+
+An entry's Pattern SHALL give its recognised name and, after `Source:`, its source by author or body and work. Held by SHALL cite what holds the entry as the threat model's Held by does, or say after `Review:` what review checks, or both. Rests on SHALL hold IDs, in the forms of a backlog item's Rests on, that exist and name no closed record. Clean Code, PEP 8, OWASP's secure coding practices and OpenSSF's Scorecard SHALL each be named in a Pattern. Tests SHALL fail otherwise.
+
+#### Scenario: Each entry gives its source, what holds it and what it rests on
+
+- **WHEN** the guide's entries are read
+- **THEN** each Pattern gives text after `Source:`, each Held by cites scenarios, tasks, decisions, records or files that exist, or gives text after `Review:`, or both, each Rests on names one or more requirements, records, threats, assumptions, backlog items or tasks that exist and no closed record, and Clean Code, PEP 8, OWASP's secure coding practices and OpenSSF's Scorecard are each named in an entry's Pattern
+
+#### Scenario: An entry with no source fails a test
+
+- **WHEN** an entry's Pattern gives no `Source:` or nothing after it
+- **THEN** a test fails and names the entry
+
+#### Scenario: An entry whose Held by holds nothing that resolves fails a test
+
+- **WHEN** an entry's Held by cites a scenario, a task, a design decision, a record or a file that does not exist, or neither cites anything nor gives text after `Review:`
+- **THEN** a test fails and names the entry and what it cites
+
+#### Scenario: An entry that rests on nothing, or on what does not exist, fails a test
+
+- **WHEN** an entry's Rests on gives `none` or an ID in another form, or names a requirement that the register does not hold, a record that `docs/decisions/` does not hold or that is closed, a threat that the threat model does not hold, an assumption that `docs/assumptions/` does not hold, a backlog item that `docs/backlog/` does not hold, or a task by a change and number that no change's `tasks.md`, active or archived, holds
+- **THEN** a test fails and names the entry and what it names
+
+#### Scenario: A named practice left out of the guide fails a test
+
+- **WHEN** no entry's Pattern names one of Clean Code, PEP 8, OWASP's secure coding practices and OpenSSF's Scorecard
+- **THEN** a test fails and names the practice
+
+### Requirement: Where the guide says the project stands is held true
+
+`Followed.` SHALL be given only while every task that the entry's Held by cites is ticked, and `Designed.` only while one is not. `Knowingly accepted.` SHALL name an accepted record, and `Gap.` a backlog item that is not `Done` or `Dropped`. Under Security, Privacy, Identity and credentials, and Supply chain and releases, a record so named SHALL give the owner as its decider, and an item so named SHALL be `Planned` or `In progress`. Tests SHALL fail otherwise.
+
+#### Scenario: A principle followed or designed as its tasks give passes
+
+- **WHEN** an entry's Where we stand opens with `Followed.` and every task that its Held by cites is ticked, or with `Designed.` and one of them is not
+- **THEN** the test passes it
+
+#### Scenario: A principle said to be followed before it is built fails a test
+
+- **WHEN** an entry's Where we stand opens with `Followed.` and its Held by cites a task that is not ticked, or with `Designed.` and its Held by cites no task that is not ticked
+- **THEN** a test fails and names the entry, and the task that is not ticked
+
+#### Scenario: A principle knowingly accepted without its record fails a test
+
+- **WHEN** an entry's Where we stand opens with `Knowingly accepted.` and names no record, or names only records that `docs/decisions/` does not hold or that are closed
+- **THEN** a test fails and names the entry
+
+#### Scenario: A gap without an open backlog item fails a test
+
+- **WHEN** an entry's Where we stand opens with `Gap.` and names no backlog item, or it names a backlog item that `docs/backlog/` does not hold or that is `Done` or `Dropped`
+- **THEN** a test fails and names the entry and the item, so that the pull request that finishes or drops an item says again where the project stands
+
+#### Scenario: A risk that adopters rely on, accepted without the owner, fails a test
+
+- **WHEN** an entry under Security, Privacy, Identity and credentials, or Supply chain and releases opens Where we stand with `Knowingly accepted.`, and a record that it names does not give the owner in Decided by
+- **THEN** a test fails and names the entry and that record
+
+#### Scenario: A gap that adopters rely on, without an agreed item, fails a test
+
+- **WHEN** an entry under Security, Privacy, Identity and credentials, or Supply chain and releases opens Where we stand with `Gap.`, and names a backlog item that is not `Planned` or `In progress`
+- **THEN** a test fails and names the entry and that item
+
+### Requirement: A gap to close before the build holds the build back
+
+While an entry's Where we stand opens with `Gap.` and names a backlog item that the roadmap lists under Now, no task of `add-pr-cost-calculator` numbered 1.1 to 1.9, 1.13 to 1.15 or 1.21, or in a section after the first, SHALL be ticked in that change's `tasks.md`, active or archived, so that what the owner asked to be fixed before the build is fixed first, and an entry that opens with `Gap. Before the build.` SHALL name such an item. Tests SHALL fail otherwise.
+
+#### Scenario: A gap to close before the build, with its item under Now, passes
+
+- **WHEN** an entry's Where we stand opens with `Gap. Before the build.` and names an item that the roadmap lists under Now, and no task of `add-pr-cost-calculator` numbered 1.1 to 1.9, 1.13 to 1.15 or 1.21, or in a section after the first, is ticked
+- **THEN** the test passes it
+
+#### Scenario: A gap to close before the build whose item is not under Now fails a test
+
+- **WHEN** an entry's Where we stand opens with `Gap. Before the build.` and names no item that the roadmap lists under Now
+- **THEN** a test fails and names the entry and the items that it names
+
+#### Scenario: A build task ticked while a gap to close before it is open fails a test
+
+- **WHEN** an entry's Where we stand opens with `Gap.` and names an item that the roadmap lists under Now, whether or not it goes on with `Before the build.`, and a task of `add-pr-cost-calculator` numbered 1.1 to 1.9, 1.13 to 1.15 or 1.21, or in a section after the first, is ticked
+- **THEN** a test fails and names the entry, the item and the task
+
+### Requirement: A principle of the guide changes alone
+
+Compared with the base that the records' check uses, a pull request that adds or removes a guide entry, moves one to another concern, or changes an entry's Statement, Rationale, Implications, Pattern or Anti-patterns, SHALL change no file outside `docs/`, `openspec/`, `CLAUDE.md` and `CHANGELOG.md`, so that one diff cannot both weaken a principle and add the work that the principle forbade. The check SHALL be skipped while no base holds the guide. Tests SHALL fail otherwise.
+
+#### Scenario: A principle changed beside other work fails a test
+
+- **WHEN**, compared with the base, a pull request adds or removes an entry of the guide, or changes an entry's Statement, Rationale, Implications, Pattern or Anti-patterns, and also changes a file outside `docs/`, `openspec/`, `CLAUDE.md` and `CHANGELOG.md`
+- **THEN** a test fails and names the entry and the file
+
+#### Scenario: An entry moved to another concern beside other work fails a test
+
+- **WHEN**, compared with the base, a pull request moves an entry of the guide from one concern to another, as from Security, where only a record that the owner decided accepts it, to Conventions, and also changes a file outside `docs/`, `openspec/`, `CLAUDE.md` and `CHANGELOG.md`
+- **THEN** a test fails and names the entry, both concerns and the file
+
+#### Scenario: A principle changed alone passes
+
+- **WHEN**, compared with the base, a pull request that changes a principle so changes no file outside them, or one that changes no principle changes an entry's Held by, Rests on or Where we stand beside other work
+- **THEN** the test passes it
+
+#### Scenario: The guide's first entries pass before any base holds the guide
+
+- **WHEN** no base commit holds `docs/patterns.md`
+- **THEN** the check of changes to the guide's principles examines nothing and passes, and once a base holds it, the check reads every entry
+
+### Requirement: A gap given to an agreed item changes that item
+
+Compared with the base that the records' check uses, a pull request that makes an entry of the guide name as a gap a backlog item that the base gives as `Planned` or `In progress` SHALL change that item's What done looks like, so that what an agreed item takes on shows in its own text, which changes only on the owner's words. The check SHALL be skipped while no base holds the guide. Tests SHALL fail otherwise.
+
+#### Scenario: A gap given to an agreed item without a change to that item fails a test
+
+- **WHEN**, compared with the base, an entry comes to name as a gap a backlog item that the base gives as `Planned` or `In progress`, and that item's What done looks like is as the base gives it
+- **THEN** a test fails and names the entry and the item
+
+#### Scenario: A gap given to an agreed item with a change to that item passes
+
+- **WHEN**, compared with the base, an entry comes to name as a gap a backlog item that the base gives as `Planned` or `In progress`, and that item's What done looks like differs from the base's, or it comes to name an item that the base gives with another status or does not hold
+- **THEN** the test passes it
+
+#### Scenario: The guide's first gaps pass before any base holds the guide
+
+- **WHEN** no base commit holds `docs/patterns.md`
+- **THEN** the check of gaps given to agreed items examines nothing and passes, and once a base holds it, the check reads every entry's gap
+
+### Requirement: A gap of the guide closes only with its item
+
+Compared with the base that the records' check uses, a pull request in which an entry of the guide, known by its heading, stops being a gap, or its gap stops naming a backlog item that the base's gap names, SHALL leave that item `Done` or `Dropped`, so that a gap closes, or passes to other work, only through its item, and not in the pull request whose work it holds back. The check SHALL be skipped while no base holds the guide. Tests SHALL fail otherwise.
+
+#### Scenario: A gap closed while its item is open fails a test
+
+- **WHEN**, compared with the base, an entry that the base gives as `Gap.` no longer opens Where we stand with `Gap.`, and a backlog item that the base's gap names is neither `Done` nor `Dropped`, or `docs/backlog/` does not hold it
+- **THEN** a test fails and names the entry and the item
+
+#### Scenario: A gap that stops naming its open item fails a test
+
+- **WHEN**, compared with the base, an entry that the base gives as `Gap.` still opens Where we stand with `Gap.`, but no longer names a backlog item that the base's gap names, and that item is neither `Done` nor `Dropped`, or `docs/backlog/` does not hold it
+- **THEN** a test fails and names the entry and the item
+
+#### Scenario: A gap closed with its item done or dropped passes
+
+- **WHEN**, compared with the base, each backlog item that the base's gap names is `Done` or `Dropped`, or is still named by the entry's gap, whatever other items the gap comes to name
+- **THEN** the test passes it
+
+#### Scenario: The guide's first standings pass before any base holds the guide
+
+- **WHEN** no base commit holds `docs/patterns.md`
+- **THEN** the check of gaps closed examines nothing and passes, and once a base holds it, the check reads every entry that the base gives as a gap
+
+### Requirement: This repository holds no switch and no ledger file before its own capture is turned on
+
+This repository SHALL track no `.pr-cost.json` and no file under `.pr-cost/` at its root, whatever the case of their letters, while task 7.1 of `add-pr-cost-calculator`, which turns the tool on here, is not ticked in that change's `tasks.md`, active or archived, so that no capture records here before then. A test SHALL fail and name the file otherwise.
+
+#### Scenario: A switch or a ledger file here before task 7.1 fails a test
+
+- **WHEN** task 7.1 of `add-pr-cost-calculator` is not ticked, and this repository tracks `.pr-cost.json` or a file under `.pr-cost/` at its root, whatever the case of their letters, since a file system that ignores case opens such a file by those names
+- **THEN** a test fails and names the file
+
+#### Scenario: A switch and ledger files here after task 7.1 pass
+
+- **WHEN** task 7.1 of `add-pr-cost-calculator` is ticked, and this repository tracks `.pr-cost.json` and files under `.pr-cost/` at its root
+- **THEN** that test passes them
+
+#### Scenario: A switch or a ledger file below the root passes before task 7.1
+
+- **WHEN** task 7.1 of `add-pr-cost-calculator` is not ticked, and this repository tracks `.pr-cost.json` or files under `.pr-cost/` only in a folder below its root, as a golden session in `tests/golden/` can
+- **THEN** that test passes them
+
+### Requirement: This repository holds no reusable workflow before the one that refuses other events
+
+No tracked file under `.github/workflows/` SHALL declare `workflow_call` while task 4.3 of `add-pr-cost-calculator`, which adds the reusable workflow that refuses every event but a push to the default branch, is not ticked in that change's `tasks.md`, active or archived, so that no workflow here can be called from another repository before that guard exists. A test SHALL fail and name the file otherwise.
+
+#### Scenario: A reusable workflow here before task 4.3 fails a test
+
+- **WHEN** task 4.3 of `add-pr-cost-calculator` is not ticked, and a tracked file under `.github/workflows/` declares `workflow_call`
+- **THEN** a test fails and names the file
+
+#### Scenario: A reusable workflow after task 4.3 passes this test
+
+- **WHEN** task 4.3 of `add-pr-cost-calculator` is ticked, and the reusable workflow that it adds declares `workflow_call`
+- **THEN** that test passes it, and the checks of task 4.3 hold its events and permissions
+
+### Requirement: Each change's tasks are read as GitHub shows them
+
+Each change's `tasks.md`, active or archived, SHALL give each task once, on a line that opens with `- [ ]` or `- [x]`, a space, its number and a space, and SHALL hold no other line with a checkbox, no fenced code, front matter, byte-order mark or carriage return without a line feed after it, no `<` before a letter, `/`, `!` or `?` outside inline code on its line, and no line that opens with `$$` after any spaces, so that the checks read what GitHub shows the owner. Tests SHALL fail otherwise.
+
+#### Scenario: A task list read as GitHub shows it passes
+
+- **WHEN** each line of a change's `tasks.md` that holds a checkbox is a task as the checks read it, no task is given twice, and the file holds none of the text that GitHub does not show in a task list
+- **THEN** the test passes it
+
+#### Scenario: A checkbox that the checks do not read as a task fails a test
+
+- **WHEN** a line of a change's `tasks.md` holds a checkbox, `[ ]`, `[x]` or `[X]`, and is not a task as the checks read it, such as one indented, given with another bullet, with two spaces or a tab after its box, with its number in bold or followed by a colon, or numbered in three parts or in digits other than 0 to 9
+- **THEN** a test fails and names the file and the line
+
+#### Scenario: Text that GitHub does not show in a task list fails a test
+
+- **WHEN** a change's `tasks.md` holds a `<` before a letter, `/`, `!` or `?`, at the start of a line or after other text, that is not in inline code that opens and closes on its line, with which Markdown starts HTML, such as a comment, that can hide the lines after it; fenced code, in which GitHub shows a tick as code; a line that opens with `$$` after any spaces, with which GitHub starts a math block; front matter, which a first line of `---` opens; a byte-order mark; or a carriage return without a line feed after it, which Markdown reads as the end of a line where the checks read none
+- **THEN** a test fails and names the file and the line
+
+#### Scenario: A task given twice fails a test
+
+- **WHEN** a change's `tasks.md` gives one task number on two lines, ticked or not
+- **THEN** a test fails and names the file, the task and both lines
+
+### Requirement: The documentation says which agents an opt-in records
+
+The README's section on the opt-in and the opt-in's feature page SHALL name each agent that the release records, and say that one opt-in also records each agent that a later release adds, with no further step, and that no opt-in leaves one agent out, so that a person who does not want an added agent recorded turns capture off where they use it. Tests SHALL fail otherwise.
+
+#### Scenario: The opt-in's pages say which agents an opt-in records
+
+- **WHEN** the README's section on the opt-in and the opt-in's feature page are read
+- **THEN** each names each agent that the surface manifest says the release records, and says that one opt-in also records each agent that a later release adds, with no further step, and that no opt-in leaves one agent out, so that a person who does not want an added agent recorded turns capture off where they use it
+
+#### Scenario: An opt-in's page that does not say which agents it records fails a test
+
+- **WHEN** the README's section on the opt-in or the opt-in's feature page leaves out an agent that the surface manifest says the release records, says that it records an agent that the manifest does not name, or leaves out that one opt-in also records each agent that a later release adds, with no further step, that no opt-in leaves one agent out, or that a person who does not want an added agent recorded turns capture off where they use it
+- **THEN** a test fails and names the page and what is missing
 
 ### Requirement: Each ledger format that a release wrote keeps its golden figures
 
@@ -676,3 +1357,208 @@ For each ledger format that a release's capture step wrote, the golden set SHALL
 
 - **WHEN** a pull request removes the last golden session of a ledger format that a release wrote and the report still reads
 - **THEN** a test fails and names the format
+
+### Requirement: Nothing here registers the walking skeleton
+
+No tracked file under `.claude/`, `.claude-plugin/` or `.github/` SHALL hold the word `skeleton`, whatever the case of its letters, so that no setting, hook script, marketplace or workflow here registers, installs or runs the walking skeleton, whatever way it names `skeleton/`. A test SHALL fail and name the file otherwise.
+
+#### Scenario: A file that names the skeleton where it could register it fails a test
+
+- **WHEN** a tracked file under `.claude/`, `.claude-plugin/` or `.github/`, such as a settings file, the session-start hook script, a marketplace file or a workflow, holds `skeleton` in any case, as `./skeleton`, `skeleton/` or `Skeleton`
+- **THEN** a test fails and names the file
+
+#### Scenario: The skeleton's own files pass
+
+- **WHEN** only files outside `.claude/`, `.claude-plugin/` and `.github/` name `skeleton/`
+- **THEN** that test passes
+
+### Requirement: The walking skeleton records only with its own switch and the opt-in
+
+The walking skeleton's capture SHALL record a call only for a repository whose top-level `.pr-cost.json` holds `enabled` and `walking_skeleton` both `true`, while git gives its own opt-in, `pr-cost-skeleton.capture`, never the tool's, as `true` from the person's global files alone, read without the session's git variables or `XDG_CONFIG_HOME`, never a repository's own; and SHALL keep a call only when its line's working directory lies in that repository's working tree. Tests SHALL drive each way.
+
+#### Scenario: A switch without the skeleton's key records nothing
+
+- **WHEN** the skeleton's capture runs in a repository whose `.pr-cost.json` holds `enabled` set to `true` and no `walking_skeleton` set to `true`, and the person has opted in
+- **THEN** it writes no store, stages no ledger file and exits with success
+
+#### Scenario: No switch means the skeleton records nothing
+
+- **WHEN** the skeleton's capture runs where no repository holds a `.pr-cost.json`, or where one's `enabled` is not `true`, and the person has opted in
+- **THEN** it writes no store, stages no ledger file and exits with success
+
+#### Scenario: No opt-in means the skeleton records nothing
+
+- **WHEN** the skeleton's switch is on, and git, reading the person's global configuration files, does not give `pr-cost-skeleton.capture` as `true`, though the repository's own configuration does, or the session's `GIT_CONFIG_` or `XDG_CONFIG_HOME` variables do, or though the tool's own opt-in, `pr-cost.capture`, is `true`
+- **THEN** it writes no store, stages no ledger file and exits with success
+
+#### Scenario: A call made in another repository is not recorded
+
+- **WHEN** the switch and the opt-in are on, and the transcript holds a call whose line gives a working directory outside the repository's working tree, or in another repository inside it, or none
+- **THEN** no ledger file that the skeleton stages holds that call
+
+### Requirement: The walking skeleton never stalls or steers the agent
+
+Each hook command of the walking skeleton's plugin SHALL run its capture script with `python3 -I` and end in `; exit 0`, and the script SHALL print nothing on standard output, whatever it meets, so that no run of it blocks a command, sends the agent back to work or gives Claude text. A test SHALL fail otherwise.
+
+#### Scenario: A missing or failing capture script still exits with success
+
+- **WHEN** a hook command of the skeleton's plugin runs while its capture script is missing, or while the script raises an error
+- **THEN** the command exits with success and prints nothing on standard output
+
+#### Scenario: A hook command without its guard fails a test
+
+- **WHEN** a hook command in the skeleton's plugin does not run `python3 -I` or does not end in `; exit 0`
+- **THEN** a test fails and names the hook
+
+### Requirement: The walking skeleton stages only for a commit it recognises
+
+The walking skeleton SHALL stage a ledger file only before a command whose parts, joined by two ampersands, are `cd` to a written path or `git add` with written paths, then a `git commit` with only `-m` and a quoted message, which may repeat, `-a` or `-q`, in the repository of each `git add`, each git with at most one written `-C`, and only when the commit would commit something without the file; and SHALL take back a file that the command did not commit, its calls waiting.
+
+#### Scenario: A recognised commit after calls holds one ledger file
+
+- **WHEN** the switch and the opt-in are on, calls made in the repository wait, and the agent runs `cd` to the clone, `git add` with a path and `git commit -m` with a message, joined by two ampersands
+- **THEN** the commit holds the agent's change and one ledger file with those calls' counts by model, and no text of the transcript but the model's name
+
+#### Scenario: A commit in another form gets no ledger file
+
+- **WHEN** the agent commits with any other command, such as one with `--amend`, a pathspec, a pipe or a semicolon
+- **THEN** the skeleton stages nothing, and the calls wait
+
+#### Scenario: A commit with nothing to commit stays empty
+
+- **WHEN** the agent runs a recognised `git commit` with no `git add` before it, no `-a`, and nothing staged
+- **THEN** the skeleton stages nothing, and the commit fails as it would without it
+
+#### Scenario: A commit in another repository than its adds gets no ledger file
+
+- **WHEN** the agent runs `git add` in one repository and, in the same command, `git commit` in another
+- **THEN** the skeleton stages nothing, and the calls wait
+
+#### Scenario: A commit with repeated messages gets its ledger file
+
+- **WHEN** the agent's recognised commit gives `-m` with a quoted message more than once, as for trailer lines
+- **THEN** the commit holds one ledger file
+
+#### Scenario: A file that a commit did not take is taken back
+
+- **WHEN** the skeleton staged a ledger file and the command then failed, or succeeded without committing the file
+- **THEN** the file is gone from the index and the working tree, and its calls wait for a later commit
+
+### Requirement: The kept transcript shape holds no values
+
+Each transcript shape kept from the walking skeleton's run, a tracked file under `tests/` whose name begins with `transcript-shape`, SHALL hold only field names at a line's top level that the recorder's list names, in its `message` and in `message.usage`, each with its JSON type, and every other object and array as its type alone; each name of letters, digits and underscores, at most 40 long and not of an identifier's form. A test SHALL fail and name the entry otherwise.
+
+#### Scenario: A value in the kept shape fails a test
+
+- **WHEN** an entry of a kept shape gives anything but a field path and a JSON type name, or a name with a character other than a letter, a digit or an underscore, or longer than 40 characters
+- **THEN** a test fails and names the file and the entry
+
+#### Scenario: A name below another object fails a test
+
+- **WHEN** an entry of a kept shape gives a field name below an object other than the line, its `message` object and `message.usage`, as below `message.content`, a tool's input, a tool's result or a map keyed by identifiers
+- **THEN** a test fails and names the file and the entry
+
+#### Scenario: A top-level name outside the recorder's list fails a test
+
+- **WHEN** an entry of a kept shape gives a name at a line's top level that the list shared by the shape recorder and its check does not name
+- **THEN** a test fails and names the file and the entry
+
+#### Scenario: A name of an identifier's form fails a test
+
+- **WHEN** an entry of a kept shape gives a name that is a lower-case prefix, an underscore and a token of 8 or more letters and digits that holds a digit or an upper-case letter, so that a field name such as `stop_sequence` is not taken for one
+- **THEN** a test fails and names the file and the entry
+
+#### Scenario: A shape of names and types passes
+
+- **WHEN** every entry of each kept shape gives a path of names at those levels only, and a JSON type name
+- **THEN** that test passes
+
+#### Scenario: No kept shape after the run fails a test
+
+- **WHEN** task 1.36 of `add-pr-cost-calculator` is ticked, and no tracked file under `tests/` has a name that begins with `transcript-shape`
+- **THEN** a test fails and says that the shape is missing
+
+### Requirement: The skeleton's workflow can do no more than post its comment
+
+The skeleton's workflow, `skeleton/workflow.yml`, SHALL run only on a push to `main`, ask only to read contents and write pull requests, use no action but `actions/checkout` pinned to a full commit with `persist-credentials: false`, fetch no commit but the push's `before` and `after`, read no secret, put no `${{` inside a `run:`, and set `timeout-minutes`. A test SHALL fail and name what differs otherwise.
+
+#### Scenario: Another event, permission or action in the skeleton's workflow fails a test
+
+- **WHEN** `skeleton/workflow.yml` runs on an event other than a push to `main`, asks for a permission other than reading contents and writing pull requests, or uses an action other than `actions/checkout` or one that a full commit does not pin
+- **THEN** a test fails and names what differs
+
+#### Scenario: A secret, a kept credential, an expression in a command or no time limit fails a test
+
+- **WHEN** `skeleton/workflow.yml` reads a secret, checks out without `persist-credentials: false`, puts `${{` inside a `run:`, fetches a ref other than the push's `before` and `after`, or sets no `timeout-minutes`
+- **THEN** a test fails and names what differs
+
+#### Scenario: The skeleton's workflow as designed passes
+
+- **WHEN** `skeleton/workflow.yml` runs only on a push to `main`, with those two permissions, `actions/checkout` alone pinned to a full commit without kept credentials, the push's two commits fetched by SHA, no secret, no expression in a command and a time limit
+- **THEN** that test passes
+
+### Requirement: The skeleton's report counts one merged pull request's calls once, at a test price
+
+Only when GitHub's API gives exactly one merged pull request for a push and its `before` is not all zeros, the skeleton's report SHALL read the ledger files that the push added, count each call's key once, sum each model's tokens at the test price that `skeleton/` holds, and write the figure, saying that it is at a test price and not a real cost, to the job summary and as one comment; otherwise it SHALL post no comment and say why in the job summary.
+
+#### Scenario: One call in two ledger files is counted once
+
+- **WHEN** two ledger files that the push added hold the same call's key
+- **THEN** the report counts that call once
+
+#### Scenario: A merge, a squash and a rebase give the figure of the files that the push added
+
+- **WHEN** a pull request is merged by a merge commit, by squash, or by rebase of two commits that each add a ledger file
+- **THEN** the report reads every ledger file that the push added and none that the default branch held before it
+
+#### Scenario: A push with no single merged pull request posts no comment
+
+- **WHEN** the push's `before` is all zeros, or GitHub's API gives no merged pull request for `after`, or more than one
+- **THEN** the report posts no comment, and its job summary says why
+
+#### Scenario: The comment says that its figure is not a real cost
+
+- **WHEN** the report posts its figure
+- **THEN** the comment and the job summary say that it is at a test price and is not a real cost
+
+### Requirement: The walking skeleton says what it is
+
+Each file under `skeleton/` that can hold a comment SHALL open with one that says it is the walking skeleton and not the tool or a release, the plugin's manifest SHALL say so in its `description`, and while `skeleton/` exists the README's status SHALL name it as the walking skeleton and say that it is not the tool. A test SHALL fail and name the file otherwise.
+
+#### Scenario: A skeleton file that does not say what it is fails a test
+
+- **WHEN** a Python or YAML file under `skeleton/` does not open with a comment that says that it is the walking skeleton and not the tool, or the plugin's manifest's `description` does not say so
+- **THEN** a test fails and names the file
+
+#### Scenario: A README silent on the skeleton fails a test
+
+- **WHEN** `skeleton/` exists, and the README's status does not name it as the walking skeleton
+- **THEN** a test fails
+
+### Requirement: The skeleton's plugin declares nothing but its command hooks
+
+The walking skeleton's plugin manifest SHALL hold only its name, `pr-cost-skeleton`, a version and a description, and its hooks SHALL all be command hooks; its zip SHALL hold only the manifest, the hooks file and the capture script, and SHALL be built the same, byte for byte, from the same commit. A test SHALL fail and name what differs otherwise.
+
+#### Scenario: A plugin that declares more fails a test
+
+- **WHEN** the skeleton's manifest holds another key, as one naming an MCP server, or a hook of another type than a command, or the zip holds another file, as an `.mcp.json`
+- **THEN** a test fails and names it
+
+#### Scenario: Two builds of one commit give the same zip
+
+- **WHEN** the skeleton's zip is built twice from one commit
+- **THEN** the two zips are the same, byte for byte
+
+### Requirement: No release holds the walking skeleton
+
+The release workflow SHALL refuse a tag whose tree holds a `skeleton/` folder, so that the build removes the walking skeleton before the first release and no adopter takes it for the tool.
+
+#### Scenario: A tag that holds the skeleton is refused
+
+- **WHEN** a tag's tree holds a `skeleton/` folder
+- **THEN** the release workflow refuses it and names the folder
+
+#### Scenario: A tag without the skeleton passes this check
+
+- **WHEN** a tag's tree holds no `skeleton/` folder
+- **THEN** this check of the release workflow passes it

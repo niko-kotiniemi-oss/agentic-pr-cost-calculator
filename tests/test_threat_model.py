@@ -21,12 +21,16 @@ Every threat is also rated for impact and likelihood, from 1 to 3 each, and its
 risk is their product. The risk matrix places each threat in the cell its two
 ratings name, so a reader sees at a glance where the risk sits, and a rating
 changed in one place and not the other is reported.
+
+The model's opening says how many threats it holds and across how many trust
+boundaries. A threat added without that sentence changing makes it wrong, so
+the figures are compared with the threats' headings and the boundaries' headings.
 """
 
 from __future__ import annotations
 
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, fields
 from pathlib import Path
 
 import pytest
@@ -63,6 +67,8 @@ RATING = re.compile(r"([1-3]) \(([a-z]+)\)")
 MATRIX_HEADING = re.compile(r"^## Risk matrix$", re.M)
 MATRIX_ROW = re.compile(r"^\| ([1-3]) [a-z]+ \|(.*)\|\s*$", re.M)
 THREAT_ID = re.compile(r"T\d+")
+COUNT = re.compile(r"\bIt holds (\d+) threats across (\d+) trust boundaries\b")
+BOUNDARY = re.compile(r"^## Boundary (\d+)\b", re.M)
 
 
 @dataclass(frozen=True)
@@ -113,39 +119,59 @@ def index(root: Path) -> Index:
     return Index(scenarios, changes)
 
 
+@dataclass(frozen=True)
+class Citations:
+    """What a Held by cites, by kind."""
+
+    scenarios: list[tuple[str, str]]
+    tasks: list[tuple[str, str]]
+    decisions: list[tuple[str, str]]
+    records: list[str]
+    paths: list[str]
+
+    def __len__(self) -> int:
+        """How many citations it holds, of every kind."""
+        return sum(len(getattr(self, kind.name)) for kind in fields(self))
+
+
+def citations(held: str) -> Citations:
+    """Each kind is read from what the kinds before it leave, so that the name of a
+    capability or a change, which is in backticks, is not read as a path."""
+    scenarios = SCENARIO_REF.findall(held)
+    rest = SCENARIO_REF.sub("", held)
+    tasks = TASK_REF.findall(rest)
+    rest = TASK_REF.sub("", rest)
+    decisions = DECISION_REF.findall(rest)
+    rest = DECISION_REF.sub("", rest)
+    records = RECORD_REF.findall(rest)
+    paths = PATH_REF.findall(RECORD_REF.sub("", rest))
+    return Citations(scenarios, tasks, decisions, records, paths)
+
+
 def citation_problems(ident: str, held: str, found: Index, root: Path) -> tuple[list[str], int]:
     problems: list[str] = []
-    cited = 0
-    for capability, name in SCENARIO_REF.findall(held):
-        cited += 1
+    cited = citations(held)
+    for capability, name in cited.scenarios:
         if name not in found.scenarios.get(capability, set()):
             problems.append(f'{ident} cites `{capability}`: "{name}", which no spec holds')
-    rest = SCENARIO_REF.sub("", held)
-    for change, number in TASK_REF.findall(rest):
-        cited += 1
+    for change, number in cited.tasks:
         tasks = found.changes[change] / "tasks.md" if change in found.changes else None
         line = re.compile(rf"^- \[[ x]\] {re.escape(number)} ", re.M)
         if tasks is None or not tasks.is_file() or not line.search(tasks.read_text()):
             problems.append(f"{ident} cites `{change}` task {number}, which does not exist")
-    rest = TASK_REF.sub("", rest)
-    for change, number in DECISION_REF.findall(rest):
-        cited += 1
+    for change, number in cited.decisions:
         design = found.changes[change] / "design.md" if change in found.changes else None
         heading = re.compile(rf"^### {re.escape(number)}\. ", re.M)
         if design is None or not design.is_file() or not heading.search(design.read_text()):
             problems.append(f"{ident} cites `{change}` decision {number}, which does not exist")
-    rest = DECISION_REF.sub("", rest)
-    for number in RECORD_REF.findall(rest):
-        cited += 1
+    for number in cited.records:
         if not sorted((root / "docs" / "decisions").glob(f"DR-{number}-*.md")):
             problems.append(f"{ident} cites DR-{number}, which is not a decision record")
-    rest = RECORD_REF.sub("", rest)
-    for path in PATH_REF.findall(rest):
-        cited += 1
+    for path in cited.paths:
         target = (root / path).resolve()
         if root.resolve() not in target.parents or not target.exists():
             problems.append(f"{ident} cites `{path}`, which is not a file in this repository")
-    return problems, cited
+    return problems, len(cited)
 
 
 def problems_in(text: str, root: Path) -> tuple[list[str], int]:
@@ -242,6 +268,22 @@ def matrix_problems(text: str, threats: list[Threat]) -> list[str]:
         if placed.pop(threat.ident, []) != expected:
             problems.append(f"{threat.ident} is not in the one risk matrix cell its ratings name")
     problems += [f"the risk matrix names {ident}, which is not a threat" for ident in placed]
+    return problems
+
+
+def count_problems(text: str, threats: list[Threat]) -> list[str]:
+    counts = COUNT.findall(text)
+    if len(counts) != 1:
+        return ['the model does not say once "It holds N threats across M trust boundaries"']
+    held, boundaries = (int(value) for value in counts[0])
+    named = len(set(BOUNDARY.findall(text)))
+    problems = []
+    if held != len(threats):
+        problems.append(f"the model says it holds {held} threats, and it holds {len(threats)}")
+    if boundaries != named:
+        problems.append(
+            f"the model says it has {boundaries} trust boundaries, and its headings name {named}"
+        )
     return problems
 
 
@@ -516,3 +558,54 @@ def test_a_retired_id_outside_its_section_explains_no_gap(tmp_path: Path) -> Non
 def test_a_document_without_threats_is_reported(tmp_path: Path) -> None:
     synthetic_repository(tmp_path)
     assert problems_in("# Threat model\n\nNothing here.\n", tmp_path) == (["no threat found"], 0)
+
+
+def test_the_model_counts_its_threats_and_trust_boundaries() -> None:
+    text = THREAT_MODEL.read_text()
+    assert threats_in(text), "no threat was read, so this test covered nothing"
+    assert count_problems(text, threats_in(text)) == []
+
+
+def counted(sentence: str) -> str:
+    return (
+        f"# Threat model\n\n{sentence}\n\n## Boundary 1: one\n\n"
+        + threat("`docs/note.md`", number=1)
+        + "\n## Boundary 2: two\n\n"
+        + threat("`docs/note.md`", number=2)
+        + "\n## Boundary 2, continued: found later\n\n"
+        + threat("`docs/note.md`", number=3)
+    )
+
+
+def test_a_count_that_matches_the_headings_passes() -> None:
+    text = counted("It holds 3 threats across 2 trust boundaries.")
+    assert count_problems(text, threats_in(text)) == []
+
+
+@pytest.mark.parametrize(
+    ("sentence", "expected"),
+    [
+        (
+            "It holds 2 threats across 2 trust boundaries.",
+            ["the model says it holds 2 threats, and it holds 3"],
+        ),
+        (
+            "It holds 3 threats across 3 trust boundaries.",
+            ["the model says it has 3 trust boundaries, and its headings name 2"],
+        ),
+        (
+            "It holds threats across trust boundaries.",
+            ['the model does not say once "It holds N threats across M trust boundaries"'],
+        ),
+        (
+            "It holds 3 threats across 2 trust boundaries. It holds 3 threats across 2 trust"
+            " boundaries.",
+            ['the model does not say once "It holds N threats across M trust boundaries"'],
+        ),
+    ],
+)
+def test_a_count_that_the_headings_do_not_bear_out_is_reported(
+    sentence: str, expected: list[str]
+) -> None:
+    text = counted(sentence)
+    assert count_problems(text, threats_in(text)) == expected

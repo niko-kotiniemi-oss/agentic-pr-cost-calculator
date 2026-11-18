@@ -1,12 +1,12 @@
 # DR-046: Each person turns on capture of their own sessions
 
 - **Type:** security and privacy
-- **Status:** accepted
+- **Status:** closed
 - **Decided by:** the owner, 2026-10-18
 - **Requirements:** R1
 - **Threats:** T3
 - **Replaces:** none
-- **Closed by:** none
+- **Closed by:** DR-202
 
 ## Context
 

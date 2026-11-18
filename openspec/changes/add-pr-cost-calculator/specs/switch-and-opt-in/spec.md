@@ -1,6 +1,6 @@
 ## Purpose
 
-Let a repository turn the tool on or off with one file, and let each person decide for themselves whether their own sessions are recorded, so that no one's usage is published without their consent and a pull request cannot turn off its own report.
+Let a repository turn the tool on or off with one file, and let each person decide, for themselves or by the environment that they use, whether their own sessions are recorded, so that no one's usage is published without their consent and a pull request cannot turn off its own report.
 
 Scenarios below that run the capture step follow the conventions that `usage-capture` states for its own scenarios.
 
@@ -8,7 +8,7 @@ Scenarios below that run the capture step follow the conventions that `usage-cap
 
 ### Requirement: Capture runs only where the tool is on and the person has opted in
 
-The capture step SHALL record nothing unless the repository's configuration turns the tool on and the person running the session has turned capture on for themselves, in their global git configuration, which is not part of the repository.
+The capture step SHALL record nothing unless the repository's configuration turns the tool on and the opt-in is on in the global git configuration where the session runs, which the person sets, or which the cloud environment that they use or their organization's managed settings set, and which is not part of the repository.
 
 #### Scenario: No configuration file means no capture
 
@@ -24,6 +24,34 @@ The capture step SHALL record nothing unless the repository's configuration turn
 
 - **WHEN** only the repository's own git configuration turns capture on
 - **THEN** nothing is recorded
+
+#### Scenario: An environment's setup script can opt a person in
+
+- **WHEN** the setup script of the cloud environment where a session runs has set `pr-cost.capture` to `true` in the global git configuration with `git config --global`, and the session makes calls in a repository that turns the tool on and then commits there
+- **THEN** that commit adds a ledger file that holds those calls
+
+### Requirement: Having the plugin opts no one in
+
+The plugin SHALL record nothing for a session whose opt-in is not on, however the plugin came to that session, such as when an organization turns it on or requires it for its members.
+
+#### Scenario: A plugin that an organization requires records nothing without the opt-in
+
+- **WHEN** the step runs as the plugin in a session whose global git configuration does not turn capture on, as for a member who has not opted in and whose organization requires the plugin, in a repository that turns the tool on
+- **THEN** nothing is recorded, no store is created and no ledger file is staged
+
+### Requirement: One opt-in covers every agent that the tool records
+
+Capture SHALL take the person's opt-in, `pr-cost.capture`, as the one opt-in for every agent whose calls the tool records, those that a later release adds among them, and SHALL read no opt-in of its own for any agent, so that no opt-in leaves one agent out. Tests SHALL fail otherwise.
+
+#### Scenario: The one opt-in records each agent that the release records
+
+- **WHEN** a repository turns the tool on, the person's opt-in is on, and a session of any agent that the surface manifest says the release records makes calls there and then commits
+- **THEN** that commit adds a ledger file that holds those calls, whichever of those agents made them
+
+#### Scenario: An opt-in key of its own for an agent changes nothing
+
+- **WHEN** the person's global git configuration also sets a key under `pr-cost` that names an agent, such as `pr-cost.claude-code`, to `false` while the opt-in is on, or to `true` while it is off
+- **THEN** capture records as it would without that key: the session's calls while the opt-in is on, and nothing while it is off
 
 ### Requirement: Capture reads the configuration file only as a regular file within its bound
 
@@ -165,6 +193,11 @@ Once a run finds both switches on, the capture step SHALL ask git, in the sessio
 
 - **WHEN** the person's `~/.gitconfig` turns capture on, and the session's environment points git's global configuration at a named pipe that nothing writes to
 - **THEN** nothing is recorded, and the run exits with success within its time budget
+
+#### Scenario: An opt-out that the session's environment gives turns capture off
+
+- **WHEN** the person's `~/.gitconfig` turns capture on, and the session's environment sets `GIT_CONFIG_COUNT=1`, `GIT_CONFIG_KEY_0=pr-cost.capture` and `GIT_CONFIG_VALUE_0=false`, as a cloud environment's variables can
+- **THEN** nothing is recorded, and no ledger file is staged
 
 #### Scenario: A later value that turns capture on does not undo an opt-out in an included file
 
@@ -312,7 +345,7 @@ A run that finds its clock earlier than the latest time that its session's runs 
 
 ### Requirement: An opt-out ends every session's interval and empties the store
 
-A run of the capture step that finds the person's own capture off, in their global configuration or in the repository's own, and a store whose version it knows, SHALL end every session's interval and remove every waiting call, flag due, note of a taken call and session's notes, but those that a take-back or a put-back still needs (see "Ledger files are taken back and put back whatever the switches say"), and the step SHALL never stage, after that run, a call made or a flag noted before it.
+A run that finds the person's own capture off, in their global configuration, in the repository's own or as git reads it there, and a store whose version it knows, SHALL end every session's interval and remove every waiting call, flag due, note of a taken call and session's notes, but those that a take-back or a put-back still needs (see "Ledger files are taken back and put back whatever the switches say"), and the step SHALL never stage, after that run, a call made or a flag noted before it.
 
 #### Scenario: Calls recorded before an opt-out are not staged
 
@@ -333,6 +366,11 @@ A run of the capture step that finds the person's own capture off, in their glob
 
 - **WHEN** the step has staged a ledger file for a `git commit` that is then refused at a permission prompt, and a run of the step then finds the person's capture off before any run finds that command over
 - **THEN** after that run the store holds no waiting call, no flag due, no note of a taken call and no session's notes, only the note of that file, and once a run has taken the file back, no store is left
+
+#### Scenario: An opt-out that the session's environment gives empties the store
+
+- **WHEN** the store notes sessions, calls waiting to be staged and flags due, no ledger file is due to be taken back or put back, and a run then comes in a session whose environment sets `GIT_CONFIG_COUNT=1`, `GIT_CONFIG_KEY_0=pr-cost.capture` and `GIT_CONFIG_VALUE_0=false`
+- **THEN** after that run no store is left in the git common directory
 
 #### Scenario: Turning capture on again after an opt-out records no earlier call
 
@@ -429,7 +467,7 @@ A configuration file that is missing at a commit, is not a regular file there, i
 
 #### Scenario: A pull request that makes the configuration unreadable still gets its report
 
-- **WHEN** the configuration turns the tool on before the merge, and a pull request replaces the configuration file with one that is not valid, is larger than its size bound, is a symbolic link or is not a regular file
+- **WHEN** the configuration turns the tool on before the merge, and a pull request replaces the configuration file with one that is not valid, as when its arrays nest so deep that Python's JSON reader raises an error on it, is larger than its size bound, is a symbolic link or is not a regular file
 - **THEN** its report comment is posted
 
 ### Requirement: A configuration file with a key that the tool does not know, a key given twice or no `enabled` of `true` or `false` is not valid

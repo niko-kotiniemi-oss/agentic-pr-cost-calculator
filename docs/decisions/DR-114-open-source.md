@@ -1,12 +1,12 @@
 # DR-114: The tool is open source, in a public repository
 
 - **Type:** scope
-- **Status:** accepted
+- **Status:** closed
 - **Decided by:** the owner, 2026-10-17
 - **Requirements:** none
 - **Threats:** T32, T61, T65
 - **Replaces:** none
-- **Closed by:** none
+- **Closed by:** DR-243
 
 ## Context
 

@@ -2,7 +2,8 @@
 
 These hold the properties the first pull request promises: the files a
 standalone public repository needs, pinned tooling, a read-only CI token, and
-nothing private carried over from elsewhere.
+nothing private carried over from elsewhere; and, until the tasks that bring
+them are ticked, no switch, no ledger file and no reusable workflow (R223, R229).
 """
 
 from __future__ import annotations
@@ -13,11 +14,20 @@ import json
 import re
 import subprocess
 import tomllib
-from collections.abc import Iterable, Iterator
+from collections.abc import Callable, Hashable, Iterable, Iterator
 from pathlib import Path
 from typing import Any
 
+import pytest
 import yaml
+from test_roadmap import (
+    ARCHIVED_TASKS,
+    BUILD_CHANGE,
+    CHANGE_TASKS,
+    make_tree,
+    tasks,
+    tracked,
+)
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -53,6 +63,15 @@ PRIVATE_PATTERNS = [
     re.compile("chan" + r"_[0-9A-Za-z]{8,}"),
     re.compile(re.escape("/mnt/" + "project-files")),
     re.compile("Claude-" + "Session:"),
+    # The identifiers that a transcript carries, of a message, a request and a tool call (T186).
+    # A server tool call's too, and a message's with a platform's infix.
+    # Its value holds a digit, which an ordinary name such as a field's does not.
+    re.compile(
+        r"\b(?:msg|req|toolu|srvtoolu)" + r"_(?:(?:bdrk|vrtx)_)?(?=[A-Za-z]*[0-9])[0-9A-Za-z]{8,}"
+    ),
+    # A session's or a line's identifier, a UUID in lower case (T190), as Claude Code writes it;
+    # not in upper case, which fixed identifiers that protocols publish are written in.
+    re.compile(r"\b[0-9a-f]{8}-[0-9a-f]{4}" + r"-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b"),
 ]
 
 
@@ -85,9 +104,76 @@ def test_every_required_file_exists() -> None:
     assert not missing, f"missing: {missing}"
 
 
-def test_the_licence_is_mit() -> None:
-    text = (ROOT / "LICENSE").read_text(encoding="utf-8")
-    assert text.startswith("MIT License")
+# The Fair Core License, version 1.0, with MIT as its future licence, as keygen-sh/fcl.dev
+# publishes it in FCL-1.0-MIT.md: the SHA-256 of that text with its notice left blank, so that
+# any other change to the licence's words fails (DR-242).
+FCL_TEMPLATE_SHA256 = "7f96651038a80c680bb67a11e9e9e6007e5b1cb6ef02660b5fe5fb60daa3ad05"
+FCL_BLANK_NOTICE = "Copyright ${year} ${licensor name}"
+FCL_NOTICE_LINE = re.compile(r"(?m)^Copyright .*$")
+# The notice that DR-242 gives, word for word, so that nothing is added on its line.
+NOTICE = "Copyright 2026 Niko Kotiniemi"
+# FCL is not on the SPDX list, so pyproject.toml names it by a reference of its own.
+LICENCE_ID = "LicenseRef-FCL-1.0-MIT"
+
+
+def licence_problems(licence: str, declared: object, notice: str = NOTICE) -> list[str]:
+    """What keeps a licence text and a declared licence from being DR-242's."""
+    problems = []
+    notices = FCL_NOTICE_LINE.findall(licence)
+    if notices != [notice]:
+        problems.append(f"LICENSE's notices are {notices}, not [{notice!r}]")
+    blank = FCL_NOTICE_LINE.sub(FCL_BLANK_NOTICE, licence)
+    if hashlib.sha256(blank.encode()).hexdigest() != FCL_TEMPLATE_SHA256:
+        problems.append("LICENSE is not the text of FCL-1.0-MIT with its notice filled in")
+    if declared != LICENCE_ID:
+        problems.append(f"pyproject.toml declares the licence {declared!r}, not {LICENCE_ID!r}")
+    return problems
+
+
+def licence_text() -> str:
+    return (ROOT / "LICENSE").read_text(encoding="utf-8")
+
+
+def test_the_licence_is_the_fair_core_license_with_mit_as_its_future_licence() -> None:
+    assert licence_problems(licence_text(), pyproject()["project"].get("license")) == []
+
+
+@pytest.mark.parametrize(
+    ("plant", "declared", "problem"),
+    [
+        (lambda _: "MIT License\n\nCopyright (c) 2026 Someone\n", LICENCE_ID, "LICENSE is not"),
+        (
+            lambda t: t.replace("second anniversary", "tenth anniversary"),
+            LICENCE_ID,
+            "LICENSE is not",
+        ),
+        (lambda t: t.replace(NOTICE, FCL_BLANK_NOTICE), LICENCE_ID, "LICENSE's notices are ["),
+        (
+            lambda t: t.replace(NOTICE, "Copyright 2026 Someone Else"),
+            LICENCE_ID,
+            "LICENSE's notices",
+        ),
+        (
+            lambda t: t.replace(NOTICE, NOTICE + ". Any Competing Use is also permitted."),
+            LICENCE_ID,
+            "LICENSE's notices",
+        ),
+        (lambda t: t + "\n" + NOTICE + "\n", LICENCE_ID, "LICENSE's notices"),
+        (lambda t: t, "MIT", "pyproject.toml declares the licence 'MIT'"),
+        (lambda t: t, None, "pyproject.toml declares the licence None"),
+    ],
+)
+def test_another_licence_notice_or_reference_is_reported(
+    plant: Callable[[str], str], declared: object, problem: str
+) -> None:
+    problems = licence_problems(plant(licence_text()), declared)
+    assert any(p.startswith(problem) for p in problems), problems
+
+
+def test_the_licence_check_passes_the_text_that_it_holds() -> None:
+    assert licence_problems(licence_text(), LICENCE_ID) == []
+    other = licence_text().replace(NOTICE, "Copyright 2026 Someone")
+    assert licence_problems(other, LICENCE_ID, "Copyright 2026 Someone") == []
 
 
 def private_references(
@@ -157,10 +243,24 @@ def test_the_privacy_patterns_catch_what_they_are_for() -> None:
         "project chan" + "_01ABCDEFGHJKMNPQ",
         "/mnt/" + "project-files/example/",
         "Claude-" + "Session: x",
+        # The identifiers that a transcript carries: of a message, a request and a tool call.
+        '"id": "msg' + '_01ABCDEFGHJKMNPQRS"',
+        "requestId req" + "_011CABCDEFGHJKMNPQ",
+        "tool_use_id toolu" + "_01ABCDEFGHJKMNPQRS",
+        "a server tool call srvtoolu" + "_01ABCDEFGHJKMNPQRS",
+        '"id": "msg' + '_bdrk_01ABCDEFGHJKMNPQRS"',
+        '"id": "msg' + '_vrtx_01ABCDEFGHJKMNPQRS"',
+        # A session's or a line's identifier, as a transcript and its file name carry it.
+        "sessionId 0f1e2d3c" + "-4b5a-6978-8a9b-0c1d2e3f4a5b",
     ]
     for sample in samples:
         assert any(p.search(sample) for p in PRIVATE_PATTERNS), sample
-    assert not any(p.search("an ordinary sentence about pull requests") for p in PRIVATE_PATTERNS)
+    ordinary = ["an ordinary sentence about pull requests", "the field stop_sequence", "msg_short"]
+    ordinary += ["msg" + "_template", "req" + "_received", "toolu" + "_synthetic"]
+    ordinary += ["msg" + "_send_callback", "req" + "_per_interval"]
+    ordinary.append("a protocol's fixed GUID 258EAFA5" + "-E914-47DA-95CA-C5AB0DC85B11")
+    for text in ordinary:
+        assert not any(p.search(text) for p in PRIVATE_PATTERNS), text
 
 
 def test_the_private_name_check_matches_the_name_however_it_is_written() -> None:
@@ -247,12 +347,51 @@ WRITES_ALLOWED: dict[str, set[str]] = {}
 FORBIDDEN_TRIGGERS = {"pull_request_target", "workflow_run"}
 
 
+class WorkflowLoader(yaml.SafeLoader):
+    """YAML read as `yaml.safe_load` reads it, but a mapping that gives a key twice is
+    refused, since PyYAML keeps its last value and another reader may not."""
+
+    def construct_mapping(self, node: yaml.MappingNode, deep: bool = False) -> dict[Any, Any]:
+        seen: set[Any] = set()
+        for key_node, _ in node.value:
+            if key_node.tag == "tag:yaml.org,2002:merge":
+                continue
+            key = self.construct_object(key_node, deep=deep)
+            if not isinstance(key, Hashable):
+                continue
+            if key in seen:
+                written = key_node.value if isinstance(key_node, yaml.ScalarNode) else key
+                raise yaml.constructor.ConstructorError(
+                    None, None, f"gives the key {written!r} twice", key_node.start_mark
+                )
+            seen.add(key)
+        return super().construct_mapping(node, deep=deep)
+
+
+def load_workflow(text: str) -> Any:
+    # WorkflowLoader is a SafeLoader, so this builds no object that YAML names.
+    return yaml.load(text, Loader=WorkflowLoader)
+
+
 def triggers(doc: dict[Any, Any]) -> set[str]:
-    # YAML 1.1 reads a bare `on:` key as the boolean true.
-    on = doc.get("on", doc.get(True))
-    if isinstance(on, str):
-        return {on}
-    return set(on or [])
+    """The events that a workflow names under `on`, quoted or bare, which YAML 1.1 reads
+    as the boolean true, given as one name, as a mapping, or as a list of names and
+    mappings.
+
+    Raises ValueError for events given in any other form, which GitHub may read
+    otherwise."""
+    found: set[str] = set()
+    for on in (doc.get("on"), doc.get(True)):
+        if on is None:
+            continue
+        for item in on if isinstance(on, list) else [on]:
+            if isinstance(item, str):
+                found.add(item)
+            elif isinstance(item, dict):
+                found.update(str(key) for key in item)
+            else:
+                raise ValueError(f"events given as {type(item).__name__}")
+    return found
 
 
 def writes(permissions: Any) -> set[str]:
@@ -264,10 +403,15 @@ def writes(permissions: Any) -> set[str]:
 
 
 def workflow_problems(name: str, text: str) -> list[str]:
-    doc = yaml.safe_load(text)
-    problems = [
-        f"{name} triggers on {trigger}" for trigger in sorted(triggers(doc) & FORBIDDEN_TRIGGERS)
-    ]
+    doc = load_workflow(text)
+    try:
+        events = triggers(doc)
+    except ValueError:
+        problems = [f"{name} gives its events in a form that this check cannot read"]
+    else:
+        problems = [
+            f"{name} triggers on {trigger}" for trigger in sorted(events & FORBIDDEN_TRIGGERS)
+        ]
     blocks = [("the workflow", doc.get("permissions"))] + [
         (f"job `{job}`", body.get("permissions")) for job, body in (doc.get("jobs") or {}).items()
     ]
@@ -323,6 +467,23 @@ def test_a_write_the_workflow_is_allowed_is_not_reported(monkeypatch: Any) -> No
     monkeypatch.setitem(WRITES_ALLOWED, "r.yml", {"pull-requests: write"})
     assert workflow_problems("r.yml", text) == []
     assert triggers({"on": ["push", "pull_request"]}) == {"push", "pull_request"}
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "'on': push\non: pull_request_target\n",
+        "on: push\n'on': pull_request_target\n",
+        "on: [push, {pull_request_target: {}}]\n",
+    ],
+)
+def test_a_trigger_under_either_on_key_or_in_a_list_s_mapping_is_read(text: str) -> None:
+    assert workflow_problems("x.yml", text) == ["x.yml triggers on pull_request_target"]
+
+
+def test_a_workflow_that_gives_a_key_twice_is_refused() -> None:
+    with pytest.raises(yaml.YAMLError, match="gives the key 'on' twice"):
+        workflow_problems("x.yml", "on: pull_request_target\non: push\n")
 
 
 def checkouts(name: str, text: str) -> tuple[list[str], int]:
@@ -675,3 +836,233 @@ def test_a_bug_report_form_whose_privacy_checkbox_is_optional_is_refused() -> No
     assert not required_privacy_checkbox({"body": []})
     option["required"] = True
     assert required_privacy_checkbox({"body": [field]})
+
+
+# R223 and R229: what this repository holds before the tool is turned on here.
+
+NEITHER_TICKED = "- [ ] 4.3 Add the reusable workflow\n- [ ] 7.1 Turn the tool on here\n"
+CAPTURE_ON = "- [ ] 4.3 Add the reusable workflow\n- [x] 7.1 Turn the tool on here\n"
+GUARD_ADDED = "- [x] 4.3 Add the reusable workflow\n- [ ] 7.1 Turn the tool on here\n"
+REUSABLE = "on:\n  workflow_call:\npermissions:\n  contents: read\n"
+
+
+def ticked(root: Path, number: str) -> bool:
+    """Whether a task of the change is ticked, in it or in its archived copy."""
+    return tasks(root).get((BUILD_CHANGE, number), False)
+
+
+def capture_file_problems(root: Path) -> list[str]:
+    """R223: no switch and no ledger file at the root before task 7.1 turns the tool on,
+    whatever the case of their letters, which a file system that ignores case does not
+    tell apart."""
+    if ticked(root, "7.1"):
+        return []
+    return [
+        f"`{name}` is tracked at the root while task 7.1 of `{BUILD_CHANGE}` is not ticked"
+        for name in sorted(tracked(root))
+        if name.casefold() == ".pr-cost.json" or name.casefold().startswith(".pr-cost/")
+    ]
+
+
+def reusable_workflow_problems(root: Path) -> list[str]:
+    """R229: no workflow that another repository can call before task 4.3 adds its guard."""
+    if ticked(root, "4.3"):
+        return []
+    problems = []
+    for name in sorted(tracked(root)):
+        if not name.startswith(".github/workflows/"):
+            continue
+        try:
+            doc = load_workflow((root / name).read_text(encoding="utf-8"))
+        except yaml.YAMLError:
+            problems.append(
+                f"`{name}` cannot be read as YAML, so it may declare `workflow_call` while "
+                f"task 4.3 of `{BUILD_CHANGE}` is not ticked"
+            )
+            continue
+        try:
+            events = triggers(doc) if isinstance(doc, dict) else set()
+        except ValueError:
+            problems.append(
+                f"`{name}` gives its events in a form that this check cannot read, so it may "
+                f"declare `workflow_call` while task 4.3 of `{BUILD_CHANGE}` is not ticked"
+            )
+            continue
+        if "workflow_call" in events:
+            problems.append(
+                f"`{name}` declares `workflow_call` while task 4.3 of `{BUILD_CHANGE}` is not "
+                "ticked"
+            )
+    return problems
+
+
+@pytest.mark.parametrize(
+    "name",
+    [
+        ".pr-cost.json",
+        ".pr-cost/a-ledger-file",
+        ".PR-COST.json",
+        ".Pr-Cost/ledger/2026-11/a.jsonl",
+        ".pr-co\u017ft.json",
+    ],
+)
+def test_a_switch_or_a_ledger_file_at_the_root_before_task_7_1_is_named(
+    tmp_path: Path, name: str
+) -> None:
+    root = make_tree(tmp_path, {CHANGE_TASKS: NEITHER_TICKED, name: "{}\n"})
+    assert capture_file_problems(root) == [
+        f"`{name}` is tracked at the root while task 7.1 of `add-pr-cost-calculator` is not ticked"
+    ]
+
+
+@pytest.mark.parametrize(
+    "name",
+    [
+        "tests/golden/.pr-cost.json",
+        "tests/golden/.pr-cost/a-ledger-file",
+        ".pr-cost.json.example",
+        ".pr-costs/a-file",
+    ],
+)
+def test_a_name_that_is_not_the_switch_or_a_ledger_file_at_the_root_passes(
+    tmp_path: Path, name: str
+) -> None:
+    root = make_tree(tmp_path, {CHANGE_TASKS: NEITHER_TICKED, name: "{}\n"})
+    assert capture_file_problems(root) == []
+
+
+def test_an_untracked_switch_is_not_named(tmp_path: Path) -> None:
+    root = make_tree(tmp_path, {CHANGE_TASKS: NEITHER_TICKED})
+    (root / ".pr-cost.json").write_text("{}\n")
+    assert capture_file_problems(root) == []
+
+
+@pytest.mark.parametrize("where", [CHANGE_TASKS, ARCHIVED_TASKS])
+def test_a_switch_and_ledger_files_pass_once_task_7_1_is_ticked(tmp_path: Path, where: str) -> None:
+    files: dict[str, str | None] = {
+        where: CAPTURE_ON,
+        ".pr-cost.json": "{}\n",
+        ".pr-cost/a-ledger-file": "{}\n",
+    }
+    assert capture_file_problems(make_tree(tmp_path, files)) == []
+
+
+def test_task_7_1_ticked_in_another_change_does_not_turn_the_tool_on_here(tmp_path: Path) -> None:
+    files: dict[str, str | None] = {
+        CHANGE_TASKS: NEITHER_TICKED,
+        "openspec/changes/another/tasks.md": CAPTURE_ON,
+        ".pr-cost.json": "{}\n",
+    }
+    assert capture_file_problems(make_tree(tmp_path, files)) == [
+        "`.pr-cost.json` is tracked at the root while task 7.1 of `add-pr-cost-calculator` is "
+        "not ticked"
+    ]
+
+
+@pytest.mark.parametrize(
+    "workflow",
+    [
+        REUSABLE,
+        "on: workflow_call\n",
+        "on: [push, workflow_call]\n",
+        "'on': {workflow_call: {inputs: {}}}\n",
+        "'on': push\non: workflow_call\n",
+        "on: push\n'on': workflow_call\n",
+        "on: [push, {workflow_call: {}}]\n",
+    ],
+)
+def test_a_reusable_workflow_before_task_4_3_is_named(tmp_path: Path, workflow: str) -> None:
+    files: dict[str, str | None] = {
+        CHANGE_TASKS: NEITHER_TICKED,
+        ".github/workflows/report.yml": workflow,
+    }
+    assert reusable_workflow_problems(make_tree(tmp_path, files)) == [
+        "`.github/workflows/report.yml` declares `workflow_call` while task 4.3 of "
+        "`add-pr-cost-calculator` is not ticked"
+    ]
+
+
+@pytest.mark.parametrize("where", [CHANGE_TASKS, ARCHIVED_TASKS])
+def test_a_reusable_workflow_passes_once_task_4_3_is_ticked(tmp_path: Path, where: str) -> None:
+    files: dict[str, str | None] = {where: GUARD_ADDED, ".github/workflows/report.yml": REUSABLE}
+    assert reusable_workflow_problems(make_tree(tmp_path, files)) == []
+
+
+@pytest.mark.parametrize(
+    ("name", "workflow"),
+    [
+        (".github/workflows/ci.yml", "on: [push, pull_request]\n"),
+        (".github/workflows/ci.yml", "on: push\nx: &x {a: 1}\ny:\n  <<: *x\n  a: 2\n"),
+        (".github/workflows/ci.yml", "on:\njobs: {}\n"),
+        (".github/workflows/ci.yml", ""),
+        (".github/workflows/ci.yml", "- workflow_call\n"),
+        ("docs/a-reusable-workflow-shown.yml", REUSABLE),
+    ],
+)
+def test_a_workflow_that_declares_no_workflow_call_or_lies_elsewhere_passes(
+    tmp_path: Path, name: str, workflow: str
+) -> None:
+    files: dict[str, str | None] = {CHANGE_TASKS: NEITHER_TICKED, name: workflow}
+    assert reusable_workflow_problems(make_tree(tmp_path, files)) == []
+
+
+@pytest.mark.parametrize(
+    "workflow",
+    [
+        "on: [workflow_call\n",
+        "on: workflow_call\non: push\n",
+        "a: 1\na: 2\n",
+        "? [a, b]\n: c\n",
+    ],
+)
+def test_a_workflow_that_cannot_be_read_is_named(tmp_path: Path, workflow: str) -> None:
+    files: dict[str, str | None] = {
+        CHANGE_TASKS: NEITHER_TICKED,
+        ".github/workflows/broken.yml": workflow,
+    }
+    assert reusable_workflow_problems(make_tree(tmp_path, files)) == [
+        "`.github/workflows/broken.yml` cannot be read as YAML, so it may declare "
+        "`workflow_call` while task 4.3 of `add-pr-cost-calculator` is not ticked"
+    ]
+
+
+# Events given in a form that `triggers` cannot read, which GitHub may read otherwise.
+EVENTS_IN_ANOTHER_FORM = [
+    "on: !!set {workflow_call}\n",
+    "on: [[workflow_call]]\n",
+    "on: !!omap [workflow_call: {}]\n",
+    "on: !!pairs [workflow_call: {}]\n",
+    "on: 5\n",
+    "'on': [push, 5]\n",
+]
+
+
+@pytest.mark.parametrize("workflow", EVENTS_IN_ANOTHER_FORM)
+def test_a_workflow_whose_events_cannot_be_read_is_named(tmp_path: Path, workflow: str) -> None:
+    files: dict[str, str | None] = {
+        CHANGE_TASKS: NEITHER_TICKED,
+        ".github/workflows/odd.yml": workflow,
+    }
+    assert reusable_workflow_problems(make_tree(tmp_path, files)) == [
+        "`.github/workflows/odd.yml` gives its events in a form that this check cannot read, "
+        "so it may declare `workflow_call` while task 4.3 of `add-pr-cost-calculator` is not "
+        "ticked"
+    ]
+
+
+@pytest.mark.parametrize("workflow", EVENTS_IN_ANOTHER_FORM)
+def test_the_workflow_checks_name_events_that_they_cannot_read(workflow: str) -> None:
+    assert workflow_problems("x.yml", workflow + "permissions: write-all\n") == [
+        "x.yml gives its events in a form that this check cannot read",
+        "x.yml the workflow grants `write-all`",
+    ]
+
+
+def test_this_repository_holds_no_switch_ledger_file_or_reusable_workflow_too_early() -> None:
+    """A check that examined nothing fails: the tasks that each check waits for, and the
+    workflows that one reads, are found."""
+    change = "add-pr-cost-calculator"
+    assert {(change, "4.3"), (change, "7.1")} <= tasks(ROOT).keys()
+    assert any(name.startswith(".github/workflows/") for name in tracked(ROOT))
+    assert capture_file_problems(ROOT) == []
+    assert reusable_workflow_problems(ROOT) == []
