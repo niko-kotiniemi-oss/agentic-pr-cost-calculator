@@ -1,11 +1,11 @@
 # B-003: Context files and the rules agents follow
 
-- **Status:** Planned
-- **Last changed:** 2026-11-13
+- **Status:** Done
+- **Last changed:** 2026-11-19
 - **Brief:** Rules that load only for the files they concern, a shorter `CLAUDE.md`, and rules on how reviews are reported and how files are staged.
 - **Rests on:** DR-134
 - **Issue:** none
-- **Pull requests:** none
+- **Pull requests:** 46
 
 ## Problem
 
