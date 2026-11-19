@@ -29,16 +29,47 @@ the figures are compared with the threats' headings and the boundaries' headings
 
 from __future__ import annotations
 
+import os
 import re
-from dataclasses import dataclass, fields
+from dataclasses import dataclass
+from dataclasses import fields as dataclass_fields
 from pathlib import Path
+from typing import TypedDict
 
 import pytest
+from risk_register import (
+    BANDS,
+    FURTHER,
+    IMPACTS,
+    LIKELIHOODS,
+    RECORD_REF,
+    Citations,
+    Threat,
+    citations,
+    plan_items,
+    rating,
+    score_of,
+    threats_in,
+)
+from test_backlog import AGREED, Item, backlog_items, items_in
+from test_decisions import DECIDER, Record, attribute_problems, base_commits, git, records_of
+from test_roadmap import hidden_text_problems_in, link_problems_in
 
 ROOT = Path(__file__).resolve().parents[1]
 THREAT_MODEL = ROOT / "docs" / "threat-model.md"
 
-FIELDS = ("Kind", "Impact", "Likelihood", "Risk", "What could happen", "Answer", "Held by")
+FIELDS = (
+    "Kind",
+    "Impact",
+    "Likelihood",
+    "Risk",
+    "Raw impact",
+    "Raw likelihood",
+    "Raw risk",
+    "What could happen",
+    "Answer",
+    "Held by",
+)
 KINDS = {
     "spoofing",
     "tampering",
@@ -48,58 +79,29 @@ KINDS = {
     "elevation of privilege",
     "reliability",
 }
-IMPACTS = {1: "low", 2: "medium", 3: "high"}
-LIKELIHOODS = {1: "unlikely", 2: "possible", 3: "likely"}
+# Each rating with the answer in place, and the raw rating that may not be lower (R244).
+PAIRS = (("Impact", "Raw impact", IMPACTS), ("Likelihood", "Raw likelihood", LIKELIHOODS))
+KINDS_OF_CITATION = [kind.name for kind in dataclass_fields(Citations)]
+# What a pull request changes with a high rating that it lowers, so that its reason shows (R250).
+REASONS = ("What could happen", "Answer", "Held by", "Further answer")
 
-HEADING = re.compile(r"^### (T(\d+))\. .+$", re.M)
-ANY_HEADING = re.compile(r"^#{1,3} ", re.M)
-FIELD = re.compile(r"^- \*\*([^*]+):\*\* ?(.*)$", re.M)
 SCENARIO = re.compile(r"^#### Scenario: (.+?)\s*$", re.M)
-SCENARIO_REF = re.compile(r'`([a-z0-9-]+)`: "([^"]+)"')
-TASK_REF = re.compile(r"`([a-z0-9-]+)` task (\d+\.\d+)")
-DECISION_REF = re.compile(r"`([a-z0-9-]+)` decision (\d+)")
-RECORD_REF = re.compile(r"\bDR-(\d{3,})\b")
 RETIRED = re.compile(r"^- T(\d+), removed by `[a-z0-9-]+`", re.M)
 RETIRED_SECTION = re.compile(r"^## Retired IDs\n(.*?)(?=^## |\Z)", re.M | re.S)
-PATH_REF = re.compile(r"`([^`\s]+)`")
 ARCHIVE_DATE = re.compile(r"^\d{4}-\d{2}-\d{2}-")
-RATING = re.compile(r"([1-3]) \(([a-z]+)\)")
+ANY_HEADING = re.compile(r"^#{1,3} ", re.M)
 MATRIX_HEADING = re.compile(r"^## Risk matrix$", re.M)
 MATRIX_ROW = re.compile(r"^\| ([1-3]) [a-z]+ \|(.*)\|\s*$", re.M)
 THREAT_ID = re.compile(r"T\d+")
 COUNT = re.compile(r"\bIt holds (\d+) threats across (\d+) trust boundaries\b")
 BOUNDARY = re.compile(r"^## Boundary (\d+)\b", re.M)
-
-
-@dataclass(frozen=True)
-class Threat:
-    ident: str
-    number: int
-    fields: dict[str, list[str]]
-    others: tuple[str, ...] = ()
+WHAT_DONE = re.compile(r"^## What done looks like\n(.*?)(?=^## |\Z)", re.M | re.S)
 
 
 @dataclass(frozen=True)
 class Index:
     scenarios: dict[str, set[str]]
     changes: dict[str, Path]
-
-
-def threats_in(text: str) -> list[Threat]:
-    marks = list(HEADING.finditer(text))
-    found = []
-    for mark in marks:
-        body = text[mark.end() :]
-        following = ANY_HEADING.search(body)
-        if following:
-            body = body[: following.start()]
-        fields: dict[str, list[str]] = {}
-        for field in FIELD.finditer(body):
-            fields.setdefault(field.group(1), []).append(field.group(2).strip())
-        # A line that is not a field is part of the field above it on GitHub, unread here.
-        others = tuple(line for line in body.split("\n") if line.strip() and not FIELD.match(line))
-        found.append(Threat(mark.group(1), int(mark.group(2)), fields, others))
-    return found
 
 
 def index(root: Path) -> Index:
@@ -117,35 +119,6 @@ def index(root: Path) -> Index:
         if folder.is_dir() and folder.name != "archive":
             changes[ARCHIVE_DATE.sub("", folder.name)] = folder
     return Index(scenarios, changes)
-
-
-@dataclass(frozen=True)
-class Citations:
-    """What a Held by cites, by kind."""
-
-    scenarios: list[tuple[str, str]]
-    tasks: list[tuple[str, str]]
-    decisions: list[tuple[str, str]]
-    records: list[str]
-    paths: list[str]
-
-    def __len__(self) -> int:
-        """How many citations it holds, of every kind."""
-        return sum(len(getattr(self, kind.name)) for kind in fields(self))
-
-
-def citations(held: str) -> Citations:
-    """Each kind is read from what the kinds before it leave, so that the name of a
-    capability or a change, which is in backticks, is not read as a path."""
-    scenarios = SCENARIO_REF.findall(held)
-    rest = SCENARIO_REF.sub("", held)
-    tasks = TASK_REF.findall(rest)
-    rest = TASK_REF.sub("", rest)
-    decisions = DECISION_REF.findall(rest)
-    rest = DECISION_REF.sub("", rest)
-    records = RECORD_REF.findall(rest)
-    paths = PATH_REF.findall(RECORD_REF.sub("", rest))
-    return Citations(scenarios, tasks, decisions, records, paths)
 
 
 def citation_problems(ident: str, held: str, found: Index, root: Path) -> tuple[list[str], int]:
@@ -218,23 +191,30 @@ def problems_in(text: str, root: Path) -> tuple[list[str], int]:
     return problems, cited
 
 
-def rating(value: str, levels: dict[int, str]) -> int | None:
-    match = RATING.fullmatch(value)
-    if not match or levels.get(int(match.group(1))) != match.group(2):
-        return None
-    return int(match.group(1))
-
-
 def rating_problems(threat: Threat) -> list[str]:
-    impact = rating(threat.fields["Impact"][0], IMPACTS)
-    likelihood = rating(threat.fields["Likelihood"][0], LIKELIHOODS)
+    """Each rating a level from its list, each risk the product of its two, and neither raw
+    rating lower than its rating with the answer in place (R31, R244)."""
     problems = []
-    if impact is None:
-        problems.append(f"{threat.ident} has an impact outside the list")
-    if likelihood is None:
-        problems.append(f"{threat.ident} has a likelihood outside the list")
-    if impact and likelihood and threat.fields["Risk"][0] != str(impact * likelihood):
-        problems.append(f"{threat.ident} has a risk that is not impact times likelihood")
+    given = {}
+    for low, raw, levels in PAIRS:
+        for name in (low, raw):
+            given[name] = rating(threat.fields[name][0], levels)
+            if not given[name]:
+                article = "an" if name == "Impact" else "a"
+                problems.append(f"{threat.ident} has {article} {name.lower()} outside the list")
+    for risk, impact, likelihood in (
+        ("Risk", "Impact", "Likelihood"),
+        ("Raw risk", "Raw impact", "Raw likelihood"),
+    ):
+        product = given[impact] * given[likelihood]
+        if product and threat.fields[risk][0] != str(product):
+            problems.append(
+                f"{threat.ident} has a {risk.lower()} that is not {impact.lower()} times "
+                f"{likelihood.lower()}"
+            )
+    for low, raw, _ in PAIRS:
+        if given[low] and given[raw] and given[raw] < given[low]:
+            problems.append(f"{threat.ident} has a {raw.lower()} lower than its {low.lower()}")
     return problems
 
 
@@ -261,8 +241,8 @@ def matrix_problems(text: str, threats: list[Threat]) -> list[str]:
     for threat in threats:
         expected = [
             (
-                rating(threat.fields.get("Impact", [""])[0], IMPACTS) or 0,
-                rating(threat.fields.get("Likelihood", [""])[0], LIKELIHOODS) or 0,
+                rating(threat.field("Impact"), IMPACTS),
+                rating(threat.field("Likelihood"), LIKELIHOODS),
             )
         ]
         if placed.pop(threat.ident, []) != expected:
@@ -284,6 +264,168 @@ def count_problems(text: str, threats: list[Threat]) -> list[str]:
         problems.append(
             f"the model says it has {boundaries} trust boundaries, and its headings name {named}"
         )
+    return problems
+
+
+def further_problems(text: str, root: Path, bases: list[str]) -> list[str]:
+    """R249: each high or critical risk carries a further answer that adds to its Held by,
+    or, if high, an acceptance that an open record of the owner's gives for it; neither
+    line, on any threat, holds text that the roadmap's rule forbids. A backlog item that a
+    further answer cites is Planned or In progress at each base and in this tree, and its
+    What done looks like, as this tree holds it, names the threat."""
+    found = index(root)
+    records, _ = records_of(root / "docs" / "decisions")
+    items = {item.ident: item for item in backlog_items(root)}
+    statuses = [
+        (base, {item.ident: item.status for item in items_in(root, base).values()})
+        for base in bases
+    ]
+    problems = []
+    for threat in threats_in(text):
+        named = BANDS.get(score_of(threat), "")
+        further, accepted = threat.field("Further answer"), threat.field("Acceptance")
+        for name, value in (("further answer", further), ("acceptance", accepted)):
+            if value:
+                problems += rule_problems(f"{threat.ident}'s {name}", value, root)
+        if named in FURTHER and not further and not accepted:
+            problems.append(
+                f"{threat.ident} is {named} and carries neither a further answer nor an acceptance"
+            )
+        if further:
+            problems += further_answer_problems(threat, found, root, items, statuses)
+        if accepted:
+            if named == "critical":
+                problems.append(f"{threat.ident} is critical and carries an acceptance")
+            problems += acceptance_problems(threat, records)
+    return problems
+
+
+def rule_problems(name: str, value: str, root: Path) -> list[str]:
+    """The roadmap's rule on links and hidden text, read with its own test, on one line."""
+    texts = [(name, "docs", 1, [value], value)]
+    found = link_problems_in(root, texts) + hidden_text_problems_in(texts)
+    return [problem.replace(f"{name}:1 ", f"{name} ", 1) for problem in found]
+
+
+def further_answer_problems(
+    threat: Threat,
+    found: Index,
+    root: Path,
+    items: dict[str, Item],
+    statuses: list[tuple[str, dict[str, str]]],
+) -> list[str]:
+    further = threat.field("Further answer")
+    problems, count = citation_problems(threat.ident, further, found, root)
+    cited, held = citations(further), citations(threat.field("Held by"))
+    new = any(set(getattr(cited, kind)) - set(getattr(held, kind)) for kind in KINDS_OF_CITATION)
+    named = plan_items(further)
+    if not count and not named:
+        problems.append(f"{threat.ident}'s further answer cites nothing")
+    elif not new and not named:
+        problems.append(f"{threat.ident}'s further answer cites nothing that its Held by does not")
+    for ident in named:
+        item = items.get(ident)
+        if item is None:
+            problems.append(f"{threat.ident}'s further answer cites {ident}, not a backlog item")
+            continue
+        if item.status not in AGREED:
+            problems.append(
+                f"{threat.ident}'s further answer cites {ident}, which this tree does not give "
+                "as Planned or In progress"
+            )
+        for base, status in statuses:
+            if status.get(ident) not in AGREED:
+                problems.append(
+                    f"{threat.ident}'s further answer cites {ident}, which {base} does not give "
+                    "as Planned or In progress"
+                )
+        done = WHAT_DONE.search(item.text)
+        if not done or not re.search(rf"\b{threat.ident}\b", done.group(1)):
+            problems.append(
+                f"{threat.ident}'s further answer cites {ident}, whose What done looks like does "
+                f"not name {threat.ident}"
+            )
+    return problems
+
+
+def acceptance_problems(threat: Threat, records: dict[str, Record]) -> list[str]:
+    cited = [
+        f"DR-{number}" for number in dict.fromkeys(RECORD_REF.findall(threat.field("Acceptance")))
+    ]
+    if not cited:
+        return [f"{threat.ident}'s acceptance cites no record"]
+    problems = []
+    for ident in cited:
+        record = records.get(ident)
+        decider = DECIDER.fullmatch(record.fields.get("Decided by", "")) if record else None
+        if record is None:
+            problems.append(f"{threat.ident}'s acceptance cites {ident}, not a decision record")
+        elif record.fields.get("Closed by", "none") != "none":
+            problems.append(f"{threat.ident}'s acceptance cites {ident}, which is closed")
+        elif not decider or not decider.group("owner"):
+            problems.append(
+                f"{threat.ident}'s acceptance cites {ident}, whose decider is not the owner"
+            )
+        elif threat.ident not in record.listed("Threats"):
+            problems.append(f"{threat.ident}'s acceptance cites {ident}, which does not list it")
+    return problems
+
+
+def reasons_for(old: Threat, new: Threat) -> list[str]:
+    """The fields whose change shows why a rating is lowered (R250): a further answer
+    removed, or one that cites a backlog item, is a plan that holds nothing yet (DR-255)."""
+    changed = [name for name in REASONS if new.fields.get(name) != old.fields.get(name)]
+    further = new.field("Further answer")
+    if not further or plan_items(further):
+        changed = [name for name in changed if name != "Further answer"]
+    return changed
+
+
+def lowered_problems(before: str, after: str) -> list[str]:
+    """R250: a rating that the base gives a high or critical risk is lowered only with a
+    change to what the threat says or what answers it."""
+    was = {threat.ident: threat for threat in threats_in(before)}
+    problems = []
+    for threat in threats_in(after):
+        old = was.get(threat.ident)
+        if old is None:
+            continue
+        for impact, likelihood in (("Impact", "Likelihood"), ("Raw impact", "Raw likelihood")):
+            then = (rating(old.field(impact), IMPACTS), rating(old.field(likelihood), LIKELIHOODS))
+            now = (
+                rating(threat.field(impact), IMPACTS),
+                rating(threat.field(likelihood), LIKELIHOODS),
+            )
+            if BANDS.get(then[0] * then[1], "") not in FURTHER:
+                continue
+            lowered = now[0] < then[0] or now[1] < then[1]
+            if lowered and not reasons_for(old, threat):
+                problems.append(
+                    f"{threat.ident}'s {impact.lower()} or {likelihood.lower()} is lowered from "
+                    f"a risk of {then[0] * then[1]} with none of {', '.join(REASONS)} changed, "
+                    "but for a further answer removed or one that is a plan"
+                )
+    return problems
+
+
+def rewritten_problems(
+    before: str, after: str, was: dict[str, Item], now: dict[str, Item], base: str
+) -> list[str]:
+    """R249: compared with a base, a further answer that cites a backlog item is added or
+    changed only in a diff that changes that item too, since the item is agreed to what its
+    further answers say."""
+    old = {threat.ident: threat.field("Further answer") for threat in threats_in(before)}
+    problems = []
+    for threat in threats_in(after):
+        further = threat.field("Further answer")
+        if not further or further == old.get(threat.ident, ""):
+            continue
+        for ident in plan_items(further):
+            if ident in was and ident in now and was[ident].text == now[ident].text:
+                problems.append(
+                    f"{threat.ident}'s further answer changes and cites {ident}, whose text is as "
+                    f"{base} holds it"
+                )
     return problems
 
 
@@ -322,6 +464,9 @@ def matrix(low: str = "T1") -> str:
     return MATRIX.format(low=low)
 
 
+HIGHEST = ("3 (high)", "3 (likely)", "9")
+
+
 def threat(
     held: str,
     number: int = 1,
@@ -329,16 +474,23 @@ def threat(
     impact: str = "1 (low)",
     likelihood: str = "1 (unlikely)",
     risk: str = "1",
+    raw: tuple[str, str, str] | None = None,
+    extra: str = "",
 ) -> str:
+    raw_impact, raw_likelihood, raw_risk = raw or (impact, likelihood, risk)
     return (
         f"### T{number}. Something goes wrong\n\n"
         f"- **Kind:** {kind}\n"
         f"- **Impact:** {impact}\n"
         f"- **Likelihood:** {likelihood}\n"
         f"- **Risk:** {risk}\n"
+        f"- **Raw impact:** {raw_impact}\n"
+        f"- **Raw likelihood:** {raw_likelihood}\n"
+        f"- **Raw risk:** {raw_risk}\n"
         "- **What could happen:** a thing.\n"
         "- **Answer:** another thing.\n"
         f"- **Held by:** {held}\n"
+        f"{extra}"
     )
 
 
@@ -420,7 +572,9 @@ def test_a_repeated_field_is_reported(tmp_path: Path) -> None:
 
 def test_kinds_and_impacts_come_from_their_lists(tmp_path: Path) -> None:
     synthetic_repository(tmp_path)
-    text = threat("`docs/note.md`", kind="tampering, mischief", impact="huge") + matrix()
+    text = (
+        threat("`docs/note.md`", kind="tampering, mischief", impact="huge", raw=HIGHEST) + matrix()
+    )
     problems, _ = problems_in(text, tmp_path)
     assert problems == [
         "T1 has a kind outside the list: ['mischief']",
@@ -452,9 +606,43 @@ def test_a_rating_is_a_level_from_its_list_and_risk_is_their_product(
 ) -> None:
     synthetic_repository(tmp_path)
     held = "`docs/note.md`"
-    text = threat(held, impact=impact, likelihood=likelihood, risk=risk)
+    text = threat(held, impact=impact, likelihood=likelihood, risk=risk, raw=HIGHEST)
     problems, _ = problems_in(text + matrix(""), tmp_path)
     assert [p for p in problems if "risk matrix" not in p] == expected
+
+
+@pytest.mark.parametrize(
+    ("raw", "expected"),
+    [
+        (("2 (medium)", "2 (possible)", "4"), []),
+        (("2 (medium)", "3 (likely)", "6"), []),
+        (("1 (low)", "3 (likely)", "3"), ["T1 has a raw impact lower than its impact"]),
+        (("3 (high)", "1 (unlikely)", "3"), ["T1 has a raw likelihood lower than its likelihood"]),
+        (("2 (high)", "2 (possible)", "4"), ["T1 has a raw impact outside the list"]),
+        (("2", "2 (possible)", "4"), ["T1 has a raw impact outside the list"]),
+        (("2 (medium)", "2 (likely)", "4"), ["T1 has a raw likelihood outside the list"]),
+        (
+            ("2 (medium)", "2 (possible)", "6"),
+            ["T1 has a raw risk that is not raw impact times raw likelihood"],
+        ),
+    ],
+)
+def test_a_raw_rating_is_a_level_not_below_its_rating_with_the_answer_in_place(
+    tmp_path: Path, raw: tuple[str, str, str], expected: list[str]
+) -> None:
+    synthetic_repository(tmp_path)
+    text = threat(
+        "`docs/note.md`", impact="2 (medium)", likelihood="2 (possible)", risk="4", raw=raw
+    )
+    placed = MATRIX.format(low="").replace("| 2 medium | | | |", "| 2 medium | | T1 | |")
+    assert problems_in(text + placed, tmp_path)[0] == expected
+
+
+@pytest.mark.parametrize("name", ["Raw impact", "Raw likelihood", "Raw risk"])
+def test_a_threat_without_its_raw_ratings_is_reported(tmp_path: Path, name: str) -> None:
+    synthetic_repository(tmp_path)
+    text = re.sub(rf"^- \*\*{name}:\*\* .*\n", "", threat("`docs/note.md`"), flags=re.M)
+    assert problems_in(text + matrix(), tmp_path)[0] == [f"T1 lacks ['{name}'] or repeats []"]
 
 
 def test_each_threat_sits_in_the_matrix_cell_its_ratings_name(tmp_path: Path) -> None:
@@ -609,3 +797,331 @@ def test_a_count_that_the_headings_do_not_bear_out_is_reported(
 ) -> None:
     text = counted(sentence)
     assert count_problems(text, threats_in(text)) == expected
+
+
+# R249: a further answer or an acceptance for each high or critical risk.
+
+
+def test_every_high_or_critical_risk_has_a_further_answer_or_an_acceptance() -> None:
+    text = THREAT_MODEL.read_text()
+    high = [
+        threat
+        for threat in threats_in(text)
+        if threat.field("Further answer") or threat.field("Acceptance")
+    ]
+    assert high, "no further answer or acceptance was read, so this test covered nothing"
+    assert further_problems(text, ROOT, base_commits(ROOT, os.environ)) == []
+
+
+def test_no_further_answer_is_rewritten_while_its_item_stands() -> None:
+    text = THREAT_MODEL.read_text()
+    now = {item.ident: item for item in backlog_items(ROOT)}
+    problems = []
+    for base in base_commits(ROOT, os.environ):
+        shown = git(ROOT, "show", f"{base}:docs/threat-model.md")
+        if shown.returncode == 0:
+            was = {item.ident: item for item in items_in(ROOT, base).values()}
+            problems += rewritten_problems(shown.stdout.decode("utf-8"), text, was, now, base)
+    assert problems == []
+
+
+ITEM_PATH = "docs/backlog/B-007-a-thing.md"
+
+
+def item_text(status: str = "Planned", done: str = "It answers T1 further.") -> str:
+    return (
+        f"# B-007: A thing\n\n- **Status:** {status}\n\n## Problem\n\nA problem.\n\n"
+        f"## What done looks like\n\n{done}\n\n## Postponed points\n\nNone.\n"
+    )
+
+
+def record_text(decider: str = "the owner, 2026-01-01", threats: str = "T1") -> str:
+    return (
+        f"# DR-002: An acceptance\n\n- **Decided by:** {decider}\n- **Threats:** {threats}\n"
+        "- **Closed by:** none\n\n## Decision\n\nThe owner accepts it.\n"
+    )
+
+
+def further_repository(root: Path, status: str = "Planned") -> str:
+    """The synthetic repository, with B-007 and an owner's record, committed as the base."""
+    synthetic_repository(root)
+    (root / "docs" / "backlog").mkdir()
+    (root / ITEM_PATH).write_text(item_text(status))
+    (root / "docs" / "decisions" / "DR-002-an-acceptance.md").write_text(record_text())
+    identity = ("-c", "user.name=Test", "-c", "user.email=test@example.invalid")
+    for args in (("init", "-q"), ("add", "-A"), (*identity, "commit", "-qm", "base")):
+        assert git(root, *args).returncode == 0
+    return git(root, "rev-parse", "HEAD").stdout.decode().strip()
+
+
+class Ratings(TypedDict, total=False):
+    impact: str
+    likelihood: str
+    risk: str
+    raw: tuple[str, str, str]
+
+
+HIGH: Ratings = {"impact": "3 (high)", "likelihood": "2 (possible)", "risk": "6"}
+CRITICAL: Ratings = {"impact": "3 (high)", "likelihood": "3 (likely)", "risk": "9"}
+HIGH_RAW: Ratings = {**HIGH, "raw": ("3 (high)", "3 (likely)", "9")}
+HIGH_RAW_LOWERED: Ratings = {**HIGH, "raw": ("3 (high)", "2 (possible)", "6")}
+
+
+def high_threat(extra: str, rated: Ratings = HIGH, held: str = "`docs/note.md`") -> str:
+    return threat(held, extra=extra, **rated)
+
+
+@pytest.mark.parametrize(
+    ("extra", "rated"),
+    [
+        ("- **Further answer:** B-007\n", HIGH),
+        ("- **Further answer:** B-007\n", CRITICAL),
+        ("- **Further answer:** `demo` task 1.2, which adds a second check\n", HIGH),
+        ("- **Acceptance:** DR-002, as the owner chose\n", HIGH),
+        ("", Ratings(impact="2 (medium)", likelihood="2 (possible)", risk="4")),
+    ],
+)
+def test_a_high_or_critical_risk_answered_further_or_accepted_passes(
+    tmp_path: Path, extra: str, rated: Ratings
+) -> None:
+    base = further_repository(tmp_path)
+    assert further_problems(high_threat(extra, rated), tmp_path, [base]) == []
+
+
+@pytest.mark.parametrize(
+    ("extra", "rated", "problem"),
+    [
+        ("", HIGH, "T1 is high and carries neither a further answer nor an acceptance"),
+        ("", CRITICAL, "T1 is critical and carries neither a further answer nor an acceptance"),
+        ("- **Further answer:** a second check\n", HIGH, "T1's further answer cites nothing"),
+        (
+            "- **Further answer:** `docs/note.md` again\n",
+            HIGH,
+            "T1's further answer cites nothing that its Held by does not",
+        ),
+        (
+            "- **Further answer:** `demo` task 9.9\n",
+            HIGH,
+            "T1 cites `demo` task 9.9, which does not exist",
+        ),
+        (
+            "- **Further answer:** B-008\n",
+            HIGH,
+            "T1's further answer cites B-008, not a backlog item",
+        ),
+        ("- **Acceptance:** the owner said so\n", HIGH, "T1's acceptance cites no record"),
+        ("- **Acceptance:** DR-009\n", HIGH, "T1's acceptance cites DR-009, not a decision record"),
+        ("- **Acceptance:** DR-002\n", CRITICAL, "T1 is critical and carries an acceptance"),
+        ("- **Further answer:** B-007 <!-- x -->\n", HIGH, "T1's further answer holds <"),
+        ("- **Acceptance:** DR-002 | more\n", HIGH, "T1's acceptance holds |"),
+        ("- **Acceptance:** DR-002 \\ more\n", HIGH, "T1's acceptance holds a backslash"),
+        (
+            '- **Further answer:** B-007, as [the item](note.md "more words") says\n',
+            HIGH,
+            "T1's further answer holds a link with a title",
+        ),
+        (
+            "- **Acceptance:** DR-002, as https://example.com says\n",
+            HIGH,
+            "T1's acceptance gives a web address",
+        ),
+        (
+            "- **Further answer:** `demo` task 1.2, which @someone adds\n",
+            Ratings(impact="2 (medium)", likelihood="2 (possible)", risk="4"),
+            "T1's further answer holds @",
+        ),
+    ],
+)
+def test_a_further_answer_or_an_acceptance_that_adds_nothing_is_reported(
+    tmp_path: Path, extra: str, rated: Ratings, problem: str
+) -> None:
+    base = further_repository(tmp_path)
+    found = further_problems(high_threat(extra, rated), tmp_path, [base])
+    assert [each for each in found if each.startswith(problem)], found
+
+
+@pytest.mark.parametrize(
+    ("status", "done", "problem"),
+    [
+        ("Open to feedback and contributions", None, "which {base} does not give as Planned"),
+        ("Planned", "It answers T10 further.", "whose What done looks like does not name T1"),
+    ],
+)
+def test_a_cited_item_not_agreed_at_the_base_or_not_naming_the_threat_is_reported(
+    tmp_path: Path, status: str, done: str | None, problem: str
+) -> None:
+    base = further_repository(tmp_path, status)
+    if done:
+        (tmp_path / ITEM_PATH).write_text(item_text(done=done))
+    found = further_problems(high_threat("- **Further answer:** B-007\n"), tmp_path, [base])
+    assert [each for each in found if problem.format(base=base) in each], found
+
+
+def test_an_item_done_in_the_tree_is_reported(tmp_path: Path) -> None:
+    base = further_repository(tmp_path)
+    (tmp_path / ITEM_PATH).write_text(item_text("Done"))
+    found = further_problems(high_threat("- **Further answer:** B-007\n"), tmp_path, [base])
+    assert found == [
+        "T1's further answer cites B-007, which this tree does not give as Planned or In progress"
+    ]
+
+
+def test_an_item_made_planned_in_the_pull_request_itself_is_reported(tmp_path: Path) -> None:
+    base = further_repository(tmp_path, "Open to feedback and contributions")
+    (tmp_path / ITEM_PATH).write_text(item_text("Planned"))
+    found = further_problems(high_threat("- **Further answer:** B-007\n"), tmp_path, [base])
+    assert found == [
+        f"T1's further answer cites B-007, which {base} does not give as Planned or In progress"
+    ]
+
+
+@pytest.mark.parametrize(
+    ("record", "problem"),
+    [
+        (record_text(threats="T2"), "cites DR-002, which does not list it"),
+        (record_text(decider="the change `demo`"), "cites DR-002, whose decider is not the owner"),
+        (
+            record_text().replace("- **Closed by:** none", "- **Closed by:** DR-003"),
+            "cites DR-002, which is closed",
+        ),
+    ],
+)
+def test_an_acceptance_that_the_owner_did_not_give_for_the_threat_is_reported(
+    tmp_path: Path, record: str, problem: str
+) -> None:
+    base = further_repository(tmp_path)
+    (tmp_path / "docs" / "decisions" / "DR-002-an-acceptance.md").write_text(record)
+    found = further_problems(high_threat("- **Acceptance:** DR-002\n"), tmp_path, [base])
+    assert found == [f"T1's acceptance {problem}"]
+
+
+# R250: a high or critical rating is lowered only with what lowers it.
+
+
+def test_no_high_or_critical_rating_is_lowered_alone() -> None:
+    text = THREAT_MODEL.read_text()
+    compared = 0
+    problems = []
+    for base in base_commits(ROOT, os.environ):
+        shown = git(ROOT, "show", f"{base}:docs/threat-model.md")
+        if shown.returncode == 0:
+            compared += 1
+            problems += lowered_problems(shown.stdout.decode("utf-8"), text)
+    assert problems == []
+    if not compared:
+        pytest.skip("no base holds the threat model, so there is nothing to compare")
+
+
+LOWERED: Ratings = {"impact": "3 (high)", "likelihood": "1 (unlikely)", "risk": "3", "raw": HIGHEST}
+
+
+@pytest.mark.parametrize(
+    ("after", "expected"),
+    [
+        (threat("`docs/note.md`", **LOWERED), ["impact or likelihood is lowered from a risk of 6"]),
+        (threat("`docs/note.md`", **LOWERED).replace("another thing.", "a stronger thing."), []),
+        (threat("`docs/note.md`; DR-001", **LOWERED), []),
+        (
+            threat("`docs/note.md`", **LOWERED, extra="- **Further answer:** B-007\n"),
+            ["impact or likelihood is lowered from a risk of 6"],
+        ),
+        (
+            threat(
+                "`docs/note.md`",
+                **LOWERED,
+                extra="- **Further answer:** `demo` task 1.2; B-007 writes the rest\n",
+            ),
+            ["impact or likelihood is lowered from a risk of 6"],
+        ),
+        (threat("`docs/note.md`", **LOWERED, extra="- **Further answer:** `demo` task 1.2\n"), []),
+        (threat("`docs/note.md`", **HIGH_RAW), []),
+        (threat("`docs/note.md`", **CRITICAL), []),
+        (
+            threat("`docs/note.md`", **HIGH_RAW_LOWERED),
+            ["raw impact or raw likelihood is lowered from a risk of 9"],
+        ),
+    ],
+)
+def test_a_high_rating_lowered_alone_is_reported(after: str, expected: list[str]) -> None:
+    before = threat("`docs/note.md`", **HIGH_RAW)
+    found = lowered_problems(before, after)
+    assert len(found) == len(expected)
+    assert all(problem in each for problem, each in zip(expected, found, strict=True))
+
+
+def test_a_rating_lowered_with_its_further_answer_removed_is_reported() -> None:
+    before = threat("`docs/note.md`", **HIGH_RAW, extra="- **Further answer:** `demo` task 1.2\n")
+    found = lowered_problems(before, threat("`docs/note.md`", **LOWERED))
+    assert len(found) == 1
+    assert "T1's impact or likelihood is lowered from a risk of 6" in found[0]
+
+
+def test_a_rating_below_high_at_the_base_may_be_lowered_alone() -> None:
+    before = threat("`docs/note.md`", impact="2 (medium)", likelihood="2 (possible)", risk="4")
+    assert lowered_problems(before, threat("`docs/note.md`")) == []
+
+
+def item(text: str) -> Item:
+    return Item(path=ITEM_PATH, number=7, text=text, fields={"Status": "Planned"})
+
+
+@pytest.mark.parametrize(
+    ("before", "after", "changed", "expected"),
+    [
+        ("", "- **Further answer:** B-007 does it\n", False, ["cites B-007, whose text is as"]),
+        (
+            "- **Further answer:** B-007 does it\n",
+            "- **Further answer:** B-007 does more\n",
+            False,
+            ["cites B-007, whose text is as"],
+        ),
+        (
+            "- **Further answer:** B-007 does it\n",
+            "- **Further answer:** B-007 does it\n",
+            False,
+            [],
+        ),
+        ("", "- **Further answer:** B-007 does it\n", True, []),
+        ("- **Further answer:** B-007 does it\n", "", False, []),
+        ("", "- **Further answer:** `demo` task 1.2\n", False, []),
+    ],
+)
+def test_a_further_answer_rewritten_while_its_item_stands_is_reported(
+    before: str, after: str, changed: bool, expected: list[str]
+) -> None:
+    was = {"B-007": item(item_text())}
+    now = {"B-007": item(item_text(done="It answers T1 further, and more."))} if changed else was
+    found = rewritten_problems(
+        threat("`docs/note.md`", extra=before),
+        threat("`docs/note.md`", extra=after),
+        was,
+        now,
+        "abc",
+    )
+    assert len(found) == len(expected)
+    assert all(problem in each for problem, each in zip(expected, found, strict=True))
+
+
+# R134: no attribute hides the threat model's diff.
+
+
+def test_no_attribute_changes_how_the_threat_model_s_diff_shows() -> None:
+    assert attribute_problems(ROOT, ["docs/threat-model.md"]) == []
+
+
+@pytest.mark.parametrize(
+    ("attribute", "shown"),
+    [
+        ("binary", "binary: set"),
+        ("-diff", "diff: unset"),
+        ("diff=word", "diff: word"),
+        ("linguist-generated", "linguist-generated: set"),
+    ],
+)
+def test_an_attribute_that_hides_the_threat_model_s_diff_is_reported(
+    tmp_path: Path, attribute: str, shown: str
+) -> None:
+    assert git(tmp_path, "init", "-q").returncode == 0
+    (tmp_path / ".gitattributes").write_text(f"docs/*.md {attribute}\n")
+    found = attribute_problems(tmp_path, ["docs/threat-model.md"])
+    assert f"docs/threat-model.md has {shown}, which changes how its diff shows" in found

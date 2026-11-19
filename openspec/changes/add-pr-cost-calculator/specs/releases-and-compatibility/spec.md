@@ -294,3 +294,37 @@ The capture step SHALL check, before anything else, that it runs under Python 3.
 
 - **WHEN** the capture step finds a git older than 2.43
 - **THEN** it records and stages nothing, prints nothing, and exits with success
+
+### Requirement: A release is refused while a critical risk stands, and its text names its high risks
+
+The release workflow SHALL refuse a tag while the threat model at the tag, or at the default branch's tip, gives a threat a critical risk with its answer in place, or a raw risk of 9 whose further answer is a plan (DR-255), or cannot be read, and SHALL refuse a tag whose `CHANGELOG.md` entry does not name, by ID and title in text that the roadmap's rule allows, each threat at the tag that is high with its answer in place and carries an acceptance, or a further answer that is a plan.
+
+#### Scenario: A tag whose threat model holds a critical risk is refused
+
+- **WHEN** a tag is pushed whose threat model gives a threat a risk of 9 with its answer in place
+- **THEN** no release is published, and the workflow names the threat
+
+#### Scenario: A critical risk that the default branch holds after the tag refuses the tag
+
+- **WHEN** a tag is pushed whose own threat model holds no critical risk, while the default branch's tip gives a threat a risk of 9 with its answer in place
+- **THEN** no release is published, and the workflow names the threat and the commit that holds it
+
+#### Scenario: A critical raw risk answered further only on paper is refused
+
+- **WHEN** a tag's threat model gives a threat a raw risk of 9 and a further answer that cites a backlog item, whatever else it cites
+- **THEN** no release is published, and the workflow names the threat and the item
+
+#### Scenario: A threat model that the check cannot read refuses the tag
+
+- **WHEN** the threat model at the tag or at the default branch's tip is missing, is not a regular file, holds no threat, or gives a threat a rating that the check cannot read
+- **THEN** no release is published, and the workflow names the commit and the threat or the file
+
+#### Scenario: A release whose changelog leaves out a high risk is refused
+
+- **WHEN** a tag's threat model gives a threat a risk of 6 with its answer in place and an acceptance, or a further answer that cites a backlog item, and the tag's changelog entry does not name the threat, or names it only by its ID, or only in text that the roadmap's rule forbids, such as an HTML comment
+- **THEN** no release is published, and the workflow names the threat
+
+#### Scenario: A release whose changelog names its high risks goes on
+
+- **WHEN** a tag's threat model holds no critical risk, and its changelog entry names each high risk that carries an acceptance or a further answer that cites a backlog item, by its ID and its title
+- **THEN** this check passes the tag, and the release goes on to its other checks

@@ -6,7 +6,7 @@ The tool is meant to be used inside other projects, so it keeps to old enough Py
 
 **Spec:** `releases-and-compatibility`
 
-**Requirements:** R25, R99, R26, R27, R230, R71, R122, R123, R28, R72, R183, R188, R189, R184, R190, R32
+**Requirements:** R25, R99, R26, R27, R230, R71, R122, R123, R28, R72, R183, R188, R189, R184, R190, R32, R251
 
 ## Expected behaviour
 
@@ -14,7 +14,7 @@ The tool is meant to be used inside other projects, so it keeps to old enough Py
 - **Floors of the capture step.** Under a Python older than 3.11, or a git older than 2.43, the capture step records nothing, stages nothing, prints nothing and exits with success (R32), so an old machine is never blocked from committing.
 - **Dependency updates.** Minor and patch updates and vulnerability fixes are proposed as usual. A major update waits for the owner's approval on Renovate's dependency dashboard (R26).
 - **Versions.** Semantic: the major number rises for a change that adopters must act on, which is any change to the public surface that R122 lists and keeps in a manifest, and R71 and R123 give how a release whose manifest changed is numbered; the minor number for new behaviour; the patch number for a fix.
-- **Releases.** A release is made by pushing a tag `vMAJOR.MINOR.PATCH` for a commit in the default branch's first-parent history. R27, R190 and R230 give the tags that the release workflow refuses, and R189 how it attaches and checks the release's files before it publishes the release, which names the commit to pin (DR-209). A tag that the workflow refused names no release, and its version is not used again.
+- **Releases.** A release is made by pushing a tag `vMAJOR.MINOR.PATCH` for a commit in the default branch's first-parent history. R27, R190, R230 and R251 give the tags that the release workflow refuses, and R189 how it attaches and checks the release's files before it publishes the release, which names the commit to pin (DR-209). A tag that the workflow refused names no release, and its version is not used again.
 - **Bill of materials.** Every release carries a CycloneDX JSON software bill of materials, as R28 gives it, and R72 gives when a release is not published for it.
 - **The plugin's zip.** Each release carries the plugin as a zip that R183 gives, whose SHA-256 the README gives, so a person can check a zip against the README at the release's commit before they upload it (DR-203).
 - **What the plugin declares.** R188 gives what each commit builds the plugin from and what its manifest and hooks hold, so that it runs nothing that its zip's list of files, its checksum and the bill of materials do not show.
