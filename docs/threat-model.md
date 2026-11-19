@@ -3650,16 +3650,17 @@ The trust boundaries:
 ### T232. Another repository's context files, loaded in the same session, steer work here
 
 - **Kind:** elevation of privilege
-- **Impact:** 2 (medium)
+- **Impact:** 3 (high)
 - **Likelihood:** 2 (possible)
-- **Risk:** 4
-- **Raw impact:** 2 (medium)
+- **Risk:** 6
+- **Raw impact:** 3 (high)
 - **Raw likelihood:** 3 (likely)
-- **Raw risk:** 6
+- **Raw risk:** 9
 - **What could happen:** a project's cloud thread starts each session and subagent with the root `CLAUDE.md` of each of the project's clones, under the same header for project instructions, and loads a clone's folder files when a file in that folder is read (A5, A70). Nothing tells the agent which file governs which clone, so another repository's rules, on staging, on what a commit, a pull request's text or a record may carry, or on how a review runs, can be applied to work on this repository, and that repository's `docs/CLAUDE.md` or `tests/CLAUDE.md` can be taken for the one that this root names. Its skills are listed beside this repository's, as are the person's, the organization's and a plugin's, so a command that the root names can run another skill of that name, all the more since Claude cannot start Claude Code's own `/verify` itself (A5). A thread can also add a repository to itself partway through its task: a thread of another project that adds this repository starts with that project's roots and gets this one late, and a thread of this repository's own project can add another repository the same way (A5). That repository's private names reaching a commit or a page here, from the same context, is T32.
 - **Answer:** the root names what steers work on this repository, and says that another repository's files and skills describe, so that where they differ from a file that steers here, those steer and the agent tells the owner (DR-258). Each context file names the tool on its first line, so that a session that holds another repository's files tells them apart, which a test holds (R254), and the root names Claude Code's own commands for the review lanes. Task 7.1 turns the tool on here only from a project that holds this repository alone, with this repository in no other project (DR-207), which ends this route for the threads of that project that add no other repository.
 - **Residual:** until then the owner's sessions here start with another repository's rules beside these, as the owner chose on 2026-11-19 rather than moving this repository's work at once; a local session started in a folder that holds several clones does the same; and the person's own and the organization's instructions load beside these too. These rest on agents following the root (A16).
-- **Held by:** DR-258; DR-207; `CLAUDE.md`; `project-standards`: "A context file whose first line does not name the tool fails CI"; `add-pr-cost-calculator` task 7.1
+- **Held by:** DR-258; DR-207; `CLAUDE.md`; `project-standards`: "A context file whose first line does not name the tool fails CI"; `add-pr-cost-calculator` task 7.1; DR-266
+- **Acceptance:** DR-266: the owner accepts it, since it rests on a choice that the owner made, to keep this repository's threads until task 7.1 in a project that holds another repository too, so that until then it rests on agents following the root.
 - **Assumptions:** A5, A16, A70
 
 ### T233. A session started above the clone gets the root late, or not at all
@@ -3745,8 +3746,8 @@ Generated from the ratings above. Each cell lists the threats whose impact and l
 
 | Impact \ Likelihood | 1 unlikely | 2 possible | 3 likely |
 |---|---|---|---|
-| 3 high | T1, T12, T14, T15, T23, T24, T28, T29, T35, T43, T46, T58, T59, T63, T64, T66, T67, T68, T73, T77, T81, T82, T83, T92, T93, T94, T95, T103, T107, T108, T119, T125, T133, T138, T140, T141, T142, T144, T147, T148, T150, T151, T160, T163, T164, T165, T167, T169, T174, T175, T177, T178, T180, T183, T184, T186, T187, T188, T190, T192, T210, T211, T212, T213, T214, T217, T219, T225, T226, T227, T229, T230, T231, T233, T234, T237 | T2, T32, T33, T34, T61, T62, T65, T132, T137 | |
-| 2 medium | T4, T6, T11, T13, T18, T25, T26, T38, T41, T42, T53, T55, T56, T57, T60, T69, T70, T76, T78, T79, T80, T84, T85, T86, T87, T88, T89, T90, T91, T97, T98, T99, T100, T101, T102, T104, T105, T109, T112, T115, T124, T126, T127, T135, T139, T146, T149, T152, T153, T155, T156, T157, T162, T172, T173, T179, T181, T182, T185, T189, T191, T193, T194, T195, T196, T197, T198, T199, T202, T203, T204, T206, T207, T215, T216, T220, T221, T223, T228, T235, T236 | T3, T9, T10, T17, T19, T20, T21, T22, T27, T30, T39, T40, T44, T45, T47, T48, T49, T50, T51, T52, T54, T71, T72, T74, T75, T96, T111, T116, T120, T121, T122, T123, T129, T130, T131, T134, T136, T143, T145, T154, T158, T159, T161, T166, T168, T170, T171, T176, T200, T201, T208, T209, T222, T224, T232 | T7, T8, T16, T128 |
+| 3 high | T1, T12, T14, T15, T23, T24, T28, T29, T35, T43, T46, T58, T59, T63, T64, T66, T67, T68, T73, T77, T81, T82, T83, T92, T93, T94, T95, T103, T107, T108, T119, T125, T133, T138, T140, T141, T142, T144, T147, T148, T150, T151, T160, T163, T164, T165, T167, T169, T174, T175, T177, T178, T180, T183, T184, T186, T187, T188, T190, T192, T210, T211, T212, T213, T214, T217, T219, T225, T226, T227, T229, T230, T231, T233, T234, T237 | T2, T32, T33, T34, T61, T62, T65, T132, T137, T232 | |
+| 2 medium | T4, T6, T11, T13, T18, T25, T26, T38, T41, T42, T53, T55, T56, T57, T60, T69, T70, T76, T78, T79, T80, T84, T85, T86, T87, T88, T89, T90, T91, T97, T98, T99, T100, T101, T102, T104, T105, T109, T112, T115, T124, T126, T127, T135, T139, T146, T149, T152, T153, T155, T156, T157, T162, T172, T173, T179, T181, T182, T185, T189, T191, T193, T194, T195, T196, T197, T198, T199, T202, T203, T204, T206, T207, T215, T216, T220, T221, T223, T228, T235, T236 | T3, T9, T10, T17, T19, T20, T21, T22, T27, T30, T39, T40, T44, T45, T47, T48, T49, T50, T51, T52, T54, T71, T72, T74, T75, T96, T111, T116, T120, T121, T122, T123, T129, T130, T131, T134, T136, T143, T145, T154, T158, T159, T161, T166, T168, T170, T171, T176, T200, T201, T208, T209, T222, T224 | T7, T8, T16, T128 |
 | 1 low | T113, T218 | T31, T36, T37, T110, T114, T118 | T5, T106, T117, T205 |
 
 The threats with a risk of 6 or more:
