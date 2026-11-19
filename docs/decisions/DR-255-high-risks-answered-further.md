@@ -4,7 +4,7 @@
 - **Status:** accepted
 - **Decided by:** the owner, 2026-10-29 and 2026-11-18
 - **Requirements:** R249, R250, R251
-- **Threats:** T207, T208, T209, T210, T211, T212, T213, T214, T215
+- **Threats:** T207, T208, T209, T210, T211, T212, T213, T214, T215, T216, T220, T221, T222
 - **Replaces:** none
 - **Closed by:** none
 
@@ -14,7 +14,7 @@ The owner asked on 2026-10-29 that every high or critical risk be mitigated. Eve
 
 ## Decision
 
-Every threat whose risk with its answer in place is high or critical carries a further answer, which cites what holds it beyond what its Held by cites, or a backlog item, `Planned` or `In progress`, whose What done looks like names the threat (R249). A further answer that cites only a backlog item is a plan: it does not count toward the rating with the answer in place until it cites what holds it, and only then is the threat rated again. The further answers to the high risks of 2026-11-18 that the specs can hold are written into them by backlog item B-007, which corrects the change's requirements before the build.
+Every threat whose risk with its answer in place is high or critical carries a further answer, which cites what holds it beyond what its Held by cites, or a backlog item, `Planned` or `In progress`, whose What done looks like names the threat (R249). A further answer that cites a backlog item is a plan, whatever else it names: it does not count toward the rating with the answer in place until it cites what holds it alone, and only then is the threat rated again. Since the item is agreed to what its further answers say, such a further answer changes only with the item. A plan, or a further answer removed, is no reason to lower a high or critical rating (R250). The further answers to the high risks of 2026-11-18 that the specs can hold are written into them by backlog item B-007, which corrects the change's requirements before the build.
 
 A high risk that no answer brings lower may instead carry an acceptance, which cites an open record in which the owner accepts it, gives the reason and lists the threat. A critical risk cannot be accepted: the release check refuses every tag while one stands (R251).
 

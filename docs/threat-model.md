@@ -2,7 +2,7 @@
 
 What could go wrong with the tool, for the people who use it and for this repository, and what answers each threat. Every change revisits this file (see `CLAUDE.md`).
 
-It was written for the first change, `add-pr-cost-calculator`, before any code, so the answers are requirements and tasks rather than code. It holds 215 threats across 9 trust boundaries. T38 to T69 were found by the design-stage review, T70 to T78 by the design-stage review of the decision records in `docs/decisions/`, T79 to T81 by the implementation-stage review of those records and their checks, T82 to T100 by the design-stage review of the assumptions, the glossary and the golden set, T101 by the implementation-stage review of the assumptions, T102 and T103 by the implementation-stage review of the glossary, T104 to T116 at the design of the revision of consent, the store and the ledger's format, T117 and T118 by the design-stage review of that revision, T119 to T122 by the review of that revision after its approval, T123 with the owner's answer to a question that the check of that review's fixes raised, T124 to T126 by the design-stage review of the test of the specs' form, T127 by the implementation-stage review of that test, T128 to T135 at the design of the plugin that brings capture to a project's cloud threads, T136 to T142 by the design-stage review of that plugin, T143 by its implementation-stage review, T144 by its security review, T145 to T147 at the design of the README's short start, T148 to T156 by the design-stage review of that short start, T157 and T158 by its implementation-stage review, T159 to T162 at the design of the roadmap, T163 to T165 by the design-stage review of the roadmap, T166 to T168 at the design of the backlog, T169 by the design-stage review of the backlog, T170 at the design of the guide, T171 to T174 by the design-stage review of the guide, T175 and T176 by the design-stage review of one opt-in for every agent, T177 to T182 by the second design-stage review of the guide, T183 by the final review of its build, T184 by its implementation-stage review, T185 to T189 at the design of the walking skeleton and T190 to T194 by its design-stage review, and T195 to T197 at the design of the specs' citation sweep, T198 to T200 by its design-stage review and T201 to T205 by its implementation-stage review, and T206 to T215 by the design-stage review of the risk register; they follow T37, each under a heading for its boundary, so that the numbers stay in order, and a threat that a change removes keeps its ID out of use (see Retired IDs). Where an answer can be a scenario in a spec, it is one, so that an acceptance test holds it. `tests/test_threat_model.py` checks that every citation below names a scenario, task, decision, decision record or file that exists.
+It was written for the first change, `add-pr-cost-calculator`, before any code, so the answers are requirements and tasks rather than code. It holds 222 threats across 9 trust boundaries. T38 to T69 were found by the design-stage review, T70 to T78 by the design-stage review of the decision records in `docs/decisions/`, T79 to T81 by the implementation-stage review of those records and their checks, T82 to T100 by the design-stage review of the assumptions, the glossary and the golden set, T101 by the implementation-stage review of the assumptions, T102 and T103 by the implementation-stage review of the glossary, T104 to T116 at the design of the revision of consent, the store and the ledger's format, T117 and T118 by the design-stage review of that revision, T119 to T122 by the review of that revision after its approval, T123 with the owner's answer to a question that the check of that review's fixes raised, T124 to T126 by the design-stage review of the test of the specs' form, T127 by the implementation-stage review of that test, T128 to T135 at the design of the plugin that brings capture to a project's cloud threads, T136 to T142 by the design-stage review of that plugin, T143 by its implementation-stage review, T144 by its security review, T145 to T147 at the design of the README's short start, T148 to T156 by the design-stage review of that short start, T157 and T158 by its implementation-stage review, T159 to T162 at the design of the roadmap, T163 to T165 by the design-stage review of the roadmap, T166 to T168 at the design of the backlog, T169 by the design-stage review of the backlog, T170 at the design of the guide, T171 to T174 by the design-stage review of the guide, T175 and T176 by the design-stage review of one opt-in for every agent, T177 to T182 by the second design-stage review of the guide, T183 by the final review of its build, T184 by its implementation-stage review, T185 to T189 at the design of the walking skeleton and T190 to T194 by its design-stage review, and T195 to T197 at the design of the specs' citation sweep, T198 to T200 by its design-stage review and T201 to T205 by its implementation-stage review, T206 to T215 by the design-stage review of the risk register and T216 to T222 by its implementation-stage review; they follow T37, each under a heading for its boundary, so that the numbers stay in order, and a threat that a change removes keeps its ID out of use (see Retired IDs). Where an answer can be a scenario in a spec, it is one, so that an acceptance test holds it. `tests/test_threat_model.py` checks that every citation below names a scenario, task, decision, decision record or file that exists.
 
 ## How it was built
 
@@ -1271,9 +1271,9 @@ The trust boundaries:
 ### T81. An attribute hides a record's diff from the review
 
 - **Kind:** tampering, spoofing
-- **Impact:** 2 (medium)
+- **Impact:** 3 (high)
 - **Likelihood:** 1 (unlikely)
-- **Risk:** 2
+- **Risk:** 3
 - **Raw impact:** 3 (high)
 - **Raw likelihood:** 2 (possible)
 - **Raw risk:** 6
@@ -2532,7 +2532,7 @@ The trust boundaries:
 - **Raw likelihood:** 2 (possible)
 - **Raw risk:** 6
 - **What could happen:** a pull request adds to the roadmap or a backlog item a link whose text names a file or an issue here while its target is another site, or a relative path that climbs out of the repository, which GitHub resolves against the page's address to any page on GitHub, such as another repository's file, a fork's commit shown under this repository's address or a new issue's form. An agent that follows it reads text written as instructions, which could steer it with the session's credentials, as the owner's account (T64, T95).
-- **Answer:** every link, image, autolink, web address, host and `owner/repo` in the roadmap, in every file in `docs/backlog/`, in the guide and in each feature page's section on known limitations and the roadmap, prose and code alike, names a heading of its own page or a tracked file of this repository outside `vendor/` and `.claude/skills/`, whose files others write and whose skills give orders, by a relative path that, resolved from the page's folder, stays inside it, each link read from its `](` whatever its text holds; they give no `@`, no commit ID, which GitHub serves for a fork's commit under this repository's address, and no fenced or indented code, and name issues and pull requests by number alone, so that the guide names a source with no web address and no host, read also where emphasis marks split it or it is four numbers joined by dots; the guide's Held by cites no file under `vendor/` or `.claude/skills/`; and a test fails otherwise (R209, R221). The risk register, which adopters read to judge the tool and whose titles any pull request can write, is held to the same rule, and its script refuses a title that the rule forbids (R246).
+- **Answer:** every link, image, autolink, web address, host and `owner/repo` in the roadmap, in every file in `docs/backlog/`, in the guide and in each feature page's section on known limitations and the roadmap, prose and code alike, names a heading of its own page or a tracked file of this repository outside `vendor/` and `.claude/skills/`, whose files others write and whose skills give orders, by a relative path that, resolved from the page's folder, stays inside it, each link read from its `](` whatever its text holds; they give no `@`, no commit ID, which GitHub serves for a fork's commit under this repository's address, and no fenced or indented code, and name issues and pull requests by number alone, so that the guide names a source with no web address and no host, read also where emphasis marks split it or it is four numbers joined by dots; the guide's Held by cites no file under `vendor/` or `.claude/skills/`; and a test fails otherwise (R209, R221). The risk register, which adopters read to judge the tool and whose titles any pull request can write, is held to the same rule: its script refuses a title that holds a mark that hides text, and the page's own test, which reads it with the roadmap's, fails on a link, a web address or an `@` that a title brings (R246).
 - **Residual:** a tracked file of this repository that someone else wrote, which reached it through the owner's review (A15).
 - **Held by:** `project-standards`: "A link elsewhere fails a test"; `project-standards`: "A link elsewhere in the guide fails a test"; DR-227; DR-228; DR-231; `add-pr-cost-calculator` task 1.26; `add-pr-cost-calculator` task 1.27; `add-pr-cost-calculator` task 1.28; `project-standards`: "Text that GitHub hides in the register fails a test"; `project-standards`: "A title that the rule forbids stops the script"
 - **Assumptions:** A15
@@ -2581,7 +2581,7 @@ The trust boundaries:
 - **Raw likelihood:** 2 (possible)
 - **Raw risk:** 6
 - **What could happen:** a pull request adds an item that gives, in code, a command such as a workflow's `uses:` line or a marketplace's command that names a fork as `owner/repo`, or a relative link whose text names a file here and whose target climbs out of the repository to a commit that only a fork holds. An adopter who reads the roadmap from the README copies the command or follows the link, and runs or pins another party's workflow or plugin with their own credentials (T58).
-- **Answer:** the roadmap, the backlog items, each feature page's section on known limitations and the roadmap, and the guide give no fenced or indented code and link nothing but a heading of their own page or a tracked file of this repository outside `vendor/` and `.claude/skills/` (R209, R221), so that no command or link there leads an adopter to a fork, a commit ID among them, which GitHub serves for a fork's commit under this repository's address. Their inline code holds no space, so that no command stands in them, apart from the guide's opening, whose words a test holds word for word (R219, R221): commands are given only in the README, whose own test holds them (R201). The risk register, which adopters read to judge the tool and whose titles any pull request can write, is held to the same rule, and its script refuses a title that the rule forbids (R246).
+- **Answer:** the roadmap, the backlog items, each feature page's section on known limitations and the roadmap, and the guide give no fenced or indented code and link nothing but a heading of their own page or a tracked file of this repository outside `vendor/` and `.claude/skills/` (R209, R221), so that no command or link there leads an adopter to a fork, a commit ID among them, which GitHub serves for a fork's commit under this repository's address. Their inline code holds no space, so that no command stands in them, apart from the guide's opening, whose words a test holds word for word (R219, R221): commands are given only in the README, whose own test holds them (R201). The risk register, which adopters read to judge the tool and whose titles any pull request can write, is held to the same rule: its script refuses a title that holds a mark that hides text, and the page's own test, which reads it with the roadmap's, fails on a link, a web address or an `@` that a title brings (R246).
 - **Residual:** text that GitHub shows can still tell an adopter to do something unsafe in words, which the owner's review of the diff catches (A15).
 - **Held by:** `project-standards`: "A link elsewhere fails a test"; `project-standards`: "A link elsewhere in the guide fails a test"; DR-227; DR-231; `add-pr-cost-calculator` task 1.26; `add-pr-cost-calculator` task 1.27; `add-pr-cost-calculator` task 1.28; `project-standards`: "Text that GitHub hides in the register fails a test"; `project-standards`: "A title that the rule forbids stops the script"
 - **Assumptions:** A15
@@ -3303,29 +3303,29 @@ The trust boundaries:
 
 - **Kind:** spoofing, tampering
 - **Impact:** 2 (medium)
-- **Likelihood:** 1 (unlikely)
-- **Risk:** 2
+- **Likelihood:** 2 (possible)
+- **Risk:** 4
 - **Raw impact:** 2 (medium)
 - **Raw likelihood:** 3 (likely)
 - **Raw risk:** 6
 - **What could happen:** an agent shown the failing check of a high risk takes the cheapest citation that passes: a further answer that repeats what the threat's Held by already cites, an acceptance that cites any record of the owner's, or a record that the same pull request adds and attributes to the owner. The register then lists the risk as answered further, or accepted, when it is neither.
 - **Answer:** a further answer must cite something that the threat's Held by does not, and an acceptance must cite an open record of the owner's that lists the threat among its threats (R249). An agent writes an acceptance, or a record that accepts a risk, only when the owner has asked for it in words in its own session (`CLAUDE.md`), and names the owner as decider only for a choice that the owner stated or picked.
-- **Residual:** a record attributed to the owner that the owner did not make still rests on the owner's review of the diff (T72).
+- **Residual:** a further answer that cites any file that its Held by does not, or a record attributed to the owner that the owner did not make, passes CI, so these rest on the owner's review of the diff, which R134 keeps visible (T72, T81).
 - **Held by:** `project-standards`: "A further answer that adds nothing fails CI"; `project-standards`: "An acceptance that the owner did not give for the threat fails CI"; DR-255; `CLAUDE.md`
 
 ### T209. A rating is lowered to escape the rule on high risks
 
 - **Kind:** tampering, reliability
 - **Impact:** 2 (medium)
-- **Likelihood:** 1 (unlikely)
-- **Risk:** 2
+- **Likelihood:** 2 (possible)
+- **Risk:** 4
 - **Raw impact:** 2 (medium)
 - **Raw likelihood:** 3 (likely)
 - **Raw risk:** 6
 - **What could happen:** once a risk of 6 costs a further answer, a reviewer rates a new threat of high impact as unlikely to keep it below high, or a builder shown the failing check lowers a threat's likelihood and nothing else. The register then shows the threat as medium, outside its list of high risks.
-- **Answer:** compared with the base that the records' check uses, a pull request that lowers the rating of a threat that the base gives a high or critical risk also changes its What could happen, Answer, Held by or further answer, so that the reason shows in the same diff (R250); and every rating is a reviewer's who did not write the design (DR-095).
-- **Residual:** a new threat rated low from the start, which no base holds; the review at design and the owner's review of the diff answer it.
-- **Held by:** `project-standards`: "A rating lowered alone fails CI"; DR-095; DR-255
+- **Answer:** compared with the base that the records' check uses, a pull request that lowers the rating of a threat that the base gives a high or critical risk also changes its What could happen, Answer, Held by or further answer, so that the reason shows in the same diff, which a further answer removed, or one that is a plan, is not (R250); and every rating is a reviewer's who did not write the design (DR-095).
+- **Residual:** a new threat rated low from the start, which no base holds, and a rating lowered with a change of one word to what the threat says; the review at design and the owner's review of the diff answer them.
+- **Held by:** `project-standards`: "A rating lowered alone fails CI"; `project-standards`: "A rating lowered on a plan or on a removed further answer fails CI"; DR-095; DR-255
 
 ### T210. Hidden text in a further answer is written into the specs
 
@@ -3337,7 +3337,7 @@ The trust boundaries:
 - **Raw likelihood:** 2 (possible)
 - **Raw risk:** 6
 - **What could happen:** a further answer describes what B-007 is to write into the specs. A pull request gives one an HTML comment, a link reference definition or an invisible character, which the rendered page and its diff do not show. The agent that builds B-007 reads the raw file and writes what it reads into a spec, and agents then build to text that the owner never saw.
-- **Answer:** further answers and acceptances hold no text that the roadmap's rule forbids (R249), as the specs, the records, the roadmap, the backlog and the guide already hold none.
+- **Answer:** further answers and acceptances, on every threat, hold no text that the roadmap's rule forbids, read with the roadmap's own test (R249), as the specs, the records, the roadmap, the backlog and the guide already hold none.
 - **Held by:** `project-standards`: "Hidden text in a further answer or an acceptance fails CI"; DR-255
 
 ## Boundary 8, continued: found at the design-stage review of the risk register
@@ -3365,8 +3365,8 @@ The trust boundaries:
 - **Raw likelihood:** 2 (possible)
 - **Raw risk:** 6
 - **What could happen:** a threat is critical, and its further answer cites a backlog item. Someone rates it again as if the further answer were in place, it drops to high, and the release goes out while nothing of the further answer exists.
-- **Answer:** a further answer counts toward the rating with the answer in place only once it cites what holds it, not a backlog item (DR-255), and the release check refuses a tag whose threat model gives a threat a raw risk of 9 and a further answer that cites only a backlog item (R251).
-- **Held by:** `releases-and-compatibility`: "A critical raw risk answered further only on paper is refused"; DR-255
+- **Answer:** a further answer that cites a backlog item is a plan, whatever else it names, and counts toward the rating with the answer in place only once it cites what holds it alone (DR-255); a plan is no reason to lower a high or critical rating (R250); and the release check, a mode of the script that writes the risk register, reads a plan with that script's own reading and refuses a tag whose threat model gives a threat a raw risk of 9 and a further answer that is a plan (R251, design decision 20).
+- **Held by:** `releases-and-compatibility`: "A critical raw risk answered further only on paper is refused"; `project-standards`: "A rating lowered on a plan or on a removed further answer fails CI"; `add-pr-cost-calculator` decision 20; DR-255
 
 ### T213. A tag is released while the default branch already holds a critical risk
 
@@ -3391,8 +3391,8 @@ The trust boundaries:
 - **Raw likelihood:** 1 (unlikely)
 - **Raw risk:** 3
 - **What could happen:** while a critical risk stands, a flaw unrelated to it needs a release, such as a security fix, and the refusal of every release keeps adopters on the flawed version until the critical risk is answered.
-- **Answer:** accepted: the owner chose that a critical risk holds back every release (DR-255), so that a release never ships one; no threat is critical today, and a critical one is answered first.
-- **Held by:** accepted: a critical risk holding back every release is the owner's choice (DR-255), and no threat is critical today.
+- **Answer:** accepted: the owner chose that a critical risk holds back every release (DR-255), so that a release never ships one; no threat is critical today, and a critical one is answered first. A raw risk of 9 whose further answer is a plan holds back every release too (R251), as T65's and T132's do until B-007 writes their further answers into the specs, which it does before the build and so before any release.
+- **Held by:** accepted: a critical risk, or a raw risk of 9 whose further answer is a plan, holding back every release is the owner's choice (DR-255), and no threat is critical today.
 
 ### T215. A release ships high risks that its text does not tell adopters of
 
@@ -3404,8 +3404,107 @@ The trust boundaries:
 - **Raw likelihood:** 3 (likely)
 - **Raw risk:** 6
 - **What could happen:** a release goes out while a high risk stands that the owner accepted, or whose further answer is still only a backlog item, and its notes say nothing, so adopters take the tool to answer what it does not.
-- **Answer:** the release check refuses a tag whose changelog entry does not name each such threat (R251), as it already refuses one that leaves out a gap of the guide that adopters rely on (R230).
+- **Answer:** the release check refuses a tag whose changelog entry does not name each such threat by its ID and its title, in text that the roadmap's rule allows (R251), as it already refuses one that leaves out a gap of the guide that adopters rely on (R230), and it reads a plan with the risk register's script's own reading (design decision 20).
 - **Held by:** `releases-and-compatibility`: "A release whose changelog leaves out a high risk is refused"; DR-255
+
+## Boundary 7, continued: found at the implementation-stage review of the risk register
+
+### T216. A further answer is rewritten while the item that builds it stands
+
+- **Kind:** tampering, elevation of privilege
+- **Impact:** 2 (medium)
+- **Likelihood:** 1 (unlikely)
+- **Risk:** 2
+- **Raw impact:** 2 (medium)
+- **Raw likelihood:** 2 (possible)
+- **Raw risk:** 4
+- **What could happen:** B-007's What done looks like names the threats whose further answers it writes into the specs, but what it writes is each further answer's own text, which any later pull request can rewrite while B-007 stays as it is. The agent that builds B-007 then writes into the specs, as agreed work, what the owner never agreed to.
+- **Answer:** compared with the base that the records' check uses, a further answer that cites a backlog item is added or changed only in a diff that changes that item too (R249), whose agreed text changes only on the owner's words (`CLAUDE.md`).
+- **Residual:** a diff that changes the item only in a date passes; the owner's review of the diff, in which both show, answers it.
+- **Held by:** `project-standards`: "A further answer rewritten while its item stands fails CI"; DR-255; `CLAUDE.md`
+
+### T217. The risk register's script reads or writes through a symbolic link
+
+- **Kind:** tampering
+- **Impact:** 2 (medium)
+- **Likelihood:** 1 (unlikely)
+- **Risk:** 2
+- **Raw impact:** 2 (medium)
+- **Raw likelihood:** 1 (unlikely)
+- **Raw risk:** 2
+- **What could happen:** a tree in which the page, the threat model or the register of requirements is a symbolic link makes the script, which `CLAUDE.md` tells every agent to run after a change to the threat model, write the page over a file outside the repository, or read a threat model that the repository does not hold.
+- **Answer:** the script refuses each of those files, and each folder on its way, when it is a symbolic link, reading and writing nothing through it (R245), as the repository's other readers of contributed files do.
+- **Held by:** `project-standards`: "A symbolic link on the way to a file of the register stops the script"; DR-256
+
+### T218. The copy for the reviewers of raw ratings shows which threats are high
+
+- **Kind:** information disclosure, reliability
+- **Impact:** 1 (low)
+- **Likelihood:** 1 (unlikely)
+- **Risk:** 1
+- **Raw impact:** 1 (low)
+- **Raw likelihood:** 2 (possible)
+- **Raw risk:** 2
+- **What could happen:** the copy of a boundary's threats that the script writes for the reviewers of raw ratings keeps each acceptance and the record that it cites, which only a high risk carries, so a reviewer meant to rate raw without the ratings learns where they stand, and anchors on them.
+- **Answer:** the copy leaves out each acceptance and the records that it cites, and keeps a further answer, which raw rating takes away (task 1.38, design decision 20, DR-254).
+- **Residual:** a further answer still shows that a threat is high or critical, and a reviewer working in the repository can open the risk register; the blindness rests on the reviewers' brief.
+- **Held by:** `add-pr-cost-calculator` task 1.38; `add-pr-cost-calculator` decision 20; `tests/test_risk_register.py`; DR-254
+
+## Boundary 8, continued: found at the implementation-stage review of the risk register
+
+### T219. The release check reads a threat model that it cannot parse as one with no critical risk
+
+- **Kind:** reliability, tampering
+- **Impact:** 3 (high)
+- **Likelihood:** 1 (unlikely)
+- **Risk:** 3
+- **Raw impact:** 3 (high)
+- **Raw likelihood:** 1 (unlikely)
+- **Raw risk:** 3
+- **What could happen:** the release check reads the threat model at the tag and at the default branch's tip with the tag's own reading. When either is missing, is a symbolic link, or has moved on to a form that the reading does not know, such as a renamed field or a rating's level written another way, it reads no threat or no rating, finds no critical risk, and the tag is released while one stands.
+- **Answer:** the release check refuses a tag whose threat model, at the tag or at the tip, is missing, is not a regular file, holds no threat or gives a rating that it cannot read (R251); it is a mode of the script that writes the risk register, which already refuses each of these, rather than a reading of its own (design decision 20).
+- **Held by:** `releases-and-compatibility`: "A threat model that the check cannot read refuses the tag"; `add-pr-cost-calculator` decision 20; `add-pr-cost-calculator` task 6.1
+
+### T220. A high risk that the default branch learns after a tag never reaches that release's text
+
+- **Kind:** information disclosure, reliability
+- **Impact:** 2 (medium)
+- **Likelihood:** 1 (unlikely)
+- **Risk:** 2
+- **Raw impact:** 2 (medium)
+- **Raw likelihood:** 1 (unlikely)
+- **Raw risk:** 2
+- **What could happen:** a tag names a commit behind the tip, and between the two the default branch gains a high risk that applies to the tagged code, or closes an acceptance that the tag's changelog names. The release's text, which cannot change once published, says nothing of the new risk, or still calls the withdrawn one accepted.
+- **Answer:** the release check reads the tip as well as the tag for a critical risk (R251), so what the tip learns stops the tag where it would ship a critical risk; a high risk that the tip learns is named in the next release's changelog (R251).
+- **Residual:** the release in between does not name it; the owner, who tags, reads the risk register at the tip first.
+- **Held by:** `releases-and-compatibility`: "A critical risk that the default branch holds after the tag refuses the tag"; `releases-and-compatibility`: "A release whose changelog leaves out a high risk is refused"; DR-255
+
+### T221. A changelog names a high risk where the release's text does not show it
+
+- **Kind:** spoofing, reliability
+- **Impact:** 2 (medium)
+- **Likelihood:** 1 (unlikely)
+- **Risk:** 2
+- **Raw impact:** 2 (medium)
+- **Raw likelihood:** 2 (possible)
+- **Raw risk:** 4
+- **What could happen:** an agent shown the release check's refusal takes the cheapest text that passes: the threats' IDs in an HTML comment or a link reference definition, which the release page does not show, or bare IDs that tell an adopter nothing.
+- **Answer:** the release check refuses a changelog entry that names such a threat only by its ID, or only in text that the roadmap's rule forbids (R251).
+- **Held by:** `releases-and-compatibility`: "A release whose changelog leaves out a high risk is refused"; DR-255
+
+### T222. A good tag is refused, and its version spent, by a risk that nothing flagged before the tag
+
+- **Kind:** denial of service, reliability
+- **Impact:** 2 (medium)
+- **Likelihood:** 2 (possible)
+- **Risk:** 4
+- **Raw impact:** 2 (medium)
+- **Raw likelihood:** 2 (possible)
+- **Raw risk:** 4
+- **What could happen:** the release check first gives its verdict after the tag exists, and a refused tag spends its version for good (DR-209). A raw risk of 9 whose further answer is a plan passes every check of the default branch, so the owner learns only from the refused tag that the release could not go out.
+- **Answer:** the risk register lists each high and critical risk with its raw risk and its further answer or acceptance (R247), so the owner, who tags, sees each plan with a raw risk of 9 before tagging; and a refused tag's version is not used again (DR-209).
+- **Residual:** the register flags nothing on its own; the check before a tag is the owner's reading of it.
+- **Held by:** `project-standards`: "A register that differs from the threat model fails CI"; DR-209; DR-255
 
 ## Risk matrix
 
@@ -3413,9 +3512,9 @@ Generated from the ratings above. Each cell lists the threats whose impact and l
 
 | Impact \ Likelihood | 1 unlikely | 2 possible | 3 likely |
 |---|---|---|---|
-| 3 high | T1, T12, T14, T15, T23, T24, T28, T29, T35, T43, T46, T58, T59, T63, T64, T66, T67, T68, T73, T77, T82, T83, T92, T93, T94, T95, T103, T107, T108, T119, T125, T133, T138, T140, T141, T142, T144, T147, T148, T150, T151, T160, T163, T164, T165, T167, T169, T174, T175, T177, T178, T180, T183, T184, T186, T187, T188, T190, T192, T210, T211, T212, T213, T214 | T2, T32, T33, T34, T61, T62, T65, T132, T137 |  |
-| 2 medium | T4, T6, T11, T13, T18, T25, T26, T38, T41, T42, T53, T55, T56, T57, T60, T69, T70, T76, T78, T79, T80, T81, T84, T85, T86, T87, T88, T89, T90, T91, T97, T98, T99, T100, T101, T102, T104, T105, T109, T112, T115, T124, T126, T127, T135, T139, T146, T149, T152, T153, T155, T156, T157, T162, T172, T173, T179, T181, T182, T185, T189, T191, T193, T194, T195, T196, T197, T198, T199, T202, T203, T204, T206, T207, T208, T209, T215 | T3, T9, T10, T17, T19, T20, T21, T22, T27, T30, T39, T40, T44, T45, T47, T48, T49, T50, T51, T52, T54, T71, T72, T74, T75, T96, T111, T116, T120, T121, T122, T123, T129, T130, T131, T134, T136, T143, T145, T154, T158, T159, T161, T166, T168, T170, T171, T176, T200, T201 | T7, T8, T16, T128 |
-| 1 low | T113 | T31, T36, T37, T110, T114, T118 | T5, T106, T117, T205 |
+| 3 high | T1, T12, T14, T15, T23, T24, T28, T29, T35, T43, T46, T58, T59, T63, T64, T66, T67, T68, T73, T77, T81, T82, T83, T92, T93, T94, T95, T103, T107, T108, T119, T125, T133, T138, T140, T141, T142, T144, T147, T148, T150, T151, T160, T163, T164, T165, T167, T169, T174, T175, T177, T178, T180, T183, T184, T186, T187, T188, T190, T192, T210, T211, T212, T213, T214, T219 | T2, T32, T33, T34, T61, T62, T65, T132, T137 | |
+| 2 medium | T4, T6, T11, T13, T18, T25, T26, T38, T41, T42, T53, T55, T56, T57, T60, T69, T70, T76, T78, T79, T80, T84, T85, T86, T87, T88, T89, T90, T91, T97, T98, T99, T100, T101, T102, T104, T105, T109, T112, T115, T124, T126, T127, T135, T139, T146, T149, T152, T153, T155, T156, T157, T162, T172, T173, T179, T181, T182, T185, T189, T191, T193, T194, T195, T196, T197, T198, T199, T202, T203, T204, T206, T207, T215, T216, T217, T220, T221 | T3, T9, T10, T17, T19, T20, T21, T22, T27, T30, T39, T40, T44, T45, T47, T48, T49, T50, T51, T52, T54, T71, T72, T74, T75, T96, T111, T116, T120, T121, T122, T123, T129, T130, T131, T134, T136, T143, T145, T154, T158, T159, T161, T166, T168, T170, T171, T176, T200, T201, T208, T209, T222 | T7, T8, T16, T128 |
+| 1 low | T113, T218 | T31, T36, T37, T110, T114, T118 | T5, T106, T117, T205 |
 
 The threats with a risk of 6 or more:
 

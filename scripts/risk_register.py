@@ -20,14 +20,23 @@ It writes nothing and fails, naming the threat, on a rating that it cannot read,
 scenario that the specs and the register cannot place under a requirement, and on text
 that the roadmap's rule forbids in anything that it would copy onto the page: a `|`,
 outside the separators of its tables, a `<`, a `&`, a backslash, a `]:` or a character
-other than printable ASCII (R246). With `--check` it names the threat whose row differs,
-is left out, is listed twice or is no threat, or the line that differs.
+other than printable ASCII (R246). It refuses the threat model, the register of
+requirements or the page when it, or a folder on its way, is a symbolic link, so that it
+reads and writes only the repository's own files (R245). With `--check` it names the
+threat whose row differs, is left out, is listed twice or is no threat, or the line that
+differs.
 
 With `--blind`, it prints the threat model's method, the boundary's line from the list
-of trust boundaries, and the boundary's threats without any rating line, so that the
-reviewers of the raw ratings are not shown the ratings with the answers in place (task
-1.38, DR-254). The bands are one table, `BANDS`, that the threat model's test and the
-release check import.
+of trust boundaries, and the boundary's threats without any rating line, without an
+acceptance and without the records that an acceptance cites, so that the reviewers of the
+raw ratings are not shown the ratings with the answers in place (task 1.38, DR-254). It
+keeps a further answer, which raw rating takes away, and which shows that a threat is high
+or critical.
+
+The bands are one table, `BANDS`, and a further answer that cites a backlog item is a plan
+(`plan_items`, DR-255). The threat model's test imports both, and the release check,
+which task 6.1 adds to this script as a mode of its own, since under `python3 -I` a script
+cannot import a module beside it (design decision 20), reads them here.
 
 It exits 0 when it has written or matched the page, 1 when it refuses or the page
 differs, and 2 on a command line that it does not take.
@@ -70,6 +79,7 @@ SCENARIO_REF = re.compile(r'`([a-z0-9-]+)`: "([^"]+)"')
 TASK_REF = re.compile(r"`([a-z0-9-]+)` task (\d+\.\d+)")
 DECISION_REF = re.compile(r"`([a-z0-9-]+)` decision (\d+)")
 RECORD_REF = re.compile(r"\bDR-(\d{3,})\b")
+ITEM_REF = re.compile(r"\bB-(\d{3})\b")
 PATH_REF = re.compile(r"`([^`\s]+)`")
 RATING = re.compile(r"([1-3]) \(([a-z]+)\)")
 REQUIREMENT = re.compile(r"^### Requirement: (.+?)\s*$")
@@ -77,8 +87,11 @@ SCENARIO = re.compile(r"^#### Scenario: (.+?)\s*$")
 REGISTER_ROW = re.compile(r"^\| (R\d+) \| [a-z-]+ \| `([a-z0-9-]+)` \| (.+?) \|\s*$", re.M)
 ROW_ID = re.compile(r"^\| \[(T\d+)\]\(")
 # The folders whose files others write, a vendored tree and the generated skills, which the
-# roadmap's rule lets no page name a file in (R209, R246).
-OTHERS_WRITE = ("vendor/", ".claude/skills/")
+# roadmap's rule lets no page name a file in (R209, R246), and how a row names such a file.
+OTHERS_WRITE = {
+    "vendor/": "a file under `vendor/`",
+    ".claude/skills/": "a file of a generated skill under `.claude/`",
+}
 # What the roadmap's rule forbids, the table's `|` among them, since nothing that the page
 # copies from the threat model stands as a separator (R246).
 FORBIDDEN = ("|", "<", "&", "\\", "]:")
@@ -97,9 +110,9 @@ class Threat:
     ident: str
     number: int
     fields: dict[str, list[str]]
-    others: tuple[str, ...] = ()
-    title: str = ""
-    boundary: int = 0
+    others: tuple[str, ...]
+    title: str
+    boundary: int
 
     def field(self, name: str) -> str:
         return self.fields.get(name, [""])[0]
@@ -127,12 +140,12 @@ def threats_in(text: str) -> list[Threat]:
         )[1]
         found.append(
             Threat(
-                mark.group(1),
-                int(mark.group(2)),
-                named,
-                others,
-                mark.group(3).strip(),
-                boundary,
+                ident=mark.group(1),
+                number=int(mark.group(2)),
+                fields=named,
+                others=others,
+                title=mark.group(3).strip(),
+                boundary=boundary,
             )
         )
     return found
@@ -175,16 +188,34 @@ def rating(value: str, levels: dict[int, str]) -> int:
     return int(match.group(1))
 
 
+def score_of(threat: Threat, impact: str = "Impact", likelihood: str = "Likelihood") -> int:
+    """A threat's risk, raw or with its answer in place, or 0 when a rating is unreadable."""
+    return rating(threat.field(impact), IMPACTS) * rating(threat.field(likelihood), LIKELIHOODS)
+
+
+def plan_items(further: str) -> list[str]:
+    """The backlog items that a further answer cites, in order. A further answer that cites
+    one is a plan, whatever else it names: it does not count toward the rating with the
+    answer in place until it cites what holds it alone (DR-255)."""
+    return [f"B-{number}" for number in dict.fromkeys(ITEM_REF.findall(further))]
+
+
 def band(score: int) -> str:
     return BANDS[score]
 
 
-def bands_phrase() -> str:
-    """The bands as R247 and DR-253 state them, from the table."""
+def bands_by_name() -> dict[str, list[int]]:
     by_name: dict[str, list[int]] = {}
     for score, name in BANDS.items():
         by_name.setdefault(name, []).append(score)
-    parts = [" and ".join(map(str, scores)) + f" {name}" for name, scores in by_name.items()]
+    return by_name
+
+
+def bands_phrase() -> str:
+    """The bands as R247 and DR-253 state them, from the table."""
+    parts = [
+        " and ".join(map(str, scores)) + f" {name}" for name, scores in bands_by_name().items()
+    ]
     return ", ".join(parts[:-1]) + " and " + parts[-1]
 
 
@@ -220,7 +251,21 @@ class Rated:
         return (-self.risk, -self.raw, self.threat.number)
 
 
+def linked(root: Path, name: str) -> bool:
+    """Whether the file, or a folder on its way from root, is a symbolic link."""
+    path = root
+    for part in Path(name).parts:
+        path = path / part
+        if path.is_symlink():
+            return True
+    return False
+
+
 def read(root: Path, name: str) -> str:
+    """The file's text, or nothing when it does not exist. Raises RegisterError when it, or
+    a folder on its way, is a symbolic link."""
+    if linked(root, name):
+        raise RegisterError([f"{name} is a symbolic link, which the script does not follow"])
     path = root / name
     return path.read_text(encoding="utf-8") if path.is_file() else ""
 
@@ -252,7 +297,7 @@ def shown_path(path: str) -> str:
     """A cited file as a row gives it: by its path, or, in a folder whose files others
     write, which the roadmap's rule lets no page name, by that folder alone."""
     folder = next((folder for folder in OTHERS_WRITE if path.startswith(folder)), "")
-    return f"a file under `{folder}`" if folder else f"`{path}`"
+    return OTHERS_WRITE[folder] if folder else f"`{path}`"
 
 
 def answered_by(threat: Threat, held: dict[tuple[str, str], str]) -> tuple[str, list[str]]:
@@ -308,12 +353,11 @@ def rated(text: str, root: Path) -> list[Rated]:
             "assumptions": threat.field("Assumptions"),
             "further answer": threat.field("Further answer"),
             "acceptance": threat.field("Acceptance"),
+            "Held by": answered,
         }
         for name, value in copied.items():
             if marks := forbidden(value):
                 problems.append(f"{threat.ident}'s {name} holds {', '.join(marks)}")
-        if marks := forbidden(answered.replace("; ", "")):
-            problems.append(f"{threat.ident}'s Held by holds {', '.join(marks)}")
         found.append(Rated(threat, ratings, answered))
     if problems:
         raise RegisterError(problems)
@@ -381,10 +425,7 @@ def page(text: str, root: Path) -> str:
         "| Band | Risk | Raw | With the answer in place |",
         "|---|---|---|---|",
     ]
-    by_name: dict[str, list[int]] = {}
-    for score, name in BANDS.items():
-        by_name.setdefault(name, []).append(score)
-    for name, scores in reversed(by_name.items()):
+    for name, scores in reversed(bands_by_name().items()):
         raw = sum(1 for each in threats if each.raw in scores)
         placed = sum(1 for each in threats if each.risk in scores)
         lines.append(f"| {name} | {' and '.join(map(str, scores))} | {raw} | {placed} |")
@@ -442,6 +483,7 @@ def write(root: Path) -> str:
     """Writes the register at root, and returns it. Raises RegisterError, writing nothing,
     when it refuses its input."""
     text = page(read(root, THREAT_MODEL), root)
+    read(root, PAGE)
     (root / PAGE).write_text(text, encoding="utf-8")
     return text
 
@@ -451,9 +493,9 @@ def check(root: Path, committed: str | None = None) -> list[str]:
 
     Raises RegisterError when it refuses its input."""
     if committed is None:
+        committed = read(root, PAGE)
         if not (root / PAGE).is_file():
             return [f"{PAGE} does not exist, so run python3 -I scripts/risk_register.py"]
-        committed = (root / PAGE).read_text(encoding="utf-8")
     written = page(read(root, THREAT_MODEL), root)
     if committed == written:
         return []
@@ -498,7 +540,8 @@ def check(root: Path, committed: str | None = None) -> list[str]:
 
 
 def blind(root: Path, boundary: int) -> str:
-    """The method, the boundary's line and its threats, without any rating line.
+    """The method, the boundary's line and its threats, without any rating line, any
+    acceptance, or the records that an acceptance cites in the threat's other fields.
 
     Raises RegisterError when the model holds no threat at the boundary."""
     text = read(root, THREAT_MODEL)
@@ -519,11 +562,20 @@ def blind(root: Path, boundary: int) -> str:
     ]
     for threat in threats:
         lines += [f"### {threat.ident}. {threat.title}", ""]
+        accepting = set(RECORD_REF.findall(threat.field("Acceptance")))
         for name, values in threat.fields.items():
-            if name not in RATING_FIELDS:
-                lines += [f"- **{name}:** {value}" for value in values]
+            if name not in (*RATING_FIELDS, "Acceptance"):
+                lines += [f"- **{name}:** {unaccepted(value, accepting)}" for value in values]
         lines.append("")
     return "\n".join(lines)
+
+
+def unaccepted(value: str, accepting: set[str]) -> str:
+    """A field without its citations of the records that the threat's acceptance cites, and
+    the separators that they leave."""
+    for number in accepting:
+        value = re.sub(rf"(?:;\s*)?\bDR-{number}\b(?:;\s*)?", "; ", value)
+    return value.strip("; ").replace(";  ", "; ")
 
 
 def main(argv: list[str]) -> int:
@@ -532,11 +584,10 @@ def main(argv: list[str]) -> int:
             write(ROOT)
             return 0
         if argv == ["--check"]:
-            problems = check(ROOT)
-            for problem in problems:
-                print(f"risk_register: {problem}", file=sys.stderr)
-            return 1 if problems else 0
-        if len(argv) == 2 and argv[0] == "--blind" and argv[1].isdigit():
+            if problems := check(ROOT):
+                raise RegisterError(problems)
+            return 0
+        if len(argv) == 2 and argv[0] == "--blind" and re.fullmatch("[0-9]+", argv[1]):
             print(blind(ROOT, int(argv[1])), end="")
             return 0
     except RegisterError as error:

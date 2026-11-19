@@ -40,7 +40,7 @@ Each line links the decision record that leaves it out. A later version may add 
 - [Features](docs/features/README.md): one page per feature, with its expected behaviour, its requirements and how it is validated.
 - [Requirements](docs/requirements.md): every functional, behavioural and non-functional requirement, indexed to the specs that hold them.
 - [Threat model](docs/threat-model.md): what could go wrong, each threat rated for impact and likelihood, and what answers it.
-- [Risk register](docs/risk-register.md): each threat rated as if its answer were not built and with its answer in place, in bands, with the further answer to each high risk; a script writes it from the threat model.
+- [Risk register](docs/risk-register.md): each threat rated as if its answer were not built and with its answer in place, in bands, with each high risk's further answer or the owner's acceptance of it; a script writes it from the threat model.
 - [Assumptions](docs/assumptions/README.md): what the design assumes about what lies outside the tool's own code, and how each of those facts is checked.
 - [Decisions](docs/decisions/README.md): one record per decision, with why it was made, what else was considered and what reversing it would change.
 - [How the project builds](docs/patterns.md): the guide, which gives, concern by concern, the principles that the project follows, each with its pattern and the anti-patterns that it steers clear of, what holds it and where the project stands.

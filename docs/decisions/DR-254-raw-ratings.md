@@ -4,7 +4,7 @@
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`, as the owner asked on 2026-10-29
 - **Requirements:** R244
-- **Threats:** none
+- **Threats:** T218
 - **Replaces:** none
 - **Closed by:** none
 
@@ -16,7 +16,7 @@ A threat's likelihood is rated with its answer in place (DR-112), so the threat 
 
 Each threat also carries a raw impact and a raw likelihood, rated as if what its Answer, its Held by and any further answer cite were not built, while the rest of the design stands, and a raw risk that is their product (R244). Where what a threat cites also answers other threats, such as `CLAUDE.md` or a test file, only the part that the threat's Answer names is taken away. The threat's impact, likelihood and risk stay as they are, rated with the answer in place (DR-112). Both kinds of rating stay in the threat model, so that each lives in one place.
 
-The raw ratings are first made by reviewers who did not write the threat model's ratings, one per trust boundary, each in a context of its own. Each works from a copy of its boundary's threats that the script of the risk register writes with every rating line, the risk matrix and the list of the highest risks taken out, so that the rating with the answer in place does not anchor the raw one, and the pull request says that they did. A raw rating below the rating with the answer in place is a disagreement that a second reviewer settles, and the pull request lists each.
+The raw ratings are first made by reviewers who did not write the threat model's ratings, one per trust boundary, each in a context of its own. Each works from a copy of its boundary's threats that the script of the risk register writes with every rating line, the risk matrix, the list of the highest risks, each acceptance and the records that an acceptance cites taken out, keeping each further answer, which raw rating takes away though it shows that a threat is high or critical, so that the rating with the answer in place does not anchor the raw one, and the pull request says that they did. A raw rating below the rating with the answer in place is a disagreement that a second reviewer settles, and the pull request lists each.
 
 An answer can lower an impact as well as a likelihood, such as a comment that says that its figure is a lower bound, so the raw impact is rated too, and neither raw rating may be lower than its rating with the answer in place.
 

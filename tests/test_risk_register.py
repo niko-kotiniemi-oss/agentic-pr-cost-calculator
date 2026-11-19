@@ -12,9 +12,9 @@ threat sits once in the cell of each matrix that its ratings name, each band fol
 its score, the bands' counts add up to the threats, and the page holds no text that
 GitHub hides and links only this repository's files, by the roadmap's rules, but for
 the `|` of its tables, each row of which holds as many cells as its header (R246).
-The bands are one table in the script, `BANDS`, which this test, the threat model's
-test and the release check import; R247 and DR-253 state the same lines, and a line
-moved in one place and not the others fails.
+The bands are one table in the script, `BANDS`, which this test and the threat model's
+test import; R247 and DR-253 state the same lines, and a line moved in one place and not
+the others fails.
 
 Each check is shown to fail on a synthetic threat model, specs and register, into
 which the defect is planted.
@@ -32,18 +32,17 @@ import pytest
 import risk_register
 from risk_register import (
     BANDS,
-    LIKELIHOODS,
     PAGE,
     RegisterError,
     band,
     bands_phrase,
     blind,
     check,
-    rating,
+    score_of,
     threats_in,
     write,
 )
-from test_roadmap import hidden_text_problems_in, link_problems_in
+from test_roadmap import hidden_text_problems_in, link_problems_in, section_of
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = ROOT / "scripts" / "risk_register.py"
@@ -57,17 +56,18 @@ MATRIX_ROW = re.compile(r"^\| ([1-3]) [a-z]+ \|(.*)\|\s*$")
 BAND_ROW = re.compile(r"^\| ([a-z]+) \| ([0-9a-z ]+) \| (\d+) \| (\d+) \|$")
 RATED = re.compile(r"^(\d) ([a-z]+) \(([1-3]), ([1-3])\)$")
 THREAT_ID = re.compile(r"T\d+")
+# The raw rating and the rating with the answer in place, in the order of the rows' cells.
+RATINGS = (("Raw impact", "Raw likelihood"), ("Impact", "Likelihood"))
 
 
 # The page as a reader reads it.
 
 
-def section(page: str, heading: str) -> list[str]:
-    """The lines of a `## ` section of the page, without its heading."""
-    lines = page.split("\n")
-    start = lines.index(f"## {heading}") + 1
-    end = next((n for n in range(start, len(lines)) if lines[n].startswith("## ")), len(lines))
-    return lines[start:end]
+def levels(threat: risk_register.Threat, impact: str, likelihood: str) -> tuple[int, int]:
+    return (
+        risk_register.rating(threat.field(impact), risk_register.IMPACTS),
+        risk_register.rating(threat.field(likelihood), risk_register.LIKELIHOODS),
+    )
 
 
 def matrix_problems(page: str, text: str) -> list[str]:
@@ -78,7 +78,7 @@ def matrix_problems(page: str, text: str) -> list[str]:
         ("Matrix with the answers in place", "Impact", "Likelihood"),
     ):
         placed: dict[str, list[tuple[int, int]]] = {}
-        rows = [found for line in section(page, heading) if (found := MATRIX_ROW.match(line))]
+        rows = [found for line in section_of(page, heading)[1] if (found := MATRIX_ROW.match(line))]
         if sorted(int(row.group(1)) for row in rows) != [1, 2, 3]:
             problems.append(f"the {heading.lower()} does not have one row for each impact")
             continue
@@ -88,12 +88,7 @@ def matrix_problems(page: str, text: str) -> list[str]:
                 for ident in THREAT_ID.findall(cell):
                     placed.setdefault(ident, []).append((int(row.group(1)), column))
         for threat in threats_in(text):
-            expected = [
-                (
-                    rating(threat.fields[impact][0], risk_register.IMPACTS),
-                    rating(threat.fields[likelihood][0], LIKELIHOODS),
-                )
-            ]
+            expected = [levels(threat, impact, likelihood)]
             if placed.pop(threat.ident, []) != expected:
                 problems.append(f"{threat.ident} is not in its one cell of the {heading.lower()}")
         problems += [f"the {heading.lower()} names {ident}, not a threat" for ident in placed]
@@ -119,14 +114,9 @@ def row_problems(page: str, text: str) -> list[str]:
         threat = threats[row.group(1)]
         cells = [cell.strip() for cell in line.strip("|").split(" | ")]
         scores = []
-        for cell, names in ((cells[4], "Raw"), (cells[5], "")):
+        for cell, (impact, likelihood) in zip(cells[4:6], RATINGS, strict=True):
             rated = RATED.match(cell)
-            impact = threat.fields[f"{names} impact".strip().capitalize()][0]
-            likelihood = threat.fields[f"{names} likelihood".strip().capitalize()][0]
-            expected = (
-                rating(impact, risk_register.IMPACTS),
-                rating(likelihood, LIKELIHOODS),
-            )
+            expected = levels(threat, impact, likelihood)
             if not rated or (int(rated.group(3)), int(rated.group(4))) != expected:
                 problems.append(f"{threat.ident}'s row does not give its ratings: {cell!r}")
                 continue
@@ -143,20 +133,14 @@ def row_problems(page: str, text: str) -> list[str]:
 def count_problems(page: str, text: str) -> list[str]:
     """Each band's count, raw and with the answers in place, adds up to the threats."""
     threats = threats_in(text)
-    counted = [found for line in section(page, "Bands") if (found := BAND_ROW.match(line))]
+    counted = [found for line in section_of(page, "Bands")[1] if (found := BAND_ROW.match(line))]
     if [row.group(1) for row in counted] != [*dict.fromkeys(reversed(BANDS.values())), "all"]:
         return ["the bands' table does not give each band once, highest first, then all"]
     problems = []
-    for column, (impact, likelihood) in (
-        (3, ("Raw impact", "Raw likelihood")),
-        (4, ("Impact", "Likelihood")),
-    ):
+    for column, (impact, likelihood) in enumerate(RATINGS, start=3):
         expected = {name: 0 for name in BANDS.values()}
         for threat in threats:
-            score = rating(threat.fields[impact][0], risk_register.IMPACTS) * rating(
-                threat.fields[likelihood][0], LIKELIHOODS
-            )
-            expected[BANDS[score]] += 1
+            expected[BANDS[score_of(threat, impact, likelihood)]] += 1
         given = {row.group(1): int(row.group(column)) for row in counted}
         if sum(given[name] for name in expected) != len(threats) or given["all"] != len(threats):
             problems.append(f"the bands' counts in column {column} do not add up to the threats")
@@ -261,7 +245,7 @@ def threat(
     extra: str = "",
 ) -> str:
     impact, likelihood, raw_impact, raw_likelihood = rated
-    impacts, likelihoods = risk_register.IMPACTS, LIKELIHOODS
+    impacts, likelihoods = risk_register.IMPACTS, risk_register.LIKELIHOODS
     return (
         f"### T{number}. {title}\n\n"
         "- **Kind:** tampering\n"
@@ -366,13 +350,16 @@ def test_rows_follow_the_risk_then_the_raw_risk_then_the_id(tmp_path: Path) -> N
 def test_a_file_in_a_folder_that_others_write_is_named_by_its_folder(tmp_path: Path) -> None:
     held = "`vendor/superpowers/UPSTREAM.lock`; `.claude/skills/a/SKILL.md`; `docs/note.md`"
     page = write(tree(tmp_path, model(threat(1, held=held))))
-    assert "| a file under `vendor/`; a file under `.claude/skills/`; `docs/note.md` |" in page
-    assert not [found for found in hidden_problems(page, ROOT) if "others write" in found]
+    named = "a file under `vendor/`; a file of a generated skill under `.claude/`; `docs/note.md`"
+    assert f"| {named} |" in page
+    assert not [
+        found for found in hidden_problems(page, ROOT) if "vendor" in found or ".claude" in found
+    ]
 
 
 def test_with_no_high_risk_the_page_says_so(tmp_path: Path) -> None:
     page = write(tree(tmp_path, model(threat(1))))
-    assert section(page, "High and critical risks")[-2] == "None."
+    assert section_of(page, "High and critical risks")[1][-2] == "None."
 
 
 @pytest.mark.parametrize(
@@ -498,6 +485,57 @@ def test_a_title_that_the_rule_forbids_stops_the_script(tmp_path: Path, mark: st
 
 
 @pytest.mark.parametrize(
+    ("name", "line"),
+    [
+        ("kind", "- **Kind:** tampering\n"),
+        ("assumptions", "- **Assumptions:** A1\n"),
+        ("further answer", "- **Further answer:** B-007\n"),
+        ("acceptance", "- **Acceptance:** DR-001\n"),
+        ("Held by", '- **Held by:** `thing`: "It works"; DR-001\n'),
+    ],
+)
+@pytest.mark.parametrize("mark", ["<", "&", "]:", "é"])
+def test_text_that_the_rule_forbids_in_a_copied_field_stops_the_script(
+    tmp_path: Path, name: str, line: str, mark: str
+) -> None:
+    body = threat(
+        1, held='`thing`: "It works"; DR-001', extra=FURTHER + "- **Acceptance:** DR-001\n"
+    )
+    assert line in body
+    planted = (
+        line.replace("\n", f" {mark} x\n")
+        if name != "Held by"
+        else line.replace("; DR-001", f"; `docs/{mark}x.md`")
+    )
+    root = tree(tmp_path, model(body.replace(line, planted, 1)))
+    with pytest.raises(RegisterError) as raised:
+        write(root)
+    assert [each for each in raised.value.problems if each.startswith(f"T1's {name} holds ")]
+    assert not (root / PAGE).exists()
+
+
+@pytest.mark.parametrize("name", ["docs/threat-model.md", "docs/requirements.md", PAGE, "docs"])
+def test_a_symbolic_link_on_the_way_to_a_file_that_the_script_reads_or_writes_stops_it(
+    tmp_path: Path, name: str
+) -> None:
+    root = tree(tmp_path / "repository", model(threat(1)))
+    write(root)
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    moved = root / name
+    moved.rename(outside / moved.name)
+    moved.symlink_to(outside / moved.name)
+    before = {path: path.read_bytes() for path in outside.rglob("*") if path.is_file()}
+    for run in (write, check):
+        with pytest.raises(RegisterError) as raised:
+            run(root)
+        (problem,) = raised.value.problems
+        assert problem.endswith(" is a symbolic link, which the script does not follow")
+        assert problem.startswith(name if name != "docs" else "docs/")
+    assert {path: path.read_bytes() for path in outside.rglob("*") if path.is_file()} == before
+
+
+@pytest.mark.parametrize(
     ("field", "problem"),
     [
         ("- **Raw impact:** 2 (low)\n", "T1 has no raw impact that the script can read"),
@@ -555,6 +593,24 @@ def test_the_blind_copy_holds_no_rating(tmp_path: Path) -> None:
     assert not re.search(r"Impact|Likelihood|Risk|matrix", copy)
 
 
+@pytest.mark.parametrize(
+    ("held", "shown"),
+    [
+        ('`thing`: "It works"; DR-009', '`thing`: "It works"'),
+        ('DR-009; `thing`: "It works"; DR-001', '`thing`: "It works"; DR-001'),
+        ('`thing`: "It works"; DR-009; DR-001', '`thing`: "It works"; DR-001'),
+    ],
+)
+def test_the_blind_copy_holds_no_acceptance_nor_the_record_it_cites(
+    tmp_path: Path, held: str, shown: str
+) -> None:
+    accepted = "- **Acceptance:** DR-009: the owner accepts it.\n"
+    root = tree(tmp_path, model(threat(1, rated=(3, 2, 3, 3), held=held, extra=accepted)))
+    copy = blind(root, 1)
+    assert f"- **Held by:** {shown}\n" in copy
+    assert "Acceptance" not in copy and "DR-009" not in copy
+
+
 def test_the_blind_copy_of_a_boundary_with_no_threat_is_refused(tmp_path: Path) -> None:
     root = tree(tmp_path, model(threat(1)))
     with pytest.raises(RegisterError) as raised:
@@ -564,7 +620,16 @@ def test_the_blind_copy_of_a_boundary_with_no_threat_is_refused(tmp_path: Path) 
 
 @pytest.mark.parametrize(
     ("argv", "code"),
-    [([], 0), (["--check"], 0), (["--blind", "1"], 0), (["--blind"], 2), (["--other"], 2)],
+    [
+        ([], 0),
+        (["--check"], 0),
+        (["--blind", "1"], 0),
+        (["--blind", "2"], 1),
+        (["--blind"], 2),
+        (["--blind", "\u00b2"], 2),
+        (["--blind", "-1"], 2),
+        (["--other"], 2),
+    ],
 )
 def test_the_command_line(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, argv: list[str], code: int

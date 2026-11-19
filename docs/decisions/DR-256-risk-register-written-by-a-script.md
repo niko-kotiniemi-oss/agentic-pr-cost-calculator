@@ -4,7 +4,7 @@
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`, as the owner asked on 2026-10-29
 - **Requirements:** R245, R246, R247, R248
-- **Threats:** T206
+- **Threats:** T206, T217
 - **Replaces:** none
 - **Closed by:** none
 
