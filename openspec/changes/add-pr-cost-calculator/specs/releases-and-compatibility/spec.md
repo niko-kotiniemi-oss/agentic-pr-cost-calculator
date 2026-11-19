@@ -328,3 +328,45 @@ The release workflow SHALL refuse a tag while the threat model at the tag, or at
 
 - **WHEN** a tag's threat model holds no critical risk, and its changelog entry names each high risk that carries an acceptance or a further answer that cites a backlog item, by its ID and its title
 - **THEN** this check passes the tag, and the release goes on to its other checks
+
+### Requirement: Renovate keeps the development Python at the oldest supported release
+
+Renovate SHALL propose no update of `.python-version`, which keeps the Python that the project develops on at the oldest supported release (see "Every copy of the oldest supported Python agrees with its one source"), by one package rule that matches the manager that reads that file, `pyenv`, and nothing else, and turns its updates off, and no other rule SHALL turn updates off. Tests SHALL fail otherwise.
+
+#### Scenario: A configuration that would update `.python-version` fails CI
+
+- **WHEN** Renovate's configuration holds no package rule that matches the manager `pyenv` and sets `enabled` to `false`
+- **THEN** a test fails and says that Renovate would propose a newer Python for `.python-version`
+
+#### Scenario: A rule that turns off more than `.python-version` fails CI
+
+- **WHEN** a package rule that sets `enabled` to `false` matches another manager than `pyenv`, or matches by anything else, such as a package's name, a file or an update type, or a second rule turns updates off
+- **THEN** a test fails and names the rule
+
+#### Scenario: The rule for `.python-version` alone passes
+
+- **WHEN** the only package rule that sets `enabled` to `false` matches the manager `pyenv` alone
+- **THEN** the test passes it
+
+### Requirement: Renovate never merges on its own
+
+Renovate's configuration SHALL set `automerge` to nothing but `false`, at its top level or in any object within it, and SHALL extend no preset whose name holds `automerge`, in any case of its letters, so that every update that it proposes waits for the owner's merge. Tests SHALL fail otherwise.
+
+#### Scenario: A setting that would let Renovate merge fails CI
+
+- **WHEN** Renovate's configuration sets `automerge` to anything but `false` at any depth, as to `true` in a package rule, in `vulnerabilityAlerts` or in `lockFileMaintenance`, or extends, at any depth, a preset whose name holds `automerge`, such as `:automergeMinor`
+- **THEN** a test fails and names the setting or the preset
+
+#### Scenario: A configuration that merges nothing passes
+
+- **WHEN** no object of Renovate's configuration sets `automerge` to anything but `false` and no preset that it extends is named for it
+- **THEN** the test passes it
+
+### Requirement: An update of OpenSpec or Superpowers says how its files are refreshed
+
+Renovate SHALL give each pull request that updates the pinned OpenSpec or the vendored Superpowers, by a package rule that matches its package by name, the note that the scenario gives, word for word, so that whoever reads it learns that the owner reads the update's diff before its generated or vendored files are refreshed on its branch, from a working tree outside any agent session's folder, and reads the refreshed diff before merging. Tests SHALL fail otherwise.
+
+#### Scenario: An update of OpenSpec or Superpowers without its note fails CI
+
+- **WHEN** Renovate's configuration holds, for the package `@fission-ai/openspec` or `obra/superpowers`, no package rule that matches it by name and gives it, as the only text of `prBodyNotes`, the note "Before this merges, the owner reads this diff. Its generated or vendored files are then refreshed on this branch from a working tree outside any agent session's folder, by `scripts/verify-openspec.sh` for OpenSpec, which writes the generated skills again, or by `scripts/sync-superpowers.sh` for Superpowers, and the owner reads the refreshed diff before merging. No agent session starts on this branch before the owner has read its diff."
+- **THEN** a test fails and names each package that lacks it

@@ -19,8 +19,8 @@ only an agreed item closes a gap (R226). While a gap names an item that the road
 under Now, no task of `add-pr-cost-calculator` that it holds back is ticked, and a gap to
 close before the build names such an item (R227). Compared with the base that the
 records' check uses, a pull request that adds or removes an entry, moves one to another
-concern, or changes its principle, changes nothing outside `docs/`, `openspec/`,
-`CLAUDE.md` and `CHANGELOG.md` (R228), one that gives an agreed item a gap changes that
+concern, or changes its principle, changes nothing outside `docs/`, `openspec/`, the
+context files and `CHANGELOG.md` (R228), one that gives an agreed item a gap changes that
 item's What done looks like (R231), and an entry leaves `Gap.`, or its gap stops naming
 an item that it named, only while that item is `Done` or `Dropped` (R233), each
 examining nothing while no base holds the guide. No attribute hides the diff of the
@@ -57,6 +57,7 @@ from test_backlog import (
     items_in,
     rest_problems,
 )
+from test_context_files import CONTEXT_FILES
 from test_decisions import DECIDER, attribute_problems, base_commits, records_of
 from test_roadmap import (
     ARCHIVED_TASKS,
@@ -126,8 +127,8 @@ OPENING = (
     "The guide steers as the default branch holds it: an entry that a branch adds or "
     "changes is a proposal until the owner merges it, and a principle is added, removed, "
     "changed or moved to another concern only when the owner asks for it, in a pull request "
-    "that changes nothing outside `docs/`, `openspec/`, `CLAUDE.md` and `CHANGELOG.md`. It "
-    "speaks to work on this repository, not to setting the tool up, which is the README's "
+    "that changes nothing outside `docs/`, `openspec/`, the context files and `CHANGELOG.md`. "
+    "It speaks to work on this repository, not to setting the tool up, which is the README's "
     "section on adopting it: an agent that sets the tool up turns capture on for no one.",
     "Where we stand gives where the default branch stands, and a release's guide is the copy "
     "at its tag. It opens with `Followed.` when the default branch's code and checks hold the "
@@ -506,13 +507,13 @@ def guides_at(root: Path, bases: tuple[str, ...]) -> list[tuple[str, dict[str, E
 
 def beside_a_principle(path: str) -> bool:
     """Whether a pull request that changes a principle may change this file too (R228)."""
-    return path.startswith(("docs/", "openspec/")) or path in ("CLAUDE.md", "CHANGELOG.md")
+    return path.startswith(("docs/", "openspec/")) or path in (*CONTEXT_FILES, "CHANGELOG.md")
 
 
 def principle_change_problems(root: Path, *bases: str) -> tuple[list[str], bool]:
     """Compared with each base that holds the guide, a pull request that adds or removes an
     entry, moves one to another concern, or changes its principle, changes no file outside
-    `docs/`, `openspec/`, `CLAUDE.md` and `CHANGELOG.md`, read as the files that differ
+    `docs/`, `openspec/`, the context files and `CHANGELOG.md`, read as the files that differ
     between the base's tree and HEAD's, where git detects no rename unless asked, so that a
     rename reads as a removal and an addition; and whether a base held the guide (R228).
 
@@ -550,7 +551,8 @@ def principle_change_problems(root: Path, *bases: str) -> tuple[list[str], bool]
         for heading, what in changes:
             problems[
                 f'{GUIDE}: the entry "{heading}" is {what} beside a change to '
-                f"{', '.join(outside)}, outside docs/, openspec/, CLAUDE.md and CHANGELOG.md"
+                f"{', '.join(outside)}, outside docs/, openspec/, the context files and "
+                "CHANGELOG.md"
             ] = None
     return list(problems), True
 
@@ -1378,7 +1380,7 @@ def closed(root: Path) -> tuple[list[str], bool]:
 def beside(heading: str, what: str, files: str = "tool/capture.py") -> str:
     return (
         f'{GUIDE}: the entry "{heading}" is {what} beside a change to {files}, outside docs/, '
-        "openspec/, CLAUDE.md and CHANGELOG.md"
+        "openspec/, the context files and CHANGELOG.md"
     )
 
 
@@ -1430,7 +1432,17 @@ def test_a_rename_into_or_out_of_the_folders_that_a_principle_may_change_beside_
 
 
 @pytest.mark.parametrize(
-    "path", ["docs.md", "openspec.md", "CLAUDE.md.orig", "CHANGELOG.md.orig", "tool/docs/a.md"]
+    "path",
+    [
+        "docs.md",
+        "openspec.md",
+        "CLAUDE.md.orig",
+        "CHANGELOG.md.orig",
+        "tool/docs/a.md",
+        "tests/test_guide.py",
+        "tests/fixtures/CLAUDE.md",
+        "scripts/CLAUDE.md",
+    ],
 )
 def test_a_file_that_only_begins_as_those_beside_a_principle_do_is_outside_them(
     tmp_path: Path, path: str
@@ -1520,6 +1532,15 @@ def test_a_principle_changed_alone_passes(tmp_path: Path) -> None:
         "openspec/changes/c/notes.md": "# Notes\n",
         "CLAUDE.md": FILES["CLAUDE.md"] + "- Another rule.\n",
         "CHANGELOG.md": "# Changelog\n\n- A line.\n",
+    }
+    assert principles(history(tmp_path, {}, after)) == ([], True)
+
+
+def test_a_principle_changed_beside_the_folder_files_rules_passes(tmp_path: Path) -> None:
+    after: dict[str, str | None] = {
+        GUIDE: synthetic({"Least privilege": {"Statement": "Another text."}}),
+        "CLAUDE.md": FILES["CLAUDE.md"] + "- Another rule.\n",
+        "tests/CLAUDE.md": "# CLAUDE.md: Agentic PR cost calculator, the tests\n\n- A rule.\n",
     }
     assert principles(history(tmp_path, {}, after)) == ([], True)
 
@@ -1844,20 +1865,20 @@ def test_the_repository_holds_its_principles_and_agreed_items_against_its_base()
         pytest.skip("no base holds the guide yet, so its checks against the base examine nothing")
 
 
-# R134: no attribute hides the diff of the guide, of `CLAUDE.md` or of a change's tasks.
+# R134: no attribute hides the diff of the guide, of a context file or of a change's tasks.
 
 
 def reviewed(root: Path) -> list[str]:
-    """The guide, `CLAUDE.md` and each change's `tasks.md`, active or archived, whose diffs
-    the owner reads to accept a principle or a tick."""
+    """The guide, the context files and each change's `tasks.md`, active or archived, whose
+    diffs the owner reads to accept a principle, a rule or a tick."""
     return [
         GUIDE,
-        "CLAUDE.md",
+        *CONTEXT_FILES,
         *((path / "tasks.md").relative_to(root).as_posix() for _, path in changes(root)),
     ]
 
 
-def test_no_attribute_changes_how_the_guide_s_claude_md_s_or_a_change_s_tasks_diff_shows() -> None:
+def test_no_attribute_changes_how_a_reviewed_file_s_diff_shows() -> None:
     paths = reviewed(ROOT)
     assert any(path.endswith("/tasks.md") for path in paths), "no change's tasks.md was read"
     assert attribute_problems(ROOT, paths) == []
@@ -1873,17 +1894,26 @@ def test_no_attribute_changes_how_the_guide_s_claude_md_s_or_a_change_s_tasks_di
         ("linguist-generated", "linguist-generated: set"),
     ],
 )
-@pytest.mark.parametrize("path", [GUIDE, "CLAUDE.md", TASKS, ARCHIVED_TASKS])
+@pytest.mark.parametrize("path", [GUIDE, *CONTEXT_FILES, TASKS, ARCHIVED_TASKS])
 def test_an_attribute_that_changes_how_a_reviewed_file_s_diff_shows_is_reported(
     tmp_path: Path, path: str, attribute: str, shown: str
 ) -> None:
     root = guide_tree(
         tmp_path,
-        changed={".gitattributes": f"{path} {attribute}\n", ARCHIVED_TASKS: TREE[TASKS]},
+        changed={".gitattributes": f"/{path} {attribute}\n", ARCHIVED_TASKS: TREE[TASKS]},
     )
     found = attribute_problems(root, reviewed(root))
     assert f"{path} has {shown}, which changes how its diff shows" in found
     assert all(problem.startswith(f"{path} has ") for problem in found)
+
+
+def test_an_attribute_given_to_every_file_named_claude_md_is_reported_for_each_context_file(
+    tmp_path: Path,
+) -> None:
+    root = guide_tree(tmp_path, changed={".gitattributes": "CLAUDE.md -diff\n"})
+    assert attribute_problems(root, reviewed(root)) == [
+        f"{path} has diff: unset, which changes how its diff shows" for path in CONTEXT_FILES
+    ]
 
 
 def test_an_attribute_given_to_every_change_s_tasks_is_reported(tmp_path: Path) -> None:

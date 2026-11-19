@@ -263,6 +263,16 @@ The capability names the spec that holds the requirement. Each capability is one
 | R249 | non-functional | `project-standards` | Every high or critical risk has a further answer |
 | R250 | non-functional | `project-standards` | A high or critical risk is lowered only with what lowers it |
 | R251 | non-functional | `releases-and-compatibility` | A release is refused while a critical risk stands, and its text names its high risks |
+| R252 | non-functional | `project-standards` | The context files are the root `CLAUDE.md` and the folder files that it names |
+| R253 | non-functional | `project-standards` | The context files keep to their lengths |
+| R254 | non-functional | `project-standards` | A folder file names the tool and says that the root wins |
+| R255 | non-functional | `project-standards` | The context files hold no hidden text and import nothing |
+| R256 | non-functional | `project-standards` | Claude Code's settings here hold only what their test lists |
+| R257 | non-functional | `project-standards` | Git ignores a personal instruction file and the worktree folders |
+| R258 | non-functional | `project-standards` | The README and `CONTRIBUTING.md` say where a session starts |
+| R259 | non-functional | `releases-and-compatibility` | Renovate keeps the development Python at the oldest supported release |
+| R260 | non-functional | `releases-and-compatibility` | Renovate never merges on its own |
+| R261 | non-functional | `releases-and-compatibility` | An update of OpenSpec or Superpowers says how its files are refreshed |
 
 IDs are stable: a requirement keeps its ID while it exists, and a new one takes the next free number, so the rows follow the order in which requirements were added rather than the order of the specs. A requirement that a later change removes leaves the table, and its ID is listed below with the change that removed it, never to be used again.
 

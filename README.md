@@ -66,7 +66,7 @@ The work moves through these stages, each kept where the table says:
 | Delivery | An OpenSpec change, such as [`add-pr-cost-calculator`](openspec/changes/add-pr-cost-calculator/proposal.md), and its pull request | How, the tests and the reviews | The builder |
 | Result | The specs, the [decision records](docs/decisions/README.md), the [threat model](docs/threat-model.md) and the [changelog](CHANGELOG.md) | What holds now, why, and what shipped | The same pull request |
 
-How to contribute is in [`CONTRIBUTING.md`](CONTRIBUTING.md), and the rules for contributors, human or agent, are in [`CLAUDE.md`](CLAUDE.md). Everyone taking part follows the [code of conduct](CODE_OF_CONDUCT.md). In short: tests come first, every figure in prose is computed rather than recalled, and scope is never narrowed silently.
+How to contribute is in [`CONTRIBUTING.md`](CONTRIBUTING.md), and the rules for contributors, human or agent, are in [`CLAUDE.md`](CLAUDE.md) and the folder files that it names, [`docs/CLAUDE.md`](docs/CLAUDE.md) and [`tests/CLAUDE.md`](tests/CLAUDE.md). A contributor needs neither Claude Code nor Superpowers. Everyone taking part follows the [code of conduct](CODE_OF_CONDUCT.md). In short: tests come first, every figure in prose is computed rather than recalled, and scope is never narrowed silently.
 
 Setup for a local clone:
 
@@ -78,7 +78,7 @@ npm ci --ignore-scripts
 scripts/verify-openspec.sh
 ```
 
-A cloud session of Claude Code that has this repository alone, outside a project's threads, runs the same setup automatically through `.claude/hooks/session-start.sh`.
+A cloud session of Claude Code that has this repository alone, outside a project's threads, runs the same setup automatically through `.claude/hooks/session-start.sh`. Start a Claude Code session for this repository in the clone's own folder, so that it loads this repository's `CLAUDE.md` and settings from the start.
 
 Two tools are pinned here:
 

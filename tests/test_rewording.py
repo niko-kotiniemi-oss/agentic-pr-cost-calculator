@@ -3,13 +3,14 @@
 `scripts/rewording.py` compares HEAD with where it left the default branch, in the
 Markdown files that the wording test reads, and prints, for the pull request, both
 commits by their full hashes; each line that changed by more than the glossary's words
-to avoid replaced with their terms, `CLAUDE.md`'s first; apart from those, each line
-that only replaced a word that the base's glossary did not give for its term; each file
-added, removed or renamed; each changed file that it did not compare; and how many lines
-only replaced a word, by word (task 1.20; design decision 14). A renamed page is
-compared with what it was. It reads a page as the wording test does, so a word inside
-code or in a title that an accepted record quotes is never taken for a replacement, and
-a change to it is always listed (T90, T94). A path, and each word to avoid and term
+to avoid replaced with their terms, the context files' first and the guide's next; apart
+from those, each line that only replaced a word that the base's glossary did not give for
+its term; each file added, removed or renamed; each changed file that it did not compare;
+and how many lines only replaced a word, by word (task 1.20; design decisions 14 and 21).
+A renamed page is compared with what it was, and a context file paragraph by paragraph.
+It reads a page as the wording test does, so a word inside code or in a title that an
+accepted record quotes is never taken for a replacement, and a change to it is always
+listed (T90, T94). A path, and each word to avoid and term
 in the table, is written as a code span that nothing in it can close, and the script
 refuses a glossary out of its form, in which no term holds a backslash, so that no
 file's name and no row of the glossary writes the output's prose.
@@ -24,7 +25,9 @@ from collections.abc import Mapping
 from pathlib import Path
 
 import pytest
+from rewording import CONTEXT_FILES as COMPARED_BY_PARAGRAPH
 from rewording import main
+from test_context_files import CONTEXT_FILES
 from wording import GLOSSARY
 
 SCRIPT = Path(__file__).resolve().parents[1] / "scripts" / "rewording.py"
@@ -404,6 +407,116 @@ def test_the_guide_s_changes_come_right_after_claude_md_s(
         "### `AAA.md`",
         "### `docs/about.md`",
     ]
+
+
+def test_the_context_files_come_first_in_their_order_and_the_guide_next(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    names = ["AAA.md", "docs/patterns.md", "tests/CLAUDE.md", "docs/CLAUDE.md", "CLAUDE.md"]
+    before = {name: f"Rules for the calculator in {name}.\n" for name in names}
+    after = {
+        GLOSSARY: GLOSSARY_TEXT,
+        **{name: f"Rules for the tool, always, in {name}.\n" for name in names},
+    }
+    history(tmp_path, after, before)
+    _, out, _ = rewording(tmp_path, monkeypatch, capsys)
+    listed = section(out, "Changed by more than a word to avoid")
+    headings = [line for line in listed.split("\n") if line.startswith("### ")]
+    assert headings == [
+        "### `CLAUDE.md`",
+        "### `docs/CLAUDE.md`",
+        "### `tests/CLAUDE.md`",
+        "### `docs/patterns.md`",
+        "### `AAA.md`",
+    ]
+
+
+def test_the_script_compares_by_paragraph_the_context_files_that_the_tests_hold() -> None:
+    assert COMPARED_BY_PARAGRAPH == CONTEXT_FILES
+
+
+WRAPPED_BEFORE = (
+    "# CLAUDE.md: Agentic PR cost calculator, the tests\n"
+    "\n"
+    "These rules add to the root's for the calculator, whose tests run here, and they\n"
+    "never loosen it.\n"
+    "- A rule for the calculator that runs on, past the end of its first line, and onto a\n"
+    "  second line, which a list item indents.\n"
+    "- Another rule.\n"
+)
+
+
+def test_a_context_file_s_reflowed_paragraph_is_compared_by_its_words(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    after = WRAPPED_BEFORE.replace(
+        "- A rule for the calculator that runs on, past the end of its first line, and onto a\n"
+        "  second line, which a list item indents.\n",
+        "- A rule for the calculator that runs on, well past the end of its first line, and\n"
+        "  onto a second line, which a list item indents.\n",
+    )
+    history(tmp_path, {"tests/CLAUDE.md": after}, {**BEFORE, "tests/CLAUDE.md": WRAPPED_BEFORE})
+    _, out, _ = rewording(tmp_path, monkeypatch, capsys)
+    assert (
+        "### `tests/CLAUDE.md`\n"
+        "\n"
+        "Lines 5 to 6:\n"
+        "\n"
+        "```diff\n"
+        "- … calculator that runs on, past the end of …\n"
+        "+ … calculator that runs on, well past the end of …\n"
+        "```\n"
+    ) in out
+
+
+def test_a_context_file_s_paragraph_that_only_replaces_a_word_is_counted_by_its_lines(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    after = WRAPPED_BEFORE.replace(
+        "These rules add to the root's for the calculator, whose tests run here, and they\n"
+        "never loosen it.\n",
+        "These rules add to the root's for the tool, whose tests run here, and they never\n"
+        "loosen it.\n",
+    )
+    history(tmp_path, {"tests/CLAUDE.md": after}, {**BEFORE, "tests/CLAUDE.md": WRAPPED_BEFORE})
+    _, out, _ = rewording(tmp_path, monkeypatch, capsys)
+    assert NOTHING_LISTED in out
+    assert section(out, "Only a word to avoid replaced") == (
+        "2 lines in 1 file changed only by a word to avoid replaced with its term:\n\n"
+        + TABLE
+        + "| `the calculator` | `the tool` | 1 | no |\n"
+    )
+
+
+def test_a_context_file_s_paragraph_added_or_removed_is_listed_by_its_lines(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    after = WRAPPED_BEFORE.replace(
+        "- Another rule.\n", "- A new rule, which runs onto\n  a second line.\n- Another rule.\n"
+    ).replace("# CLAUDE.md: Agentic PR cost calculator, the tests\n\n", "")
+    history(tmp_path, {"docs/CLAUDE.md": after}, {**BEFORE, "docs/CLAUDE.md": WRAPPED_BEFORE})
+    _, out, _ = rewording(tmp_path, monkeypatch, capsys)
+    assert (
+        "Lines 1 to 2 of the base, removed:\n\n```diff\n"
+        "- # CLAUDE.md: Agentic PR cost calculator, the tests\n- \n```"
+    ) in out
+    assert (
+        "Lines 5 to 6, added:\n\n```diff\n+ - A new rule, which runs onto a second line.\n```"
+    ) in out
+
+
+def test_a_file_that_is_not_a_context_file_is_still_compared_line_by_line(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    after = WRAPPED_BEFORE.replace("on, past the end", "on, well past the end")
+    history(tmp_path, {"docs/page.md": after}, {**BEFORE, "docs/page.md": WRAPPED_BEFORE})
+    _, out, _ = rewording(tmp_path, monkeypatch, capsys)
+    assert (
+        "Line 5:\n\n```diff\n"
+        "- … calculator that runs on, past the end of …\n"
+        "+ … calculator that runs on, well past the end of …\n"
+        "```\n"
+    ) in out
 
 
 def test_the_guide_renamed_with_changes_keeps_its_place(

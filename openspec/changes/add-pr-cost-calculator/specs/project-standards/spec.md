@@ -318,7 +318,7 @@ Each requirement and threat that a record names SHALL be held or retired, each r
 
 ### Requirement: No document follows a closed record
 
-Every record and design decision that a tracked file outside `vendor/` and `tests/` names, and every requirement, threat, change and task that a Markdown file there names, SHALL exist, a requirement or a threat as held or retired. A parenthesis right after a record's ID SHALL give that record's title, and only the records, their index, the changelog and archived changes SHALL name a closed record, since a closed record no longer holds anything.
+Every record and design decision that a tracked file outside `vendor/` and `tests/`, or a context file, names, and every requirement, threat, change and task that a Markdown file there names, SHALL exist, a requirement or a threat as held or retired. A parenthesis right after a record's ID SHALL give that record's title, and only the records, their index, the changelog, archived changes and the mapping of B-022 SHALL name a closed record, since a closed record holds nothing.
 
 #### Scenario: A mention of nothing fails CI
 
@@ -337,8 +337,18 @@ Every record and design decision that a tracked file outside `vendor/` and `test
 
 #### Scenario: A mention of a closed record fails CI
 
-- **WHEN** a tracked file other than a record, the index, the changelog or an archived change names a closed record
+- **WHEN** a tracked file other than a record, the index, the changelog, an archived change or the mapping of B-022 names a closed record
 - **THEN** a test fails and names the file and the record
+
+#### Scenario: A context file under `tests/` is read
+
+- **WHEN** `tests/CLAUDE.md` names a record that does not exist, or a closed one
+- **THEN** a test fails and names the file and the record, while the other files under `tests/` stay unread
+
+#### Scenario: The mapping of B-022 may name a closed record
+
+- **WHEN** `docs/evidence/B-022-mapping.md` names a closed record in the text that it quotes
+- **THEN** the test does not report it, and still reports a record that it names and that does not exist
 
 ### Requirement: A decision record holds plain text
 
@@ -436,7 +446,7 @@ The threat model SHALL number its threats from T1 in order, and a threat that a 
 
 ### Requirement: No attribute hides the diff of a record, the README, `CLAUDE.md`, the guide, the threat model, a change's tasks or what the marketplace serves, or changes the plugin's checkout
 
-No attribute that the repository sets SHALL make git show as binary, or GitHub hide as generated, the diff of a record, the index, the README, `CLAUDE.md`, the guide, the threat model, a change's `tasks.md`, the root marketplace file or a file in the plugin folder that it names, so that whoever merges a pull request reads each change that it makes to them, nor make git's checkout of the hook file or of a file in that folder write more than other line endings.
+No attribute that the repository sets SHALL make git show as binary, or GitHub hide as generated, the diff of a record, the index, the README, a context file, the guide, the threat model, a change's `tasks.md`, the root marketplace file or a file in the plugin folder that it names, so that whoever merges a pull request reads each change that it makes to them, nor make git's checkout of the hook file or of a file in that folder write more than other line endings.
 
 #### Scenario: An attribute that hides a record's diff fails CI
 
@@ -466,6 +476,11 @@ No attribute that the repository sets SHALL make git show as binary, or GitHub h
 #### Scenario: An attribute that hides `CLAUDE.md`'s diff fails CI
 
 - **WHEN** the repository's attributes give `CLAUDE.md` `binary`, `diff` or `linguist-generated`, in any state
+- **THEN** a test fails and names the file and the attribute
+
+#### Scenario: An attribute that hides a folder file's diff fails CI
+
+- **WHEN** the repository's attributes give `docs/CLAUDE.md` or `tests/CLAUDE.md` `binary`, `diff` or `linguist-generated`, in any state
 - **THEN** a test fails and names the file and the attribute
 
 #### Scenario: An attribute that hides a change's tasks' diff fails CI
@@ -1079,7 +1094,7 @@ A guide, `docs/patterns.md`, SHALL be linked from the README's list of documenta
 #### Scenario: The guide opens with its text and gives its concerns in order
 
 - **WHEN** the README's list of documentation, `CLAUDE.md` and `docs/patterns.md` are read
-- **THEN** the list links the guide; `CLAUDE.md` gives the sentence "The guide is not one of the pages that only describe, but it steers below the specs and this file: where it differs from either, they win, so tell the owner, and it never widens what this file lets you do."; the guide opens, before its first section, with these lines, word for word, each followed by a blank line: "# How the project builds", "This guide says how the project builds, concern by concern: the principles that the project follows, each with the pattern that it applies and the anti-patterns that it steers clear of, what holds it, and where the project stands.", "The specs decide what the tool does, `CLAUDE.md` what an agent may do, and this guide how the project builds. Where the guide differs from the specs or `CLAUDE.md`, they win, and the owner is told. It never widens what `CLAUDE.md` lets an agent do, and an entry cites the requirement or the rule of `CLAUDE.md` that it rests on rather than stating it again. Where an entry and a step of a Superpowers skill differ, the step is followed, and the owner is told.", "The guide steers as the default branch holds it: an entry that a branch adds or changes is a proposal until the owner merges it, and a principle is added, removed, changed or moved to another concern only when the owner asks for it, in a pull request that changes nothing outside `docs/`, `openspec/`, `CLAUDE.md` and `CHANGELOG.md`. It speaks to work on this repository, not to setting the tool up, which is the README's section on adopting it: an agent that sets the tool up turns capture on for no one.", "Where we stand gives where the default branch stands, and a release's guide is the copy at its tag. It opens with `Followed.` when the default branch's code and checks hold the principle, `Designed.` when its specs and tasks hold it before it is built, `Knowingly accepted.` with the record that gives the reason, or `Gap.` with the backlog item that closes it, as `Gap. Before the build.` when the owner asked for it to be closed before the build." and "A gap is not, by being there, a request to start work: it closes only through the backlog item that it names, and work outside that item leaves what the gap concerns as it stands. A principle knowingly accepted is accepted only where its record says."; then a last line that is "The entries are read again at each assessment and before each release, and were last read for " followed by "the assessment of " and a date as `YYYY-MM-DD`, or by "release " and a version as `MAJOR.MINOR.PATCH`, and a full stop; and its sections are Architecture and integration, Security, Privacy, Identity and credentials, Supply chain and releases, Testing, Decisions and documentation, Working with agents, and Conventions, in that order, each holding one or more entries
+- **THEN** the list links the guide; `CLAUDE.md` gives the sentence "The guide is not one of the pages that only describe, but it steers below the specs and this file: where it differs from either, they win, so tell the owner, and it never widens what this file lets you do."; the guide opens, before its first section, with these lines, word for word, each followed by a blank line: "# How the project builds", "This guide says how the project builds, concern by concern: the principles that the project follows, each with the pattern that it applies and the anti-patterns that it steers clear of, what holds it, and where the project stands.", "The specs decide what the tool does, `CLAUDE.md` what an agent may do, and this guide how the project builds. Where the guide differs from the specs or `CLAUDE.md`, they win, and the owner is told. It never widens what `CLAUDE.md` lets an agent do, and an entry cites the requirement or the rule of `CLAUDE.md` that it rests on rather than stating it again. Where an entry and a step of a Superpowers skill differ, the step is followed, and the owner is told.", "The guide steers as the default branch holds it: an entry that a branch adds or changes is a proposal until the owner merges it, and a principle is added, removed, changed or moved to another concern only when the owner asks for it, in a pull request that changes nothing outside `docs/`, `openspec/`, the context files and `CHANGELOG.md`. It speaks to work on this repository, not to setting the tool up, which is the README's section on adopting it: an agent that sets the tool up turns capture on for no one.", "Where we stand gives where the default branch stands, and a release's guide is the copy at its tag. It opens with `Followed.` when the default branch's code and checks hold the principle, `Designed.` when its specs and tasks hold it before it is built, `Knowingly accepted.` with the record that gives the reason, or `Gap.` with the backlog item that closes it, as `Gap. Before the build.` when the owner asked for it to be closed before the build." and "A gap is not, by being there, a request to start work: it closes only through the backlog item that it names, and work outside that item leaves what the gap concerns as it stands. A principle knowingly accepted is accepted only where its record says."; then a last line that is "The entries are read again at each assessment and before each release, and were last read for " followed by "the assessment of " and a date as `YYYY-MM-DD`, or by "release " and a version as `MAJOR.MINOR.PATCH`, and a full stop; and its sections are Architecture and integration, Security, Privacy, Identity and credentials, Supply chain and releases, Testing, Decisions and documentation, Working with agents, and Conventions, in that order, each holding one or more entries
 
 #### Scenario: A guide without its links, its opening or a concern fails a test
 
@@ -1213,21 +1228,26 @@ While an entry's Where we stand opens with `Gap.` and names a backlog item that 
 
 ### Requirement: A principle of the guide changes alone
 
-Compared with the base that the records' check uses, a pull request that adds or removes a guide entry, moves one to another concern, or changes an entry's Statement, Rationale, Implications, Pattern or Anti-patterns, SHALL change no file outside `docs/`, `openspec/`, `CLAUDE.md` and `CHANGELOG.md`, so that one diff cannot both weaken a principle and add the work that the principle forbade. The check SHALL be skipped while no base holds the guide. Tests SHALL fail otherwise.
+Compared with the base that the records' check uses, a pull request that adds or removes a guide entry, moves one to another concern, or changes an entry's Statement, Rationale, Implications, Pattern or Anti-patterns, SHALL change no file outside `docs/`, `openspec/`, the context files and `CHANGELOG.md`, so that one diff cannot both weaken a principle and add the work that the principle forbade. The check SHALL be skipped while no base holds the guide. Tests SHALL fail otherwise.
 
 #### Scenario: A principle changed beside other work fails a test
 
-- **WHEN**, compared with the base, a pull request adds or removes an entry of the guide, or changes an entry's Statement, Rationale, Implications, Pattern or Anti-patterns, and also changes a file outside `docs/`, `openspec/`, `CLAUDE.md` and `CHANGELOG.md`
+- **WHEN**, compared with the base, a pull request adds or removes an entry of the guide, or changes an entry's Statement, Rationale, Implications, Pattern or Anti-patterns, and also changes a file outside `docs/`, `openspec/`, the context files and `CHANGELOG.md`
 - **THEN** a test fails and names the entry and the file
 
 #### Scenario: An entry moved to another concern beside other work fails a test
 
-- **WHEN**, compared with the base, a pull request moves an entry of the guide from one concern to another, as from Security, where only a record that the owner decided accepts it, to Conventions, and also changes a file outside `docs/`, `openspec/`, `CLAUDE.md` and `CHANGELOG.md`
+- **WHEN**, compared with the base, a pull request moves an entry of the guide from one concern to another, as from Security, where only a record that the owner decided accepts it, to Conventions, and also changes a file outside `docs/`, `openspec/`, the context files and `CHANGELOG.md`
 - **THEN** a test fails and names the entry, both concerns and the file
 
 #### Scenario: A principle changed alone passes
 
 - **WHEN**, compared with the base, a pull request that changes a principle so changes no file outside them, or one that changes no principle changes an entry's Held by, Rests on or Where we stand beside other work
+- **THEN** the test passes it
+
+#### Scenario: A principle changed beside a folder file's rules passes
+
+- **WHEN**, compared with the base, a pull request changes a principle of the guide and, outside `docs/`, `openspec/` and `CHANGELOG.md`, changes only the root `CLAUDE.md` and `tests/CLAUDE.md`
 - **THEN** the test passes it
 
 #### Scenario: The guide's first entries pass before any base holds the guide
@@ -1710,3 +1730,131 @@ Compared with the base that the records' check uses, a pull request that rates a
 
 - **WHEN** a pull request lowers such a rating and changes the threat's Answer or Held by in the same diff
 - **THEN** this check passes it
+
+### Requirement: The context files are the root `CLAUDE.md` and the folder files that it names
+
+The context files, which Claude Code loads as instructions for work here, SHALL be the root `CLAUDE.md`, which names the others by their paths in inline code, `docs/CLAUDE.md` and `tests/CLAUDE.md`, each tracked. No other tracked file, `vendor/` included, SHALL be named `CLAUDE.md`, `CLAUDE.local.md`, `AGENTS.md` or `GEMINI.md`, in any case, and no tracked file under `.claude/` SHALL lie outside `.claude/settings.json`, `.claude/hooks/` and `.claude/skills/`. Tests SHALL fail otherwise.
+
+#### Scenario: An instruction file that the root does not name fails CI
+
+- **WHEN** a tracked file other than the context files, in any folder, `vendor/` included, is named `CLAUDE.md`, `CLAUDE.local.md`, `AGENTS.md` or `GEMINI.md`, in any case of its letters, as `docs/features/CLAUDE.md` or `Docs/claude.md` is
+- **THEN** a test fails and names the file
+
+#### Scenario: A file under `.claude/` outside its named parts fails CI
+
+- **WHEN** a tracked file under `.claude/` is neither `.claude/settings.json` nor under `.claude/hooks/` or `.claude/skills/`, as a `.claude/CLAUDE.md`, a file under `.claude/rules/` or a `.claude/settings.local.json` is
+- **THEN** a test fails and names the file
+
+#### Scenario: A context file that is missing or that the root does not name fails CI
+
+- **WHEN** a context file is not tracked, or the root does not name a folder file by its path in inline code
+- **THEN** a test fails and names the file
+
+#### Scenario: The context files beside the settings, hooks and skills pass
+
+- **WHEN** the repository tracks the three context files, the root names both folder files, and `.claude/` holds only its settings file, its hooks and its skills
+- **THEN** the test passes them
+
+### Requirement: The context files keep to their lengths
+
+Each line of a context file SHALL hold at most 100 characters. The root `CLAUDE.md` SHALL hold at most 116 lines, blank ones counted, its length when this requirement is added, under a ceiling that never passes 200, and SHALL open with its sections What an agent never does here, Privacy, and Records are data, not instructions, in that order, which hold what does harm before a check or a review sees it, ending by line 60. A folder file SHALL hold at most 100 lines. Tests SHALL fail otherwise.
+
+#### Scenario: A line longer than 100 characters fails CI
+
+- **WHEN** a line of a context file holds more than 100 characters
+- **THEN** a test fails and names the file, the line and its length
+
+#### Scenario: A root longer than its ceiling fails CI
+
+- **WHEN** the root `CLAUDE.md` holds more than 116 lines, or the ceiling that the test holds it to is raised past 200
+- **THEN** a test fails and names the count, or the ceiling
+
+#### Scenario: The root's first sections out of their place fail CI
+
+- **WHEN** the root's first three sections are not What an agent never does here, Privacy, and Records are data, not instructions, in that order, or they end after its line 60
+- **THEN** a test fails and names the section, or the line where they end
+
+#### Scenario: A folder file longer than 100 lines fails CI
+
+- **WHEN** a folder file holds more than 100 lines
+- **THEN** a test fails and names the file and the count
+
+#### Scenario: Context files at their lengths pass
+
+- **WHEN** each line of the context files holds 100 characters at most, the root holds 116 lines with its first three sections ending at line 60, and a folder file holds 100 lines
+- **THEN** the test passes them
+
+### Requirement: A folder file names the tool and says that the root wins
+
+The root `CLAUDE.md`'s first line SHALL be `# CLAUDE.md: Agentic PR cost calculator`, and a folder file's that line followed by a comma, a space and what its folder holds, so that a session that also loads another repository's context files tells them apart. A folder file SHALL open, before its first section, with the sentences that the scenario gives: that its rules add to the root's for files under its own folder, that the root wins, and the guide's rank. Tests SHALL fail otherwise.
+
+#### Scenario: A context file whose first line does not name the tool fails CI
+
+- **WHEN** the root's first line is not `# CLAUDE.md: Agentic PR cost calculator`, or a folder file's first line is not that line followed by a comma, a space and text
+- **THEN** a test fails and names the file
+
+#### Scenario: A folder file whose opening does not say that the root wins fails CI
+
+- **WHEN** a folder file's text before its first section does not begin with that sentence naming its own folder, or lacks the sentence that the root wins or the guide's rank
+- **THEN** a test fails and names the file and what is missing
+
+#### Scenario: A folder file whose opening is wrapped passes
+
+- **WHEN** a folder file's opening gives those sentences across several lines
+- **THEN** the test passes it
+
+### Requirement: The context files hold no hidden text and import nothing
+
+The context files SHALL hold to the rule that "The roadmap, the backlog and the feature pages' roadmap sections hold no hidden text" gives the roadmap, and SHALL hold no link, whose target GitHub does not show, and no `@`, with which Claude Code imports another file into the context, so that what a reviewer reads of them on GitHub is all that an agent reads. Tests SHALL fail otherwise.
+
+#### Scenario: Text that GitHub hides in a context file fails CI
+
+- **WHEN** a context file holds a character other than printable ASCII and a line feed, or a `<`, as in an HTML comment, which Claude Code also strips before an agent reads the file, a `&`, a backslash, a `]:` or a `|`
+- **THEN** a test fails and names the file, the line and what it holds
+
+#### Scenario: A link or an import in a context file fails CI
+
+- **WHEN** a context file holds a link, or an `@`, inline code included
+- **THEN** a test fails and names the file and the line
+
+### Requirement: Claude Code's settings here hold only what their test lists
+
+`.claude/settings.json` SHALL hold only the keys that its test lists, at every level, each with the value that the test gives, so that a setting that keeps the context files from loading, such as `claudeMdExcludes`, a variable in its `env` such as `CLAUDE_CODE_DISABLE_CLAUDE_MDS`, or a hook, a marketplace or a plugin that the test does not list fails until the test changes with it, in a diff that the owner reviews as a change to what steers agents. Tests SHALL fail otherwise.
+
+#### Scenario: A setting that the test does not list fails CI
+
+- **WHEN** `.claude/settings.json` holds, at any level, a key that the test does not list, such as `claudeMdExcludes`, `permissions`, a variable in its `env` or a hook for another event, or lacks one that the test lists
+- **THEN** a test fails and names the key's path
+
+#### Scenario: A value that the test does not give fails CI
+
+- **WHEN** a key of `.claude/settings.json` holds a value other than the one that the test gives, such as another hook command, another marketplace folder or a plugin turned off
+- **THEN** a test fails and names the key's path and the value
+
+#### Scenario: The settings that the test lists pass
+
+- **WHEN** `.claude/settings.json` holds the keys and values that the test lists and no other
+- **THEN** the test passes it
+
+### Requirement: Git ignores a personal instruction file and the worktree folders
+
+The repository's `.gitignore` SHALL make git ignore a file named `CLAUDE.local.md` in any folder, and every file under `.worktrees/` and `.claude/worktrees/`, the folders where another branch's worktree is made, and SHALL make it ignore no context file, with no other file of ignore rules read, so that neither a personal instruction file nor another branch's files reach a commit by mistake. Tests SHALL fail otherwise.
+
+#### Scenario: A personal instruction file or a worktree that git would add fails CI
+
+- **WHEN**, with only the repository's `.gitignore` read, git does not ignore `CLAUDE.local.md` at the root or in a folder, or a file under `.worktrees/` or `.claude/worktrees/`
+- **THEN** a test fails and names the path
+
+#### Scenario: An ignored context file fails CI
+
+- **WHEN** the repository's `.gitignore` makes git ignore a context file
+- **THEN** a test fails and names the file
+
+### Requirement: The README and `CONTRIBUTING.md` say where a session starts
+
+The README's section on working on this repository and `CONTRIBUTING.md` SHALL each give the sentence that the scenario gives, so that a Claude Code session on this repository starts where it loads the root `CLAUDE.md` and the repository's settings from the start, rather than in a folder above the clone. Tests SHALL fail otherwise.
+
+#### Scenario: A page that does not say where a session starts fails CI
+
+- **WHEN** the README's section on working on this repository, or `CONTRIBUTING.md`, does not give, whitespace aside, the sentence "Start a Claude Code session for this repository in the clone's own folder, so that it loads this repository's `CLAUDE.md` and settings from the start."
+- **THEN** a test fails and names the file

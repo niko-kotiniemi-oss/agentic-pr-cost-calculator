@@ -3,7 +3,8 @@
 # same script.
 #
 #   1. The CLI is the version package-lock.json pins.
-#   2. The generated openspec-* skills are exactly what that CLI writes.
+#   2. The generated openspec-* skills are exactly what that CLI writes, and it
+#      writes nothing else anywhere in the working tree.
 #   3. Every spec and change validates under --strict, and there was something
 #      to validate.
 #   4. That CLI lists and shows every spec and change, and each requirement, as
@@ -59,6 +60,50 @@ for skill in .claude/skills/openspec-*; do
   find "$skill" -mindepth 1 -delete
   : >"$skill/SKILL.md"
 done
+# Everything outside the generated skills, as git sees it, before and after the
+# CLI writes them: each path that differs from HEAD or that git does not track,
+# a folder that an ignore rule names as one entry, and each file with a hash of
+# what it holds. A file that the CLI writes anywhere else, such as an AGENTS.md
+# that no context file names, changes it, while a person's own uncommitted work,
+# there before and after, does not.
+outside_skills() {
+  python3 -I - <<'PY'
+import hashlib
+import os
+import subprocess
+
+fields = subprocess.run(
+    [
+        "git", "status", "--porcelain=v1", "-z", "--untracked-files=all",
+        "--ignored=matching", "--", ".", ":(exclude,glob).claude/skills/openspec-*/**",
+    ],
+    check=True,
+    capture_output=True,
+).stdout.split(b"\0")
+entries = []
+at = 0
+while at < len(fields):
+    entry = fields[at]
+    at += 1
+    if not entry:
+        continue
+    status, path = entry[:2].decode(), os.fsdecode(entry[3:])
+    shown = path
+    if status[0] in "RC":
+        shown = f"{path} from {os.fsdecode(fields[at])}"
+        at += 1
+    if os.path.islink(path):
+        held = "a link to " + os.readlink(path)
+    elif os.path.isfile(path):
+        with open(path, "rb") as file:
+            held = hashlib.sha256(file.read()).hexdigest()
+    else:
+        held = ""
+    entries.append(f"{status} {shown} {held}".rstrip())
+print("\n".join(sorted(entries)))
+PY
+}
+before=$(outside_skills)
 "$OPENSPEC" update --force >/dev/null
 # Compared with the index, so a staged tree is checked as it will be committed:
 # a line counts when its second column is not blank (the work tree differs from
@@ -67,6 +112,13 @@ drift=$(git status --porcelain --untracked-files=all --ignored -- "$SKILLS" | aw
 if [ -n "$drift" ]; then
   echo "verify-openspec: the generated skills differ from what the pinned CLI writes:" >&2
   echo "$drift" >&2
+  exit 1
+fi
+after=$(outside_skills)
+if [ "$before" != "$after" ]; then
+  echo "verify-openspec: the pinned CLI changed files outside the generated skills:" >&2
+  diff <(printf '%s\n' "$before") <(printf '%s\n' "$after") |
+    sed -n -e 's/^< /- /p' -e 's/^> /+ /p' >&2 || true
   exit 1
 fi
 

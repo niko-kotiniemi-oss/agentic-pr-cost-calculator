@@ -1,12 +1,12 @@
 # DR-238: The glossary, the assumptions and the pages that a file here links to describe, apart from the files that steer
 
 - **Type:** security and privacy
-- **Status:** accepted
+- **Status:** closed
 - **Decided by:** the change `add-pr-cost-calculator`, as the owner asked on 2026-10-28 and 2026-11-13
 - **Requirements:** none
 - **Threats:** T33, T93, T95
 - **Replaces:** DR-166
-- **Closed by:** none
+- **Closed by:** DR-258
 
 ## Context
 
