@@ -1,17 +1,20 @@
 """`scripts/verify-openspec.sh` finds what the pinned OpenSpec CLI writes anywhere in the tree.
 
 The script empties the generated `openspec-*` skills and has the CLI write them again, and
-fails when they differ from what git holds. It also fails when the CLI's run changes
-anything outside them, such as an `AGENTS.md` that a context file would not name, or a
-`CLAUDE.local.md` that git ignores, while a person's own uncommitted work, there before
-and after the run, passes (design decision 21). These tests run the script in a repository
-of their own, with a stand-in for the CLI that writes what each test asks, so that no test
-installs OpenSpec or uses the network.
+fails when they differ from what git holds. It also fails when anything outside them
+changes between its first call of the CLI and its end, on whatever path it ends, such as
+an `AGENTS.md` that a context file would not name, or a `CLAUDE.local.md` that git ignores,
+while a person's own uncommitted work, there before and after the run, passes; and it stops
+with 2, before it empties a skill, when it cannot read the working tree (design decision
+21). These tests run the script in a repository of their own, with a stand-in for the CLI
+that writes what each test asks, in the call that it names, so that no test installs
+OpenSpec or uses the network.
 """
 
 from __future__ import annotations
 
 import json
+import os
 import shutil
 import stat
 import subprocess
@@ -19,35 +22,35 @@ from pathlib import Path
 
 import pytest
 from test_roadmap import GIT_ENVIRONMENT, session_free_environment
+from test_vendor_sync import IDENTITY
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = ROOT / "scripts" / "verify-openspec.sh"
 SKILL = ".claude/skills/openspec-explore/SKILL.md"
-# The stand-in CLI: it gives the pinned version, writes the skill again, then whatever
-# FAKE_WRITES names, and fails validation with its own code, so that a run that gets past
-# the comparisons ends there, where a test can tell it from a failed comparison.
+# The stand-in CLI: it gives the pinned version, writes the skill again, adds a line to
+# whatever FAKE_WRITES names in the call that FAKE_WHEN names, `update` unless it names
+# another, and fails validation with its own code, so that a run that gets past the
+# comparison of the skills ends there, where a test can tell it from a failed comparison.
 FAKE_CLI = """#!/usr/bin/env bash
+write() {
+  if [ -n "${FAKE_WRITES:-}" ] && [ "${FAKE_WHEN:-update}" = "$1" ]; then
+    mkdir -p "$(dirname "$FAKE_WRITES")"
+    printf 'written by the CLI\\n' >> "$FAKE_WRITES"
+  fi
+}
 case "$1" in
-  --version) echo 9.9.9 ;;
-  config) exit 0 ;;
+  --version) write version; echo 9.9.9 ;;
+  config) write config ;;
   update)
     printf '%s\\n' "${FAKE_SKILL:-generated}" > .claude/skills/openspec-explore/SKILL.md
-    if [ -n "${FAKE_WRITES:-}" ]; then
-      mkdir -p "$(dirname "$FAKE_WRITES")"
-      printf 'written by the CLI\\n' > "$FAKE_WRITES"
-    fi
+    write update
     ;;
-  validate) exit 7 ;;
+  validate) write validate; exit 7 ;;
   *) exit 9 ;;
 esac
 """
 PAST_THE_COMPARISONS = 7
-IDENTITY = {
-    "GIT_AUTHOR_NAME": "Test",
-    "GIT_AUTHOR_EMAIL": "test@example.invalid",
-    "GIT_COMMITTER_NAME": "Test",
-    "GIT_COMMITTER_EMAIL": "test@example.invalid",
-}
+CHANGED = "files outside the generated skills changed during the run"
 
 
 def environment(**extra: str) -> dict[str, str]:
@@ -125,8 +128,21 @@ def test_a_file_that_the_cli_writes_outside_the_skills_fails(
 ) -> None:
     done = run(repo, FAKE_WRITES=written)
     assert done.returncode == 1
-    assert "the pinned CLI changed files outside the generated skills" in done.stderr
+    assert CHANGED in done.stderr
     assert shown in done.stderr
+
+
+@pytest.mark.parametrize("when", ["version", "config", "validate"])
+def test_a_file_that_the_cli_writes_in_any_of_its_calls_fails(repo: Path, when: str) -> None:
+    done = run(repo, FAKE_WRITES="AGENTS.md", FAKE_WHEN=when)
+    assert done.returncode == 1, done.stderr
+    assert CHANGED in done.stderr
+    assert "+ ?? AGENTS.md" in done.stderr
+
+
+def test_the_message_names_another_process_as_a_possible_writer(repo: Path) -> None:
+    done = run(repo, FAKE_WRITES="AGENTS.md")
+    assert "by the pinned CLI or by another process running beside it" in done.stderr
 
 
 def test_a_file_that_the_cli_rewrites_after_a_person_changed_it_fails(repo: Path) -> None:
@@ -135,6 +151,38 @@ def test_a_file_that_the_cli_rewrites_after_a_person_changed_it_fails(repo: Path
     assert done.returncode == 1
     assert "-  M README.md " in done.stderr
     assert "+  M README.md " in done.stderr
+
+
+def test_a_rename_that_only_the_working_tree_holds_is_shown_with_its_old_name(
+    repo: Path,
+) -> None:
+    lines = "".join(f"Line {number} of a guide.\n" for number in range(20))
+    (repo / "guide.md").write_text(lines, encoding="utf-8")
+    for args in (["add", "--", "guide.md"], ["commit", "-q", "-m", "Guide"]):
+        subprocess.run(["git", *args], cwd=repo, check=True, env=environment())
+    (repo / "guide.md").rename(repo / "moved.md")
+    subprocess.run(["git", "add", "-N", "--", "moved.md"], cwd=repo, check=True, env=environment())
+    done = run(repo, FAKE_WRITES="moved.md")
+    assert done.returncode == 1
+    assert "+  R moved.md from guide.md " in done.stderr
+
+
+def test_a_working_tree_that_cannot_be_read_stops_the_run_before_a_skill_is_emptied(
+    repo: Path, tmp_path: Path
+) -> None:
+    real = shutil.which("git")
+    assert real
+    wrapper = tmp_path / "bin" / "git"
+    wrapper.parent.mkdir()
+    wrapper.write_text(
+        f'#!/usr/bin/env bash\n[ "$1" = status ] && exit 128\nexec "{real}" "$@"\n',
+        encoding="utf-8",
+    )
+    wrapper.chmod(wrapper.stat().st_mode | stat.S_IXUSR)
+    done = run(repo, PATH=f"{wrapper.parent}{os.pathsep}{os.environ['PATH']}")
+    assert done.returncode == 2, done.stderr
+    assert "cannot read the working tree" in done.stderr
+    assert (repo / SKILL).read_text(encoding="utf-8") == "generated\n"
 
 
 def test_skills_that_differ_from_what_git_holds_still_fail(repo: Path) -> None:

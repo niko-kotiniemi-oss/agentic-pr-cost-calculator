@@ -92,19 +92,21 @@ def units(text: str, read: str, wrapped: bool) -> list[Unit]:
     lines, reads = text.split("\n"), read.split("\n")
     found: list[Unit] = []
     for at, (line, seen) in enumerate(zip(lines, reads, strict=True)):
-        before = found[-1].text if found else ""
-        if wrapped and at and lines[at - 1].strip() and line.strip() and not BLOCK.match(line):
-            if not before.startswith("#"):
-                indent = len(line) - len(line.lstrip(" "))
-                last = found[-1]
-                found[-1] = Unit(
-                    last.start,
-                    at + 1,
-                    f"{last.text} {line[indent:]}",
-                    f"{last.read} {seen[indent:]}",
-                )
-                continue
-        found.append(Unit(at, at + 1, line, seen))
+        previous = lines[at - 1] if at else ""
+        if (
+            wrapped
+            and previous.strip()
+            and not previous.startswith("#")
+            and line.strip()
+            and not BLOCK.match(line)
+        ):
+            indent = len(line) - len(line.lstrip(" "))
+            last = found[-1]
+            found[-1] = Unit(
+                last.start, at + 1, f"{last.text} {line[indent:]}", f"{last.read} {seen[indent:]}"
+            )
+        else:
+            found.append(Unit(at, at + 1, line, seen))
     return found
 
 

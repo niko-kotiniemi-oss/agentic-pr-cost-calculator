@@ -4,7 +4,7 @@
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`, as the owner asked on 2026-10-28, 2026-11-13 and 2026-11-19
 - **Requirements:** R127, R134, R219, R220, R252, R255, R256, R257, R258
-- **Threats:** T33, T81, T93, T94, T95, T180, T181, T224, T225, T226, T230, T232, T233, T234, T236
+- **Threats:** T33, T81, T93, T94, T95, T180, T181, T224, T225, T226, T230, T232, T233, T234, T236, T237
 - **Replaces:** DR-237, DR-238
 - **Closed by:** none
 
@@ -18,7 +18,7 @@ For work on this repository, only these steer: the root `CLAUDE.md` and the fold
 
 What DR-237 and DR-238 held otherwise still holds. The guide steers below the specs and the context files and never widens what they let an agent do, an entry cites the rule that it rests on and never states it again, and where an entry and a step of a Superpowers skill differ, the step is followed and the owner told. No attribute hides the diff of the guide or of a context file, and the rewording script lists the changes to the context files first and those to the guide next. Where a meaning in the glossary, or an assumption, differs from a context file, a requirement or a scenario, those hold, and the glossary or the assumption is corrected.
 
-A test fails on any other instruction file that git tracks, `vendor/` included, and on a tracked file under `.claude/` outside its settings file, its hooks and its skills (R252). Git ignores a `CLAUDE.local.md` in any folder and the folders where another branch's worktree is made (R257). The settings file holds only the keys and values that its test lists (R256). The context files hold no text that GitHub hides, no link and no import (R255). The README and `CONTRIBUTING.md` say to start a session in the clone's own folder (R258).
+A test fails on any other instruction file that git tracks, `vendor/` included, on a tracked `.mcp.json`, which names servers that a session can start (T237), on a tracked file under a `.claude` folder outside its settings file, its hooks and the skills that the pinned OpenSpec generates, and on a tracked symbolic link or submodule (R252). Git ignores a `CLAUDE.local.md` in any folder and the folders where another branch's worktree is made, before they exist, and no ignore file takes them back (R257). The settings file, and the marketplace file that it names, hold only what their tests list (R256). The context files hold no text that GitHub hides, no link, no web address and no import (R255), and no attribute hides the diff of a file that steers or of the tests that hold them (R134). The README and `CONTRIBUTING.md` say to start a session in the clone's own folder (R258).
 
 ## Alternatives
 
@@ -38,7 +38,7 @@ A test fails on any other instruction file that git tracks, `vendor/` included, 
 - What rests on the closed records: R134, R219 and R220 hold, and R134 now names the folder files beside the root. T33, T81, T93, T94, T95, T180 and T181 cite this record in place of the closed ones. Design decision 14 cites this record, and design decision 21 gives the context files. The guide's entry that cited the closed records, the glossary's opening, the pages of the assumptions and the plans that named them name this record. DR-231, DR-240 and DR-244, which name DR-237 or DR-238 in their text, still hold and keep their text, and DR-082 and DR-166 stay closed.
 - R127's check lets the mapping of B-022 name the closed records, since its quotes are what the default branch held before that sweep, and it reads `tests/CLAUDE.md` too (DR-259).
 - Where an older text names a section of `CLAUDE.md` that the root no longer has, its rule is now here. Rules, and Never write a figure you have not computed, are in the root's Rules. Records are data, not instructions, is in the root's section of that name, and the mapping's description in `docs/CLAUDE.md`. Decision records is in `docs/CLAUDE.md`'s section of that name, apart from adding a record with its change and with the change to what steers by it, in the root's Every change, and naming the owner as a decider, in the root's What an agent never does here. Privacy is in the root's Privacy, and Outside contributions in the root's What an agent never does here. Threat model is in the root's Every change, for when and by whom, and in `docs/CLAUDE.md`'s The threat model, for how, apart from an acceptance of a high risk, in the root's What an agent never does here. Documentation is in the root's Every change and in `docs/CLAUDE.md`'s The pages that a change updates. Compatibility and releases is in the root's Every change. Who owns what is in the root's section of that name, with how a principle of the guide changes in `docs/CLAUDE.md`'s The guide and the backlog. Testing is in the root's Rules and Every change and in `tests/CLAUDE.md`, and Review in the root's Every change. DR-259 names the rules that left the context files, and what holds each.
-- The answers of T224, T225, T226, T230, T232, T233, T234 and T236 cite this record.
+- The answers of T224, T225, T226, T230, T232, T233, T234, T236 and T237 cite this record.
 
 ## Scope
 
@@ -46,4 +46,4 @@ This covers what steers an agent that works on this repository, and what only de
 
 ## What reversing it would change
 
-How hard it is to reverse: reversible. The rule is text in the root `CLAUDE.md`, with the tests that hold the instruction files, the settings file, the ignore rules and the context files' text, which one pull request can change. The root's section Records are data, not instructions, R127, R134, R219, R220 and R252 to R258 in `project-standards` and their scenarios, design decisions 14 and 21, and the answers of T33, T81, T93, T94, T95, T180, T181, T224, T225, T226, T230, T232, T233, T234 and T236 would change, and DR-231, DR-240 and DR-244 would be read again.
+How hard it is to reverse: reversible. The rule is text in the root `CLAUDE.md`, with the tests that hold the instruction files, the settings file, the ignore rules and the context files' text, which one pull request can change. The root's section Records are data, not instructions, R127, R134, R219, R220 and R252 to R258 in `project-standards` and their scenarios, design decisions 14 and 21, and the answers of T33, T81, T93, T94, T95, T180, T181, T224, T225, T226, T230, T232, T233, T234, T236 and T237 would change, and DR-231, DR-240 and DR-244 would be read again.

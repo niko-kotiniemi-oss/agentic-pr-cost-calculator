@@ -444,9 +444,9 @@ The threat model SHALL number its threats from T1 in order, and a threat that a 
 - **WHEN** `docs/decisions/` holds a folder, a link, or a file that is neither a record nor the index, or a file elsewhere is named as a record
 - **THEN** a test fails and names the file
 
-### Requirement: No attribute hides the diff of a record, the README, `CLAUDE.md`, the guide, the threat model, a change's tasks or what the marketplace serves, or changes the plugin's checkout
+### Requirement: No attribute hides the diff of a record, the README, a file that steers, the guide, the threat model, a change's tasks or what the marketplace serves, or changes the plugin's checkout
 
-No attribute that the repository sets SHALL make git show as binary, or GitHub hide as generated, the diff of a record, the index, the README, a context file, the guide, the threat model, a change's `tasks.md`, the root marketplace file or a file in the plugin folder that it names, so that whoever merges a pull request reads each change that it makes to them, nor make git's checkout of the hook file or of a file in that folder write more than other line endings.
+No attribute that the repository sets SHALL make git show as binary, or GitHub hide as generated, the diff of a record, the index, the README, a file that steers or a test that holds one, the guide, the threat model, a change's `tasks.md`, the root marketplace file or a file in the plugin folder that it names, so that whoever merges reads each change to them, nor make git's checkout of the hook file or of a file in that folder write more than other line endings.
 
 #### Scenario: An attribute that hides a record's diff fails CI
 
@@ -481,6 +481,11 @@ No attribute that the repository sets SHALL make git show as binary, or GitHub h
 #### Scenario: An attribute that hides a folder file's diff fails CI
 
 - **WHEN** the repository's attributes give `docs/CLAUDE.md` or `tests/CLAUDE.md` `binary`, `diff` or `linguist-generated`, in any state
+- **THEN** a test fails and names the file and the attribute
+
+#### Scenario: An attribute that hides the diff of another file that steers fails CI
+
+- **WHEN** the repository's attributes give `.claude/settings.json`, a file under `.claude/hooks/` or `.claude/skills/`, a workflow, `renovate.json`, `tests/test_context_files.py` or `tests/test_repository.py` `binary`, `diff` or `linguist-generated`, in any state
 - **THEN** a test fails and names the file and the attribute
 
 #### Scenario: An attribute that hides a change's tasks' diff fails CI
@@ -1733,17 +1738,27 @@ Compared with the base that the records' check uses, a pull request that rates a
 
 ### Requirement: The context files are the root `CLAUDE.md` and the folder files that it names
 
-The context files, which Claude Code loads as instructions for work here, SHALL be the root `CLAUDE.md`, which names the others by their paths in inline code, `docs/CLAUDE.md` and `tests/CLAUDE.md`, each tracked. No other tracked file, `vendor/` included, SHALL be named `CLAUDE.md`, `CLAUDE.local.md`, `AGENTS.md` or `GEMINI.md`, in any case, and no tracked file under `.claude/` SHALL lie outside `.claude/settings.json`, `.claude/hooks/` and `.claude/skills/`. Tests SHALL fail otherwise.
+The context files SHALL be the root `CLAUDE.md`, which names the others by their paths in inline code, `docs/CLAUDE.md` and `tests/CLAUDE.md`, each tracked. No other tracked file, `vendor/` included, SHALL bear an instruction file's name or the name `.mcp.json`, no tracked file under a `.claude` folder SHALL lie outside its settings, its hooks and the skills that the pinned OpenSpec generates, and git SHALL track no symbolic link or submodule. Tests SHALL fail otherwise.
 
 #### Scenario: An instruction file that the root does not name fails CI
 
 - **WHEN** a tracked file other than the context files, in any folder, `vendor/` included, is named `CLAUDE.md`, `CLAUDE.local.md`, `AGENTS.md` or `GEMINI.md`, in any case of its letters, as `docs/features/CLAUDE.md` or `Docs/claude.md` is
 - **THEN** a test fails and names the file
 
+#### Scenario: A file that names servers fails CI
+
+- **WHEN** a tracked file in any folder is named `.mcp.json`, in any case of its letters
+- **THEN** a test fails and names the file
+
 #### Scenario: A file under `.claude/` outside its named parts fails CI
 
-- **WHEN** a tracked file under `.claude/` is neither `.claude/settings.json` nor under `.claude/hooks/` or `.claude/skills/`, as a `.claude/CLAUDE.md`, a file under `.claude/rules/` or a `.claude/settings.local.json` is
+- **WHEN** a tracked file under a `.claude` folder, at the root or below it, is neither `.claude/settings.json` nor under `.claude/hooks/` or a generated skill's folder `.claude/skills/openspec-*/`, as a `.claude/CLAUDE.md`, a file under `.claude/rules/`, a `.claude/settings.local.json` or a skill written by hand under `.claude/skills/` is
 - **THEN** a test fails and names the file
+
+#### Scenario: A tracked link or submodule fails CI
+
+- **WHEN** git tracks a symbolic link, a submodule or a `.gitmodules`, in any folder
+- **THEN** a test fails and names the path
 
 #### Scenario: A context file that is missing or that the root does not name fails CI
 
@@ -1752,7 +1767,7 @@ The context files, which Claude Code loads as instructions for work here, SHALL 
 
 #### Scenario: The context files beside the settings, hooks and skills pass
 
-- **WHEN** the repository tracks the three context files, the root names both folder files, and `.claude/` holds only its settings file, its hooks and its skills
+- **WHEN** the repository tracks the three context files, the root names both folder files, and `.claude/` holds only its settings file, its hooks and the generated skills
 - **THEN** the test passes them
 
 ### Requirement: The context files keep to their lengths
@@ -1786,7 +1801,7 @@ Each line of a context file SHALL hold at most 100 characters. The root `CLAUDE.
 
 ### Requirement: A folder file names the tool and says that the root wins
 
-The root `CLAUDE.md`'s first line SHALL be `# CLAUDE.md: Agentic PR cost calculator`, and a folder file's that line followed by a comma, a space and what its folder holds, so that a session that also loads another repository's context files tells them apart. A folder file SHALL open, before its first section, with the sentences that the scenario gives: that its rules add to the root's for files under its own folder, that the root wins, and the guide's rank. Tests SHALL fail otherwise.
+The root `CLAUDE.md`'s first line SHALL be `# CLAUDE.md: Agentic PR cost calculator`, and a folder file's that line followed by a comma, a space and what its folder holds, so that a session that also loads another repository's context files tells them apart. A folder file SHALL open, before its first section, with the sentences that the scenario gives: that its rules add to the root's for its own folder, that the root wins and is read first, and the guide's rank. Tests SHALL fail otherwise.
 
 #### Scenario: A context file whose first line does not name the tool fails CI
 
@@ -1795,7 +1810,7 @@ The root `CLAUDE.md`'s first line SHALL be `# CLAUDE.md: Agentic PR cost calcula
 
 #### Scenario: A folder file whose opening does not say that the root wins fails CI
 
-- **WHEN** a folder file's text before its first section does not begin with that sentence naming its own folder, or lacks the sentence that the root wins or the guide's rank
+- **WHEN** a folder file's text before its first section, its spacing aside, does not begin with "These rules add to this repository's root `CLAUDE.md` for work on files under", followed by its own folder in inline code, or lacks the sentences "They never loosen it: where one would, the root wins, so tell the owner." and "Unless the root's text is in front of you, read it first.", or a sentence in which `docs/patterns.md` "steers below the root and this file"
 - **THEN** a test fails and names the file and what is missing
 
 #### Scenario: A folder file whose opening is wrapped passes
@@ -1805,21 +1820,21 @@ The root `CLAUDE.md`'s first line SHALL be `# CLAUDE.md: Agentic PR cost calcula
 
 ### Requirement: The context files hold no hidden text and import nothing
 
-The context files SHALL hold to the rule that "The roadmap, the backlog and the feature pages' roadmap sections hold no hidden text" gives the roadmap, and SHALL hold no link, whose target GitHub does not show, and no `@`, with which Claude Code imports another file into the context, so that what a reviewer reads of them on GitHub is all that an agent reads. Tests SHALL fail otherwise.
+The context files SHALL hold to the rule that "The roadmap, the backlog and the feature pages' roadmap sections hold no hidden text" gives the roadmap, and SHALL hold no link, whose target GitHub does not show, no web address, which GitHub turns into one, no line that opens a code fence, which GitHub does not show whole, and no `@`, with which Claude Code imports another file, so that what a reviewer reads of them on GitHub is all that an agent reads. Tests SHALL fail otherwise.
 
 #### Scenario: Text that GitHub hides in a context file fails CI
 
-- **WHEN** a context file holds a character other than printable ASCII and a line feed, or a `<`, as in an HTML comment, which Claude Code also strips before an agent reads the file, a `&`, a backslash, a `]:` or a `|`
+- **WHEN** a context file, read as its bytes give it, holds a character other than printable ASCII and a line feed, a carriage return among them, or a `<`, as in an HTML comment, which Claude Code also strips before an agent reads the file, a `&`, a backslash, a `]:` or a `|`, or a line that opens a code fence with three backticks or three tildes
 - **THEN** a test fails and names the file, the line and what it holds
 
 #### Scenario: A link or an import in a context file fails CI
 
-- **WHEN** a context file holds a link, or an `@`, inline code included
+- **WHEN** a context file holds a link, a web address, with `://` or `www.`, or an `@`, inline code included
 - **THEN** a test fails and names the file and the line
 
-### Requirement: Claude Code's settings here hold only what their test lists
+### Requirement: Claude Code's settings here, and the marketplace that they name, hold only what their tests list
 
-`.claude/settings.json` SHALL hold only the keys that its test lists, at every level, each with the value that the test gives, so that a setting that keeps the context files from loading, such as `claudeMdExcludes`, a variable in its `env` such as `CLAUDE_CODE_DISABLE_CLAUDE_MDS`, or a hook, a marketplace or a plugin that the test does not list fails until the test changes with it, in a diff that the owner reviews as a change to what steers agents. Tests SHALL fail otherwise.
+`.claude/settings.json` SHALL hold only the keys that its test lists, at every level, each with the value that the test gives, and the marketplace file that it names, `.claude-plugin/marketplace.json`, only what its test lists until task 6.7 of `add-pr-cost-calculator` moves it, so that a setting that keeps the context files from loading, or a hook, marketplace or plugin that a test does not list, fails until the test changes with it, in a diff that the owner reads. Tests SHALL fail otherwise.
 
 #### Scenario: A setting that the test does not list fails CI
 
@@ -1831,23 +1846,33 @@ The context files SHALL hold to the rule that "The roadmap, the backlog and the 
 - **WHEN** a key of `.claude/settings.json` holds a value other than the one that the test gives, such as another hook command, another marketplace folder or a plugin turned off
 - **THEN** a test fails and names the key's path and the value
 
+#### Scenario: A marketplace entry that the test does not list fails CI
+
+- **WHEN** the marketplace file that `.claude/settings.json` names holds, at any level, a key, a value or an entry that its test does not list, such as a plugin taken from another folder
+- **THEN** a test fails and names the key's path and the value
+
 #### Scenario: The settings that the test lists pass
 
-- **WHEN** `.claude/settings.json` holds the keys and values that the test lists and no other
+- **WHEN** `.claude/settings.json` holds the keys and values that the test lists and no other, and the marketplace file that it names holds what its test lists
 - **THEN** the test passes it
 
 ### Requirement: Git ignores a personal instruction file and the worktree folders
 
-The repository's `.gitignore` SHALL make git ignore a file named `CLAUDE.local.md` in any folder, and every file under `.worktrees/` and `.claude/worktrees/`, the folders where another branch's worktree is made, and SHALL make it ignore no context file, with no other file of ignore rules read, so that neither a personal instruction file nor another branch's files reach a commit by mistake. Tests SHALL fail otherwise.
+The repository's ignore files SHALL make git ignore `CLAUDE.local.md` in any folder, and the folders `.worktrees` and `.claude/worktrees`, where another branch's worktree is made, before they exist and with every file under them, SHALL make it ignore no context file and SHALL take none of these back, with no other file of ignore rules read, so that neither a personal instruction file nor another branch's files reach a commit by mistake. Tests SHALL fail otherwise.
 
 #### Scenario: A personal instruction file or a worktree that git would add fails CI
 
-- **WHEN**, with only the repository's `.gitignore` read, git does not ignore `CLAUDE.local.md` at the root or in a folder, or a file under `.worktrees/` or `.claude/worktrees/`
+- **WHEN**, with only the repository's ignore files read, git does not ignore `CLAUDE.local.md` at the root or in a folder that holds a tracked file, the folder `.worktrees` or `.claude/worktrees` before it exists, or a file of any name under one
 - **THEN** a test fails and names the path
+
+#### Scenario: An ignore rule that takes a personal file or a worktree back fails CI
+
+- **WHEN** an ignore file of the repository holds a rule that starts with `!` and names `CLAUDE.local.md` or a worktree folder
+- **THEN** a test fails and names the file and the rule
 
 #### Scenario: An ignored context file fails CI
 
-- **WHEN** the repository's `.gitignore` makes git ignore a context file
+- **WHEN** the repository's ignore files make git ignore a context file
 - **THEN** a test fails and names the file
 
 ### Requirement: The README and `CONTRIBUTING.md` say where a session starts

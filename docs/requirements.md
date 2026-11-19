@@ -145,7 +145,7 @@ The capability names the spec that holds the requirement. Each capability is one
 | R131 | non-functional | `project-standards` | A record and the threats it lists name each other |
 | R132 | non-functional | `project-standards` | A removed threat's ID is retired, never used again |
 | R133 | non-functional | `project-standards` | The records' folder holds only the records and their index |
-| R134 | non-functional | `project-standards` | No attribute hides the diff of a record, the README, `CLAUDE.md`, the guide, the threat model, a change's tasks or what the marketplace serves, or changes the plugin's checkout |
+| R134 | non-functional | `project-standards` | No attribute hides the diff of a record, the README, a file that steers, the guide, the threat model, a change's tasks or what the marketplace serves, or changes the plugin's checkout |
 | R135 | non-functional | `project-standards` | The assumptions the design rests on are written down |
 | R136 | non-functional | `project-standards` | The assumptions with the most at stake come first |
 | R137 | non-functional | `project-standards` | The specs and pages use the glossary's words |
@@ -267,7 +267,7 @@ The capability names the spec that holds the requirement. Each capability is one
 | R253 | non-functional | `project-standards` | The context files keep to their lengths |
 | R254 | non-functional | `project-standards` | A folder file names the tool and says that the root wins |
 | R255 | non-functional | `project-standards` | The context files hold no hidden text and import nothing |
-| R256 | non-functional | `project-standards` | Claude Code's settings here hold only what their test lists |
+| R256 | non-functional | `project-standards` | Claude Code's settings here, and the marketplace that they name, hold only what their tests list |
 | R257 | non-functional | `project-standards` | Git ignores a personal instruction file and the worktree folders |
 | R258 | non-functional | `project-standards` | The README and `CONTRIBUTING.md` say where a session starts |
 | R259 | non-functional | `releases-and-compatibility` | Renovate keeps the development Python at the oldest supported release |

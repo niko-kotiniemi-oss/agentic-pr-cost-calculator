@@ -3,12 +3,17 @@
 # same script.
 #
 #   1. The CLI is the version package-lock.json pins.
-#   2. The generated openspec-* skills are exactly what that CLI writes, and it
-#      writes nothing else anywhere in the working tree.
+#   2. The generated openspec-* skills are exactly what that CLI writes, and
+#      nothing else in the working tree changes between the CLI's first call and
+#      the script's end, apart from the files inside a folder that git ignores as
+#      a whole and that was there before.
 #   3. Every spec and change validates under --strict, and there was something
 #      to validate.
 #   4. That CLI lists and shows every spec and change, and each requirement, as
 #      tests/test_spec_form.py reads them, and there was something to compare.
+#
+# Run it alone: a file that another process writes in the working tree while it
+# runs fails it as one that the CLI writes would.
 #
 # Exit 1 when a property does not hold, 2 when the check cannot run.
 set -euo pipefail
@@ -28,7 +33,75 @@ trap 'rm -rf "$SCRATCH"' EXIT
 export XDG_CONFIG_HOME="$SCRATCH/config" XDG_DATA_HOME="$SCRATCH/data"
 export DO_NOT_TRACK=1 OPENSPEC_TELEMETRY=0 OPENSPEC_NO_UPDATE_CHECK=1
 
-pinned=$(python3 -c 'import json, sys; print(json.load(open(sys.argv[1]))["packages"]["node_modules/@fission-ai/openspec"]["version"])' package-lock.json)
+# Everything outside the generated skills, as git sees it: each path that differs
+# from HEAD or that git does not track, a folder that an ignore rule names as one
+# entry, and each file with a hash of what it holds. A file that the CLI writes
+# anywhere else, such as an AGENTS.md that no context file names, changes it,
+# while a person's own uncommitted work, there before and after, does not.
+outside_skills() {
+  python3 -I - <<'PY'
+import hashlib
+import os
+import subprocess
+
+fields = subprocess.run(
+    [
+        "git", "status", "--porcelain=v1", "-z", "--untracked-files=all",
+        "--ignored=matching", "--", ".", ":(exclude,glob).claude/skills/openspec-*/**",
+    ],
+    check=True,
+    capture_output=True,
+).stdout.split(b"\0")
+entries = []
+at = 0
+while at < len(fields):
+    entry = fields[at]
+    at += 1
+    if not entry:
+        continue
+    status, path = entry[:2].decode(), os.fsdecode(entry[3:])
+    shown = path
+    # A rename or a copy, in the index or in the working tree alone, is followed by
+    # the path that it came from.
+    if "R" in status or "C" in status:
+        shown = f"{path} from {os.fsdecode(fields[at])}"
+        at += 1
+    if os.path.islink(path):
+        held = "a link to " + os.readlink(path)
+    elif os.path.isfile(path):
+        with open(path, "rb") as file:
+            held = hashlib.sha256(file.read()).hexdigest()
+    else:
+        held = ""
+    entries.append(f"{status} {shown} {held}".rstrip())
+print("\n".join(sorted(entries)))
+PY
+}
+# The first snapshot is taken before the CLI's first call and before any skill
+# is emptied, and the second when the script ends, on whatever path it ends, so
+# that a file that any call of the CLI writes fails the check.
+before=$(outside_skills) || {
+  echo "verify-openspec: cannot read the working tree" >&2
+  exit 2
+}
+compare_at_the_end() {
+  code=$?
+  trap - EXIT
+  if ! after=$(outside_skills); then
+    echo "verify-openspec: cannot read the working tree" >&2
+    code=2
+  elif [ "$before" != "$after" ]; then
+    echo "verify-openspec: files outside the generated skills changed during the run, by the pinned CLI or by another process running beside it:" >&2
+    diff <(printf '%s\n' "$before") <(printf '%s\n' "$after") |
+      sed -n -e 's/^< /- /p' -e 's/^> /+ /p' >&2 || true
+    code=1
+  fi
+  rm -rf "$SCRATCH"
+  exit "$code"
+}
+trap compare_at_the_end EXIT
+
+pinned=$(python3 -I -c 'import json, sys; print(json.load(open(sys.argv[1]))["packages"]["node_modules/@fission-ai/openspec"]["version"])' package-lock.json)
 installed=$("$OPENSPEC" --version 2>/dev/null) || { echo "verify-openspec: $OPENSPEC does not run here" >&2; exit 2; }
 if [ "$installed" != "$pinned" ]; then
   echo "verify-openspec: installed $installed, package-lock.json pins $pinned" >&2
@@ -60,50 +133,6 @@ for skill in .claude/skills/openspec-*; do
   find "$skill" -mindepth 1 -delete
   : >"$skill/SKILL.md"
 done
-# Everything outside the generated skills, as git sees it, before and after the
-# CLI writes them: each path that differs from HEAD or that git does not track,
-# a folder that an ignore rule names as one entry, and each file with a hash of
-# what it holds. A file that the CLI writes anywhere else, such as an AGENTS.md
-# that no context file names, changes it, while a person's own uncommitted work,
-# there before and after, does not.
-outside_skills() {
-  python3 -I - <<'PY'
-import hashlib
-import os
-import subprocess
-
-fields = subprocess.run(
-    [
-        "git", "status", "--porcelain=v1", "-z", "--untracked-files=all",
-        "--ignored=matching", "--", ".", ":(exclude,glob).claude/skills/openspec-*/**",
-    ],
-    check=True,
-    capture_output=True,
-).stdout.split(b"\0")
-entries = []
-at = 0
-while at < len(fields):
-    entry = fields[at]
-    at += 1
-    if not entry:
-        continue
-    status, path = entry[:2].decode(), os.fsdecode(entry[3:])
-    shown = path
-    if status[0] in "RC":
-        shown = f"{path} from {os.fsdecode(fields[at])}"
-        at += 1
-    if os.path.islink(path):
-        held = "a link to " + os.readlink(path)
-    elif os.path.isfile(path):
-        with open(path, "rb") as file:
-            held = hashlib.sha256(file.read()).hexdigest()
-    else:
-        held = ""
-    entries.append(f"{status} {shown} {held}".rstrip())
-print("\n".join(sorted(entries)))
-PY
-}
-before=$(outside_skills)
 "$OPENSPEC" update --force >/dev/null
 # Compared with the index, so a staged tree is checked as it will be committed:
 # a line counts when its second column is not blank (the work tree differs from
@@ -114,13 +143,6 @@ if [ -n "$drift" ]; then
   echo "$drift" >&2
   exit 1
 fi
-after=$(outside_skills)
-if [ "$before" != "$after" ]; then
-  echo "verify-openspec: the pinned CLI changed files outside the generated skills:" >&2
-  diff <(printf '%s\n' "$before") <(printf '%s\n' "$after") |
-    sed -n -e 's/^< /- /p' -e 's/^> /+ /p' >&2 || true
-  exit 1
-fi
 
 echo "--- every spec and change validates, strictly ---"
 report="$SCRATCH/validate.json"
@@ -129,7 +151,7 @@ if [ "$status" -ne 0 ]; then
   "$OPENSPEC" validate --all --strict >&2 || true
   exit "$status"
 fi
-count=$(python3 -c 'import json, sys; print(len(json.load(open(sys.argv[1])).get("items") or []))' "$report")
+count=$(python3 -I -c 'import json, sys; print(len(json.load(open(sys.argv[1])).get("items") or []))' "$report")
 if [ "$count" -eq 0 ]; then
   echo "verify-openspec: validation passed having examined nothing" >&2
   exit 1
@@ -137,4 +159,5 @@ fi
 echo "verify-openspec: $count item(s) valid"
 
 echo "--- the CLI reads every spec as the test of the specs' form reads it ---"
-python3 scripts/spec_form.py "$OPENSPEC"
+# -B, so that no bytecode that its imports would write lands in the working tree.
+python3 -B scripts/spec_form.py "$OPENSPEC"

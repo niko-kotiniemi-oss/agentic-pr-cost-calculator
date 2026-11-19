@@ -328,40 +328,49 @@ def test_renovate_reads_the_vendored_lock() -> None:
 
 
 # R259: Renovate proposes no newer `.python-version`, which keeps the development Python at
-# the oldest supported release, by one rule for the manager that reads it alone.
+# the oldest supported release, by one rule for the manager that reads it alone, and nothing
+# else, at any depth, sets a key that turns updates on or off by name. Renovate has other
+# settings that narrow what it proposes, such as `ignorePaths`, which R134 leaves to the
+# owner's review of this file's diff.
 PYTHON_VERSION_RULE = {"matchManagers": ["pyenv"], "enabled": False}
+SWITCHES = ("enabled", "ignoreDeps", "enabledManagers")
 
 
 def turns_off_python_version_alone(rule: dict[str, Any]) -> bool:
     """Whether a package rule turns off the manager `pyenv` and matches nothing else."""
     held = {key: value for key, value in rule.items() if key != "description"}
-    return (
-        held.keys() == PYTHON_VERSION_RULE.keys()
-        and held["matchManagers"] == ["pyenv"]
-        and held["enabled"] is False
-    )
+    return held == PYTHON_VERSION_RULE and held["enabled"] is False
+
+
+def keys_at_any_depth(value: Any, where: str = "renovate.json") -> Iterator[tuple[str, str, Any]]:
+    """Each key of each object in a configuration, at any depth, with the path of the object
+    that holds it, and its value."""
+    if isinstance(value, dict):
+        for key, inner in value.items():
+            yield where, key, inner
+            yield from keys_at_any_depth(inner, f"{where}.{key}")
+    elif isinstance(value, list):
+        for number, inner in enumerate(value):
+            yield from keys_at_any_depth(inner, f"{where}[{number}]")
 
 
 def python_version_rule_problems(config: dict[str, Any]) -> list[str]:
-    """Whether a rule turns `pyenv` alone off, and each rule that turns off more than it, by
-    its place among the package rules."""
+    """Whether a package rule turns `pyenv` alone off, and each other key, at any depth, that
+    turns updates on or off by name, by its path."""
     rules = config.get("packageRules", [])
-    off = [
-        (number, rule) for number, rule in enumerate(rules) if rule.get("enabled", True) is not True
-    ]
+    alone = [number for number, rule in enumerate(rules) if turns_off_python_version_alone(rule)]
     problems = []
-    if not any(turns_off_python_version_alone(rule) for rule in rules):
+    if not alone:
         problems.append(
             "Renovate would propose a newer Python for .python-version: no package rule"
             " turns the manager pyenv off"
         )
+    kept = (f"renovate.json.packageRules[{alone[0]}]", "enabled") if alone else None
     problems += [
-        f"package rule {number} turns off more than .python-version: {sorted(rule)}"
-        for number, rule in off
-        if not turns_off_python_version_alone(rule)
+        f"{where}.{key} turns updates on or off, beside the rule for .python-version"
+        for where, key, _ in keys_at_any_depth(config)
+        if key in SWITCHES and (where, key) != kept
     ]
-    if len(off) > 1:
-        problems.append(f"{len(off)} package rules turn updates off, where one may")
     return problems
 
 
@@ -389,43 +398,69 @@ def test_a_configuration_that_would_update_python_version_is_reported() -> None:
 def test_a_rule_that_turns_off_more_than_python_version_is_reported(rule: dict[str, Any]) -> None:
     config = {"packageRules": [{"description": "Other.", "minimumReleaseAge": "1 day"}, rule]}
     found = python_version_rule_problems(config)
-    assert f"package rule 1 turns off more than .python-version: {sorted(rule)}" in found
+    assert (
+        "renovate.json.packageRules[1].enabled turns updates on or off, beside the rule for"
+        " .python-version"
+    ) in found
 
 
-def test_a_second_rule_that_turns_updates_off_is_reported() -> None:
-    config = {"packageRules": [PYTHON_VERSION_RULE, {"matchPackageNames": ["x"], "enabled": False}]}
+@pytest.mark.parametrize(
+    ("added", "where"),
+    [
+        ({"packageRules": [{"matchPackageNames": ["x"], "enabled": False}]}, "packageRules[1]"),
+        ({"packageRules": [{"matchManagers": ["pyenv"], "enabled": True}]}, "packageRules[1]"),
+        ({"packageRules": [{"enabled": True}]}, "packageRules[1]"),
+        ({"packageRules": [PYTHON_VERSION_RULE]}, "packageRules[1]"),
+        ({"enabled": False}, ""),
+        ({"npm": {"enabled": False}}, ".npm"),
+        ({"pyenv": {"enabled": True}}, ".pyenv"),
+    ],
+)
+def test_another_setting_of_enabled_at_any_depth_is_reported(
+    added: dict[str, Any], where: str
+) -> None:
+    config = {"packageRules": [PYTHON_VERSION_RULE, *added.get("packageRules", [])]}
+    config.update({key: value for key, value in added.items() if key != "packageRules"})
+    path = f".{where}" if where.startswith("packageRules") else where
     assert python_version_rule_problems(config) == [
-        "package rule 1 turns off more than .python-version: ['enabled', 'matchPackageNames']",
-        "2 package rules turn updates off, where one may",
+        f"renovate.json{path}.enabled turns updates on or off, beside the rule for .python-version"
+    ]
+
+
+@pytest.mark.parametrize("key", ["ignoreDeps", "enabledManagers"])
+def test_a_key_that_turns_updates_off_by_name_is_reported(key: str) -> None:
+    config = {"packageRules": [PYTHON_VERSION_RULE], key: ["@fission-ai/openspec"]}
+    assert python_version_rule_problems(config) == [
+        f"renovate.json.{key} turns updates on or off, beside the rule for .python-version"
     ]
 
 
 def test_the_rule_for_python_version_alone_passes() -> None:
     rule = {"description": "Why.", **PYTHON_VERSION_RULE}
-    assert python_version_rule_problems({"packageRules": [{"enabled": True}, rule]}) == []
+    other = {"description": "Other.", "minimumReleaseAge": "1 day"}
+    assert python_version_rule_problems({"packageRules": [other, rule]}) == []
 
 
-# R260: Renovate merges nothing on its own.
+# R260: Renovate merges nothing on its own: no key whose name begins with `automerge` is set
+# to anything but false, at any depth, and no preset is extended, at any depth, one written as
+# a string included, but those listed here, since a preset that another repository serves can
+# turn merging on later, in no diff here.
+PRESETS = ("config:best-practices",)
 
 
-def automerge_problems(value: Any, where: str = "renovate.json") -> list[str]:
-    """Each object, at any depth, that sets `automerge` to anything but false, and each
-    preset extended, at any depth, whose name holds `automerge`."""
+def automerge_problems(config: Any) -> list[str]:
+    """Each key, at any depth, whose name begins with `automerge` and whose value is not
+    false, and each preset extended, at any depth, that this test does not list."""
     problems = []
-    if isinstance(value, dict):
-        for key, inner in value.items():
-            if key == "automerge" and inner is not False:
-                problems.append(f"{where}.automerge is {json.dumps(inner)}")
-            if key == "extends" and isinstance(inner, list):
-                problems += [
-                    f"{where}.extends holds {preset}"
-                    for preset in inner
-                    if "automerge" in str(preset).casefold()
-                ]
-            problems += automerge_problems(inner, f"{where}.{key}")
-    elif isinstance(value, list):
-        for number, inner in enumerate(value):
-            problems += automerge_problems(inner, f"{where}[{number}]")
+    for where, key, inner in keys_at_any_depth(config):
+        if key.casefold().startswith("automerge") and inner is not False:
+            problems.append(f"{where}.{key} is {json.dumps(inner)}")
+        if key == "extends":
+            problems += [
+                f"{where}.extends holds {preset}, which this test does not list"
+                for preset in (inner if isinstance(inner, list) else [inner])
+                if preset not in PRESETS
+            ]
     return problems
 
 
@@ -452,10 +487,27 @@ def test_renovate_never_merges_on_its_own() -> None:
             {"lockFileMaintenance": {"enabled": True, "automerge": True}},
             "renovate.json.lockFileMaintenance.automerge is true",
         ),
-        ({"extends": [":automergeMinor"]}, "renovate.json.extends holds :automergeMinor"),
+        ({"automergeMinor": True}, "renovate.json.automergeMinor is true"),
+        (
+            {"packageRules": [{"automergeType": "branch"}]},
+            'renovate.json.packageRules[0].automergeType is "branch"',
+        ),
+        (
+            {"extends": [":automergeMinor"]},
+            "renovate.json.extends holds :automergeMinor, which this test does not list",
+        ),
+        (
+            {"extends": ":automergeAll"},
+            "renovate.json.extends holds :automergeAll, which this test does not list",
+        ),
+        (
+            {"extends": ["config:best-practices", "github>someone/presets"]},
+            "renovate.json.extends holds github>someone/presets, which this test does not list",
+        ),
         (
             {"packageRules": [{"extends": ["github>someone/presets:AutoMerge"]}]},
-            "renovate.json.packageRules[0].extends holds github>someone/presets:AutoMerge",
+            "renovate.json.packageRules[0].extends holds github>someone/presets:AutoMerge,"
+            " which this test does not list",
         ),
     ],
 )
@@ -465,9 +517,10 @@ def test_a_setting_that_would_let_renovate_merge_is_reported(
     assert automerge_problems(config) == [problem]
 
 
-def test_a_configuration_that_merges_nothing_passes() -> None:
+@pytest.mark.parametrize("extends", [["config:best-practices"], "config:best-practices"])
+def test_a_configuration_that_merges_nothing_passes(extends: Any) -> None:
     config = {
-        "extends": ["config:best-practices"],
+        "extends": extends,
         "automerge": False,
         "packageRules": [{"automerge": False, "description": "automerge stays off."}],
     }
@@ -482,19 +535,23 @@ REFRESH_NOTE = (
     "session's folder, by `scripts/verify-openspec.sh` for OpenSpec, which writes the "
     "generated skills again, or by `scripts/sync-superpowers.sh` for Superpowers, and "
     "the owner reads the refreshed diff before merging. No agent session starts on "
-    "this branch before the owner has read its diff."
+    "this branch before the owner has read its refreshed diff."
 )
+# The keys of the rule that gives the note: another matcher would narrow it to some updates.
+NOTE_RULE_KEYS = {"matchPackageNames", "prBodyNotes"}
 
 
 def refresh_note_problems(config: dict[str, Any]) -> list[str]:
     """Each of OpenSpec and Superpowers that no package rule matching it by name gives the
-    note, as the only text of its `prBodyNotes`."""
+    note, as the only text of its `prBodyNotes`, in a rule that holds no other key but its
+    description."""
     return [
         f"no package rule gives {package} the note on refreshing its files"
         for package in REFRESHED
         if not any(
             package in rule.get("matchPackageNames", [])
             and rule.get("prBodyNotes") == [REFRESH_NOTE]
+            and rule.keys() - {"description"} == NOTE_RULE_KEYS
             for rule in config.get("packageRules", [])
         )
     ]
@@ -521,6 +578,26 @@ def test_an_update_of_openspec_or_superpowers_says_how_its_files_are_refreshed()
             list(REFRESHED),
         ),
         ([{"matchPackageNames": ["/openspec/"], "prBodyNotes": [REFRESH_NOTE]}], list(REFRESHED)),
+        (
+            [
+                {
+                    "matchPackageNames": list(REFRESHED),
+                    "matchUpdateTypes": ["major"],
+                    "prBodyNotes": [REFRESH_NOTE],
+                }
+            ],
+            list(REFRESHED),
+        ),
+        (
+            [
+                {
+                    "matchPackageNames": list(REFRESHED),
+                    "matchDatasources": ["npm"],
+                    "prBodyNotes": [REFRESH_NOTE],
+                }
+            ],
+            list(REFRESHED),
+        ),
     ],
 )
 def test_an_update_without_its_note_is_reported(
@@ -534,6 +611,8 @@ def test_an_update_without_its_note_is_reported(
 def test_one_rule_that_gives_both_their_note_passes() -> None:
     rule = {"matchPackageNames": list(REFRESHED), "prBodyNotes": [REFRESH_NOTE]}
     assert refresh_note_problems({"packageRules": [rule]}) == []
+    described = {"description": "Why.", **rule}
+    assert refresh_note_problems({"packageRules": [described]}) == []
 
 
 def workflows() -> list[Path]:
@@ -924,8 +1003,8 @@ def unique_keys(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
 
 
 def settings_problems(found: Any, expected: Any, where: str = "settings") -> list[str]:
-    """Each key that the settings hold and the test does not list, or lack, at any depth,
-    and each value that differs from the test's in its type or its value."""
+    """Each key that a file of settings holds and the test does not list, or lacks, at any
+    depth, and each value that differs from the test's in its type or its value."""
     if isinstance(expected, dict) and isinstance(found, dict):
         problems = []
         for key in sorted(found.keys() | expected.keys()):
@@ -933,7 +1012,7 @@ def settings_problems(found: Any, expected: Any, where: str = "settings") -> lis
             if key not in expected:
                 problems.append(f"{at} is a key that the test does not list")
             elif key not in found:
-                problems.append(f"{at} is a key that the test lists and the settings lack")
+                problems.append(f"{at} is a key that the test lists and the file lacks")
             else:
                 problems += settings_problems(found[key], expected[key], at)
         return problems
@@ -990,7 +1069,7 @@ def test_a_variable_a_hook_or_a_key_that_the_test_does_not_list_is_reported() ->
     planted["hooks"]["SessionStart"][0]["matcher"] = "startup"
     del planted["enabledPlugins"]
     assert settings_problems(planted, SETTINGS) == [
-        "settings.enabledPlugins is a key that the test lists and the settings lack",
+        "settings.enabledPlugins is a key that the test lists and the file lacks",
         "settings.env.CLAUDE_CODE_DISABLE_CLAUDE_MDS is a key that the test does not list",
         "settings.hooks.PreToolUse is a key that the test does not list",
         "settings.hooks.SessionStart[0].matcher is a key that the test does not list",
@@ -1029,6 +1108,45 @@ def test_a_settings_key_given_twice_is_refused() -> None:
 
 def test_the_settings_that_the_test_lists_pass() -> None:
     assert settings_problems(json.loads(json.dumps(SETTINGS)), SETTINGS) == []
+
+
+# R256: the marketplace that `.claude/settings.json` names by the folder `.`, whose file is
+# `.claude-plugin/marketplace.json`, holds only this, until task 6.7 moves the marketplace that
+# loads Superpowers, so that a change to the plugin that a session started in the clone
+# installs, or to the folder that it comes from, fails until this test changes with it (T35).
+MARKETPLACE = {
+    "name": "vendored",
+    "description": "Plugins this repository vendors and pins, from local sources only, so a"
+    " fresh session loads them without an install step.",
+    "owner": {"name": "Niko Kotiniemi"},
+    "plugins": [
+        {
+            "name": "superpowers",
+            "description": "Core skills library for Claude Code, vendored at a pinned upstream"
+            " sha. See vendor/superpowers/UPSTREAM.lock.",
+            "source": "./vendor/superpowers",
+        }
+    ],
+}
+
+
+def test_the_marketplace_that_the_settings_name_holds_only_what_this_test_lists() -> None:
+    settings = json.loads((ROOT / ".claude/settings.json").read_text(encoding="utf-8"))
+    assert settings["extraKnownMarketplaces"]["vendored"]["source"]["path"] == "."
+    text = (ROOT / ".claude-plugin/marketplace.json").read_text(encoding="utf-8")
+    found = json.loads(text, object_pairs_hook=unique_keys)
+    assert settings_problems(found, MARKETPLACE, "marketplace") == []
+
+
+def test_a_plugin_that_the_marketplace_takes_from_elsewhere_is_reported() -> None:
+    planted = json.loads(json.dumps(MARKETPLACE))
+    planted["plugins"][0]["source"] = "./tools/plugin"
+    planted["plugins"].append({"name": "helper", "source": "./tools/helper"})
+    assert settings_problems(planted, MARKETPLACE, "marketplace") == [
+        'marketplace.plugins[0].source is "./tools/plugin", where the test gives'
+        ' "./vendor/superpowers"',
+        "marketplace.plugins holds 2 items, where the test lists 1",
+    ]
 
 
 def lock_field(name: str) -> str:

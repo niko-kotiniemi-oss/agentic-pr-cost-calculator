@@ -24,7 +24,7 @@ context files and `CHANGELOG.md` (R228), one that gives an agreed item a gap cha
 item's What done looks like (R231), and an entry leaves `Gap.`, or its gap stops naming
 an item that it named, only while that item is `Done` or `Dropped` (R233), each
 examining nothing while no base holds the guide. No attribute hides the diff of the
-guide, of `CLAUDE.md` or of a change's `tasks.md` (R134).
+guide, of a file that steers work here or of a change's `tasks.md` (R134).
 
 Each check is shown to fail on a synthetic tree, the roadmap's with a guide, into which
 its defect is planted, or on a history of two commits made in it.
@@ -83,6 +83,7 @@ from test_roadmap import (
     section_of,
     sections,
     tasks,
+    tracked,
 )
 from test_threat_model import citation_problems, index
 
@@ -1865,15 +1866,30 @@ def test_the_repository_holds_its_principles_and_agreed_items_against_its_base()
         pytest.skip("no base holds the guide yet, so its checks against the base examine nothing")
 
 
-# R134: no attribute hides the diff of the guide, of a context file or of a change's tasks.
+# R134: no attribute hides the diff of the guide, of a file that steers work here or of a
+# change's tasks.
+
+# The files beside the context files that the root names as steering work here, Renovate's
+# configuration, which decides what is proposed and merged, and the tests that hold them;
+# the Superpowers skills come from the plugin folder that the marketplace names (T81).
+STEERING = (
+    ".claude/settings.json",
+    "renovate.json",
+    "tests/test_context_files.py",
+    "tests/test_repository.py",
+)
+STEERING_FOLDERS = (".claude/hooks/", ".claude/skills/", ".github/workflows/")
 
 
 def reviewed(root: Path) -> list[str]:
-    """The guide, the context files and each change's `tasks.md`, active or archived, whose
-    diffs the owner reads to accept a principle, a rule or a tick."""
+    """The guide, the files that steer work here and the tests that hold them, and each
+    change's `tasks.md`, active or archived, whose diffs the owner reads to accept a
+    principle, a rule or a tick."""
     return [
         GUIDE,
         *CONTEXT_FILES,
+        *STEERING,
+        *sorted(path for path in tracked(root) if path.startswith(STEERING_FOLDERS)),
         *((path / "tasks.md").relative_to(root).as_posix() for _, path in changes(root)),
     ]
 
@@ -1881,7 +1897,32 @@ def reviewed(root: Path) -> list[str]:
 def test_no_attribute_changes_how_a_reviewed_file_s_diff_shows() -> None:
     paths = reviewed(ROOT)
     assert any(path.endswith("/tasks.md") for path in paths), "no change's tasks.md was read"
+    for folder in STEERING_FOLDERS:
+        assert any(path.startswith(folder) for path in paths), f"nothing under {folder} was read"
     assert attribute_problems(ROOT, paths) == []
+
+
+HOOK = ".claude/hooks/session-start.sh"
+SKILL_FILE = ".claude/skills/openspec-explore/SKILL.md"
+WORKFLOW = ".github/workflows/ci.yml"
+
+
+@pytest.mark.parametrize("path", [*STEERING, HOOK, SKILL_FILE, WORKFLOW])
+def test_an_attribute_that_folds_the_diff_of_a_file_that_steers_is_reported(
+    tmp_path: Path, path: str
+) -> None:
+    root = guide_tree(
+        tmp_path,
+        changed={
+            ".gitattributes": f"/{path} linguist-generated\n",
+            HOOK: "#!/bin/sh\n",
+            SKILL_FILE: "A skill.\n",
+            WORKFLOW: "on: push\n",
+        },
+    )
+    assert attribute_problems(root, reviewed(root)) == [
+        f"{path} has linguist-generated: set, which changes how its diff shows"
+    ]
 
 
 @pytest.mark.parametrize(

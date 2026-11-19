@@ -52,13 +52,13 @@
       "enabled": false
     },
     {
-      "description": "An update of OpenSpec or Superpowers changes files that steer agent sessions, so its pull request says how they are refreshed and that no agent session starts on its branch before the owner has read its diff (DR-265).",
+      "description": "An update of OpenSpec or Superpowers changes files that steer agent sessions, so its pull request says how they are refreshed and that no agent session starts on its branch before the owner has read its refreshed diff (DR-265).",
       "matchPackageNames": [
         "@fission-ai/openspec",
         "obra/superpowers"
       ],
       "prBodyNotes": [
-        "Before this merges, the owner reads this diff. Its generated or vendored files are then refreshed on this branch from a working tree outside any agent session's folder, by `scripts/verify-openspec.sh` for OpenSpec, which writes the generated skills again, or by `scripts/sync-superpowers.sh` for Superpowers, and the owner reads the refreshed diff before merging. No agent session starts on this branch before the owner has read its diff."
+        "Before this merges, the owner reads this diff. Its generated or vendored files are then refreshed on this branch from a working tree outside any agent session's folder, by `scripts/verify-openspec.sh` for OpenSpec, which writes the generated skills again, or by `scripts/sync-superpowers.sh` for Superpowers, and the owner reads the refreshed diff before merging. No agent session starts on this branch before the owner has read its refreshed diff."
       ]
     }
   ],

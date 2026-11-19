@@ -10,7 +10,7 @@
 
 ## Context
 
-On 2026-11-19 the owner asked for the root `CLAUDE.md` to hold its most important parts in its first 60 lines and the secondary topics that still need to be in the root up to line 100, and never, in any circumstances, more than 200 lines, with folder files that follow the same principles within their folders. Measured as DR-261 measures it, the root before this change held 232 lines. With the rules that DR-259 keeps in the root, the answers that the reviews at design asked for and the rules that backlog item B-003 adds, the root comes to 116 lines, and its first three sections end at line 56. Each reviewer who looked for cuts found that cutting the root to 100 lines removes a rule that a threat's answer rests on, and on 2026-11-19 the owner chose to keep the root at 116 lines rather than cut rules toward 100.
+On 2026-11-19 the owner asked for the root `CLAUDE.md` to hold its most important parts in its first 60 lines and the secondary topics that still need to be in the root up to line 100, and never, in any circumstances, more than 200 lines, with folder files that follow the same principles within their folders. Measured as DR-261 measures it, the root before this change held 232 lines. With the rules that DR-259 keeps in the root, the answers that the reviews at design asked for and the rules that backlog item B-003 adds, the root comes to 116 lines, and its first three sections end at line 58. Each reviewer who looked for cuts found that cutting the root to 100 lines removes a rule that a threat's answer rests on, and on 2026-11-19 the owner chose to keep the root at 116 lines rather than cut rules toward 100.
 
 ## Decision
 

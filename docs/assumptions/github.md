@@ -4,8 +4,8 @@ The assumptions about GitHub: this repository's settings there, and its workflow
 
 ## A7. The repository's settings on GitHub are applied, and stay applied, as the threat model's section on the settings the owner keeps lists them.
 
-- **Rests on it:** R27, T28, T33, T35, T37, T61, T62, T64, T67, T68, T76, T100, T132, T133, T142, DR-072, DR-073, DR-074, DR-075, DR-076, DR-077, DR-078, DR-084, DR-089, DR-119, DR-122, DR-140, DR-141, DR-144, DR-161, DR-203, DR-243, DR-244
-- **If it is wrong:** Each answer that rests on a setting would fail without any sign: a change could reach `main` without a pull request or `ci`, also from an agent session acting as the owner's account (T62, T64), a release or its tag could change after adopters took it (T67), a workflow that declares no permissions could get a write token (T68), a fork's pull request could run CI before the owner looked at it (T37), two pull requests could take one record's number (T76), a reporter could find no private route (T61), a published release's zip could change after people checked it (T133), and someone could serve another plugin from the address that people added the marketplace by (T142). No test reads a setting on GitHub, so nothing would show that one changed (T100).
+- **Rests on it:** R27, T28, T33, T35, T37, T61, T62, T64, T67, T68, T76, T100, T132, T133, T142, T231, DR-072, DR-073, DR-074, DR-075, DR-076, DR-077, DR-078, DR-084, DR-089, DR-119, DR-122, DR-140, DR-141, DR-144, DR-161, DR-203, DR-243, DR-244
+- **If it is wrong:** Each answer that rests on a setting would fail without any sign: a change could reach `main` without a pull request or `ci`, also from an agent session acting as the owner's account (T62, T64), a release or its tag could change after adopters took it (T67), a workflow that declares no permissions could get a write token (T68), a fork's pull request could run CI before the owner looked at it (T37), two pull requests could take one record's number (T76), a reporter could find no private route (T61), a published release's zip could change after people checked it (T133), someone could serve another plugin from the address that people added the marketplace by (T142), and an update could merge itself once its checks pass (T64, T231). No test reads a setting on GitHub, so nothing would show that one changed (T100).
 - **Fact:** A ruleset that requires branches to be up to date before merging makes a pull request's CI run on what the default branch holds before the pull request merges.
   - **Relied on:** T76, DR-119
   - **Checked:** not yet: none will, since no test may reach GitHub
@@ -14,6 +14,9 @@ The assumptions about GitHub: this repository's settings there, and its workflow
   - **Checked:** not yet: none will, since no test may read a setting on GitHub
 - **Fact:** **The ruleset on `main`** is set as the threat model's section on the settings the owner keeps says, and stays so.
   - **Relied on:** T28, T33, T35, T62, T64, T100, T132, DR-072, DR-084, DR-089, DR-140, `docs/threat-model.md`
+  - **Checked:** not yet: none will, since no test may read a setting on GitHub
+- **Fact:** **Auto-merge off** is set as the threat model's section on the settings the owner keeps says, and stays so.
+  - **Relied on:** T64, T100, T231, `docs/threat-model.md`
   - **Checked:** not yet: none will, since no test may read a setting on GitHub
 - **Fact:** **Branches up to date before merging** is set as the threat model's section on the settings the owner keeps says, and stays so.
   - **Relied on:** T76, T100, DR-119, `docs/threat-model.md`
@@ -62,8 +65,8 @@ The assumptions about GitHub: this repository's settings there, and its workflow
 
 ## A9. GitHub shows text as the checks expect, and text posted on GitHub is public at once.
 
-- **Rests on it:** R21, R33, R97, R98, R128, R134, R176, R198, R200, R210, T26, T52, T61, T65, T73, T79, T81, T125, T126, T145, T147, T151, T165, DR-044, DR-108, DR-152, DR-195, DR-213, DR-227, DR-243, DR-244
-- **If it is wrong:** Text shown as code could still render as a link, an image or a mention, and a log line could be read as a workflow command (T26, T52). A decision record could read one way to a reviewer and another way to an agent, or be collapsed and merged unread (T73, T79, T81), and a bug report opened without the form would never meet its privacy checkbox (T61, T65). A spec could read one way to its reviewers and another to an agent (T125), and the check of the specs' form could print a line that CI reads as a command (T126). The README's detail could show in full, so that its short start no longer comes first, or stay out of a reader's reach (T145), and if GitHub showed an HTML comment, or a drawn code block's text, as the raw file holds it, the README's test that refuses them would refuse more than it needs to (T151), and so would the roadmap's (T165). If GitHub showed the root's README on the repository's page where the `.github` folder holds one, the README's test that refuses such a file would refuse more than it needs to (R198, T147).
+- **Rests on it:** R21, R33, R97, R98, R128, R134, R176, R198, R200, R210, T26, T52, T61, T65, T73, T79, T81, T125, T126, T145, T147, T151, T165, T224, T226, DR-044, DR-108, DR-152, DR-195, DR-213, DR-227, DR-243, DR-244
+- **If it is wrong:** Text shown as code could still render as a link, an image or a mention, and a log line could be read as a workflow command (T26, T52). A decision record could read one way to a reviewer and another way to an agent, or be collapsed and merged unread (T73, T79, T81), and a bug report opened without the form would never meet its privacy checkbox (T61, T65). A spec could read one way to its reviewers and another to an agent (T125), and the check of the specs' form could print a line that CI reads as a command (T126). The README's detail could show in full, so that its short start no longer comes first, or stay out of a reader's reach (T145), and if GitHub showed an HTML comment, or a drawn code block's text, as the raw file holds it, the README's test that refuses them would refuse more than it needs to (T151), and so would the roadmap's (T165). If GitHub showed the root's README on the repository's page where the `.github` folder holds one, the README's test that refuses such a file would refuse more than it needs to (R198, T147). A change to a context file could be hidden from the owner's review, or its text read one way by the owner and another by an agent (T224, T226).
 - **Fact:** GitHub shows text inside inline code in a comment or a job summary as code, never as a link, an image or a mention.
   - **Relied on:** R21, T26, T52, DR-044
   - **Checked:** not yet: none will, since no test may reach GitHub
@@ -71,7 +74,7 @@ The assumptions about GitHub: this repository's settings there, and its workflow
   - **Relied on:** R97, R98, T52, T126, DR-044
   - **Checked:** not yet: none will, since no test may reach GitHub; `add-pr-cost-calculator` task 4.1 tests only what this repository does with it
 - **Fact:** GitHub hides an HTML comment when it shows a file.
-  - **Relied on:** R128, R176, R200, R210, T73, T125, T151, T165, DR-152, DR-195, DR-213, DR-227
+  - **Relied on:** R128, R176, R200, R210, T73, T125, T151, T165, T226, DR-152, DR-195, DR-213, DR-227
   - **Checked:** not yet: none will, since no test may reach GitHub
 - **Fact:** GitHub shows text between dollar signs as a mathematical expression, and text between one or two tildes struck through, in a Markdown file as in a pull request.
   - **Relied on:** R176, R200, T125, T151, DR-195
@@ -95,7 +98,7 @@ The assumptions about GitHub: this repository's settings there, and its workflow
   - **Relied on:** R176, T125, DR-195
   - **Checked:** not yet: none will, since no test may reach GitHub
 - **Fact:** Only the `binary`, `diff` and `linguist-generated` attributes, set in the repository's own attribute files, make git show a record's diff as binary or GitHub hide it.
-  - **Relied on:** R134, T81, DR-108
+  - **Relied on:** R134, T81, T224, DR-108
   - **Checked:** not yet: none will, since no test may reach GitHub
 - **Fact:** Text posted on GitHub, such as a pull request's or an issue's, is public the moment it is posted, before any check can read it.
   - **Relied on:** R33, T61, T65, DR-243, DR-244

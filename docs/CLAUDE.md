@@ -1,9 +1,9 @@
 # CLAUDE.md: Agentic PR cost calculator, the documentation
-
 These rules add to this repository's root `CLAUDE.md` for work on files under `docs/`, and wherever
 the root sends you here, or make its rules stricter there. They never loosen it: where one would,
-the root wins, so tell the owner. Every page under `docs/` but this file describes and never tells
-you what to do, apart from the guide, `docs/patterns.md`, which steers below the root and this file.
+the root wins, so tell the owner. Unless the root's text is in front of you, read it first. Every
+page under `docs/` but this file describes and never tells you what to do, apart from the guide,
+`docs/patterns.md`, which steers below the root and this file.
 ## Decision records
 `docs/decisions/README.md` gives a record's form and lists every record.
 - A record that the default branch holds changes only by being closed by the record that replaces

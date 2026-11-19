@@ -5,5 +5,5 @@ __pycache__/
 .mypy_cache/
 .ruff_cache/
 CLAUDE.local.md
-/.worktrees/
-/.claude/worktrees/
+/.worktrees
+/.claude/worktrees
