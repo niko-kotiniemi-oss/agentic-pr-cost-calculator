@@ -1,0 +1,37 @@
+# DR-271: Each record gives how hard it is to reverse
+
+- **Type:** process
+- **Status:** accepted
+- **Decided by:** the change `add-pr-cost-calculator`, as the owner asked on 2026-10-27 and 2026-11-13
+- **Requirements:** R264
+- **Threats:** T249
+- **Replaces:** none
+- **Closed by:** none
+
+## Context
+
+DR-230 has each record say how hard it is to reverse, as reversible, reversible with work, or a one-way door, with the reason, in the first sentence of its section on what reversing it would change, until records gain a field for it, which the backlog item B-004 (Two new fields on every record) brings. The owner asked for the field on 2026-10-27 and for the statement on 2026-11-13. The records from DR-225 to DR-267 give the statement in varied words, such as easy, or reversible, with work.
+
+## Decision
+
+Each record gives its reversibility in a field right after its boundary, as `reversible`, `reversible with work` or `one-way door`, and the index gives it in a column right after the boundary's. The reason stays where DR-230 puts it, in the first sentence of the section on what reversing it would change, and from this record on that sentence opens with "How hard it is to reverse: " and the field's value. A record whose own text gives two values, as for versions already released and later ones, takes the harder. The change `add-pr-cost-calculator` set the field on every record that the default branch held, from what each record's last section says, and the owner confirmed each that it marks as a one-way door, as DR-230 asks of a one-way door.
+
+## Alternatives
+
+- The field alone, with no sentence: the reason would have no fixed place, and DR-230 asks for one.
+- The sentence alone, as before: no column could show it, and no test could hold it.
+- The words of the records from DR-225 on, such as easy: those records use several words for one value, and the field takes the three that DR-230 gives.
+
+## Consequences
+
+- `tests/test_decisions.py` fails on a record that lacks the field, gives it out of its place or gives a value outside the three, on an index whose column disagrees with a record, and on a record from DR-268 on whose sentence does not open with its value (R264).
+- For the records before DR-268, whether the field fits what the record says rests on review, and a script that compared each statement from DR-225 to DR-267 with its field found none that disagreed when the change set them (T249).
+- The records that the default branch held gained the field by DR-268's exception, in a commit that changed nothing else in them.
+
+## Scope
+
+This covers how a record gives how hard it is to reverse. That each record says it, with its reason, and what replacing a record starts are DR-230 (Each record says how hard it is to reverse, and replacing one starts an assessment of what rests on it), and which way a record faces is DR-270 (Each record gives its boundary).
+
+## What reversing it would change
+
+How hard it is to reverse: reversible with work. The field would stay in every record that holds it, as for DR-270, and later records could leave it out. R264 in `project-standards` would change, with its scenarios, and so would the design's decision 13, `tests/test_decisions.py`, the index's column, T249's answer, `docs/decisions/README.md`, `docs/CLAUDE.md`'s rule on records and task 1.46. DR-230 would be revisited. Records are not part of the public surface, so the change would not be a breaking one for adopters.

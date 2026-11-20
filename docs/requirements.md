@@ -275,6 +275,10 @@ The capability names the spec that holds the requirement. Each capability is one
 | R261 | non-functional | `releases-and-compatibility` | An update of OpenSpec or Superpowers says how its files are refreshed |
 | R262 | non-functional | `releases-and-compatibility` | Renovate skips only the paths that its test lists, with no `includePaths` or `allowedVersions` |
 | R263 | non-functional | `releases-and-compatibility` | A daily check warns the owner when Renovate stops proposing updates |
+| R264 | non-functional | `project-standards` | Each record gives its boundary and how hard it is to reverse |
+| R265 | non-functional | `project-standards` | A field added to every record leaves the rest of each record as it was |
+| R266 | non-functional | `project-standards` | A record number held twice is mended by renumbering the later record |
+| R267 | non-functional | `project-standards` | A record's decider gives no date before the owner's first brief |
 
 IDs are stable: a requirement keeps its ID while it exists, and a new one takes the next free number, so the rows follow the order in which requirements were added rather than the order of the specs. A requirement that a later change removes leaves the table, and its ID is listed below with the change that removed it, never to be used again.
 
