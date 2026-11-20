@@ -26,7 +26,7 @@ from pathlib import Path
 
 import pytest
 from rewording import CONTEXT_FILES as COMPARED_BY_PARAGRAPH
-from rewording import main
+from rewording import main, units
 from test_context_files import CONTEXT_FILES
 from wording import GLOSSARY
 
@@ -517,6 +517,64 @@ def test_a_file_that_is_not_a_context_file_is_still_compared_line_by_line(
         "+ … calculator that runs on, well past the end of …\n"
         "```\n"
     ) in out
+
+
+@pytest.mark.parametrize(
+    ("before", "after"),
+    [
+        (
+            "These rules add to the root's, as issue #46 asks, and they\nnever loosen it.\n",
+            "These rules add to the root's, as issue\n#46 asks, and they never loosen it.\n",
+        ),
+        (
+            "These rules add to the root's, whose ceiling is 200. They\nnever loosen it.\n",
+            "These rules add to the root's, whose ceiling is\n200. They never loosen it.\n",
+        ),
+    ],
+)
+def test_a_context_file_s_paragraph_reflowed_onto_a_line_that_markdown_reads_as_text_is_not_listed(
+    before: str,
+    after: str,
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    paragraph = (
+        "These rules add to the root's for the calculator, whose tests run here, and they\n"
+        "never loosen it.\n"
+    )
+    base = {**BEFORE, "tests/CLAUDE.md": WRAPPED_BEFORE.replace(paragraph, before)}
+    history(tmp_path, {"tests/CLAUDE.md": WRAPPED_BEFORE.replace(paragraph, after)}, base)
+    _, out, _ = rewording(tmp_path, monkeypatch, capsys)
+    assert NOTHING_LISTED in out
+
+
+@pytest.mark.parametrize(
+    ("text", "paragraphs"),
+    [
+        ("Text\n# A heading", ["Text", "# A heading"]),
+        ("Text\n###### A heading", ["Text", "###### A heading"]),
+        ("Text\n#", ["Text", "#"]),
+        ("Text\n#\tA heading", ["Text", "#\tA heading"]),
+        ("# A heading\nText", ["# A heading", "Text"]),
+        ("Text\n#46 asks", ["Text #46 asks"]),
+        ("Text\n####### Seven", ["Text ####### Seven"]),
+        ("Text\n#46 asks\nmore", ["Text #46 asks more"]),
+        ("Text\n- An item", ["Text", "- An item"]),
+        ("Text\n1. An item", ["Text", "1. An item"]),
+        ("Text\n1) An item", ["Text", "1) An item"]),
+        ("Text\n01. An item", ["Text", "01. An item"]),
+        ("Text\n200. More", ["Text 200. More"]),
+        ("- An item\n2. Another", ["- An item", "2. Another"]),
+        ("1. An item\n2. Another", ["1. An item", "2. Another"]),
+        ("- An item\n123456789. Another", ["- An item", "123456789. Another"]),
+        ("- An item\n1234567890. More", ["- An item 1234567890. More"]),
+    ],
+)
+def test_a_wrapped_line_starts_a_paragraph_of_its_own_only_where_markdown_starts_a_block(
+    text: str, paragraphs: list[str]
+) -> None:
+    assert [unit.text for unit in units(text, text, wrapped=True)] == paragraphs
 
 
 def test_the_guide_renamed_with_changes_keeps_its_place(

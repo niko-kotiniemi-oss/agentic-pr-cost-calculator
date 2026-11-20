@@ -59,8 +59,12 @@ USAGE = "usage: python3 scripts/rewording.py [BASE]"
 CONTEXT_FILES = ("CLAUDE.md", "docs/CLAUDE.md", "tests/CLAUDE.md")
 # The files that steer, whose changes are listed first, in this order (T94).
 STEERING = (*CONTEXT_FILES, "docs/patterns.md")
-# A line that starts a block of its own in a context file: a heading or a list item.
-BLOCK = re.compile(r"#|[-*+] |[0-9]+[.)] ")
+# A line that Markdown reads as a heading: one to six `#`, then a space, a tab or the line's
+# end, so that a wrapped line that starts with an issue's number, such as `#46`, is text.
+HEADING = re.compile(r"#{1,6}(?:[ \t]|$)")
+# A line that starts a list item: a bullet, or a number of one to nine digits and `.` or `)`,
+# then a space.
+ITEM = re.compile(r"(?:[-*+]|(?P<number>[0-9]{1,9})[.)]) ")
 TOKEN = re.compile(r"\S+|\s+")
 # How many tokens, each a word or the spaces after one, are shown on each side of a change.
 CONTEXT = 8
@@ -85,10 +89,21 @@ class Unit(NamedTuple):
     read: str
 
 
+def starts_a_block(line: str, unit: str) -> bool:
+    """Whether a line that follows a line of text in the unit given starts a block of its
+    own, as Markdown reads it: a heading or a list item, though a numbered item starts one
+    after a paragraph's text only with the number 1, so that a wrapped line that starts with
+    a sentence's last number, such as `200.`, continues its paragraph."""
+    item = ITEM.match(line)
+    if item and item["number"]:
+        return int(item["number"]) == 1 or ITEM.match(unit) is not None
+    return bool(item or HEADING.match(line))
+
+
 def units(text: str, read: str, wrapped: bool) -> list[Unit]:
     """A file's lines, or, for a file wrapped in its paragraphs, its paragraphs: a line that
-    follows a line of text and starts no heading or list item continues it, joined to it by
-    one space in place of its line break and its indent."""
+    follows a line of text, other than a heading, and starts no block of its own continues
+    it, joined to it by one space in place of its line break and its indent."""
     lines, reads = text.split("\n"), read.split("\n")
     found: list[Unit] = []
     for at, (line, seen) in enumerate(zip(lines, reads, strict=True)):
@@ -96,9 +111,9 @@ def units(text: str, read: str, wrapped: bool) -> list[Unit]:
         if (
             wrapped
             and previous.strip()
-            and not previous.startswith("#")
+            and not HEADING.match(previous)
             and line.strip()
-            and not BLOCK.match(line)
+            and not starts_a_block(line, found[-1].text)
         ):
             indent = len(line) - len(line.lstrip(" "))
             last = found[-1]
