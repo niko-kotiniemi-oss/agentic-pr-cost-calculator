@@ -1,6 +1,8 @@
 # DR-224: The roadmap names issues and pull requests by number, with no link
 
 - **Type:** security and privacy
+- **Boundary:** inside
+- **Reversibility:** reversible
 - **Status:** closed
 - **Decided by:** the owner, 2026-11-11
 - **Requirements:** R209

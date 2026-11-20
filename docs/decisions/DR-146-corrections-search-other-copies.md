@@ -1,6 +1,8 @@
 # DR-146: A correction counts as made once the claim's other copies are searched for
 
 - **Type:** process
+- **Boundary:** inside
+- **Reversibility:** reversible
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** none

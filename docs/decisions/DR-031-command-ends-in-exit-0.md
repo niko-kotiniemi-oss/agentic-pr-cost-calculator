@@ -1,6 +1,8 @@
 # DR-031: The registered command ends in `; exit 0`
 
 - **Type:** technical
+- **Boundary:** outgoing
+- **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** R13

@@ -1,6 +1,8 @@
 # DR-214: An agent never turns capture on for anyone
 
 - **Type:** security and privacy
+- **Boundary:** inside
+- **Reversibility:** reversible
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** R204

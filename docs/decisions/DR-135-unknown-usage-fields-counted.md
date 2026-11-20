@@ -1,6 +1,8 @@
 # DR-135: A call with an unknown usage field is counted from the fields capture knows
 
 - **Type:** technical
+- **Boundary:** incoming
+- **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** R43, R95

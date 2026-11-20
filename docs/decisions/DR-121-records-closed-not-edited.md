@@ -1,6 +1,8 @@
 # DR-121: A record is never edited once accepted, only closed by a record that replaces it
 
 - **Type:** process
+- **Boundary:** inside
+- **Reversibility:** reversible with work
 - **Status:** closed
 - **Decided by:** the change `add-pr-cost-calculator`, as the owner asked on 2026-10-26
 - **Requirements:** R126, R127, R129, R130

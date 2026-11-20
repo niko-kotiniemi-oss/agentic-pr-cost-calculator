@@ -1,6 +1,8 @@
 # DR-152: A record is plain text and links only to other records
 
 - **Type:** security and privacy
+- **Boundary:** inside
+- **Reversibility:** reversible
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** R128

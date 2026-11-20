@@ -1,6 +1,8 @@
 # DR-107: The proposal's reviews stopped after the twenty-fifth
 
 - **Type:** process
+- **Boundary:** inside
+- **Reversibility:** reversible
 - **Status:** accepted
 - **Decided by:** the owner, 2026-10-20
 - **Requirements:** none

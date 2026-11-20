@@ -1,6 +1,8 @@
 # DR-133: A push gets a comment only when all its commits belong to one pull request
 
 - **Type:** technical
+- **Boundary:** outgoing
+- **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** R60, R69

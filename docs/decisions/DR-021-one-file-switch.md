@@ -1,6 +1,8 @@
 # DR-021: One file, `.pr-cost.json`, turns the tool on or off
 
 - **Type:** architecture
+- **Boundary:** outgoing
+- **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`, as the owner asked on 2026-10-17
 - **Requirements:** R1, R19, R36, R91

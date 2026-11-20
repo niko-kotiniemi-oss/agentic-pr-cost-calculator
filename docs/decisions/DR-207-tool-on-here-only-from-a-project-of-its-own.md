@@ -1,6 +1,8 @@
 # DR-207: This repository turns the tool on only from a project that holds this repository alone
 
 - **Type:** security and privacy
+- **Boundary:** inside
+- **Reversibility:** reversible
 - **Status:** accepted
 - **Decided by:** the owner, 2026-11-09
 - **Requirements:** R185

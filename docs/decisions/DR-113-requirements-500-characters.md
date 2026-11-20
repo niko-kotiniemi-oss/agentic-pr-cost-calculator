@@ -1,6 +1,8 @@
 # DR-113: Each requirement is 500 characters or fewer
 
 - **Type:** process
+- **Boundary:** inside
+- **Reversibility:** reversible
 - **Status:** closed
 - **Decided by:** the owner, 2026-10-26
 - **Requirements:** none

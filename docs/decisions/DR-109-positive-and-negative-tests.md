@@ -1,6 +1,8 @@
 # DR-109: Unit tests are positive and negative, at every boundary
 
 - **Type:** process
+- **Boundary:** inside
+- **Reversibility:** reversible
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`, as the owner asked on 2026-10-18
 - **Requirements:** none

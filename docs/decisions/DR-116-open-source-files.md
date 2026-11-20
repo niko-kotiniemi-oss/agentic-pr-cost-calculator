@@ -1,6 +1,8 @@
 # DR-116: The repository carries the usual open-source files
 
 - **Type:** process
+- **Boundary:** outgoing
+- **Reversibility:** reversible
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`, as the owner asked on 2026-10-20
 - **Requirements:** none

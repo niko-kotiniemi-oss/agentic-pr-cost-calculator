@@ -1,6 +1,8 @@
 # DR-231: A guide by concern says how the project builds, and steers below the specs and `CLAUDE.md`
 
 - **Type:** process
+- **Boundary:** inside
+- **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the owner, 2026-11-13
 - **Requirements:** R219, R220, R221, R222

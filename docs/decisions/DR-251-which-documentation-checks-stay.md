@@ -1,6 +1,8 @@
 # DR-251: The checks of the documentation compare it with what a machine can read, and a rule about prose goes to review
 
 - **Type:** process
+- **Boundary:** inside
+- **Reversibility:** reversible
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`, as the owner asked on 2026-11-17
 - **Requirements:** none

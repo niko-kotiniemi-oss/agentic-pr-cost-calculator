@@ -1,6 +1,8 @@
 # DR-272: A record's decider gives no date before the owner's first brief
 
 - **Type:** process
+- **Boundary:** inside
+- **Reversibility:** reversible
 - **Status:** accepted
 - **Decided by:** the owner, 2026-11-20
 - **Requirements:** R267

@@ -1,6 +1,8 @@
 # DR-163: The assumptions are grouped, and listed with the most at stake first
 
 - **Type:** process
+- **Boundary:** inside
+- **Reversibility:** reversible
 - **Status:** accepted
 - **Decided by:** the owner, 2026-10-28
 - **Requirements:** R136

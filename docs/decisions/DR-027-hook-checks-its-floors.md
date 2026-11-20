@@ -1,6 +1,8 @@
 # DR-027: The hook checks its Python and git versions first
 
 - **Type:** technical
+- **Boundary:** outgoing
+- **Reversibility:** reversible
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** R32, R99, R110

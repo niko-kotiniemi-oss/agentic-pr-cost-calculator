@@ -1,6 +1,8 @@
 # DR-225: Planned work is kept as backlog items, and the roadmap is their index
 
 - **Type:** process
+- **Boundary:** inside
+- **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`, as the owner asked on 2026-11-13
 - **Requirements:** R206, R211, R213, R215, R216, R217

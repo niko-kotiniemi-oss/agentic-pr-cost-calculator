@@ -1,6 +1,8 @@
 # DR-259: Each rule lives in the root `CLAUDE.md` or in the folder file of the folder where its work happens
 
 - **Type:** process
+- **Boundary:** inside
+- **Reversibility:** reversible
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`, as the owner asked on 2026-11-19
 - **Requirements:** R127, R228, R254

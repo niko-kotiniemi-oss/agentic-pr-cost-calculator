@@ -1,6 +1,8 @@
 # DR-192: A configuration file that gives a key twice, or no `enabled` of `true` or `false`, is not valid
 
 - **Type:** technical
+- **Boundary:** outgoing
+- **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** R92, R171

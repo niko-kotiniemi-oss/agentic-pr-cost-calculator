@@ -1,6 +1,8 @@
 # DR-150: Each proposal says how its capabilities are validated
 
 - **Type:** process
+- **Boundary:** inside
+- **Reversibility:** reversible
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`, as the owner asked on 2026-10-25
 - **Requirements:** R74

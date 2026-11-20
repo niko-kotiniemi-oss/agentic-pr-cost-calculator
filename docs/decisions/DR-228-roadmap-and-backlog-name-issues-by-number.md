@@ -1,6 +1,8 @@
 # DR-228: The roadmap and the backlog name issues and pull requests by number, with no link
 
 - **Type:** security and privacy
+- **Boundary:** inside
+- **Reversibility:** reversible
 - **Status:** accepted
 - **Decided by:** the owner, 2026-11-11 and 2026-11-13
 - **Requirements:** R209

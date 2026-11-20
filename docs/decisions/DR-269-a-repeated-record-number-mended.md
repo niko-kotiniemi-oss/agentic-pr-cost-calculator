@@ -1,6 +1,8 @@
 # DR-269: A record number held twice is mended by renumbering the later record
 
 - **Type:** process
+- **Boundary:** inside
+- **Reversibility:** reversible
 - **Status:** accepted
 - **Decided by:** the owner, 2026-11-20
 - **Requirements:** R266

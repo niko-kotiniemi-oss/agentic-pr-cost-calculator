@@ -1,6 +1,8 @@
 # DR-246: The walking skeleton's report prices at a fixed test price and posts to the job summary and one comment
 
 - **Type:** architecture
+- **Boundary:** inside
+- **Reversibility:** reversible
 - **Status:** accepted
 - **Decided by:** the owner, 2026-11-14
 - **Requirements:** R237, R241

@@ -1,6 +1,8 @@
 # DR-229: The README's section on working here opens with a briefing for developers
 
 - **Type:** process
+- **Boundary:** outgoing
+- **Reversibility:** reversible
 - **Status:** accepted
 - **Decided by:** the owner, 2026-11-13
 - **Requirements:** R212

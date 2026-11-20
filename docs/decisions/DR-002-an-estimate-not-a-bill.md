@@ -1,6 +1,8 @@
 # DR-002: The figure is an estimate at list prices, not a bill
 
 - **Type:** scope
+- **Boundary:** outgoing
+- **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** R94

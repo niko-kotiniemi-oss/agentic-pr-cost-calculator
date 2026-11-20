@@ -1,6 +1,8 @@
 # DR-184: Capture does not read the branch's history
 
 - **Type:** security and privacy
+- **Boundary:** inside
+- **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the owner, 2026-10-19
 - **Requirements:** R2, R45, R52, R81, R153

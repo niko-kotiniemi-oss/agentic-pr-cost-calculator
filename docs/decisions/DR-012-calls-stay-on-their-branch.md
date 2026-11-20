@@ -1,6 +1,8 @@
 # DR-012: A call goes only to a commit in its worktree, on its branch
 
 - **Type:** architecture
+- **Boundary:** inside
+- **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** R3, R46, R78, R81

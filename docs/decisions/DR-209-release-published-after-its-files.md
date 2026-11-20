@@ -1,6 +1,8 @@
 # DR-209: A release is published only once its files are attached and checked
 
 - **Type:** technical
+- **Boundary:** outgoing
+- **Reversibility:** reversible
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** R72, R189

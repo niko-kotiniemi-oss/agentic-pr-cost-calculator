@@ -1,6 +1,8 @@
 # DR-244: Outside contributions are welcome, and one merges only once its author has agreed to a contributor licence agreement
 
 - **Type:** process
+- **Boundary:** incoming
+- **Reversibility:** reversible
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`, as the owner asked on 2026-11-16
 - **Requirements:** none

@@ -1,6 +1,8 @@
 # DR-004: The cost of AI review by an app or a job in CI is left to a later change
 
 - **Type:** scope
+- **Boundary:** outgoing
+- **Reversibility:** reversible
 - **Status:** accepted
 - **Decided by:** the owner, 2026-10-18 and 2026-10-27
 - **Requirements:** R20, R94

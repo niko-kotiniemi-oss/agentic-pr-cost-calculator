@@ -1,6 +1,8 @@
 # DR-022: Adopters copy the hook file from a pinned commit
 
 - **Type:** architecture
+- **Boundary:** outgoing
+- **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** R12, R53, R72, R88

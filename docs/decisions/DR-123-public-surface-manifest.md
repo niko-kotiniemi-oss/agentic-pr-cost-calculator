@@ -1,6 +1,8 @@
 # DR-123: The release check compares a manifest of the public surface
 
 - **Type:** technical
+- **Boundary:** outgoing
+- **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** R71, R122, R123

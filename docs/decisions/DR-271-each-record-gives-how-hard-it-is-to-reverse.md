@@ -1,6 +1,8 @@
 # DR-271: Each record gives how hard it is to reverse
 
 - **Type:** process
+- **Boundary:** inside
+- **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`, as the owner asked on 2026-10-27 and 2026-11-13
 - **Requirements:** R264

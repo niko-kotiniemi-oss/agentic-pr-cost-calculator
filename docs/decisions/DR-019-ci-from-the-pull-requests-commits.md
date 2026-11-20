@@ -1,6 +1,8 @@
 # DR-019: CI minutes come from the runs on the pull request's own commits
 
 - **Type:** architecture
+- **Boundary:** incoming
+- **Reversibility:** reversible
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** R23, R62, R120

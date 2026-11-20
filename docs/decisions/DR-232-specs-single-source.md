@@ -1,6 +1,8 @@
 # DR-232: The specs are the single source of what the tool does
 
 - **Type:** process
+- **Boundary:** inside
+- **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the owner, 2026-11-12
 - **Requirements:** none

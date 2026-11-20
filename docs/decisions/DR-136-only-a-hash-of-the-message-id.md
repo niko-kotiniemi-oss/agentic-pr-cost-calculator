@@ -1,6 +1,8 @@
 # DR-136: Only a hash of a call's message id is kept
 
 - **Type:** security and privacy
+- **Boundary:** outgoing
+- **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** R2, R4

@@ -1,6 +1,8 @@
 # DR-130: A taken-back ledger file is put back once, when its commit holds it
 
 - **Type:** technical
+- **Boundary:** inside
+- **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** R110, R115, R116, R117

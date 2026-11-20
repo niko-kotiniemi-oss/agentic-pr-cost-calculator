@@ -1,6 +1,8 @@
 # DR-254: Each threat is also rated as if its answer were not built, by reviewers who did not write it
 
 - **Type:** process
+- **Boundary:** inside
+- **Reversibility:** reversible
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`, as the owner asked on 2026-10-29
 - **Requirements:** R244

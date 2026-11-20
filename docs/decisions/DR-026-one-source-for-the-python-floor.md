@@ -1,6 +1,8 @@
 # DR-026: `requires-python` is the one source of the oldest supported Python
 
 - **Type:** technical
+- **Boundary:** inside
+- **Reversibility:** reversible
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** R99

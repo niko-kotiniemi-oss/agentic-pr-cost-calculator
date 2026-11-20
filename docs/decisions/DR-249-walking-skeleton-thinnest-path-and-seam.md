@@ -1,6 +1,8 @@
 # DR-249: The walking skeleton builds only the thinnest path, and its tests drive it through the seam that the build keeps
 
 - **Type:** architecture
+- **Boundary:** inside
+- **Reversibility:** reversible
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** R235, R239, R240

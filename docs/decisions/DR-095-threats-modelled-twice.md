@@ -1,6 +1,8 @@
 # DR-095: Threats are modelled twice in every change
 
 - **Type:** process
+- **Boundary:** inside
+- **Reversibility:** reversible
 - **Status:** accepted
 - **Decided by:** the owner, 2026-10-18 and 2026-10-20
 - **Requirements:** R31

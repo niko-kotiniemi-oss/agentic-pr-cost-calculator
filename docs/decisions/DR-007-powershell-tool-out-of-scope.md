@@ -1,6 +1,8 @@
 # DR-007: Commands sent through the PowerShell tool are out of scope
 
 - **Type:** scope
+- **Boundary:** incoming
+- **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the owner, 2026-10-27
 - **Requirements:** R7

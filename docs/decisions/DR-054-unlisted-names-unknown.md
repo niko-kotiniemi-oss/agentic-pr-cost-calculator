@@ -1,6 +1,8 @@
 # DR-054: Names the price table does not list are recorded as `unknown`
 
 - **Type:** security and privacy
+- **Boundary:** outgoing
+- **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** R17, R77, R98

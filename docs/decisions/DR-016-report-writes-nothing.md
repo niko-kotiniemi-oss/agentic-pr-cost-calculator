@@ -1,6 +1,8 @@
 # DR-016: The report writes nothing to the repository
 
 - **Type:** architecture
+- **Boundary:** outgoing
+- **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the owner, 2026-10-18
 - **Requirements:** R22, R24

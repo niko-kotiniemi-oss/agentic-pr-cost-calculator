@@ -1,6 +1,8 @@
 # DR-050: A repository's git configuration can turn capture off, never on
 
 - **Type:** security and privacy
+- **Boundary:** outgoing
+- **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** R1, R39, R109

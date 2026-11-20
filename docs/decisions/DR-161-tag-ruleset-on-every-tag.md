@@ -1,6 +1,8 @@
 # DR-161: The tag ruleset covers every tag
 
 - **Type:** security and privacy
+- **Boundary:** inside
+- **Reversibility:** reversible
 - **Status:** accepted
 - **Decided by:** the owner, 2026-10-27
 - **Requirements:** none

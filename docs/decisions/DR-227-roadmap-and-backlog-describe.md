@@ -1,6 +1,8 @@
 # DR-227: The roadmap and the backlog describe, and lead only to this repository's own files
 
 - **Type:** security and privacy
+- **Boundary:** incoming
+- **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`, as the owner asked on 2026-11-13
 - **Requirements:** R209, R210

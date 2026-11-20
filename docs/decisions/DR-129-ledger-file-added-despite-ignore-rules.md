@@ -1,6 +1,8 @@
 # DR-129: A ledger file is added despite ignore rules and sparse checkouts
 
 - **Type:** technical
+- **Boundary:** inside
+- **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** R50

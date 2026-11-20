@@ -1,6 +1,8 @@
 # DR-270: Each record gives its boundary
 
 - **Type:** process
+- **Boundary:** inside
+- **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`, as the owner asked on 2026-10-27
 - **Requirements:** R264

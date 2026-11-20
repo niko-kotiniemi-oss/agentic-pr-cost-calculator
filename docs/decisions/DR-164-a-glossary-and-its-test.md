@@ -1,6 +1,8 @@
 # DR-164: A glossary sets the words that the specs and pages use, and a test holds them
 
 - **Type:** process
+- **Boundary:** inside
+- **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`, as the owner asked on 2026-10-28
 - **Requirements:** R137, R138

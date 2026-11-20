@@ -1,6 +1,8 @@
 # DR-220: The roadmap lists a short list of known limitations, and each feature page lists the rest of its own
 
 - **Type:** process
+- **Boundary:** outgoing
+- **Reversibility:** reversible
 - **Status:** accepted
 - **Decided by:** the owner, 2026-11-11
 - **Requirements:** R208

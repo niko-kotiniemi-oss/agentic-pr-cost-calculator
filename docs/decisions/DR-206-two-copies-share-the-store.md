@@ -1,6 +1,8 @@
 # DR-206: Two copies of the capture step in one session share the store
 
 - **Type:** technical
+- **Boundary:** inside
+- **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** R181, R191, R192

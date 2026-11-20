@@ -1,6 +1,8 @@
 # DR-137: The store states its format's version
 
 - **Type:** technical
+- **Boundary:** inside
+- **Reversibility:** reversible with work
 - **Status:** closed
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** R55

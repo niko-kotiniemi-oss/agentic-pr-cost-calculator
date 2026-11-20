@@ -1,6 +1,8 @@
 # DR-178: Capture keeps no transcript, and reprocessing transcripts is a change of its own
 
 - **Type:** scope
+- **Boundary:** incoming
+- **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the owner, 2026-11-02
 - **Requirements:** R154

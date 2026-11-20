@@ -1,6 +1,8 @@
 # DR-068: Every action is pinned to a commit that its repository tagged
 
 - **Type:** security and privacy
+- **Boundary:** incoming
+- **Reversibility:** reversible
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** R34

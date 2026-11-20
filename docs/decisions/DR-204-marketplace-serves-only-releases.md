@@ -1,6 +1,8 @@
 # DR-204: The marketplace serves only a release's plugin
 
 - **Type:** security and privacy
+- **Boundary:** outgoing
+- **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** R184

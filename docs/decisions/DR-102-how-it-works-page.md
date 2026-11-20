@@ -1,6 +1,8 @@
 # DR-102: A page explains how the tool works as a whole
 
 - **Type:** process
+- **Boundary:** inside
+- **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the owner, 2026-10-20
 - **Requirements:** R29, R101

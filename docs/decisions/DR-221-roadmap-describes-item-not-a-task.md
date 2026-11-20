@@ -1,6 +1,8 @@
 # DR-221: The roadmap describes, and leads only to this repository's own files
 
 - **Type:** security and privacy
+- **Boundary:** incoming
+- **Reversibility:** reversible
 - **Status:** closed
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** R209, R210

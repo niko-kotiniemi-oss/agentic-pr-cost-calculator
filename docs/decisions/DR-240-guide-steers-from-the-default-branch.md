@@ -1,6 +1,8 @@
 # DR-240: The guide steers as the default branch holds it, and a principle of it changes alone, when the owner asks
 
 - **Type:** process
+- **Boundary:** inside
+- **Reversibility:** reversible
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`, as the owner asked on 2026-11-14
 - **Requirements:** R228

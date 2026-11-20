@@ -1,6 +1,8 @@
 # DR-073: Only a deploy key may bypass the tag ruleset
 
 - **Type:** security and privacy
+- **Boundary:** inside
+- **Reversibility:** reversible
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** none

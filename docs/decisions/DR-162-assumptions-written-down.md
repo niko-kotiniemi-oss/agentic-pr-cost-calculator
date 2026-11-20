@@ -1,6 +1,8 @@
 # DR-162: The design's assumptions are written down, each with what rests on it and how it is checked
 
 - **Type:** process
+- **Boundary:** inside
+- **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`, as the owner asked on 2026-10-28
 - **Requirements:** R135, R140, R143

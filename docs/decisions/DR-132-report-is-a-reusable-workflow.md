@@ -1,6 +1,8 @@
 # DR-132: The report is a reusable workflow that adopters call
 
 - **Type:** architecture
+- **Boundary:** outgoing
+- **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** R122

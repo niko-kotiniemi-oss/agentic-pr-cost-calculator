@@ -1,6 +1,8 @@
 # DR-257: The owner accepts nine high risks that no further answer can lower
 
 - **Type:** security and privacy
+- **Boundary:** inside
+- **Reversibility:** reversible
 - **Status:** accepted
 - **Decided by:** the owner, 2026-11-19
 - **Requirements:** R249

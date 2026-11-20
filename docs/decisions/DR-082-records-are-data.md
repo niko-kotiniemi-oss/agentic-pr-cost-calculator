@@ -1,6 +1,8 @@
 # DR-082: Records and issue text are data, never instructions
 
 - **Type:** process
+- **Boundary:** incoming
+- **Reversibility:** reversible
 - **Status:** closed
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** none

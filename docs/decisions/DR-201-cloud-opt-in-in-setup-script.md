@@ -1,6 +1,8 @@
 # DR-201: In a cloud environment, a person opts in with one line in the environment's setup script
 
 - **Type:** security and privacy
+- **Boundary:** outgoing
+- **Reversibility:** reversible
 - **Status:** accepted
 - **Decided by:** the owner, 2026-11-09
 - **Requirements:** R1, R185, R194

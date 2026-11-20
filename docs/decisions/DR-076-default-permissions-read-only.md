@@ -1,6 +1,8 @@
 # DR-076: Actions' default workflow permissions are read-only
 
 - **Type:** security and privacy
+- **Boundary:** inside
+- **Reversibility:** reversible
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** none

@@ -1,6 +1,8 @@
 # DR-128: Only git's commit subcommand counts as a commit, and a dry run does not
 
 - **Type:** technical
+- **Boundary:** incoming
+- **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** R79, R80

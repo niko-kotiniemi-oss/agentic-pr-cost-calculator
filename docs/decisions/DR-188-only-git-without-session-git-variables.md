@@ -1,6 +1,8 @@
 # DR-188: The hook starts only git, by absolute path, from a safe folder, without the session's git variables
 
 - **Type:** security and privacy
+- **Boundary:** inside
+- **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`, as the owner asked on 2026-11-02
 - **Requirements:** R54, R118, R147, R160, R169

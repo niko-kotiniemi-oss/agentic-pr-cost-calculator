@@ -1,6 +1,8 @@
 # DR-058: The hook file runs only when its checksum matches
 
 - **Type:** security and privacy
+- **Boundary:** outgoing
+- **Reversibility:** reversible with work
 - **Status:** closed
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** R88, R122

@@ -1,6 +1,8 @@
 # DR-013: A ledger file is staged just before a commit that capture can follow
 
 - **Type:** architecture
+- **Boundary:** inside
+- **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** R8, R49, R51

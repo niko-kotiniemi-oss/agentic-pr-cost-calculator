@@ -1,6 +1,8 @@
 # DR-233: A walking skeleton comes before the remaining pull requests that prepare the build
 
 - **Type:** process
+- **Boundary:** inside
+- **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the owner, 2026-11-12
 - **Requirements:** none

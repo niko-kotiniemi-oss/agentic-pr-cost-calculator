@@ -1,6 +1,8 @@
 # DR-260: The root `CLAUDE.md` puts what does harm first, within 60 lines, and holds at most 200 lines
 
 - **Type:** process
+- **Boundary:** inside
+- **Reversibility:** reversible
 - **Status:** accepted
 - **Decided by:** the owner, 2026-11-19 and 2026-11-20
 - **Requirements:** R253

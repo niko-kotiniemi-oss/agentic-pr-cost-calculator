@@ -1,6 +1,8 @@
 # DR-142: Superpowers owns how the tool is built
 
 - **Type:** process
+- **Boundary:** inside
+- **Reversibility:** reversible
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`, as the owner asked on 2026-10-18 and 2026-10-20
 - **Requirements:** none

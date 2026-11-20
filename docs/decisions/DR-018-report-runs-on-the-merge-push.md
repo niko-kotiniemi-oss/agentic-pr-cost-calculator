@@ -1,6 +1,8 @@
 # DR-018: The report runs on the push that a merge makes to the default branch
 
 - **Type:** architecture
+- **Boundary:** outgoing
+- **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** R68

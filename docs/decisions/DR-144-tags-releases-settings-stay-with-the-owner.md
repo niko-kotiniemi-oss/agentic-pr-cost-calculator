@@ -1,6 +1,8 @@
 # DR-144: Tags, releases, settings, rulesets and secrets stay with the owner
 
 - **Type:** security and privacy
+- **Boundary:** inside
+- **Reversibility:** reversible
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** none

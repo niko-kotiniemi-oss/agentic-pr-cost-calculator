@@ -1,6 +1,8 @@
 # DR-172: Capture reads the transcripts through hooks while the session runs, and a start run reads none
 
 - **Type:** architecture
+- **Boundary:** incoming
+- **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`, as the owner asked on 2026-10-17 and 2026-11-02
 - **Requirements:** R7, R13, R44, R90, R148

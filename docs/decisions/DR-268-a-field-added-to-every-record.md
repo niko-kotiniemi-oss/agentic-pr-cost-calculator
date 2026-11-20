@@ -1,6 +1,8 @@
 # DR-268: A record is closed, never edited, but one change may add a field to every record
 
 - **Type:** process
+- **Boundary:** inside
+- **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`, as the owner asked on 2026-10-27 and 2026-11-13
 - **Requirements:** R126, R127, R129, R130, R265

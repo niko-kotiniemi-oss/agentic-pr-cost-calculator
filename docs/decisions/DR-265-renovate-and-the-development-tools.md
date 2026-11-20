@@ -1,6 +1,8 @@
 # DR-265: Renovate proposes no newer development Python, merges nothing on its own, and notes how an update of OpenSpec or Superpowers is refreshed
 
 - **Type:** technical
+- **Boundary:** incoming
+- **Reversibility:** reversible
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`, as the owner asked on 2026-11-19 and 2026-11-20
 - **Requirements:** R259, R260, R261, R262

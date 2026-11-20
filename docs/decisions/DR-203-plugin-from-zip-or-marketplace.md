@@ -1,6 +1,8 @@
 # DR-203: The plugin installs from each release's zip, or from this repository as a marketplace, the zip first
 
 - **Type:** architecture
+- **Boundary:** outgoing
+- **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the owner, 2026-11-09
 - **Requirements:** R183, R187

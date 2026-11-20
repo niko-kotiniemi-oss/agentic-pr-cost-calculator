@@ -1,6 +1,8 @@
 # DR-145: A session starts on a dependency-update branch only after the owner reviews its diff
 
 - **Type:** security and privacy
+- **Boundary:** incoming
+- **Reversibility:** reversible
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** none

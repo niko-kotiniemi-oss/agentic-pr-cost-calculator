@@ -1,6 +1,8 @@
 # DR-108: Each decision has a record of its own, in an index
 
 - **Type:** process
+- **Boundary:** inside
+- **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the owner, 2026-10-26
 - **Requirements:** R124, R125, R126, R127, R133, R134

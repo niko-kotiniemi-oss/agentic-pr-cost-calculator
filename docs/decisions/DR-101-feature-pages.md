@@ -1,6 +1,8 @@
 # DR-101: Each feature has a page
 
 - **Type:** process
+- **Boundary:** inside
+- **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the owner, 2026-10-20 and 2026-10-25
 - **Requirements:** R29, R73, R100

@@ -1,6 +1,8 @@
 # DR-055: Calls of a ledger file found in a commit are never staged again
 
 - **Type:** security and privacy
+- **Boundary:** inside
+- **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the owner, 2026-10-19
 - **Requirements:** R52, R81, R110, R113, R117

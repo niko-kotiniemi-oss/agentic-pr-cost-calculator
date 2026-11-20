@@ -1,6 +1,8 @@
 # DR-060: The hook opens no network connection
 
 - **Type:** security and privacy
+- **Boundary:** incoming
+- **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** R30, R45, R111

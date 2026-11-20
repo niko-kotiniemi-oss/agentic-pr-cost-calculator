@@ -1,6 +1,8 @@
 # DR-182: The documentation says what stays published, and that a hash does not hide whose record it is
 
 - **Type:** security and privacy
+- **Boundary:** outgoing
+- **Reversibility:** reversible
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`, as the owner asked on 2026-11-02
 - **Requirements:** R146, R159, R164

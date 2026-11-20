@@ -1,6 +1,8 @@
 # DR-215: The README gives no address outside this repository but those that its test lists
 
 - **Type:** security and privacy
+- **Boundary:** outgoing
+- **Reversibility:** reversible
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** R134, R201, R203

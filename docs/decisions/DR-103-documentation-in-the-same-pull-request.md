@@ -1,6 +1,8 @@
 # DR-103: Documentation changes in the same pull request as what it describes
 
 - **Type:** process
+- **Boundary:** inside
+- **Reversibility:** reversible
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`, as the owner asked on 2026-10-20
 - **Requirements:** R73, R100, R101

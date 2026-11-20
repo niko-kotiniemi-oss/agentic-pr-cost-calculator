@@ -1,6 +1,8 @@
 # DR-127: Each commit's usage goes in a new file, written once
 
 - **Type:** architecture
+- **Boundary:** outgoing
+- **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** R8, R10

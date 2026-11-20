@@ -1,6 +1,8 @@
 # DR-042: OpenSpec is pinned and its skills are regenerated in CI
 
 - **Type:** technical
+- **Boundary:** incoming
+- **Reversibility:** reversible
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** none

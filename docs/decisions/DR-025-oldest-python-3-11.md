@@ -1,6 +1,8 @@
 # DR-025: The oldest supported Python is 3.11
 
 - **Type:** technical
+- **Boundary:** outgoing
+- **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the owner, 2026-10-20
 - **Requirements:** R25, R32

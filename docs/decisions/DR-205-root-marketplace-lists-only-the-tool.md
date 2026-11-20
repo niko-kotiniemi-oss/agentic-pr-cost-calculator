@@ -1,6 +1,8 @@
 # DR-205: This repository's root marketplace file lists only the tool's plugin
 
 - **Type:** technical
+- **Boundary:** outgoing
+- **Reversibility:** reversible
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** R184, R190

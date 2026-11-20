@@ -1,6 +1,8 @@
 # DR-179: A call whose repository cannot be told is left out
 
 - **Type:** security and privacy
+- **Boundary:** incoming
+- **Reversibility:** reversible with work
 - **Status:** closed
 - **Decided by:** the owner, 2026-11-02
 - **Requirements:** R3, R147

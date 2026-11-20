@@ -1,6 +1,8 @@
 # DR-165: A golden set of hand-worked sessions holds the tool's figures
 
 - **Type:** process
+- **Boundary:** inside
+- **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`, as the owner asked on 2026-10-28
 - **Requirements:** R139, R141, R142

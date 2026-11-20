@@ -1,6 +1,8 @@
 # DR-104: Each feature is one spec
 
 - **Type:** process
+- **Boundary:** inside
+- **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`, as the owner asked on 2026-10-25
 - **Requirements:** R73

@@ -1,6 +1,8 @@
 # DR-079: OpenSpec owns what the tool must do
 
 - **Type:** process
+- **Boundary:** inside
+- **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`, as the owner asked on 2026-10-20
 - **Requirements:** R73, R74, R100

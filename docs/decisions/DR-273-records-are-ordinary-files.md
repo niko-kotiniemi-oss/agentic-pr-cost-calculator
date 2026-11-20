@@ -1,6 +1,8 @@
 # DR-273: Every file in the records' folder is an ordinary file, not an executable one
 
 - **Type:** process
+- **Boundary:** inside
+- **Reversibility:** reversible
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** R133

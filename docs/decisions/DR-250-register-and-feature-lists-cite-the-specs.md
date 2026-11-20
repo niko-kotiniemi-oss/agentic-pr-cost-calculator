@@ -1,6 +1,8 @@
 # DR-250: The register and the feature pages' lists of requirements stay written by hand and held by tests, not generated
 
 - **Type:** process
+- **Boundary:** inside
+- **Reversibility:** reversible
 - **Status:** accepted
 - **Decided by:** the owner, 2026-11-17
 - **Requirements:** R29, R100

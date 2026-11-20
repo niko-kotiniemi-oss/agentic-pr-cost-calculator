@@ -1,6 +1,8 @@
 # DR-011: Recorded calls wait in the git directory
 
 - **Type:** architecture
+- **Boundary:** inside
+- **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** R11, R47

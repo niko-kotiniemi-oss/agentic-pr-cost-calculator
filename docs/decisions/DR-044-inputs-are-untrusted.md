@@ -1,6 +1,8 @@
 # DR-044: Everything that crosses into the tool is untrusted
 
 - **Type:** security and privacy
+- **Boundary:** incoming
+- **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** R5, R14, R21, R23, R24, R35, R36, R45, R66, R67, R89, R92, R96, R97, R98, R102

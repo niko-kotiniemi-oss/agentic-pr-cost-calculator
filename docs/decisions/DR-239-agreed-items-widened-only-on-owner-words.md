@@ -1,6 +1,8 @@
 # DR-239: An agreed item gains a postponed point or a gap of the guide only on the owner's words
 
 - **Type:** process
+- **Boundary:** inside
+- **Reversibility:** reversible
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** R231

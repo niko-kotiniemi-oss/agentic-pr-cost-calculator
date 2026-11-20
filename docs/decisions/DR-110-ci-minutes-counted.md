@@ -1,6 +1,8 @@
 # DR-110: The cost counts CI minutes as well as model tokens
 
 - **Type:** scope
+- **Boundary:** outgoing
+- **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`, as the owner asked on 2026-10-17
 - **Requirements:** R14, R18, R20, R21, R24, R62, R63, R64, R66, R69, R94, R97, R120, R121

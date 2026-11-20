@@ -1,6 +1,8 @@
 # DR-255: Every high or critical risk has a further answer, a high one may be accepted by the owner, and a critical one holds back a release
 
 - **Type:** process
+- **Boundary:** inside
+- **Reversibility:** reversible
 - **Status:** accepted
 - **Decided by:** the owner, 2026-10-29 and 2026-11-18
 - **Requirements:** R249, R250, R251

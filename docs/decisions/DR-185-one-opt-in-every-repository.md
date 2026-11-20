@@ -1,6 +1,8 @@
 # DR-185: One opt-in covers every repository that turns the tool on, and a person turns capture off by folder
 
 - **Type:** security and privacy
+- **Boundary:** outgoing
+- **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the owner, 2026-11-02 and 2026-11-03
 - **Requirements:** R1, R160, R164

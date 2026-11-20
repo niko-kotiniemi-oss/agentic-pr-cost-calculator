@@ -1,6 +1,8 @@
 # DR-155: A cache write of unknown lifetime is priced as a range
 
 - **Type:** technical
+- **Boundary:** outgoing
+- **Reversibility:** reversible
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** R15

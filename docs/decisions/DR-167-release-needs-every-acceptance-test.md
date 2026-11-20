@@ -1,6 +1,8 @@
 # DR-167: A release needs every acceptance test to pass
 
 - **Type:** process
+- **Boundary:** outgoing
+- **Reversibility:** reversible
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`, as the owner asked on 2026-10-28
 - **Requirements:** R139

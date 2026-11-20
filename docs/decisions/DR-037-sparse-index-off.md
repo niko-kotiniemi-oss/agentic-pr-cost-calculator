@@ -1,6 +1,8 @@
 # DR-037: Adopters keep git's sparse index off
 
 - **Type:** technical
+- **Boundary:** outgoing
+- **Reversibility:** reversible
 - **Status:** accepted
 - **Decided by:** the owner, 2026-10-20
 - **Requirements:** none

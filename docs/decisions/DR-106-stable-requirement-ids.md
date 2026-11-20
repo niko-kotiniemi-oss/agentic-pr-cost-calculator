@@ -1,6 +1,8 @@
 # DR-106: Requirement IDs are stable and never reused
 
 - **Type:** process
+- **Boundary:** inside
+- **Reversibility:** reversible
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** R126, R130

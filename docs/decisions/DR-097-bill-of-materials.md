@@ -1,6 +1,8 @@
 # DR-097: Each release carries a bill of materials
 
 - **Type:** process
+- **Boundary:** outgoing
+- **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`, as the owner asked on 2026-10-20
 - **Requirements:** R28, R72, R99

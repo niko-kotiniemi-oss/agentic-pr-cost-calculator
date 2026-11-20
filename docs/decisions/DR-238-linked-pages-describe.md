@@ -1,6 +1,8 @@
 # DR-238: The glossary, the assumptions and the pages that a file here links to describe, apart from the files that steer
 
 - **Type:** security and privacy
+- **Boundary:** incoming
+- **Reversibility:** reversible
 - **Status:** closed
 - **Decided by:** the change `add-pr-cost-calculator`, as the owner asked on 2026-10-28 and 2026-11-13
 - **Requirements:** none

@@ -1,6 +1,8 @@
 # DR-187: The store states its format's version, a later release upgrades an earlier one, and an unknown one is left alone
 
 - **Type:** technical
+- **Boundary:** inside
+- **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`, as the owner asked on 2026-11-02
 - **Requirements:** R55, R107, R109, R145, R148, R150, R153

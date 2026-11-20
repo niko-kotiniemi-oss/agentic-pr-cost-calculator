@@ -1,6 +1,8 @@
 # DR-235: One opt-in records every agent, those that later releases add among them
 
 - **Type:** security and privacy
+- **Boundary:** outgoing
+- **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the owner, 2026-11-12
 - **Requirements:** R122, R186, R199, R224, R225
