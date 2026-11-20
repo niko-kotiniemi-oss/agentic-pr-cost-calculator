@@ -124,7 +124,7 @@ The assumptions about Python, about the development tools of this repository, an
 - **If it is wrong:** Updates and vulnerability fixes would stop, arrive before anyone could find a problem in them, or open without the owner's approval (T28, T64, T66), and a malicious release that stays unnoticed past the wait would be proposed like any other, with the owner's review of its diff as the last defence (T35). A configuration that the test reads as merging nothing, or a preset that the test lists, could still let Renovate merge its own pull requests (T231).
 - **Fact:** Renovate is installed on the repository and runs.
   - **Relied on:** R26, T28, DR-028, DR-111, DR-145
-  - **Checked:** not yet: no test may reach Renovate, but `add-pr-cost-calculator` task 1.43 adds a daily check, outside the tests, that warns the owner when it stops proposing updates
+  - **Checked:** not yet: none will, since Renovate runs on GitHub, which no test may reach; the daily check of R263, outside the tests, warns the owner when it stops proposing updates, and on 2026-11-20 a run of it started by hand, as at 2026-12-20, failed and the owner confirmed that GitHub's notice of the failed run reached them
 - **Fact:** Renovate waits 14 days after a release before it proposes an update that it can date, and proposes at once an update that it cannot date.
   - **Relied on:** R26, T28, T66, DR-028
   - **Checked:** not yet: none will, since Renovate runs on GitHub, which no test may reach

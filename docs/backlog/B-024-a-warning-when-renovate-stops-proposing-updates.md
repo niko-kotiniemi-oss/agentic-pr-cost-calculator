@@ -1,11 +1,11 @@
 # B-024: A warning when Renovate stops proposing updates
 
-- **Status:** Planned
+- **Status:** Done
 - **Last changed:** 2026-11-20
 - **Brief:** A daily check that tells the owner when Renovate seems to have stopped proposing updates, because an update it should have proposed is overdue or it has been quiet for five days.
 - **Rests on:** R263, DR-265, DR-267
 - **Issue:** none
-- **Pull requests:** none
+- **Pull requests:** 52
 
 ## Problem
 
