@@ -424,7 +424,7 @@ A commit MAY change the records that the base commit holds by adding to every on
 
 ### Requirement: A record number held twice is mended by renumbering the later record
 
-When each base commit holds two records with one number, a commit MAY move the one that the base's first-parent history added later to the number after the base's highest, changing only its heading's number, and replace the old number with the new one in the records that the same commit of that history added and in the Closed by of each record that it replaces. Tests SHALL fail on any other removal or renaming, and on a repeat that this cannot mend.
+When each base commit other than HEAD holds two records with one number, a commit MAY move the one that the base's first-parent history added later to the number after the base's highest, changing only its heading's number, and replace the old number with the new one, mention by mention, in the records that the same commit of that history added and in the Closed by of each record that it replaces. Tests SHALL fail on any other removal or renaming, and on a repeat that this cannot mend.
 
 #### Scenario: The later of two records with one number renumbered passes
 
@@ -449,6 +449,11 @@ When each base commit holds two records with one number, a commit MAY move the o
 #### Scenario: The later record renumbered, with each record that it closed naming it anew, passes
 
 - **WHEN** the moved record replaces records that another merge added, and the commit changes only their Closed by from the old number to the new one
+- **THEN** the test passes
+
+#### Scenario: A mend merged to the default branch passes there
+
+- **WHEN** a push to the default branch merges such a mend, so that HEAD, one of the bases, no longer holds the repeat
 - **THEN** the test passes
 
 #### Scenario: A repeat that renumbering cannot mend fails CI
@@ -1949,7 +1954,7 @@ The README's section on working on this repository and `CONTRIBUTING.md` SHALL e
 
 ### Requirement: Each record gives its boundary and how hard it is to reverse
 
-Each record SHALL give, right after its type, its boundary, as `inside`, `incoming` or `outgoing`, and its reversibility, as `reversible`, `reversible with work` or `one-way door`, and the index SHALL give both, in columns of their own right after the type. A record from DR-268 on SHALL open its section on what reversing it would change with "How hard it is to reverse: " and its reversibility. Tests SHALL fail otherwise.
+Each record SHALL give, right after its type, its boundary, as `inside`, `incoming` or `outgoing`, and its reversibility, as `reversible`, `reversible with work` or `one-way door`, and the index SHALL give both, in columns of their own right after the type. A record from DR-268 on SHALL open its section on what reversing it would change with "How hard it is to reverse: " and its reversibility, which MAY become `[removed]` once the record is closed. Tests SHALL fail otherwise.
 
 #### Scenario: A record with its boundary and its reversibility passes
 

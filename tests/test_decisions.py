@@ -12,7 +12,11 @@ These tests hold what a machine can check:
 
 - every record has its fields and its sections, each once, in order, none of
   them empty, and no other line that starts with `#`; its type, status and
-  decider take a form from their lists, and a date that it gives is a real one,
+  decider, and its boundary (`inside`, `incoming` or `outgoing`) and its
+  reversibility (`reversible`, `reversible with work` or `one-way door`), right
+  after its type, take a form from their lists; a record from DR-268 on opens
+  its last section with "How hard it is to reverse: " and its reversibility,
+  which may become `[removed]` once it is closed; a date that it gives is a real one,
   no later than today and no earlier than 2026-10-17, the owner's first brief;
   its file name and heading carry its number, in ASCII
   digits padded to three; and it holds plain text: printable ASCII and line
@@ -270,13 +274,12 @@ def read(path: Path) -> tuple[Record | None, list[str]]:
     titles = parts[1::2]
     if tuple(titles) != SECTIONS:
         problems.append(f"{name} has the sections {titles}, not {list(SECTIONS)}")
+    pairs = list(zip(titles, parts[2::2], strict=True))
     problems += [
-        f"{name} says nothing under {title!r}"
-        for title, content in zip(titles, parts[2::2], strict=True)
-        if not content.strip()
+        f"{name} says nothing under {title!r}" for title, content in pairs if not content.strip()
     ]
     problems += field_problems(name, fields)
-    problems += sentence_problems(name, ident, fields, dict(zip(titles, parts[2::2], strict=True)))
+    problems += sentence_problems(name, ident, fields, dict(pairs))
     return Record(ident, name, heading.group(2), fields, text), problems
 
 
@@ -290,7 +293,11 @@ def sentence_problems(
     if number(ident) < STATED_FROM or value is None or last not in sections:
         return []
     opening = f"How hard it is to reverse: {value}."
-    if sections[last].strip().startswith(f"{opening} ") or sections[last].strip() == opening:
+    text = sections[last].strip()
+    # Once a record is closed, the sentence may become [removed] like any other text.
+    if re.match(rf"{re.escape(opening)}(?:\s|$)", text) or (
+        fields.get("Status") == "closed" and text.startswith(REMOVED)
+    ):
         return []
     return [f"{name} does not open its section {last!r} with {opening!r}"]
 
@@ -342,14 +349,11 @@ def content_problems(name: str, text: str) -> list[str]:
 
 
 def field_problems(name: str, fields: dict[str, str]) -> list[str]:
-    problems = []
-    if fields.get("Type", "scope") not in TYPES:
-        problems.append(f"{name} has a type outside the list: {fields['Type']!r}")
-    for field, values in ADDED_FIELDS:
-        if fields.get(field, values[0]) not in values:
-            problems.append(f"{name} has a {field.lower()} outside the list: {fields[field]!r}")
-    if fields.get("Status", "accepted") not in STATUSES:
-        problems.append(f"{name} has a status outside the list: {fields['Status']!r}")
+    problems = [
+        f"{name} has a {field.lower()} outside the list: {fields[field]!r}"
+        for field, values in (("Type", TYPES), *ADDED_FIELDS, ("Status", STATUSES))
+        if field in fields and fields[field] not in values
+    ]
     for field, form in LISTS.items():
         value = fields.get(field, "none")
         if value == "none":
@@ -778,7 +782,7 @@ def closed_from(old: str, new: str) -> bool:
     closed = closed.replace("\n- **Closed by:** none\n", f"\n- **Closed by:** {closer[1]}\n", 1)
     before, after = closed.split("\n"), new.split("\n")
     # The heading and the fields come before the first section, and never become [removed].
-    first = next((i for i, line in enumerate(before) if line.startswith("## ")), len(before))
+    first = len(head_of(closed))
     return len(before) == len(after) and all(
         line == now
         or (now == REMOVED and i > first and line.strip() != "" and not line.startswith("#"))
@@ -871,7 +875,7 @@ def named_together(groups: list[list[str]]) -> str:
 
 def mends_in(
     root: Path, base: str, found: Mapping[str, tuple[str, str]]
-) -> tuple[set[Mend], list[str]]:
+) -> tuple[Mend | None, list[str]]:
     """The renumbering that would mend a number that the base holds twice, or what makes
     the base's repeat one that renumbering cannot mend."""
     folder = DECISIONS.as_posix()
@@ -882,37 +886,45 @@ def mends_in(
             numbers.setdefault(int(named.group(1)), []).append(path)
     groups = [sorted(paths) for _, paths in sorted(numbers.items()) if len(paths) > 1]
     if not groups:
-        return set(), []
+        return None, []
     order = added_order(root, base)
     pair = groups[0]
     ages = [order.get(path) for path in pair]
     if len(groups) > 1 or len(pair) > 2 or None in ages or ages[0] == ages[1]:
-        return set(), [
+        return None, [
             f"{base} holds {named_together(groups)} with a number held twice in a way that"
             " renumbering the later record cannot mend: the owner decides how to mend them"
         ]
     later = min(pair, key=lambda path: order[path][0])
     made = order[later][1]
-    old = posixpath.basename(later)[:6]
+    old = f"DR-{FILE_NAME.fullmatch(posixpath.basename(later)).group(1)}"  # type: ignore[union-attr]
     new = f"DR-{max(numbers) + 1:03d}"
     given = REPLACES.search(content(root, found[later][1]))
     replaced = set(re.findall(rf"DR-{NUMBER}", given[1])) if given else set()
     mend = Mend(
         later=later,
-        target=f"{folder}/{new}{posixpath.basename(later)[6:]}",
+        target=f"{folder}/{new}{posixpath.basename(later)[len(old) :]}",
         old=old,
         new=new,
         siblings=frozenset(
             path for path, (_, commit) in order.items() if commit == made and path != later
         ),
-        closed=frozenset(path for path in found if posixpath.basename(path)[:6] in replaced),
+        closed=frozenset(
+            path
+            for each, paths in numbers.items()
+            if f"DR-{each:03d}" in replaced
+            for path in paths
+        ),
     )
-    return {mend}, []
+    return mend, []
 
 
 def mended(mend: Mend, path: str, old: str, new: str) -> bool:
     """Whether `new` is `old` changed only by the mend's new number."""
-    if path in mend.siblings and new == re.sub(rf"\b{mend.old}\b", mend.new, old):
+    # Each mention of the old number may name either record, so each may change on its own.
+    either = f"(?:{mend.old}|{mend.new})"
+    parts = re.split(rf"\b{mend.old}\b", old)
+    if path in mend.siblings and re.fullmatch(either.join(map(re.escape, parts)), new):
         return True
     line = "\n- **Closed by:** {}\n"
     return path in mend.closed and new == old.replace(
@@ -927,23 +939,27 @@ def change_problems(root: Path, *bases: str) -> tuple[list[str], int]:
     held: set[str] = set()
     folder = DECISIONS.as_posix()
     trees = {base: records_in_tree(root, base) for base in bases}
-    each: list[set[Mend]] = []
+    mends: list[Mend | None] = []
     for base, found in trees.items():
-        mends, unmendable = mends_in(root, base, found)
-        each.append(mends)
+        found_mend, unmendable = mends_in(root, base, found)
+        mends.append(found_mend)
         problems.update(dict.fromkeys(unmendable))
     # A mend holds only where every base holds the repeat, never only a base a pull request chose.
-    allowed = set.intersection(*each) if each else set()
+    # HEAD as a base, on the push that merges a mend, holds the mend and not the repeat.
+    head = git(root, "rev-parse", "HEAD").stdout.decode().strip()
+    others = [each for base, each in zip(trees, mends, strict=True) if base != head]
+    allowed = others[0] if others and all(each == others[0] for each in others) else None
     for base, found in trees.items():
         if not found and git(root, "cat-file", "-e", f"{base}:{folder}").returncode == 0:
             problems[
                 f"{base} holds {folder} but no file named as a record, so nothing was compared"
             ] = None
         added = False
+        read: dict[str, str] = {}
         for path, (mode, item) in sorted(found.items()):
             held.add(path)
             now = current.get(path)
-            mend = next((each for each in allowed if each.later == path), None)
+            mend = allowed if allowed and allowed.later == path else None
             target = current.get(mend.target) if mend else None
             if (
                 mend
@@ -957,7 +973,9 @@ def change_problems(root: Path, *bases: str) -> tuple[list[str], int]:
             if now is None:
                 problems[
                     f"{path}, which the default branch holds, was removed, renamed or moved:"
-                    " a record is never removed, only closed by a record that replaces it"
+                    " a record is never removed, only closed by a record that replaces it, and"
+                    " moved only when every base holds its number twice and it is the later of"
+                    " the two, to the number after the highest, with nothing else changed"
                 ] = None
                 continue
             if now == (mode, item):
@@ -965,8 +983,9 @@ def change_problems(root: Path, *bases: str) -> tuple[list[str], int]:
             if now[0] != mode or not mode.startswith("100"):
                 problems[f"{path} {CHANGED}"] = None
                 continue
-            old, new = content(root, item), content(root, now[1])
-            if any(mended(mend, path, old, new) for mend in allowed):
+            old = content(root, item)
+            new = read[path] = content(root, now[1])
+            if allowed and mended(allowed, path, old, new):
                 continue
             bare = without_added_fields(old, new)
             added = added or bare is not None
@@ -975,8 +994,9 @@ def change_problems(root: Path, *bases: str) -> tuple[list[str], int]:
             if bare != old and not closed_from(old, bare):
                 problems[f"{path} {CHANGED}"] = None
         if added:
-            for path, (_mode, item) in sorted(current.items()):
-                if path in found and not gives_added_fields(content(root, item)):
+            for path in sorted(found.keys() & current.keys()):
+                text = read[path] if path in read else content(root, current[path][1])
+                if not gives_added_fields(text):
                     problems[
                         f"{path} was left without Boundary and Reversibility, which this change"
                         " adds to other records that the default branch holds: a change that"
@@ -1587,51 +1607,43 @@ SENTENCE = "How hard it is to reverse: reversible with work. The thing would cha
 
 
 @pytest.mark.parametrize(
-    ("number", "last", "expected"),
+    ("number", "last", "reported"),
     [
-        (268, SENTENCE, []),
-        (300, SENTENCE, []),
-        (267, "The thing would change back.\n", []),
+        (268, SENTENCE, False),
+        (300, SENTENCE, False),
+        (267, "The thing would change back.\n", False),
+        (268, "The thing would change back.\n", True),
+        (269, SENTENCE.replace("reversible with work", "reversible"), True),
+        (270, SENTENCE.replace("work.", "work, mostly."), True),
+        (271, "Mostly. " + SENTENCE, True),
+        (272, "How hard it is to reverse: reversible with work.\n", False),
         (
-            268,
-            "The thing would change back.\n",
-            [
-                "DR-268-a-choice.md does not open its section 'What reversing it would change' with"
-                " 'How hard it is to reverse: reversible with work.'"
-            ],
+            273,
+            "How hard it is to reverse: reversible with work.\nThe thing would change back.\n",
+            False,
         ),
-        (
-            269,
-            SENTENCE.replace("reversible with work", "reversible"),
-            [
-                "DR-269-a-choice.md does not open its section 'What reversing it would change' with"
-                " 'How hard it is to reverse: reversible with work.'"
-            ],
-        ),
-        (
-            270,
-            SENTENCE.replace("work.", "work, mostly."),
-            [
-                "DR-270-a-choice.md does not open its section 'What reversing it would change' with"
-                " 'How hard it is to reverse: reversible with work.'"
-            ],
-        ),
-        (
-            271,
-            "Mostly. " + SENTENCE,
-            [
-                "DR-271-a-choice.md does not open its section 'What reversing it would change' with"
-                " 'How hard it is to reverse: reversible with work.'"
-            ],
-        ),
+        (274, "How hard it is to reverse: reversible with workers.\n", True),
     ],
 )
 def test_a_record_from_dr_268_on_states_its_reversibility_where_its_field_does(
-    tmp_path: Path, number: int, last: str, expected: list[str]
+    tmp_path: Path, number: int, last: str, reported: bool
 ) -> None:
     path = tmp_path / f"DR-{number:03d}-a-choice.md"
     path.write_text(record(number).replace("The thing would change back.\n", last))
-    assert read(path)[1] == expected
+    expected = (
+        f"{path.name} does not open its section 'What reversing it would change' with"
+        " 'How hard it is to reverse: reversible with work.'"
+    )
+    assert read(path)[1] == ([expected] if reported else [])
+
+
+def test_a_closed_record_from_dr_268_on_may_have_its_reversibility_sentence_removed(
+    tmp_path: Path,
+) -> None:
+    path = tmp_path / "DR-268-a-choice.md"
+    text = record(268, status="closed", closed_by="DR-269")
+    path.write_text(text.replace("The thing would change back.\n", f"{REMOVED}\n"))
+    assert read(path)[1] == []
 
 
 @pytest.mark.parametrize(
@@ -2211,9 +2223,6 @@ def test_a_link_in_the_records_folder_is_reported_by_its_mode_too(tmp_path: Path
     assert len(problems) == 2 and all("mode 120000" in each for each in problems), problems
 
 
-FIELDED = {"boundary": "inside", "reversibility": "reversible with work"}
-
-
 def bare(number: int, status: str = "accepted", closed_by: str = "none") -> str:
     """A record as the default branch held it before Boundary and Reversibility."""
     return record(number, status=status, closed_by=closed_by, boundary=None, reversibility=None)
@@ -2232,7 +2241,7 @@ def test_the_two_fields_added_to_every_held_record_are_not_reported(tmp_path: Pa
         ],
     )
     texts = [
-        record(1, status="closed", closed_by="DR-004", **FIELDED),
+        record(1, status="closed", closed_by="DR-004"),
         record(
             2,
             status="closed",
@@ -2252,7 +2261,7 @@ def test_the_two_fields_added_with_a_record_cleared_once_closed_are_not_reported
     tmp_path: Path,
 ) -> None:
     folder = repository_with_history(tmp_path, [bare(1, status="closed", closed_by="DR-002")])
-    text = record(1, status="closed", closed_by="DR-002", **FIELDED)
+    text = record(1, status="closed", closed_by="DR-002")
     (folder / "DR-001-a-choice.md").write_text(text.replace("It covers the thing.", REMOVED))
     commit(tmp_path)
     assert compared(tmp_path) == ([], 1)
@@ -2284,21 +2293,21 @@ def test_the_two_fields_added_with_anything_else_are_reported(
     tmp_path: Path, old: str, new: str
 ) -> None:
     folder = repository_with_history(tmp_path, [bare(1), bare(2)])
-    text = record(1, **FIELDED)
+    text = record(1)
     assert old in text
     (folder / "DR-001-a-choice.md").write_text(text.replace(old, new, 1))
-    (folder / "DR-002-a-choice.md").write_text(record(2, **FIELDED))
+    (folder / "DR-002-a-choice.md").write_text(record(2))
     commit(tmp_path)
     problems, _ = compared(tmp_path)
     assert problems == [f"docs/decisions/DR-001-a-choice.md {CHANGED}"]
 
 
 def test_a_field_line_that_the_held_record_already_gives_is_reported(tmp_path: Path) -> None:
-    folder = repository_with_history(tmp_path, [record(1, **FIELDED), bare(2)])
+    folder = repository_with_history(tmp_path, [record(1), bare(2)])
     (folder / "DR-001-a-choice.md").write_text(
-        record(1, **FIELDED).replace(FIELD_LINES, FIELD_LINES + FIELD_LINES)
+        record(1).replace(FIELD_LINES, FIELD_LINES + FIELD_LINES)
     )
-    (folder / "DR-002-a-choice.md").write_text(record(2, **FIELDED))
+    (folder / "DR-002-a-choice.md").write_text(record(2))
     commit(tmp_path)
     problems, _ = compared(tmp_path)
     assert problems == [f"docs/decisions/DR-001-a-choice.md {CHANGED}"]
@@ -2307,8 +2316,8 @@ def test_a_field_line_that_the_held_record_already_gives_is_reported(tmp_path: P
 def test_the_two_fields_added_to_some_held_records_and_not_to_others_are_reported(
     tmp_path: Path,
 ) -> None:
-    folder = repository_with_history(tmp_path, [bare(1), bare(2), record(3, **FIELDED)])
-    (folder / "DR-001-a-choice.md").write_text(record(1, **FIELDED))
+    folder = repository_with_history(tmp_path, [bare(1), bare(2), record(3)])
+    (folder / "DR-001-a-choice.md").write_text(record(1))
     (folder / "DR-004-a-choice.md").write_text(record(4))
     commit(tmp_path)
     problems, _ = compared(tmp_path)
@@ -2343,10 +2352,11 @@ def repeated(root: Path, *merges: dict[str, str], branch: bool = True) -> Path:
 def moved(folder: Path, name: str, number: int, text: str | None = None) -> None:
     """The record in `name` moved to `number`, its heading's number changed and nothing else."""
     old = folder / name
-    words = name.split("-", 2)[2]
+    named = FILE_NAME.fullmatch(name)
+    assert named
+    words = name[len(f"DR-{named.group(1)}-") :]
     body = old.read_text() if text is None else text
-    ident = name[:6]
-    new_text = body.replace(f"# {ident}: ", f"# DR-{number:03d}: ", 1)
+    new_text = body.replace(f"# DR-{named.group(1)}: ", f"# DR-{number:03d}: ", 1)
     old.unlink()
     (folder / f"DR-{number:03d}-{words}").write_text(new_text)
 
@@ -2386,10 +2396,49 @@ def test_the_records_added_with_the_moved_one_and_closed_by_it_may_name_it_anew(
     assert compared(tmp_path) == ([], 4)
 
 
+def test_a_mend_merged_to_the_default_branch_passes_there_too(tmp_path: Path) -> None:
+    """On the push that merges a mend, HEAD is a base, and holds no repeat any more."""
+    folder = repeated(tmp_path, EARLY, LATE)
+    replaced = run_git(tmp_path, "rev-parse", "HEAD")
+    moved(folder, "DR-002-late.md", 3)
+    commit(tmp_path)
+    run_git(tmp_path, "update-ref", DEFAULT_BRANCH, "HEAD")
+    bases = base_commits(tmp_path, {"BASE_COMMIT": replaced})
+    assert bases == [replaced, run_git(tmp_path, "rev-parse", "HEAD")]
+    # Both bases are counted: the three records before the push and the moved one after it.
+    assert change_problems(tmp_path, *bases) == ([], 4)
+
+
+def test_a_repeat_at_a_number_of_four_digits_is_mended_too(tmp_path: Path) -> None:
+    folder = repeated(
+        tmp_path,
+        {"DR-1000-early.md": record(1000, title="Early")},
+        {"DR-1000-late.md": record(1000, title="Late")},
+    )
+    moved(folder, "DR-1000-late.md", 1001)
+    commit(tmp_path)
+    assert compared(tmp_path) == ([], 3)
+
+
+def test_a_record_added_with_the_moved_one_may_keep_its_mention_of_the_other(
+    tmp_path: Path,
+) -> None:
+    both = "It follows DR-002 (Early) and DR-002 (Late).\n"
+    folder = repeated(tmp_path, EARLY, {**LATE, "DR-003-other.md": record(3, title="Other") + both})
+    moved(folder, "DR-002-late.md", 4)
+    (folder / "DR-003-other.md").write_text(
+        record(3, title="Other") + both.replace("DR-002 (Late)", "DR-004 (Late)")
+    )
+    commit(tmp_path)
+    assert compared(tmp_path) == ([], 4)
+
+
 def removed(path: str) -> str:
     return (
         f"{path}, which the default branch holds, was removed, renamed or moved: a record is"
-        " never removed, only closed by a record that replaces it"
+        " never removed, only closed by a record that replaces it, and moved only when every"
+        " base holds its number twice and it is the later of the two, to the number after the"
+        " highest, with nothing else changed"
     )
 
 
