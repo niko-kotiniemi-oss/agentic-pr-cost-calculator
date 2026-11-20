@@ -1,0 +1,34 @@
+{
+ "releases": {
+  "2.3.1": [
+   {
+    "upload_time_iso_8601": "2026-08-15T03:01:23.577672Z",
+    "yanked": false
+   },
+   {
+    "upload_time_iso_8601": "2026-08-15T03:03:38.549479Z",
+    "yanked": false
+   }
+  ],
+  "2.4.0": [
+   {
+    "upload_time_iso_8601": "2026-10-01T20:38:41.545255Z",
+    "yanked": false
+   },
+   {
+    "upload_time_iso_8601": "2026-10-01T20:40:39.229391Z",
+    "yanked": false
+   }
+  ],
+  "2.4.1": [
+   {
+    "upload_time_iso_8601": "2026-10-28T19:21:04.779148Z",
+    "yanked": false
+   },
+   {
+    "upload_time_iso_8601": "2026-10-28T19:23:13.286941Z",
+    "yanked": false
+   }
+  ]
+ }
+}
