@@ -87,7 +87,17 @@ ROOT = Path(__file__).resolve().parents[1]
 DECISIONS = Path("docs") / "decisions"
 REMOVED = "[removed]"
 
-FIELDS = ("Type", "Status", "Decided by", "Requirements", "Threats", "Replaces", "Closed by")
+FIELDS = (
+    "Type",
+    "Boundary",
+    "Reversibility",
+    "Status",
+    "Decided by",
+    "Requirements",
+    "Threats",
+    "Replaces",
+    "Closed by",
+)
 SECTIONS = (
     "Context",
     "Decision",
@@ -108,12 +118,24 @@ TYPES = {"scope", "architecture", "technical", "security and privacy", "process"
 STATUSES = {"accepted", "closed"}
 BOUNDARIES = ("inside", "incoming", "outgoing")
 REVERSIBILITIES = ("reversible", "reversible with work", "one-way door")
+# The first record that opens its last section with the value of its Reversibility.
+STATED_FROM = 268
 # The fields that one change may add to every record that the default branch holds (R265).
 ADDED_FIELDS = (("Boundary", BOUNDARIES), ("Reversibility", REVERSIBILITIES))
-INDEX_CELLS = ("title", "Type", "Status", "Decided by", "Requirements", "Threats")
+INDEX_CELLS = (
+    "title",
+    "Type",
+    "Boundary",
+    "Reversibility",
+    "Status",
+    "Decided by",
+    "Requirements",
+    "Threats",
+)
 INDEX_TABLE = (
-    "| Record | Decision | Type | Status | Decided by | Requirements | Threats |",
-    "|---|---|---|---|---|---|---|",
+    "| Record | Decision | Type | Boundary | Reversibility | Status | Decided by | Requirements"
+    " | Threats |",
+    "|---|---|---|---|---|---|---|---|---|",
 )
 # Files whose mentions are not read: upstream's own, and the synthetic ones tests plant,
 # but for the context file under tests/, which steers there (R127).
@@ -254,7 +276,23 @@ def read(path: Path) -> tuple[Record | None, list[str]]:
         if not content.strip()
     ]
     problems += field_problems(name, fields)
+    problems += sentence_problems(name, ident, fields, dict(zip(titles, parts[2::2], strict=True)))
     return Record(ident, name, heading.group(2), fields, text), problems
+
+
+def sentence_problems(
+    name: str, ident: str, fields: dict[str, str], sections: dict[str, str]
+) -> list[str]:
+    """A record from DR-268 on opens its last section with the value of its Reversibility,
+    so that the reason that follows it and the field agree (R264, DR-271)."""
+    value = fields.get("Reversibility")
+    last = SECTIONS[-1]
+    if number(ident) < STATED_FROM or value is None or last not in sections:
+        return []
+    opening = f"How hard it is to reverse: {value}."
+    if sections[last].strip().startswith(f"{opening} ") or sections[last].strip() == opening:
+        return []
+    return [f"{name} does not open its section {last!r} with {opening!r}"]
 
 
 def content_problems(name: str, text: str) -> list[str]:
@@ -307,6 +345,9 @@ def field_problems(name: str, fields: dict[str, str]) -> list[str]:
     problems = []
     if fields.get("Type", "scope") not in TYPES:
         problems.append(f"{name} has a type outside the list: {fields['Type']!r}")
+    for field, values in ADDED_FIELDS:
+        if fields.get(field, values[0]) not in values:
+            problems.append(f"{name} has a {field.lower()} outside the list: {fields[field]!r}")
     if fields.get("Status", "accepted") not in STATUSES:
         problems.append(f"{name} has a status outside the list: {fields['Status']!r}")
     for field, form in LISTS.items():
@@ -1197,8 +1238,8 @@ def record(
     threats: str = "T1",
     replaces: str = "none",
     closed_by: str = "none",
-    boundary: str | None = None,
-    reversibility: str | None = None,
+    boundary: str | None = "inside",
+    reversibility: str | None = "reversible with work",
 ) -> str:
     added = "".join(
         f"- **{name}:** {value}\n"
@@ -1232,18 +1273,21 @@ def row(
     decider: str = "the change `demo`",
     requirements: str = "R1",
     threats: str = "T1",
+    boundary: str = "inside",
+    reversibility: str = "reversible with work",
 ) -> str:
     link = f"DR-{number:03d}-a-choice.md"
     return (
-        f"| [DR-{number:03d}]({link}) | {title} | {kind} | {status} | {decider} "
-        f"| {requirements} | {threats} |\n"
+        f"| [DR-{number:03d}]({link}) | {title} | {kind} | {boundary} | {reversibility} "
+        f"| {status} | {decider} | {requirements} | {threats} |\n"
     )
 
 
 INDEX_HEAD = (
     "# Decision records\n\n"
-    "| Record | Decision | Type | Status | Decided by | Requirements | Threats |\n"
-    "|---|---|---|---|---|---|---|\n"
+    "| Record | Decision | Type | Boundary | Reversibility | Status | Decided by | Requirements"
+    " | Threats |\n"
+    "|---|---|---|---|---|---|---|---|---|\n"
 )
 
 
@@ -1368,15 +1412,48 @@ def test_a_placeholder_or_a_pipe_in_inline_code_is_neither_html_nor_a_table(
 @pytest.mark.parametrize(
     ("old", "new", "expected"),
     [
-        ("- **Threats:** T1\n", "", "has the fields ['Type', 'Status', 'Decided by', "),
         (
-            "- **Type:** scope\n- **Status:** accepted\n",
-            "- **Status:** accepted\n- **Type:** scope\n",
-            "has the fields ['Status', 'Type', ",
+            "- **Threats:** T1\n",
+            "",
+            "has the fields ['Type', 'Boundary', 'Reversibility', 'Status', 'Decided by', ",
+        ),
+        (
+            "- **Type:** scope\n- **Boundary:** inside\n",
+            "- **Boundary:** inside\n- **Type:** scope\n",
+            "has the fields ['Boundary', 'Type', ",
         ),
         ("- **Type:** scope\n", "- **Type:** scope\n- **Type:** scope\n", "has the fields "),
         ("- **Closed by:** none\n", "- **Closed by:** none\nAn aside.\n", "not a field"),
         ("- **Type:** scope\n", "- **Type:** mood\n", "has a type outside the list: 'mood'"),
+        ("- **Boundary:** inside\n", "", "has the fields ['Type', 'Reversibility', "),
+        ("- **Reversibility:** reversible with work\n", "", "has the fields ['Type', 'Boundary', "),
+        (
+            "- **Boundary:** inside\n- **Reversibility:** reversible with work\n"
+            "- **Status:** accepted\n",
+            "- **Status:** accepted\n- **Boundary:** inside\n"
+            "- **Reversibility:** reversible with work\n",
+            "has the fields ['Type', 'Status', 'Boundary', ",
+        ),
+        (
+            "- **Boundary:** inside\n",
+            "- **Boundary:** inside\n- **Boundary:** inside\n",
+            "has the fields ['Type', 'Boundary', 'Boundary', ",
+        ),
+        (
+            "- **Boundary:** inside\n",
+            "- **Boundary:** sideways\n",
+            "has a boundary outside the list: 'sideways'",
+        ),
+        (
+            "- **Boundary:** inside\n",
+            "- **Boundary:** inside, outgoing\n",
+            "has a boundary outside the list: 'inside, outgoing'",
+        ),
+        (
+            "- **Reversibility:** reversible with work\n",
+            "- **Reversibility:** one-way\n",
+            "has a reversibility outside the list: 'one-way'",
+        ),
         ("- **Status:** accepted\n", "- **Status:** proposed\n", "has a status outside the list"),
         ("the change `demo`", "someone", "is decided by 'someone', which is not a form"),
         ("the change `demo`", "the owner", "which is not a form from the list"),
@@ -1506,6 +1583,57 @@ def test_a_record_out_of_form_is_reported(
     assert [problem for problem in problems if expected in problem], problems
 
 
+SENTENCE = "How hard it is to reverse: reversible with work. The thing would change back.\n"
+
+
+@pytest.mark.parametrize(
+    ("number", "last", "expected"),
+    [
+        (268, SENTENCE, []),
+        (300, SENTENCE, []),
+        (267, "The thing would change back.\n", []),
+        (
+            268,
+            "The thing would change back.\n",
+            [
+                "DR-268-a-choice.md does not open its section 'What reversing it would change' with"
+                " 'How hard it is to reverse: reversible with work.'"
+            ],
+        ),
+        (
+            269,
+            SENTENCE.replace("reversible with work", "reversible"),
+            [
+                "DR-269-a-choice.md does not open its section 'What reversing it would change' with"
+                " 'How hard it is to reverse: reversible with work.'"
+            ],
+        ),
+        (
+            270,
+            SENTENCE.replace("work.", "work, mostly."),
+            [
+                "DR-270-a-choice.md does not open its section 'What reversing it would change' with"
+                " 'How hard it is to reverse: reversible with work.'"
+            ],
+        ),
+        (
+            271,
+            "Mostly. " + SENTENCE,
+            [
+                "DR-271-a-choice.md does not open its section 'What reversing it would change' with"
+                " 'How hard it is to reverse: reversible with work.'"
+            ],
+        ),
+    ],
+)
+def test_a_record_from_dr_268_on_states_its_reversibility_where_its_field_does(
+    tmp_path: Path, number: int, last: str, expected: list[str]
+) -> None:
+    path = tmp_path / f"DR-{number:03d}-a-choice.md"
+    path.write_text(record(number).replace("The thing would change back.\n", last))
+    assert read(path)[1] == expected
+
+
 @pytest.mark.parametrize(
     "name",
     [
@@ -1606,7 +1734,7 @@ def test_a_gap_and_a_repeated_number_are_reported(tmp_path: Path) -> None:
         ),
         (
             INDEX_HEAD + row(1).replace(" | T1 |", " |") + row(2),
-            "the index row for DR-001 does not have 6 cells",
+            "the index row for DR-001 does not have 8 cells",
         ),
         (
             INDEX_HEAD + row(1) + row(2) + "\n<!-- a note -->\n",
@@ -1615,12 +1743,12 @@ def test_a_gap_and_a_repeated_number_are_reported(tmp_path: Path) -> None:
         (
             INDEX_HEAD + row(1) + row(2) + row(2, title="Agents merge").replace("| [", "|[", 1),
             "the index has a line that is not a row: '|[DR-002](DR-002-a-choice.md) | Agents merge"
-            " | scope | accepted | the change `demo` | R1 | T1 |'",
+            " | scope | inside | reversible with work | accepted | the change `demo` | R1 | T1 |'",
         ),
         (
             INDEX_HEAD + row(1) + " " + row(2),
             "the index has a line that is not a row: ' | [DR-002](DR-002-a-choice.md) | A choice"
-            " | scope | accepted | the change `demo` | R1 | T1 |'",
+            " | scope | inside | reversible with work | accepted | the change `demo` | R1 | T1 |'",
         ),
         (
             INDEX_HEAD + row(1) + row(2) + "\nA note | with a pipe.\n",
@@ -1634,11 +1762,31 @@ def test_a_gap_and_a_repeated_number_are_reported(tmp_path: Path) -> None:
         (
             INDEX_HEAD + row(1) + "\n" + row(2),
             "the index has a line that is not a row: '| [DR-002](DR-002-a-choice.md) | A choice"
-            " | scope | accepted | the change `demo` | R1 | T1 |'",
+            " | scope | inside | reversible with work | accepted | the change `demo` | R1 | T1 |'",
         ),
         (
             INDEX_HEAD.replace("| Threats |", "| Threat |") + row(1) + row(2),
             "the index's table does not open with its header",
+        ),
+        (
+            INDEX_HEAD.replace(" Boundary | Reversibility |", "").replace("|---|---|\n", "\n", 1)
+            + row(1).replace(" inside | reversible with work |", "")
+            + row(2),
+            "the index's table does not open with its header",
+        ),
+        (
+            INDEX_HEAD.replace("Boundary | Reversibility", "Reversibility | Boundary")
+            + row(1)
+            + row(2),
+            "the index's table does not open with its header",
+        ),
+        (
+            INDEX_HEAD + row(1, boundary="outgoing") + row(2),
+            "the index row for DR-001 differs from the record in ['Boundary']",
+        ),
+        (
+            INDEX_HEAD + row(1, reversibility="one-way door") + row(2),
+            "the index row for DR-001 differs from the record in ['Reversibility']",
         ),
         (
             "# Decision records\n\n" + row(1) + row(2),
@@ -2064,12 +2212,18 @@ def test_a_link_in_the_records_folder_is_reported_by_its_mode_too(tmp_path: Path
 
 
 FIELDED = {"boundary": "inside", "reversibility": "reversible with work"}
+BARE: dict[str, str | None] = {"boundary": None, "reversibility": None}
 FIELD_LINES = "- **Boundary:** inside\n- **Reversibility:** reversible with work\n"
 
 
 def test_the_two_fields_added_to_every_held_record_are_not_reported(tmp_path: Path) -> None:
     folder = repository_with_history(
-        tmp_path, [record(1), record(2, status="closed", closed_by="DR-003"), record(3)]
+        tmp_path,
+        [
+            record(1, **BARE),
+            record(2, status="closed", closed_by="DR-003", **BARE),
+            record(3, **BARE),
+        ],
     )
     texts = [
         record(1, status="closed", closed_by="DR-004", **FIELDED),
@@ -2091,7 +2245,9 @@ def test_the_two_fields_added_to_every_held_record_are_not_reported(tmp_path: Pa
 def test_the_two_fields_added_with_a_record_cleared_once_closed_are_not_reported(
     tmp_path: Path,
 ) -> None:
-    folder = repository_with_history(tmp_path, [record(1, status="closed", closed_by="DR-002")])
+    folder = repository_with_history(
+        tmp_path, [record(1, status="closed", closed_by="DR-002", **BARE)]
+    )
     text = record(1, status="closed", closed_by="DR-002", **FIELDED)
     (folder / "DR-001-a-choice.md").write_text(text.replace("It covers the thing.", REMOVED))
     commit(tmp_path)
@@ -2123,7 +2279,7 @@ def test_the_two_fields_added_with_a_record_cleared_once_closed_are_not_reported
 def test_the_two_fields_added_with_anything_else_are_reported(
     tmp_path: Path, old: str, new: str
 ) -> None:
-    folder = repository_with_history(tmp_path, [record(1), record(2)])
+    folder = repository_with_history(tmp_path, [record(1, **BARE), record(2, **BARE)])
     text = record(1, **FIELDED)
     assert old in text
     (folder / "DR-001-a-choice.md").write_text(text.replace(old, new, 1))
@@ -2134,7 +2290,7 @@ def test_the_two_fields_added_with_anything_else_are_reported(
 
 
 def test_a_field_line_that_the_held_record_already_gives_is_reported(tmp_path: Path) -> None:
-    folder = repository_with_history(tmp_path, [record(1, **FIELDED), record(2)])
+    folder = repository_with_history(tmp_path, [record(1, **FIELDED), record(2, **BARE)])
     (folder / "DR-001-a-choice.md").write_text(
         record(1, **FIELDED).replace(FIELD_LINES, FIELD_LINES + FIELD_LINES)
     )
@@ -2147,7 +2303,9 @@ def test_a_field_line_that_the_held_record_already_gives_is_reported(tmp_path: P
 def test_the_two_fields_added_to_some_held_records_and_not_to_others_are_reported(
     tmp_path: Path,
 ) -> None:
-    folder = repository_with_history(tmp_path, [record(1), record(2), record(3, **FIELDED)])
+    folder = repository_with_history(
+        tmp_path, [record(1, **BARE), record(2, **BARE), record(3, **FIELDED)]
+    )
     (folder / "DR-001-a-choice.md").write_text(record(1, **FIELDED))
     (folder / "DR-004-a-choice.md").write_text(record(4))
     commit(tmp_path)
