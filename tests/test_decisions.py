@@ -2212,7 +2212,13 @@ def test_a_link_in_the_records_folder_is_reported_by_its_mode_too(tmp_path: Path
 
 
 FIELDED = {"boundary": "inside", "reversibility": "reversible with work"}
-BARE: dict[str, str | None] = {"boundary": None, "reversibility": None}
+
+
+def bare(number: int, status: str = "accepted", closed_by: str = "none") -> str:
+    """A record as the default branch held it before Boundary and Reversibility."""
+    return record(number, status=status, closed_by=closed_by, boundary=None, reversibility=None)
+
+
 FIELD_LINES = "- **Boundary:** inside\n- **Reversibility:** reversible with work\n"
 
 
@@ -2220,9 +2226,9 @@ def test_the_two_fields_added_to_every_held_record_are_not_reported(tmp_path: Pa
     folder = repository_with_history(
         tmp_path,
         [
-            record(1, **BARE),
-            record(2, status="closed", closed_by="DR-003", **BARE),
-            record(3, **BARE),
+            bare(1),
+            bare(2, status="closed", closed_by="DR-003"),
+            bare(3),
         ],
     )
     texts = [
@@ -2245,9 +2251,7 @@ def test_the_two_fields_added_to_every_held_record_are_not_reported(tmp_path: Pa
 def test_the_two_fields_added_with_a_record_cleared_once_closed_are_not_reported(
     tmp_path: Path,
 ) -> None:
-    folder = repository_with_history(
-        tmp_path, [record(1, status="closed", closed_by="DR-002", **BARE)]
-    )
+    folder = repository_with_history(tmp_path, [bare(1, status="closed", closed_by="DR-002")])
     text = record(1, status="closed", closed_by="DR-002", **FIELDED)
     (folder / "DR-001-a-choice.md").write_text(text.replace("It covers the thing.", REMOVED))
     commit(tmp_path)
@@ -2279,7 +2283,7 @@ def test_the_two_fields_added_with_a_record_cleared_once_closed_are_not_reported
 def test_the_two_fields_added_with_anything_else_are_reported(
     tmp_path: Path, old: str, new: str
 ) -> None:
-    folder = repository_with_history(tmp_path, [record(1, **BARE), record(2, **BARE)])
+    folder = repository_with_history(tmp_path, [bare(1), bare(2)])
     text = record(1, **FIELDED)
     assert old in text
     (folder / "DR-001-a-choice.md").write_text(text.replace(old, new, 1))
@@ -2290,7 +2294,7 @@ def test_the_two_fields_added_with_anything_else_are_reported(
 
 
 def test_a_field_line_that_the_held_record_already_gives_is_reported(tmp_path: Path) -> None:
-    folder = repository_with_history(tmp_path, [record(1, **FIELDED), record(2, **BARE)])
+    folder = repository_with_history(tmp_path, [record(1, **FIELDED), bare(2)])
     (folder / "DR-001-a-choice.md").write_text(
         record(1, **FIELDED).replace(FIELD_LINES, FIELD_LINES + FIELD_LINES)
     )
@@ -2303,9 +2307,7 @@ def test_a_field_line_that_the_held_record_already_gives_is_reported(tmp_path: P
 def test_the_two_fields_added_to_some_held_records_and_not_to_others_are_reported(
     tmp_path: Path,
 ) -> None:
-    folder = repository_with_history(
-        tmp_path, [record(1, **BARE), record(2, **BARE), record(3, **FIELDED)]
-    )
+    folder = repository_with_history(tmp_path, [bare(1), bare(2), record(3, **FIELDED)])
     (folder / "DR-001-a-choice.md").write_text(record(1, **FIELDED))
     (folder / "DR-004-a-choice.md").write_text(record(4))
     commit(tmp_path)
