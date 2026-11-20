@@ -329,9 +329,7 @@ def test_renovate_reads_the_vendored_lock() -> None:
 
 # R259: Renovate proposes no newer `.python-version`, which keeps the development Python at
 # the oldest supported release, by one rule for the manager that reads it alone, and nothing
-# else, at any depth, sets a key that turns updates on or off by name. Renovate has other
-# settings that narrow what it proposes, such as `ignorePaths`, which R134 leaves to the
-# owner's review of this file's diff.
+# else, at any depth, sets a key that turns updates on or off by name.
 PYTHON_VERSION_RULE = {"matchManagers": ["pyenv"], "enabled": False}
 SWITCHES = ("enabled", "ignoreDeps", "enabledManagers")
 
@@ -439,6 +437,97 @@ def test_the_rule_for_python_version_alone_passes() -> None:
     rule = {"description": "Why.", **PYTHON_VERSION_RULE}
     other = {"description": "Other.", "minimumReleaseAge": "1 day"}
     assert python_version_rule_problems({"packageRules": [other, rule]}) == []
+
+
+# R262: nothing narrows the files that Renovate reads or the versions that it proposes, but the
+# list of paths that it skips, set at its top level alone, with no entry for `vendor/`, so
+# that the vendored lock is read. A change to that list changes this one in the same diff.
+# Renovate's other settings, such as its schedule, are left to the owner's review of this
+# file's diff, which R134 keeps visible.
+NARROWING = ("includePaths", "allowedVersions")
+IGNORE_PATHS = [
+    "**/node_modules/**",
+    "**/bower_components/**",
+    "**/examples/**",
+    "**/__tests__/**",
+    "**/test/**",
+    "**/tests/**",
+    "**/__fixtures__/**",
+]
+
+
+def narrowing_problems(config: dict[str, Any]) -> list[str]:
+    """Each setting that narrows the files that Renovate reads or the versions that it
+    proposes, by its path: an `includePaths` or an `allowedVersions` at any depth, an
+    `ignorePaths` below the top level, and a top-level `ignorePaths` that is missing or is not
+    the list that this test holds."""
+    problems = [
+        f"{where}.{key} narrows what Renovate proposes"
+        for where, key, _ in keys_at_any_depth(config)
+        if key in NARROWING or (key == "ignorePaths" and where != "renovate.json")
+    ]
+    if config.get("ignorePaths") != IGNORE_PATHS:
+        problems.append("renovate.json.ignorePaths is not the list that this test holds")
+    return problems
+
+
+def test_renovate_narrows_nothing_that_it_proposes() -> None:
+    assert narrowing_problems(renovate()) == []
+
+
+@pytest.mark.parametrize(
+    ("added", "path"),
+    [
+        ({"includePaths": ["src/**"]}, "renovate.json.includePaths"),
+        ({"allowedVersions": "<2"}, "renovate.json.allowedVersions"),
+        (
+            {"packageRules": [{"matchPackageNames": ["ruff"], "allowedVersions": "<1"}]},
+            "renovate.json.packageRules[0].allowedVersions",
+        ),
+        (
+            {"packageRules": [{"matchManagers": ["pep621"], "includePaths": ["src/**"]}]},
+            "renovate.json.packageRules[0].includePaths",
+        ),
+        ({"pep621": {"includePaths": ["pyproject.toml"]}}, "renovate.json.pep621.includePaths"),
+        (
+            {"github-actions": {"ignorePaths": [".github/**"]}},
+            "renovate.json.github-actions.ignorePaths",
+        ),
+        (
+            {"packageRules": [{"matchManagers": ["npm"], "ignorePaths": ["**/tests/**"]}]},
+            "renovate.json.packageRules[0].ignorePaths",
+        ),
+    ],
+)
+def test_a_setting_that_narrows_what_renovate_proposes_is_reported(
+    added: dict[str, Any], path: str
+) -> None:
+    config = {"ignorePaths": list(IGNORE_PATHS), **added}
+    assert narrowing_problems(config) == [f"{path} narrows what Renovate proposes"]
+
+
+@pytest.mark.parametrize(
+    "ignore_paths",
+    [
+        [*IGNORE_PATHS, ".github/**"],
+        [*IGNORE_PATHS, "**/vendor/**"],
+        IGNORE_PATHS[1:],
+        [],
+        None,
+    ],
+)
+def test_a_list_of_paths_to_skip_other_than_the_one_held_is_reported(
+    ignore_paths: list[str] | None,
+) -> None:
+    config = {} if ignore_paths is None else {"ignorePaths": ignore_paths}
+    assert narrowing_problems(config) == [
+        "renovate.json.ignorePaths is not the list that this test holds"
+    ]
+
+
+def test_the_list_of_paths_to_skip_alone_passes() -> None:
+    config = {"ignorePaths": list(IGNORE_PATHS), "packageRules": [PYTHON_VERSION_RULE]}
+    assert narrowing_problems(config) == []
 
 
 # R260: Renovate merges nothing on its own: no key whose name begins with `automerge` is set

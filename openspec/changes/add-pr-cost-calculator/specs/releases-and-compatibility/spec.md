@@ -353,6 +353,20 @@ Renovate SHALL propose no update of `.python-version`, which keeps the Python th
 - **WHEN** the only setting of `enabled` in Renovate's configuration is a package rule that matches the manager `pyenv` alone and sets it to `false`
 - **THEN** the test passes it
 
+### Requirement: Renovate skips only the paths that its test lists, with no `includePaths` or `allowedVersions`
+
+Renovate's configuration SHALL set `ignorePaths` only at its top level, to the list that its test holds, and SHALL set `includePaths` and `allowedVersions` nowhere, at any depth, since each narrows the files that Renovate reads or the versions that it proposes, and an update that one keeps back never shows. Tests SHALL fail otherwise.
+
+#### Scenario: A setting that narrows what Renovate proposes fails CI
+
+- **WHEN** Renovate's configuration sets `includePaths` or `allowedVersions` at any depth, as a package rule that caps a tool's versions does, or sets `ignorePaths` anywhere but its top level, as in a manager's own settings, or holds at its top level no `ignorePaths`, or one other than the list that its test holds, such as one that adds `.github/**`
+- **THEN** a test fails and names the setting by its path
+
+#### Scenario: The list of paths that Renovate skips passes
+
+- **WHEN** Renovate's configuration sets `ignorePaths` only at its top level, to the list that its test holds, and sets `includePaths` and `allowedVersions` nowhere
+- **THEN** the test passes it
+
 ### Requirement: Renovate never merges on its own
 
 Renovate's configuration SHALL set no key whose name begins with `automerge` to anything but `false`, at its top level or in any object within it, and SHALL extend, at any depth, no preset but those that its test lists, a preset written as one string included, since a preset that another repository serves can turn merging on later with no diff here, so that every update that it proposes waits for the owner's merge. Tests SHALL fail otherwise.

@@ -273,6 +273,7 @@ The capability names the spec that holds the requirement. Each capability is one
 | R259 | non-functional | `releases-and-compatibility` | Renovate keeps the development Python at the oldest supported release |
 | R260 | non-functional | `releases-and-compatibility` | Renovate never merges on its own |
 | R261 | non-functional | `releases-and-compatibility` | An update of OpenSpec or Superpowers says how its files are refreshed |
+| R262 | non-functional | `releases-and-compatibility` | Renovate skips only the paths that its test lists, with no `includePaths` or `allowedVersions` |
 
 IDs are stable: a requirement keeps its ID while it exists, and a new one takes the next free number, so the rows follow the order in which requirements were added rather than the order of the specs. A requirement that a later change removes leaves the table, and its ID is listed below with the change that removed it, never to be used again.
 

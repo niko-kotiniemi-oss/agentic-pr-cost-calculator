@@ -12,7 +12,7 @@ address or an import (R255). Git ignores a personal instruction file in every fo
 the folders where worktrees are made (R257), and the README and `CONTRIBUTING.md` say where
 a session starts (R258). Design decision 21 gives the reasons; `tests/test_repository.py`
 holds Claude Code's settings here and the marketplace that they name (R256), and Renovate's
-rules (R259 to R261).
+rules (R259 to R262).
 """
 
 from __future__ import annotations
