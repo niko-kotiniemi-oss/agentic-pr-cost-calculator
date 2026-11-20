@@ -2,7 +2,7 @@
 
 What could go wrong with the tool, for the people who use it and for this repository, and what answers each threat. Every change revisits this file (see `CLAUDE.md`).
 
-It was written for the first change, `add-pr-cost-calculator`, before any code, so the answers are requirements and tasks rather than code. It holds 237 threats across 9 trust boundaries. T38 to T69 were found by the design-stage review, T70 to T78 by the design-stage review of the decision records in `docs/decisions/`, T79 to T81 by the implementation-stage review of those records and their checks, T82 to T100 by the design-stage review of the assumptions, the glossary and the golden set, T101 by the implementation-stage review of the assumptions, T102 and T103 by the implementation-stage review of the glossary, T104 to T116 at the design of the revision of consent, the store and the ledger's format, T117 and T118 by the design-stage review of that revision, T119 to T122 by the review of that revision after its approval, T123 with the owner's answer to a question that the check of that review's fixes raised, T124 to T126 by the design-stage review of the test of the specs' form, T127 by the implementation-stage review of that test, T128 to T135 at the design of the plugin that brings capture to a project's cloud threads, T136 to T142 by the design-stage review of that plugin, T143 by its implementation-stage review, T144 by its security review, T145 to T147 at the design of the README's short start, T148 to T156 by the design-stage review of that short start, T157 and T158 by its implementation-stage review, T159 to T162 at the design of the roadmap, T163 to T165 by the design-stage review of the roadmap, T166 to T168 at the design of the backlog, T169 by the design-stage review of the backlog, T170 at the design of the guide, T171 to T174 by the design-stage review of the guide, T175 and T176 by the design-stage review of one opt-in for every agent, T177 to T182 by the second design-stage review of the guide, T183 by the final review of its build, T184 by its implementation-stage review, T185 to T189 at the design of the walking skeleton and T190 to T194 by its design-stage review, and T195 to T197 at the design of the specs' citation sweep, T198 to T200 by its design-stage review and T201 to T205 by its implementation-stage review, T206 to T215 by the design-stage review of the risk register and T216 to T222 by its implementation-stage review, and T223 to T236 by the design-stage reviews of the context files and T237 by their implementation-stage reviews; they follow T37, each under a heading for its boundary, so that the numbers stay in order, and a threat that a change removes keeps its ID out of use (see Retired IDs). Where an answer can be a scenario in a spec, it is one, so that an acceptance test holds it. `tests/test_threat_model.py` checks that every citation below names a scenario, task, decision, decision record or file that exists.
+It was written for the first change, `add-pr-cost-calculator`, before any code, so the answers are requirements and tasks rather than code. It holds 245 threats across 9 trust boundaries. T38 to T69 were found by the design-stage review, T70 to T78 by the design-stage review of the decision records in `docs/decisions/`, T79 to T81 by the implementation-stage review of those records and their checks, T82 to T100 by the design-stage review of the assumptions, the glossary and the golden set, T101 by the implementation-stage review of the assumptions, T102 and T103 by the implementation-stage review of the glossary, T104 to T116 at the design of the revision of consent, the store and the ledger's format, T117 and T118 by the design-stage review of that revision, T119 to T122 by the review of that revision after its approval, T123 with the owner's answer to a question that the check of that review's fixes raised, T124 to T126 by the design-stage review of the test of the specs' form, T127 by the implementation-stage review of that test, T128 to T135 at the design of the plugin that brings capture to a project's cloud threads, T136 to T142 by the design-stage review of that plugin, T143 by its implementation-stage review, T144 by its security review, T145 to T147 at the design of the README's short start, T148 to T156 by the design-stage review of that short start, T157 and T158 by its implementation-stage review, T159 to T162 at the design of the roadmap, T163 to T165 by the design-stage review of the roadmap, T166 to T168 at the design of the backlog, T169 by the design-stage review of the backlog, T170 at the design of the guide, T171 to T174 by the design-stage review of the guide, T175 and T176 by the design-stage review of one opt-in for every agent, T177 to T182 by the second design-stage review of the guide, T183 by the final review of its build, T184 by its implementation-stage review, T185 to T189 at the design of the walking skeleton and T190 to T194 by its design-stage review, and T195 to T197 at the design of the specs' citation sweep, T198 to T200 by its design-stage review and T201 to T205 by its implementation-stage review, T206 to T215 by the design-stage review of the risk register and T216 to T222 by its implementation-stage review, and T223 to T236 by the design-stage reviews of the context files and T237 by their implementation-stage reviews; they follow T37, each under a heading for its boundary, so that the numbers stay in order, and a threat that a change removes keeps its ID out of use (see Retired IDs). Where an answer can be a scenario in a spec, it is one, so that an acceptance test holds it. `tests/test_threat_model.py` checks that every citation below names a scenario, task, decision, decision record or file that exists.
 
 ## How it was built
 
@@ -3740,15 +3740,132 @@ The trust boundaries:
 - **Held by:** DR-258; `project-standards`: "A file that names servers fails CI"; `project-standards`: "A setting that the test does not list fails CI"
 - **Assumptions:** A5
 
+## Boundary 7, continued: found at the design of the check of Renovate's proposals
+
+### T238. Renovate stops proposing updates and no one notices
+
+- **Kind:** reliability, denial of service
+- **Impact:** 2 (medium)
+- **Likelihood:** 1 (unlikely)
+- **Risk:** 2
+- **Raw impact:** 2 (medium)
+- **Raw likelihood:** 3 (likely)
+- **Raw risk:** 6
+- **What could happen:** Renovate, a service that the owner's account installs, stops proposing updates, as it did here from 2026-11-09 until 2026-11-20, after a change to the account, its access or its own service. The dependency dashboard then only stops changing, which looks the same as a week with nothing to update, so the development tools, OpenSpec, the actions and the vendored Superpowers stay at old versions, a fix of a vulnerability among them, and no one learns of it until someone happens to look.
+- **Answer:** a workflow checks every day that each minor or patch release of a pinned tool is proposed by Renovate within 17 days of its publication, and that Renovate itself has done something in the last 5 days, counting only its own acts, and its run fails, naming each finding, which GitHub reports to the owner (R263, DR-267).
+- **Residual:** a stop that lasts less than the grace or the five days, and an update of an action or of Superpowers, which only the five quiet days cover. A warning reaches the owner only by their notification settings for failed runs, which no file here holds.
+- **Held by:** DR-267; `releases-and-compatibility`: "An update that Renovate has not proposed in time fails the check"; `releases-and-compatibility`: "Five quiet days fail the check"
+
+### T239. A wrong or hostile response makes the check pass or warn falsely
+
+- **Kind:** spoofing, tampering
+- **Impact:** 2 (medium)
+- **Likelihood:** 1 (unlikely)
+- **Risk:** 2
+- **Raw impact:** 2 (medium)
+- **Raw likelihood:** 2 (possible)
+- **Raw risk:** 4
+- **What could happen:** the check reads what the Python Package Index, the npm registry and GitHub return. A response that is cut off, malformed, empty or not what it claims, a pull request whose title only looks like one of Renovate's, a closed pull request for a later major version, a pull request that GitHub's list of issues returns as if it were the dashboard, or a version that the check cannot compare could let it pass while an update is overdue, with T238's impact, or warn while none is.
+- **Answer:** the check fails, rather than passing, when a request fails or returns what it cannot read, when a pin is not one exact version of numbers, and when it finds no pinned tool, no pull request of Renovate's or no open dashboard that Renovate opened; it counts only pull requests that `renovate[bot]` opened, and only those for the pin's own first number, reads the dashboard only from an issue that is not a pull request, and compares versions by their numbers alone (R263, design decision 22).
+- **Residual:** a registry that serves a wrong date or a withdrawn release as current, which the check takes as it comes, and a title of Renovate's that the owner's account, which agent sessions share, edits to name a later version, which A15's review of the pull request does not see.
+- **Held by:** DR-267; `releases-and-compatibility`: "A check that cannot read fails"; `releases-and-compatibility`: "An update inside its wait, a major update or one already proposed passes"; `releases-and-compatibility`: "An update that Renovate has not proposed in time fails the check"
+
+### T240. The scheduled check's token is used to write
+
+- **Kind:** elevation of privilege
+- **Impact:** 3 (high)
+- **Likelihood:** 1 (unlikely)
+- **Risk:** 3
+- **Raw impact:** 3 (high)
+- **Raw likelihood:** 2 (possible)
+- **Raw risk:** 6
+- **What could happen:** a scheduled workflow runs on the default branch with the repository's token, with no pull request to show what it does at that moment. A permission added to it, such as `issues: write` to open an issue for each warning, a permissions block left out, so that the job takes the repository's default token, another event that runs it, or a secret that it reads, would let what the check reads from registries steer a write in this repository.
+- **Answer:** a test fails unless the workflow runs on its schedule and by hand alone, grants the workflow `contents: read` and its one job `contents: read`, `pull-requests: read` and `issues: read`, and nothing else, and checks out the code without keeping its credentials (R263, DR-067); the workflow's own token, given through the step's environment, is its one credential, and the check of workflows fails on one that reads a secret; the table of permissions in `docs/how-it-works.md` names each grant, and a test compares them (R101).
+- **Residual:** a change to the workflow and its test together, which the owner's review of the diff catches (A15), and a run started by hand on a branch of this repository that has not merged, which runs that branch's workflow as it stands there.
+- **Held by:** DR-067; DR-267; `releases-and-compatibility`: "The check's wait and its workflow agree with what is designed"; `project-standards`: "An undocumented permission or action fails CI"
+- **Assumptions:** A15
+
+### T241. The check falls silent while Renovate is stopped
+
+- **Kind:** reliability
+- **Impact:** 2 (medium)
+- **Likelihood:** 2 (possible)
+- **Risk:** 4
+- **Raw impact:** 2 (medium)
+- **Raw likelihood:** 3 (likely)
+- **Raw risk:** 6
+- **What could happen:** the check reports nothing while Renovate has stopped: its wait drifts from the one that Renovate's configuration sets, so that it waits longer than Renovate does; someone's merge, comment or ticked box on a pull request of Renovate's or on its dashboard counts as Renovate's own activity; GitHub turns off the schedule after 60 days without activity in the repository; or the owner's notification settings drop failed runs.
+- **Answer:** a test fails when a package rule of `renovate.json` sets another wait than the check's for minor or patch updates, and on a workflow with no daily schedule or no way to start it by hand; only pull requests that `renovate[bot]` opened and commits that it authored count as its activity, so that no one else's act hides a stop (R263); and a run started by hand as at a day in the future fails on purpose, and the owner confirms that the notice of a failed scheduled run reaches them (`add-pr-cost-calculator` task 1.43, DR-267).
+- **Residual:** the owner's notification settings, and a schedule that GitHub turns off, which no check here can see.
+- **Held by:** DR-267; `releases-and-compatibility`: "The check's wait and its workflow agree with what is designed"; `releases-and-compatibility`: "Five quiet days fail the check"; `add-pr-cost-calculator` task 1.43
+
+## Boundary 7, continued: found at the design-stage review of the check of Renovate's proposals
+
+### T242. Warnings that Renovate is working through are learned to be ignored
+
+- **Kind:** reliability
+- **Impact:** 2 (medium)
+- **Likelihood:** 2 (possible)
+- **Risk:** 4
+- **Raw impact:** 2 (medium)
+- **Raw likelihood:** 3 (likely)
+- **Raw risk:** 6
+- **What could happen:** Renovate limits how many pull requests it opens an hour and how many stay open, so after a burst of releases an update can wait past the grace while Renovate runs, as an update of pytest did on 2026-11-20, which its dashboard listed as rate-limited; a week with nothing to propose finds Renovate quiet; and a short outage of a registry or of GitHub fails a run. Each such run fails like a stop, and an owner who learns that the notice is usually harmless stops reading it, so that a real stop goes unseen.
+- **Answer:** the run's summary names, for each finding, the signal that it comes from, overdue, quiet or not read, so that the owner can tell one from another without opening the log, and a request that fails is tried once more after a pause (R263, design decision 22).
+- **Residual:** runs that fail while Renovate works, which the owner accepted in choosing both signals (DR-267).
+- **Held by:** DR-267; design decision 22
+
+### T243. Text from a response or from a run started by hand reaches the runner's commands or the summary
+
+- **Kind:** tampering, elevation of privilege
+- **Impact:** 1 (low)
+- **Likelihood:** 1 (unlikely)
+- **Risk:** 1
+- **Raw impact:** 1 (low)
+- **Raw likelihood:** 2 (possible)
+- **Raw risk:** 2
+- **What could happen:** the day that a run started by hand is given, written into the workflow's command, would run as shell in the job; and a title, a version or a message from a response, printed as it came, could hold a line that begins with `::`, which the runner reads as a workflow command, such as one that stops it reading commands or masks a finding, or Markdown, such as a link, in the summary that the owner reads.
+- **Answer:** the day reaches the script only through the step's environment and is refused unless it is a date, a test fails on a workflow that writes an expression into a command, and the script prints only text that it made or checked: names and pins from the repository's own files, versions of numbers and dots, times, URLs that it built and the names of errors (R263).
+- **Residual:** none that the check's read-only token makes worse than a misleading summary (T240).
+- **Held by:** DR-267; `releases-and-compatibility`: "Text from a response never reaches the run's commands or summary"
+
+### T244. The check's token leaves GitHub
+
+- **Kind:** information disclosure
+- **Impact:** 1 (low)
+- **Likelihood:** 1 (unlikely)
+- **Risk:** 1
+- **Raw impact:** 1 (low)
+- **Raw likelihood:** 2 (possible)
+- **Raw risk:** 2
+- **What could happen:** Python's `urllib` carries a request's headers to where a redirect points, and follows a redirect to plain HTTP, so a token sent with every request, or a redirect from GitHub, could carry the job's token to a registry, another host or the network unencrypted. The token reads only what this public repository shows and ends with the job, but it is still the repository's credential.
+- **Answer:** the token is sent only to the host of `GITHUB_API_URL`, as a header that a redirect does not carry, and the check refuses every redirect away from HTTPS or to another host, and fails (R263, design decision 22).
+- **Held by:** DR-267; `releases-and-compatibility`: "A check that cannot read fails"; design decision 22
+
+### T245. The check and Renovate disagree on what a major update is
+
+- **Kind:** reliability
+- **Impact:** 2 (medium)
+- **Likelihood:** 1 (unlikely)
+- **Risk:** 2
+- **Raw impact:** 2 (medium)
+- **Raw likelihood:** 2 (possible)
+- **Raw risk:** 4
+- **What could happen:** for a version that begins with 0, as ruff's does, a rule that reads a change of the second number as major would leave out every update that Renovate proposes as minor, and a rule that reads it as minor, where Renovate held it for approval, would warn every day.
+- **Answer:** the check reads the first number as the major line, as Renovate's branch for ruff, `renovate/ruff-0.x`, names it, so that the two agree, and a disagreement shows as a warning rather than a silence (design decision 22).
+- **Residual:** a change in how Renovate reads versions that begin with 0 (A30).
+- **Held by:** DR-267; design decision 22; `releases-and-compatibility`: "An update that Renovate has not proposed in time fails the check"
+- **Assumptions:** A30
+
 ## Risk matrix
 
 Generated from the ratings above. Each cell lists the threats whose impact and likelihood it names.
 
 | Impact \ Likelihood | 1 unlikely | 2 possible | 3 likely |
 |---|---|---|---|
-| 3 high | T1, T12, T14, T15, T23, T24, T28, T29, T35, T43, T46, T58, T59, T63, T64, T66, T67, T68, T73, T77, T81, T82, T83, T92, T93, T94, T95, T103, T107, T108, T119, T125, T133, T138, T140, T141, T142, T144, T147, T148, T150, T151, T160, T163, T164, T165, T167, T169, T174, T175, T177, T178, T180, T183, T184, T186, T187, T188, T190, T192, T210, T211, T212, T213, T214, T217, T219, T225, T226, T227, T229, T230, T231, T233, T234, T237 | T2, T32, T33, T34, T61, T62, T65, T132, T137, T232 | |
-| 2 medium | T4, T6, T11, T13, T18, T25, T26, T38, T41, T42, T53, T55, T56, T57, T60, T69, T70, T76, T78, T79, T80, T84, T85, T86, T87, T88, T89, T90, T91, T97, T98, T99, T100, T101, T102, T104, T105, T109, T112, T115, T124, T126, T127, T135, T139, T146, T149, T152, T153, T155, T156, T157, T162, T172, T173, T179, T181, T182, T185, T189, T191, T193, T194, T195, T196, T197, T198, T199, T202, T203, T204, T206, T207, T215, T216, T220, T221, T223, T228, T235, T236 | T3, T9, T10, T17, T19, T20, T21, T22, T27, T30, T39, T40, T44, T45, T47, T48, T49, T50, T51, T52, T54, T71, T72, T74, T75, T96, T111, T116, T120, T121, T122, T123, T129, T130, T131, T134, T136, T143, T145, T154, T158, T159, T161, T166, T168, T170, T171, T176, T200, T201, T208, T209, T222, T224 | T7, T8, T16, T128 |
-| 1 low | T113, T218 | T31, T36, T37, T110, T114, T118 | T5, T106, T117, T205 |
+| 3 high | T1, T12, T14, T15, T23, T24, T28, T29, T35, T43, T46, T58, T59, T63, T64, T66, T67, T68, T73, T77, T81, T82, T83, T92, T93, T94, T95, T103, T107, T108, T119, T125, T133, T138, T140, T141, T142, T144, T147, T148, T150, T151, T160, T163, T164, T165, T167, T169, T174, T175, T177, T178, T180, T183, T184, T186, T187, T188, T190, T192, T210, T211, T212, T213, T214, T217, T219, T225, T226, T227, T229, T230, T231, T233, T234, T237, T240 | T2, T32, T33, T34, T61, T62, T65, T132, T137, T232 | |
+| 2 medium | T4, T6, T11, T13, T18, T25, T26, T38, T41, T42, T53, T55, T56, T57, T60, T69, T70, T76, T78, T79, T80, T84, T85, T86, T87, T88, T89, T90, T91, T97, T98, T99, T100, T101, T102, T104, T105, T109, T112, T115, T124, T126, T127, T135, T139, T146, T149, T152, T153, T155, T156, T157, T162, T172, T173, T179, T181, T182, T185, T189, T191, T193, T194, T195, T196, T197, T198, T199, T202, T203, T204, T206, T207, T215, T216, T220, T221, T223, T228, T235, T236, T238, T239, T245 | T3, T9, T10, T17, T19, T20, T21, T22, T27, T30, T39, T40, T44, T45, T47, T48, T49, T50, T51, T52, T54, T71, T72, T74, T75, T96, T111, T116, T120, T121, T122, T123, T129, T130, T131, T134, T136, T143, T145, T154, T158, T159, T161, T166, T168, T170, T171, T176, T200, T201, T208, T209, T222, T224, T241, T242 | T7, T8, T16, T128 |
+| 1 low | T113, T218, T243, T244 | T31, T36, T37, T110, T114, T118 | T5, T106, T117, T205 |
 
 The threats with a risk of 6 or more:
 
