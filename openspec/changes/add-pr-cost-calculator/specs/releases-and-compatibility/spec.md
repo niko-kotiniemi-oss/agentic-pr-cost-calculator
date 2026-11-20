@@ -355,16 +355,16 @@ Renovate SHALL propose no update of `.python-version`, which keeps the Python th
 
 ### Requirement: Renovate skips only the paths that its test lists, with no `includePaths` or `allowedVersions`
 
-Renovate's configuration SHALL set `ignorePaths` only at its top level, to the list that its test holds, and SHALL set `includePaths` and `allowedVersions` nowhere, at any depth, since each narrows the files that Renovate reads or the versions that it proposes, and an update that one keeps back never shows. Tests SHALL fail otherwise.
+Renovate's configuration SHALL set `ignorePaths` only at its top level, to the list that its test holds, and SHALL set `includePaths` and `allowedVersions` nowhere, at any depth, nor `packageFiles` or `ignoreNodeModules`, the older names that Renovate rewrites into `includePaths` and `ignorePaths`, since each sets the files that Renovate reads or the versions that it proposes, and an update that one keeps back never shows. Tests SHALL fail otherwise.
 
-#### Scenario: A setting that narrows what Renovate proposes fails CI
+#### Scenario: An `includePaths`, an `allowedVersions` or another list of paths to skip fails CI
 
-- **WHEN** Renovate's configuration sets `includePaths` or `allowedVersions` at any depth, as a package rule that caps a tool's versions does, or sets `ignorePaths` anywhere but its top level, as in a manager's own settings, or holds at its top level no `ignorePaths`, or one other than the list that its test holds, such as one that adds `.github/**`
+- **WHEN** Renovate's configuration sets `includePaths` or `allowedVersions` at any depth, as a package rule that caps a tool's versions does, or `packageFiles` or `ignoreNodeModules`, or sets `ignorePaths` anywhere but its top level, as in a manager's own settings, or holds at its top level no `ignorePaths`, or one other than the list that its test holds, such as one that adds `.github/**`
 - **THEN** a test fails and names the setting by its path
 
 #### Scenario: The list of paths that Renovate skips passes
 
-- **WHEN** Renovate's configuration sets `ignorePaths` only at its top level, to the list that its test holds, and sets `includePaths` and `allowedVersions` nowhere
+- **WHEN** Renovate's configuration sets `ignorePaths` only at its top level, to the list that its test holds, and sets `includePaths`, `allowedVersions`, `packageFiles` and `ignoreNodeModules` nowhere
 - **THEN** the test passes it
 
 ### Requirement: Renovate never merges on its own
@@ -387,5 +387,5 @@ Renovate SHALL give each pull request that updates the pinned OpenSpec or the ve
 
 #### Scenario: An update of OpenSpec or Superpowers without its note fails CI
 
-- **WHEN** Renovate's configuration holds, for the package `@fission-ai/openspec` or `obra/superpowers`, no package rule that matches it by name, holds no other key but its description, and gives it, as the only text of `prBodyNotes`, the note "Before this merges, the owner reads this diff. Its generated or vendored files are then refreshed on this branch from a working tree outside any agent session's folder, by `scripts/verify-openspec.sh` for OpenSpec, which writes the generated skills again, or by `scripts/sync-superpowers.sh` for Superpowers, and the owner reads the refreshed diff before merging. No agent session starts on this branch before the owner has read its refreshed diff."
-- **THEN** a test fails and names each package that lacks it
+- **WHEN** Renovate's configuration holds, for the package `@fission-ai/openspec` or `obra/superpowers`, no package rule that matches it by name, holds no other key but its description, and gives it, as the only text of `prBodyNotes`, the note "Before this merges, the owner reads this diff. Its generated or vendored files are then refreshed on this branch from a working tree outside any agent session's folder, by `scripts/verify-openspec.sh` for OpenSpec, which writes the generated skills again, or by `scripts/sync-superpowers.sh` for Superpowers, and the owner reads the refreshed diff before merging. No agent session starts on this branch before the owner has read its refreshed diff.", or Renovate's configuration sets a `prBodyTemplate` at any depth
+- **THEN** a test fails and names each package that lacks it, or the template by its path

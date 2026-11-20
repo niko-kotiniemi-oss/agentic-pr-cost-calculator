@@ -275,8 +275,13 @@ def test_the_private_name_check_matches_the_name_however_it_is_written() -> None
     assert all(re.fullmatch(r"[0-9a-f]{64}", h) for h in PRIVATE_NAME_HASHES)
 
 
-def renovate() -> dict[str, Any]:
-    config: dict[str, Any] = json.loads((ROOT / "renovate.json").read_text(encoding="utf-8"))
+def renovate(text: str | None = None) -> dict[str, Any]:
+    """Renovate's configuration, or the text given read as one. A key given twice is refused,
+    as Renovate refuses a configuration that gives one, so that the tests never read a value
+    that Renovate would not."""
+    if text is None:
+        text = (ROOT / "renovate.json").read_text(encoding="utf-8")
+    config: dict[str, Any] = json.loads(text, object_pairs_hook=unique_keys)
     return config
 
 
@@ -439,12 +444,14 @@ def test_the_rule_for_python_version_alone_passes() -> None:
     assert python_version_rule_problems({"packageRules": [other, rule]}) == []
 
 
-# R262: nothing narrows the files that Renovate reads or the versions that it proposes, but the
-# list of paths that it skips, set at its top level alone, with no entry for `vendor/`, so
-# that the vendored lock is read. A change to that list changes this one in the same diff.
-# Renovate's other settings, such as its schedule, are left to the owner's review of this
-# file's diff, which R134 keeps visible.
-NARROWING = ("includePaths", "allowedVersions")
+# R262: Renovate's configuration sets no `includePaths` or `allowedVersions`, at any depth, nor
+# `packageFiles` or `ignoreNodeModules`, the older names that Renovate rewrites into
+# `includePaths` and `ignorePaths`, and sets `ignorePaths` at its top level alone, to the list
+# below, with no entry for `vendor/`, so that the vendored lock is read. A change to that list
+# changes this one in the same diff. Renovate's other settings that hold back or narrow what it
+# proposes, such as its schedule, `minimumReleaseAge` or a package rule's `versioning`, are
+# left to the owner's review of this file's diff, which R134 keeps visible (DR-265).
+PATHS_OR_VERSIONS = ("includePaths", "allowedVersions", "packageFiles", "ignoreNodeModules")
 IGNORE_PATHS = [
     "**/node_modules/**",
     "**/bower_components/**",
@@ -456,23 +463,23 @@ IGNORE_PATHS = [
 ]
 
 
-def narrowing_problems(config: dict[str, Any]) -> list[str]:
-    """Each setting that narrows the files that Renovate reads or the versions that it
-    proposes, by its path: an `includePaths` or an `allowedVersions` at any depth, an
-    `ignorePaths` below the top level, and a top-level `ignorePaths` that is missing or is not
-    the list that this test holds."""
+def paths_or_versions_problems(config: dict[str, Any]) -> list[str]:
+    """Each setting of the files that Renovate reads or the versions that it proposes that R262
+    refuses, by its path: a key of `PATHS_OR_VERSIONS` at any depth, an `ignorePaths` below the
+    top level, and a top-level `ignorePaths` that is missing or is not the list that this test
+    holds."""
     problems = [
-        f"{where}.{key} narrows what Renovate proposes"
+        f"{where}.{key} sets the files that Renovate reads or the versions that it proposes"
         for where, key, _ in keys_at_any_depth(config)
-        if key in NARROWING or (key == "ignorePaths" and where != "renovate.json")
+        if key in PATHS_OR_VERSIONS or (key == "ignorePaths" and where != "renovate.json")
     ]
     if config.get("ignorePaths") != IGNORE_PATHS:
         problems.append("renovate.json.ignorePaths is not the list that this test holds")
     return problems
 
 
-def test_renovate_narrows_nothing_that_it_proposes() -> None:
-    assert narrowing_problems(renovate()) == []
+def test_renovate_skips_only_the_listed_paths_with_no_include_paths_or_allowed_versions() -> None:
+    assert paths_or_versions_problems(renovate()) == []
 
 
 @pytest.mark.parametrize(
@@ -497,13 +504,22 @@ def test_renovate_narrows_nothing_that_it_proposes() -> None:
             {"packageRules": [{"matchManagers": ["npm"], "ignorePaths": ["**/tests/**"]}]},
             "renovate.json.packageRules[0].ignorePaths",
         ),
+        ({"packageFiles": ["package.json"]}, "renovate.json.packageFiles"),
+        (
+            {"packageRules": [{"matchManagers": ["npm"], "packageFiles": ["package.json"]}]},
+            "renovate.json.packageRules[0].packageFiles",
+        ),
+        ({"ignoreNodeModules": True}, "renovate.json.ignoreNodeModules"),
+        ({"npm": {"ignoreNodeModules": False}}, "renovate.json.npm.ignoreNodeModules"),
     ],
 )
-def test_a_setting_that_narrows_what_renovate_proposes_is_reported(
+def test_an_include_paths_an_allowed_versions_or_another_list_of_paths_is_reported(
     added: dict[str, Any], path: str
 ) -> None:
     config = {"ignorePaths": list(IGNORE_PATHS), **added}
-    assert narrowing_problems(config) == [f"{path} narrows what Renovate proposes"]
+    assert paths_or_versions_problems(config) == [
+        f"{path} sets the files that Renovate reads or the versions that it proposes"
+    ]
 
 
 @pytest.mark.parametrize(
@@ -520,14 +536,33 @@ def test_a_list_of_paths_to_skip_other_than_the_one_held_is_reported(
     ignore_paths: list[str] | None,
 ) -> None:
     config = {} if ignore_paths is None else {"ignorePaths": ignore_paths}
-    assert narrowing_problems(config) == [
+    assert paths_or_versions_problems(config) == [
         "renovate.json.ignorePaths is not the list that this test holds"
     ]
 
 
 def test_the_list_of_paths_to_skip_alone_passes() -> None:
     config = {"ignorePaths": list(IGNORE_PATHS), "packageRules": [PYTHON_VERSION_RULE]}
-    assert narrowing_problems(config) == []
+    assert paths_or_versions_problems(config) == []
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        '{"ignorePaths": ["**/*"], "ignorePaths": []}',
+        '{"packageRules": [{"matchPackageNames": ["ruff"], "enabled": false, "enabled": true}]}',
+    ],
+)
+def test_renovate_s_configuration_with_a_key_given_twice_is_refused(text: str) -> None:
+    with pytest.raises(ValueError, match="given twice"):
+        renovate(text)
+
+
+def test_renovate_s_configuration_with_each_key_given_once_is_read() -> None:
+    assert renovate('{"ignorePaths": [], "npm": {"ignorePaths": []}}') == {
+        "ignorePaths": [],
+        "npm": {"ignorePaths": []},
+    }
 
 
 # R260: Renovate merges nothing on its own: no key whose name begins with `automerge` is set
@@ -633,7 +668,9 @@ NOTE_RULE_KEYS = {"matchPackageNames", "prBodyNotes"}
 def refresh_note_problems(config: dict[str, Any]) -> list[str]:
     """Each of OpenSpec and Superpowers that no package rule matching it by name gives the
     note, as the only text of its `prBodyNotes`, in a rule that holds no other key but its
-    description."""
+    description, and each `prBodyTemplate`, at any depth, by its path: a template without
+    `{{{notes}}}`, the part of Renovate's own template that holds the notes, gives a pull
+    request none of them."""
     return [
         f"no package rule gives {package} the note on refreshing its files"
         for package in REFRESHED
@@ -643,6 +680,11 @@ def refresh_note_problems(config: dict[str, Any]) -> list[str]:
             and rule.keys() - {"description"} == NOTE_RULE_KEYS
             for rule in config.get("packageRules", [])
         )
+    ] + [
+        f"{where}.{key} sets the text of Renovate's pull requests, which can leave out the note"
+        " on refreshing their files"
+        for where, key, _ in keys_at_any_depth(config)
+        if key == "prBodyTemplate"
     ]
 
 
@@ -702,6 +744,30 @@ def test_one_rule_that_gives_both_their_note_passes() -> None:
     assert refresh_note_problems({"packageRules": [rule]}) == []
     described = {"description": "Why.", **rule}
     assert refresh_note_problems({"packageRules": [described]}) == []
+
+
+@pytest.mark.parametrize(
+    ("added", "path"),
+    [
+        ({"prBodyTemplate": "{{{header}}}{{{table}}}{{{footer}}}"}, "renovate.json"),
+        (
+            {"matchPackageNames": ["obra/superpowers"], "prBodyTemplate": "{{{table}}}"},
+            "renovate.json.packageRules[1]",
+        ),
+    ],
+)
+def test_a_template_for_the_text_of_renovate_s_pull_requests_is_reported(
+    added: dict[str, Any], path: str
+) -> None:
+    rule = {"matchPackageNames": list(REFRESHED), "prBodyNotes": [REFRESH_NOTE]}
+    if path == "renovate.json":
+        config = {"packageRules": [rule], **added}
+    else:
+        config = {"packageRules": [rule, added]}
+    assert refresh_note_problems(config) == [
+        f"{path}.prBodyTemplate sets the text of Renovate's pull requests, which can leave out"
+        " the note on refreshing their files"
+    ]
 
 
 def workflows() -> list[Path]:
