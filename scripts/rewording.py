@@ -59,12 +59,16 @@ USAGE = "usage: python3 scripts/rewording.py [BASE]"
 CONTEXT_FILES = ("CLAUDE.md", "docs/CLAUDE.md", "tests/CLAUDE.md")
 # The files that steer, whose changes are listed first, in this order (T94).
 STEERING = (*CONTEXT_FILES, "docs/patterns.md")
-# A line that Markdown reads as a heading: one to six `#`, then a space, a tab or the line's
-# end, so that a wrapped line that starts with an issue's number, such as `#46`, is text.
+# A heading at column 0, as Markdown reads one there: one to six `#`, then a space, a tab or
+# the line's end, so that a wrapped line that starts with an issue's number, such as `#46`, is
+# text.
 HEADING = re.compile(r"#{1,6}(?:[ \t]|$)")
-# A line that starts a list item: a bullet, or a number of one to nine digits and `.` or `)`,
-# then a space.
+# A list item at column 0: a bullet, or a number of one to nine digits and `.` or `)`, then a
+# space.
 ITEM = re.compile(r"(?:[-*+]|(?P<number>[0-9]{1,9})[.)]) ")
+# A thematic break at column 0, as Markdown reads one there: three or more of one of `-`, `*`
+# and `_`, with nothing else on the line but spaces and tabs.
+BREAK = re.compile(r"([-*_])(?:[ \t]*\1){2,}[ \t]*$")
 TOKEN = re.compile(r"\S+|\s+")
 # How many tokens, each a word or the spaces after one, are shown on each side of a change.
 CONTEXT = 8
@@ -91,12 +95,20 @@ class Unit(NamedTuple):
 
 def starts_a_block(line: str, unit: str) -> bool:
     """Whether a line that follows a line of text in the unit given starts a block of its
-    own, as Markdown reads it: a heading or a list item, though a numbered item starts one
-    after a paragraph's text only with the number 1, so that a wrapped line that starts with
-    a sentence's last number, such as `200.`, continues its paragraph."""
+    own: a heading or a list item, each read only at column 0, and an item's marker only
+    before a space. A numbered item other than 1 continues a unit whose first line is a
+    paragraph's text at column 0, which Markdown lets no such item interrupt, so that a
+    wrapped line that starts with a sentence's last number, such as `200.`, continues its
+    paragraph. After any other, a list item, a quote, a thematic break or an indented line
+    such as a list item's later paragraph, it starts a block, as Markdown does but for an
+    indented paragraph outside a list, where the line is then listed rather than joined.
+    Any other line is taken for text, though Markdown starts a block at some, such as an
+    indented marker or heading, a `>`, a thematic break or a marker before a tab: a rewrap
+    onto one of those that changes no word is not listed, while a change of words is, since
+    it changes the joined text."""
     item = ITEM.match(line)
-    if item and item["number"]:
-        return int(item["number"]) == 1 or ITEM.match(unit) is not None
+    if item and item["number"] and int(item["number"]) != 1:
+        return unit[:1] in (" ", "\t", ">") or bool(ITEM.match(unit) or BREAK.match(unit))
     return bool(item or HEADING.match(line))
 
 

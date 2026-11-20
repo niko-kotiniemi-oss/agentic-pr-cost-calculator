@@ -444,6 +444,11 @@ WRAPPED_BEFORE = (
     "  second line, which a list item indents.\n"
     "- Another rule.\n"
 )
+# The paragraph of `WRAPPED_BEFORE` that a test replaces with one reflowed two ways.
+PARAGRAPH = (
+    "These rules add to the root's for the calculator, whose tests run here, and they\n"
+    "never loosen it.\n"
+)
 
 
 def test_a_context_file_s_reflowed_paragraph_is_compared_by_its_words(
@@ -539,14 +544,42 @@ def test_a_context_file_s_paragraph_reflowed_onto_a_line_that_markdown_reads_as_
     monkeypatch: pytest.MonkeyPatch,
     capsys: pytest.CaptureFixture[str],
 ) -> None:
-    paragraph = (
-        "These rules add to the root's for the calculator, whose tests run here, and they\n"
-        "never loosen it.\n"
-    )
-    base = {**BEFORE, "tests/CLAUDE.md": WRAPPED_BEFORE.replace(paragraph, before)}
-    history(tmp_path, {"tests/CLAUDE.md": WRAPPED_BEFORE.replace(paragraph, after)}, base)
+    assert PARAGRAPH in WRAPPED_BEFORE
+    base = {**BEFORE, "tests/CLAUDE.md": WRAPPED_BEFORE.replace(PARAGRAPH, before)}
+    history(tmp_path, {"tests/CLAUDE.md": WRAPPED_BEFORE.replace(PARAGRAPH, after)}, base)
     _, out, _ = rewording(tmp_path, monkeypatch, capsys)
     assert NOTHING_LISTED in out
+
+
+@pytest.mark.parametrize(
+    ("before", "after", "listed"),
+    [
+        (
+            "> A quoted rule holds until line 200. More follows.\n",
+            "> A quoted rule holds until line\n200. More follows.\n",
+            "+ 200. More follows.",
+        ),
+        (
+            "- An item.\n\n  Its second paragraph ends at 2. Another follows.\n",
+            "- An item.\n\n  Its second paragraph ends at\n2. Another follows.\n",
+            "+ 2. Another follows.",
+        ),
+        ("***\n2. Another follows.\n", "*** 2. Another follows.\n", "- 2. Another follows."),
+    ],
+)
+def test_a_context_file_s_paragraph_reflowed_onto_a_line_that_markdown_reads_as_a_list_is_listed(
+    before: str,
+    after: str,
+    listed: str,
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    assert PARAGRAPH in WRAPPED_BEFORE
+    base = {**BEFORE, "tests/CLAUDE.md": WRAPPED_BEFORE.replace(PARAGRAPH, before)}
+    history(tmp_path, {"tests/CLAUDE.md": WRAPPED_BEFORE.replace(PARAGRAPH, after)}, base)
+    _, out, _ = rewording(tmp_path, monkeypatch, capsys)
+    assert listed in section(out, "Changed by more than a word to avoid")
 
 
 @pytest.mark.parametrize(
@@ -565,6 +598,14 @@ def test_a_context_file_s_paragraph_reflowed_onto_a_line_that_markdown_reads_as_
         ("Text\n1) An item", ["Text", "1) An item"]),
         ("Text\n01. An item", ["Text", "01. An item"]),
         ("Text\n200. More", ["Text 200. More"]),
+        ("Text\n0. More", ["Text 0. More"]),
+        ("> A quote ends at\nline 200.", ["> A quote ends at line 200."]),
+        ("> A quote ends at line\n200. More", ["> A quote ends at line", "200. More"]),
+        (
+            "- An item\n\n  Its later paragraph ends at\n2. Another",
+            ["- An item", "", "  Its later paragraph ends at", "2. Another"],
+        ),
+        ("***\n2. Another", ["***", "2. Another"]),
         ("- An item\n2. Another", ["- An item", "2. Another"]),
         ("1. An item\n2. Another", ["1. An item", "2. Another"]),
         ("- An item\n123456789. Another", ["- An item", "123456789. Another"]),
