@@ -1,0 +1,48 @@
+name: Renovate's proposals
+
+# Fails when Renovate seems to have stopped proposing updates, so that GitHub tells the
+# owner, who last changed this schedule (R263, DR-267, design decision 22 of
+# add-pr-cost-calculator). It runs off the start of the hour, when GitHub delays or drops
+# scheduled runs most, and by hand, given a day to check as at its start, or none for now.
+on:
+  schedule:
+    - cron: "17 6 * * *"
+  workflow_dispatch:
+    inputs:
+      day:
+        description: "A day, YYYY-MM-DD in UTC, to check as at its start; empty for now"
+        required: false
+        default: ""
+
+defaults:
+  run:
+    shell: bash
+
+# Declared rather than inherited, so what this workflow can do is readable here. It writes
+# nothing, comments nowhere and reads no secret: its one credential is its own token.
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    # A response that trickles in a byte at a time cannot hold the run past this.
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pull-requests: read
+      issues: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7
+        with:
+          python-version-file: .python-version
+      # The day reaches the script through the environment alone, never written into the
+      # command, and the script refuses it unless it is a date.
+      - name: Check Renovate's proposals
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          DAY: ${{ inputs.day }}
+        run: python3 -I scripts/renovate_watch.py --now="$DAY"

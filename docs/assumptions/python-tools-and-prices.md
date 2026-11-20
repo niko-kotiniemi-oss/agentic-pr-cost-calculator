@@ -120,11 +120,11 @@ The assumptions about Python, about the development tools of this repository, an
 
 ### A30. Renovate proposes updates as it is configured to, and its wait catches bad releases.
 
-- **Rests on it:** R26, T28, T35, T64, T66, T231, DR-028, DR-041, DR-111, DR-145
+- **Rests on it:** R26, T28, T35, T64, T66, T231, T245, DR-028, DR-041, DR-111, DR-145
 - **If it is wrong:** Updates and vulnerability fixes would stop, arrive before anyone could find a problem in them, or open without the owner's approval (T28, T64, T66), and a malicious release that stays unnoticed past the wait would be proposed like any other, with the owner's review of its diff as the last defence (T35). A configuration that the test reads as merging nothing, or a preset that the test lists, could still let Renovate merge its own pull requests (T231).
 - **Fact:** Renovate is installed on the repository and runs.
   - **Relied on:** R26, T28, DR-028, DR-111, DR-145
-  - **Checked:** not yet: none will, since Renovate runs on GitHub, which no test may reach
+  - **Checked:** not yet: no test may reach Renovate, but `add-pr-cost-calculator` task 1.43 adds a daily check, outside the tests, that warns the owner when it stops proposing updates
 - **Fact:** Renovate waits 14 days after a release before it proposes an update that it can date, and proposes at once an update that it cannot date.
   - **Relied on:** R26, T28, T66, DR-028
   - **Checked:** not yet: none will, since Renovate runs on GitHub, which no test may reach
@@ -137,6 +137,9 @@ The assumptions about Python, about the development tools of this repository, an
 - **Fact:** Renovate merges a pull request of its own only where its configuration, or a preset that it extends, sets `automerge` or another key of that family to `true`, and it reads a preset that another repository serves again at each run, so that a change there reaches its next run with no diff here.
   - **Relied on:** T231
   - **Checked:** not yet: none will, since Renovate runs on GitHub, which no test may reach
+- **Fact:** Renovate reads a version's first number as its major line, a version that begins with 0 included, and titles a pull request that updates one dependency `Update dependency <name> to v<version>`.
+  - **Relied on:** T245
+  - **Checked:** not yet: none will, since Renovate runs on GitHub, which no test may reach; on 2026-11-20 its branch for ruff, at 0.17, was `renovate/ruff-0.x`, and the titles that `add-pr-cost-calculator` task 1.43 records are of that form
 - **Fact:** Each update arrives as a pull request on a branch of its own, and an update of the vendored Superpowers moves the lock's commit and tag together.
   - **Relied on:** T35, T66, DR-041, DR-145
   - **Checked:** not yet: none will, since Renovate runs on GitHub, which no test may reach

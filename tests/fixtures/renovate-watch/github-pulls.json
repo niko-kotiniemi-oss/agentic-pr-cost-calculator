@@ -1,0 +1,93 @@
+[
+ {
+  "number": 51,
+  "title": "Update dependency @fission-ai/openspec to v1.16.0",
+  "user": {
+   "login": "renovate[bot]"
+  },
+  "state": "open",
+  "created_at": "2026-11-20T10:02:00Z",
+  "updated_at": "2026-11-20T10:02:01Z",
+  "head": {
+   "sha": "6e13df8c0446e0402752e80f35d441622b5fb91a"
+  }
+ },
+ {
+  "number": 50,
+  "title": "Update dependency types-PyYAML to v6.0.12.20261103",
+  "user": {
+   "login": "renovate[bot]"
+  },
+  "state": "open",
+  "created_at": "2026-11-20T10:01:41Z",
+  "updated_at": "2026-11-20T10:01:42Z",
+  "head": {
+   "sha": "7c31ac94ee234af62be592feb19b9afbfbcf3b81"
+  }
+ },
+ {
+  "number": 48,
+  "title": "Update dependency ruff to v0.17.4",
+  "user": {
+   "login": "renovate[bot]"
+  },
+  "state": "open",
+  "created_at": "2026-11-20T05:16:13Z",
+  "updated_at": "2026-11-20T10:01:33Z",
+  "head": {
+   "sha": "83e65516f9b92443037ea3d91b1c8bb58375d15e"
+  }
+ },
+ {
+  "number": 47,
+  "title": "Update dependency mypy to v2.4.1",
+  "user": {
+   "login": "renovate[bot]"
+  },
+  "state": "open",
+  "created_at": "2026-11-20T05:16:05Z",
+  "updated_at": "2026-11-20T10:01:26Z",
+  "head": {
+   "sha": "a513aa2228e7e6b1c4284f2ae91d822e84758da5"
+  }
+ },
+ {
+  "number": 46,
+  "title": "Bring in the context files: a shorter root CLAUDE.md, folder files for the docs and the tests, and the rules agents follow (B-003)",
+  "user": {
+   "login": "niko-kotiniemi-oss"
+  },
+  "state": "closed",
+  "created_at": "2026-11-19T17:25:45Z",
+  "updated_at": "2026-11-20T10:00:45Z",
+  "head": {
+   "sha": "481eb5c724a05421f6ce94fca1d4a6acb7cf6456"
+  }
+ },
+ {
+  "number": 20,
+  "title": "Update dependency @fission-ai/openspec to v1.15.0",
+  "user": {
+   "login": "renovate[bot]"
+  },
+  "state": "closed",
+  "created_at": "2026-11-09T13:43:37Z",
+  "updated_at": "2026-11-09T14:21:12Z",
+  "head": {
+   "sha": "09e7409c4c43ad968f64d0e2ab0f76dd8f9eb319"
+  }
+ },
+ {
+  "number": 14,
+  "title": "Update actions/setup-python digest to 6d4fd22",
+  "user": {
+   "login": "renovate[bot]"
+  },
+  "state": "closed",
+  "created_at": "2026-11-05T06:16:49Z",
+  "updated_at": "2026-11-20T05:16:39Z",
+  "head": {
+   "sha": "9943c0960fe53f35538c7717e9a573ca8dd8ebbc"
+  }
+ }
+]

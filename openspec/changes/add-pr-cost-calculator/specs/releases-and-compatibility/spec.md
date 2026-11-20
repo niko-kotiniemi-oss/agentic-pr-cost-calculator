@@ -389,3 +389,42 @@ Renovate SHALL give each pull request that updates the pinned OpenSpec or the ve
 
 - **WHEN** Renovate's configuration holds, for the package `@fission-ai/openspec` or `obra/superpowers`, no package rule that matches it by name, holds no other key but its description, and gives it, as the only text of `prBodyNotes`, the note "Before this merges, the owner reads this diff. Its generated or vendored files are then refreshed on this branch from a working tree outside any agent session's folder, by `scripts/verify-openspec.sh` for OpenSpec, which writes the generated skills again, or by `scripts/sync-superpowers.sh` for Superpowers, and the owner reads the refreshed diff before merging. No agent session starts on this branch before the owner has read its refreshed diff.", or Renovate's configuration sets a `prBodyTemplate` at any depth
 - **THEN** a test fails and names each package that lacks it, or the template by its path
+
+### Requirement: A daily check warns the owner when Renovate stops proposing updates
+
+A workflow SHALL run every day and on demand, with a token that only reads, and SHALL fail, naming each finding, when a minor or patch release of a tool that `requirements-dev.txt` or `package.json` pins is newer than its pin, more than 17 days old, Renovate's wait of 14 days and 3 days of grace, and proposed by no pull request of Renovate's in its major line, or when Renovate itself has done nothing for more than 5 days, or when it cannot read what it needs. Tests SHALL fail otherwise.
+
+#### Scenario: An update that Renovate has not proposed in time fails the check
+
+- **WHEN** a release of a pinned tool with the same first number as its pin and a higher version, neither a pre-release nor withdrawn, was published more than 17 days before the check's time, and no pull request that `renovate[bot]` opened, open or closed, proposes that version, or a later one with the same first number, by a title that names the tool and the version
+- **THEN** the run fails and names the tool, its pin, the version and the day that it was published
+
+#### Scenario: An update inside its wait, a major update or one already proposed passes
+
+- **WHEN** every newer release of a pinned tool was published 17 days or less before the check's time, has another first number, is a pre-release or withdrawn, or is the version, or older than the version, that a pull request of Renovate's proposes for the same first number
+- **THEN** the check names no finding for that tool
+
+#### Scenario: Five quiet days fail the check
+
+- **WHEN** the newest time at which `renovate[bot]` opened a pull request, or authored the newest commit of one of its open pull requests, is more than 5 days, of 24 hours each, before the check's time, whatever anyone else has done on its pull requests or its dashboard since
+- **THEN** the run fails and names that time
+
+#### Scenario: A check that cannot read fails
+
+- **WHEN** a request to the Python Package Index, the npm registry or GitHub fails, is redirected to another host or away from HTTPS, gives its next page on another host or away from HTTPS, or returns what the check cannot read, or a registry lists no release of the pinned version that the check can compare, or a pin is not one exact version of numbers, or `GITHUB_REPOSITORY` is not an owner and a name, or the check finds no pinned tool, no pull request of Renovate's or no open dependency dashboard that Renovate opened, or fails in any other way
+- **THEN** the run fails and names what it could not read, and never passes; a registry that it could not read is named for its tool, and the other tools and the quiet days are still checked
+
+#### Scenario: A check run as at another time reads only what existed then
+
+- **WHEN** the check is given a day, which it reads as that day's start in UTC, and Renovate opened a pull request or authored a commit after that time
+- **THEN** the check leaves that pull request and that commit out
+
+#### Scenario: Text from a response never reaches the run's commands or summary
+
+- **WHEN** a response holds a title, a version or any other text that is not a time, a version of numbers and dots, or a name that the pins give
+- **THEN** none of it reaches the run's log or summary, and the day that a run started by hand is given reaches the script only through its environment
+
+#### Scenario: The check's wait and its workflow agree with what is designed
+
+- **WHEN** a package rule of Renovate's configuration sets a wait other than 14 days for minor or patch updates, or the workflow runs on no daily schedule, cannot be started by hand, runs on any other event, grants the workflow anything but `contents: read` or its job anything but `contents: read`, `pull-requests: read` and `issues: read`, gives its job no time limit of 15 minutes or less, or checks out the code keeping its credentials
+- **THEN** a test fails and names the difference

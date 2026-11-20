@@ -1,0 +1,14 @@
+{
+ "sha": "a513aa2228e7e6b1c4284f2ae91d822e84758da5",
+ "author": {
+  "login": "renovate[bot]"
+ },
+ "commit": {
+  "author": {
+   "date": "2026-11-20T10:01:22Z"
+  },
+  "committer": {
+   "date": "2026-11-20T10:01:22Z"
+  }
+ }
+}

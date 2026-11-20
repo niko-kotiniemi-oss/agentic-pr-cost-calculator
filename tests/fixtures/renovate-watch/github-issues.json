@@ -1,0 +1,27 @@
+[
+ {
+  "number": 51,
+  "title": "Update dependency @fission-ai/openspec to v1.16.0",
+  "user": {
+   "login": "renovate[bot]"
+  },
+  "updated_at": "2026-11-20T10:02:01Z",
+  "pull_request": {}
+ },
+ {
+  "number": 49,
+  "title": "Renovate's check of the vendored lock passes a pattern that reads no file",
+  "user": {
+   "login": "niko-kotiniemi-oss"
+  },
+  "updated_at": "2026-11-20T07:37:03Z"
+ },
+ {
+  "number": 4,
+  "title": "Dependency Dashboard",
+  "user": {
+   "login": "renovate[bot]"
+  },
+  "updated_at": "2026-11-20T10:02:03Z"
+ }
+]
