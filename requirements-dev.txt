@@ -2,7 +2,7 @@
 # own dependencies are not pinned yet: task 1.8 of add-pr-cost-calculator locks
 # them, with hashes. Renovate proposes bumps.
 mypy==2.4.1
-pytest==9.1.1
+pytest==9.2.0
 pyyaml==6.0.3
 ruff==0.17.4
 types-PyYAML==6.0.12.20260906
