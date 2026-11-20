@@ -400,11 +400,11 @@ Tests SHALL fail when a commit removes, renames or moves a record that the base 
 
 ### Requirement: A field added to every record leaves the rest of each record as it was
 
-A commit MAY change a record that the base commit holds by adding lines of fields that the record's form gives and that the base's copy lacks, in their places, and nothing else, so that one change can give every record a new field. Tests SHALL fail when such a commit also changes any other line of that record, or adds a line of a field that the form does not give.
+A commit MAY change the records that the base commit holds by adding to every one of them the lines of the fields Boundary and Reversibility that its copy lacks, each in its place, and nothing else, a record that it closes included. Tests SHALL fail when such a commit adds another field, adds them to some of those records and not to others, or changes any other line of a record beyond what closing it allows.
 
 #### Scenario: A field added to every record passes
 
-- **WHEN** a commit adds to each record that the base holds the lines of fields that the form gives and the base's copy lacks, and changes nothing else in it
+- **WHEN** a commit adds to each record that the base holds the lines of Boundary and Reversibility that its copy lacks, and changes nothing else in it, or only closes it as well
 - **THEN** the test passes
 
 #### Scenario: A field added together with another edit fails CI
@@ -414,12 +414,17 @@ A commit MAY change a record that the base commit holds by adding lines of field
 
 #### Scenario: A field that the form does not give fails CI
 
-- **WHEN** a commit adds to a record that the base holds a line of a field that the form does not give, or a field line that the base's copy already has
+- **WHEN** a commit adds to a record that the base holds a line of a field other than Boundary and Reversibility, or a field line that the base's copy already has
 - **THEN** a test fails and names the record
 
 ### Requirement: A record number held twice is mended by renumbering the later record
 
-When the base commit holds two records with one number, a commit MAY remove the one that the base's first-parent history added later and add, at the number after the base's highest, a record whose text is the removed one's with only its heading's number changed. In the other records that the same commit of that history added, it MAY replace the old number with the new one, and nothing else. Tests SHALL fail on any other removal or renaming of a record.
+When each base commit holds two records with one number, a commit MAY move the one that the base's first-parent history added later to the number after the base's highest, changing only its heading's number, and replace the old number with the new one in the records that the same commit of that history added and in the Closed by of each record that it replaces. Tests SHALL fail on any other removal or renaming, and on a repeat that this cannot mend.
+
+#### Scenario: A field added to some held records and not to others fails CI
+
+- **WHEN** a commit adds Boundary and Reversibility to some of the records that the base holds and leaves others without them
+- **THEN** a test fails and names a record left without them
 
 #### Scenario: The later of two records with one number renumbered passes
 
@@ -438,8 +443,18 @@ When the base commit holds two records with one number, a commit MAY remove the 
 
 #### Scenario: A record renumbered when no number is held twice fails CI
 
-- **WHEN** the base holds no number twice and a commit moves a record that it holds to another number
+- **WHEN** the base holds no number twice and a commit moves a record that it holds to another number, or only a base that the pull request chose holds it twice
 - **THEN** a test fails and names the record
+
+#### Scenario: The later record renumbered, with each record that it closed naming it anew, passes
+
+- **WHEN** the moved record replaces records that another merge added, and the commit changes only their Closed by from the old number to the new one
+- **THEN** the test passes
+
+#### Scenario: A repeat that renumbering cannot mend fails CI
+
+- **WHEN** a base holds a number three times, two numbers twice each, or two records with one number that one commit of its first-parent history added
+- **THEN** a test fails, names the records and says that the owner decides how to mend them
 
 ### Requirement: IDs that the default branch holds stay held or retired
 

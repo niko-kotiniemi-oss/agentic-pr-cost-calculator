@@ -23,7 +23,7 @@ Every file in `docs/decisions/` has git's mode 100644, an ordinary file that is 
 ## Consequences
 
 - `tests/test_decisions.py` fails on a file in the folder whose mode is other than 100644, and names the file and its mode (R133; T79).
-- Every file in the folder had that mode when the check was added, so no record changes.
+- Every file in the folder had that mode on 2026-11-20, when the check was designed, so no record changes for it.
 
 ## Scope
 

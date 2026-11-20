@@ -20,7 +20,7 @@ Each record gives its boundary in a field right after its type, and the index gi
 - `outgoing`, for one that chiefly governs what adopters copy, call or configure, what the tool publishes to them, and on what terms: the hook, the workflow, the switch and the opt-in, the ledger, the comment, releases and the licence;
 - `inside`, for one that governs how the tool works, is built and is checked, where neither applies.
 
-A decision that faces both ways takes the one that it chiefly governs. The change `add-pr-cost-calculator` set the field on every record that the default branch held, by these meanings, and review checks them.
+A decision that faces both ways takes the one that it chiefly governs. The change that brings the field sets it on every record that the default branch holds, by these meanings, and review checks them.
 
 ## Alternatives
 
@@ -32,7 +32,7 @@ A decision that faces both ways takes the one that it chiefly governs. The chang
 
 - `tests/test_decisions.py` fails on a record that lacks the field, gives it out of its place or gives a value outside the three, and on an index whose column disagrees with a record (R264).
 - Whether a record's boundary is the right one of the three rests on review, since no machine can tell which way a decision chiefly faces (T249).
-- The records that the default branch held gained the field by DR-268's exception, in a commit that changed nothing else in them.
+- The records that the default branch holds gain the field by DR-268's exception, in a commit that changes nothing else in them. A value that turns out wrong is corrected only by closing its record (T249).
 
 ## Scope
 

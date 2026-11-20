@@ -14,7 +14,7 @@ DR-121 has a record that the default branch holds change only by being closed, a
 
 ## Decision
 
-Once the default branch holds a record, it changes only by being closed, as a whole, by a new record that replaces it and restates whatever still holds. Its status then becomes closed and it names its closer, which names it among those it replaces. One exception holds: a change may add to every record the lines of fields that the record's form gives and the record lacks, each in its place, and change nothing else in any record that the default branch holds. DR-269 (A record number held twice is mended by renumbering the later record) gives the only other exception.
+Once the default branch holds a record, it changes only by being closed, as a whole, by a new record that replaces it and restates whatever still holds. Its status then becomes closed and it names its closer, which names it among those it replaces. One exception holds: the change that brings a field to every record adds its line, in its place, to every record that the default branch holds, closed ones included, and changes nothing else in any of them. The requirement that allows it names each such field, Boundary and Reversibility so far, so that a later field comes only with a change to that requirement, which the owner reads. DR-269 (A record number held twice is mended by renumbering the later record) gives the only other exception.
 
 ## Alternatives
 
@@ -24,7 +24,7 @@ Once the default branch holds a record, it changes only by being closed, as a wh
 
 ## Consequences
 
-- `tests/test_decisions.py` compares git trees with no rename detection, so a record removed, renamed, moved or changed other than by closing fails, and a mistaken merge's records are undone by records that close them (R129; T70, T75). A record whose only difference from the base is the added lines of fields that the form gives, in their places, passes (R265; T247).
+- `tests/test_decisions.py` compares git trees with no rename detection, so a record removed, renamed, moved or changed other than by closing fails, and a mistaken merge's records are undone by records that close them (R129; T70, T75). A commit that adds the lines of Boundary and Reversibility, in their places, to every record that the base holds, and changes nothing else in them but what closing a record allows, passes, and one that adds another field, adds them to some records and not to others, or changes any other line fails (R265; T247).
 - CI, which clones the whole history and names the base in `BASE_COMMIT`, is the gate, since a local run compares with the remote-tracking branch as last fetched (T70).
 - The check and the workflow that runs it can still change together in one pull request, which rests on the owner's review of the diff (T71).
 - A held record is otherwise never renumbered, so DR-119 keeps two pull requests from taking one number, and DR-269 mends a repeat that reaches the default branch anyway (T76). The IDs that records cite stay held or retired (R130; T75).

@@ -14,7 +14,7 @@ DR-230 has each record say how hard it is to reverse, as reversible, reversible 
 
 ## Decision
 
-Each record gives its reversibility in a field right after its boundary, as `reversible`, `reversible with work` or `one-way door`, and the index gives it in a column right after the boundary's. The reason stays where DR-230 puts it, in the first sentence of the section on what reversing it would change, and from this record on that sentence opens with "How hard it is to reverse: " and the field's value. A record whose own text gives two values, as for versions already released and later ones, takes the harder. The change `add-pr-cost-calculator` set the field on every record that the default branch held, from what each record's last section says, and the owner confirmed each that it marks as a one-way door, as DR-230 asks of a one-way door.
+Each record gives its reversibility in a field right after its boundary, as `reversible`, `reversible with work` or `one-way door`, and the index gives it in a column right after the boundary's. The reason stays where DR-230 puts it, in the first sentence of the section on what reversing it would change, and from this record on that sentence opens with "How hard it is to reverse: " and the field's value. A record whose own text gives two values, as for versions already released and later ones, or a value that holds only until some point, takes the harder. The change that brings the field sets it on every record that the default branch holds, from what each record's last section says, and the owner confirms each that it marks as a one-way door before the change is accepted, as DR-230 asks of a one-way door.
 
 ## Alternatives
 
@@ -25,8 +25,8 @@ Each record gives its reversibility in a field right after its boundary, as `rev
 ## Consequences
 
 - `tests/test_decisions.py` fails on a record that lacks the field, gives it out of its place or gives a value outside the three, on an index whose column disagrees with a record, and on a record from DR-268 on whose sentence does not open with its value (R264).
-- For the records before DR-268, whether the field fits what the record says rests on review, and a script that compared each statement from DR-225 to DR-267 with its field found none that disagreed when the change set them (T249).
-- The records that the default branch held gained the field by DR-268's exception, in a commit that changed nothing else in them.
+- For the records before DR-268, whether the field fits what the record says rests on review, and the change compares each statement from DR-225 to DR-267 with its field by a script, as evidence in its pull request (T249).
+- The records that the default branch holds gain the field by DR-268's exception, in a commit that changes nothing else in them. A value that turns out wrong is corrected only by closing its record (T249).
 
 ## Scope
 
