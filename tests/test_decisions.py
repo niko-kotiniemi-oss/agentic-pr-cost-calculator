@@ -72,6 +72,7 @@ from datetime import UTC, date, datetime
 from pathlib import Path
 
 import pytest
+from test_context_files import CONTEXT_FILES
 from test_roadmap import GIT_ENVIRONMENT, isolated_environment
 from wording import ACCEPTED, DEFAULT_BRANCH, QUOTATION, SPEC_FILE, SPEC_TITLE
 
@@ -95,18 +96,22 @@ INDEX_TABLE = (
     "| Record | Decision | Type | Status | Decided by | Requirements | Threats |",
     "|---|---|---|---|---|---|---|",
 )
-# Files whose mentions are not read: upstream's own, and the synthetic ones tests plant.
+# Files whose mentions are not read: upstream's own, and the synthetic ones tests plant,
+# but for the context file under tests/, which steers there (R127).
 UNREAD = ("vendor/", "tests/")
+READ_ANYWAY = frozenset(CONTEXT_FILES)
 
 # A record's number, in ASCII digits, padded to three and no further.
 NUMBER = r"(?:00[1-9]|0[1-9][0-9]|[1-9][0-9]{2,})"
 WORDS = r"[a-z0-9]+(?:-[a-z0-9]+)*"
 FILE_NAME = re.compile(rf"DR-({NUMBER})-{WORDS}\.md")
 # Files that keep history, and so may name a closed record: the records, their index, the
-# changelog and the archived changes.
+# changelog, the archived changes, and the mapping of B-022, whose quotes are what the
+# default branch held before that sweep.
 HISTORY = re.compile(
     rf"docs/decisions/(?:README|DR-{NUMBER}-{WORDS})\.md|CHANGELOG\.md"
     r"|openspec/changes/archive/[0-9]{4}-[0-9]{2}-[0-9]{2}-[a-z0-9-]+/.+"
+    r"|docs/evidence/B-022-mapping\.md"
 )
 HEADING = re.compile(rf"# (DR-{NUMBER}): ([^|\n]*[^|\s])\n")
 FIELD = re.compile(r"- \*\*([^*]+):\*\* (\S.*)")
@@ -616,7 +621,7 @@ def tracked_texts(root: Path) -> dict[str, str]:
     listing = git(root, "ls-files", "-z")
     texts = {}
     for path in listing.stdout.decode("utf-8").split("\0"):
-        if not path or path.startswith(UNREAD):
+        if not path or (path.startswith(UNREAD) and path not in READ_ANYWAY):
             continue
         try:
             texts[path] = (root / path).read_text(encoding="utf-8")
@@ -1460,6 +1465,7 @@ def test_mentions_that_resolve_are_not_reported(tmp_path: Path) -> None:
         "CHANGELOG.md": "DR-001 was closed by DR-002.",
         "docs/decisions/DR-002-a-choice.md": "It replaces DR-001.",
         "openspec/changes/archive/2026-01-01-old/proposal.md": "Following DR-001.",
+        "docs/evidence/B-022-mapping.md": "- **Rests on it:** DR-001, as it held before the sweep",
         "openspec/changes/demo/design.md": "As decision 1 says (decision 1).",
         "docs/other.md": "The owner's decision 4, and task 1.2 of decision 3.5, and DR-01.",
         "docs/titled.md": "DR-002 (A choice) holds, as DR-002 (A\nchoice) says, and DR-002, (a).",
@@ -1486,6 +1492,10 @@ def test_mentions_that_resolve_are_not_reported(tmp_path: Path) -> None:
         ("docs/decisions/README.md.orig", "DR-001.", "names DR-001, which is closed"),
         ("docs/CHANGELOG.md", "See DR-001.", "names DR-001, which is closed"),
         ("openspec/changes/archive/notes.md", "See DR-001.", "names DR-001, which is closed"),
+        ("docs/evidence/B-022-mapping.md", "See DR-003.", "names DR-003, which is not a record"),
+        ("docs/evidence/notes.md", "See DR-001.", "names DR-001, which is closed"),
+        ("docs/evidence/B-022-mapping.md.orig", "DR-001.", "names DR-001, which is closed"),
+        ("tests/CLAUDE.md", "As DR-001 says.", "tests/CLAUDE.md names DR-001, which is closed"),
         ("CLAUDE.md", "See design decision 2.", "names decision 2 of any change, which is not"),
         ("ci.yml", "(design decisions 1 and 2)", "names decision 2 of any change"),
         ("x.md", "As the design's decisions 1 and 2 say.", "names decision 2 of any change"),
@@ -1509,6 +1519,24 @@ def test_a_mention_that_names_nothing_or_a_closed_record_is_reported(
 ) -> None:
     problems = mentions(tmp_path, {path: text})
     assert [problem for problem in problems if expected in problem], problems
+
+
+def test_a_context_file_under_tests_is_read_and_the_other_files_there_are_not(
+    tmp_path: Path,
+) -> None:
+    files = {
+        "tests/CLAUDE.md": "As DR-001 says.",
+        "tests/test_x.py": "DR-001 and DR-009 in a synthetic record.",
+        "tests/fixtures/CLAUDE.md": "DR-009.",
+        "vendor/upstream/CLAUDE.md": "DR-009.",
+        "README.md": "DR-002.",
+    }
+    for path, text in files.items():
+        (tmp_path / path).parent.mkdir(parents=True, exist_ok=True)
+        (tmp_path / path).write_text(text, encoding="utf-8")
+    assert git(tmp_path, "init", "-q").returncode == 0
+    assert git(tmp_path, "add", "--", *files).returncode == 0
+    assert sorted(tracked_texts(tmp_path)) == ["README.md", "tests/CLAUDE.md"]
 
 
 @pytest.mark.parametrize(

@@ -135,8 +135,8 @@ The assumptions about Claude Code: what its transcripts hold, when its hooks run
 
 ## A5. What a session loads comes from its settings and the branch it starts on, and a project's settings cannot set the variables that name a person's home folder or the `XDG_*` variables.
 
-- **Rests on it:** R1, R37, R93, R103, R104, R160, R169, R194, T3, T33, T34, T35, T36, T41, T60, T66, T119, T134, T156, DR-022, DR-041, DR-050, DR-071, DR-081, DR-093, DR-126, DR-142, DR-143, DR-145, DR-183, DR-186, DR-188, DR-201, DR-202, DR-237, DR-244
-- **If it is wrong:** If a person's own pick of an environment took precedence over a repository's, the README's advice to keep it with the clone's local settings would be more than needed, and if the local settings did not, a person could not keep a repository's choice of environment from opting them in (T156). If a project's settings could set `HOME`, the `XDG_*` variables, or on Windows `HOMEDRIVE`, `HOMEPATH` or `USERPROFILE`, a repository could point both the step's reading of the opt-in and git's at configuration files of its own, to opt every contributor in or to hide an opt-out, so their usage would be published without their consent (T3, T119), as a hook that its settings register already could by changing the person's own configuration (A62). On Windows, such a folder could lie on a network path, which the step's check that the folder exists would reach. If a session loaded more from its branch than the rules expect, the rules that keep sessions off untrusted branches would not be enough (T34, T35, T66), and if the vendored skills did not load, agents would build without them unless they read their files (T35). If a settings file's `env` could not replace the session's `GIT_CONFIG_` variables, the README would warn of an undoing that cannot happen, and nothing else would change (R194, T134).
+- **Rests on it:** R1, R37, R93, R103, R104, R160, R169, R194, T3, T33, T34, T35, T36, T41, T60, T66, T119, T134, T156, T223, T225, T226, T230, T232, T233, T234, T235, T236, T237, DR-022, DR-041, DR-050, DR-071, DR-081, DR-093, DR-126, DR-142, DR-143, DR-145, DR-183, DR-186, DR-188, DR-201, DR-202, DR-244, DR-258, DR-259
+- **If it is wrong:** If a person's own pick of an environment took precedence over a repository's, the README's advice to keep it with the clone's local settings would be more than needed, and if the local settings did not, a person could not keep a repository's choice of environment from opting them in (T156). If a project's settings could set `HOME`, the `XDG_*` variables, or on Windows `HOMEDRIVE`, `HOMEPATH` or `USERPROFILE`, a repository could point both the step's reading of the opt-in and git's at configuration files of its own, to opt every contributor in or to hide an opt-out, so their usage would be published without their consent (T3, T119), as a hook that its settings register already could by changing the person's own configuration (A62). On Windows, such a folder could lie on a network path, which the step's check that the folder exists would reach. If a session loaded more from its branch than the rules expect, the rules that keep sessions off untrusted branches would not be enough (T34, T35, T66), and if the vendored skills did not load, agents would build without them unless they read their files (T35). If a settings file's `env` could not replace the session's `GIT_CONFIG_` variables, the README would warn of an undoing that cannot happen, and nothing else would change (R194, T134). If a folder's `CLAUDE.md` loaded at other moments than these facts say, or a later release changed when, an agent could take a folder's rules as in front of it when they are not, which the root's rule to read a folder's file unless its text is in front of the agent answers (T223, T235, DR-259), and if a project's cloud thread loaded none, as the documentation of projects says, the folder files would reach the owner's sessions only when the agent reads them, and another repository's would not load beside these (T232). If a file that these facts leave out loaded as instructions, or a context file could hide text in a way that they do not name, it would steer without the review that the root's list of what steers asks for (T225, T226). If a setting, a variable or an agent's definition kept the context files from loading in more ways than these, more sessions and agents would work without the rules than the threat model names (T230, T233, T234), and if a memory or a project's instructions loaded at other moments, a moved rule's old wording would reach other sessions (T236). If a thread could not add a repository partway through its task, or listed fewer skills than these facts say, another repository's rules and skills would reach work here by fewer routes than T232 names, and if Claude could start Claude Code's own `/verify`, a review lane could run it without the person (T232). If Claude Code read a project's servers from more files than `.mcp.json`, or started them without asking in more kinds of session than these facts say, a server that a pull request adds could run with fewer checks than T237 names (T237).
 - **Fact:** Environment variables that a repository's `.claude/settings.json` sets reach every process Claude Code starts, hooks included.
   - **Relied on:** R37, R160, R169, T3, T36, T119, DR-071, DR-183, DR-188
   - **Checked:** not yet: none will, since no test may reach Claude Code
@@ -161,20 +161,68 @@ The assumptions about Claude Code: what its transcripts hold, when its hooks run
 - **Fact:** A session loads `CLAUDE.md`, skills, settings and hooks from the branch it starts on, and its start-up hooks run with the session's credentials, in a cloud session installing the development tools with the owner's account.
   - **Relied on:** T34, T35, T66, DR-081, DR-126, DR-145, DR-244
   - **Checked:** not yet: none will, since no test may reach Claude Code
-- **Fact:** `.claude/settings.json` makes Claude Code load the vendored Superpowers skills into every session here, and a session started outside the repository does not have them.
-  - **Relied on:** T33, T35, DR-142, DR-143, DR-237
+- **Fact:** Claude Code loads at a session's start the `CLAUDE.md` and `CLAUDE.local.md` of the folder where the session starts and of each folder above it, and those of a folder below it once Claude reads, writes or edits a file in that folder, a read including a view of one such file by `cat`, `nl`, `bat`, `batcat`, `head`, `tail`, `sed -n`, `grep`, `egrep`, `fgrep` or `rg` with no pipe or redirect; after a compaction it loads the file at the project's root again, and a lower folder's only once a file there is opened again.
+  - **Relied on:** T223, T233, T235, DR-259
+  - **Checked:** documented: <https://code.claude.com/docs/en/memory>, <https://code.claude.com/docs/en/tools-reference>, read 2026-11-19
+- **Fact:** A lower folder's `CLAUDE.md` also loads for a view of one of its files that is joined to other commands by `&&` or `;`, and for no view whose output is piped, that names its file from a folder that it changes into first, or that edits a file in place, and for no search by Claude Code's own search tool.
+  - **Relied on:** T223, T235
+  - **Checked:** not yet: `add-pr-cost-calculator` task 7.2 checks it; in a project's cloud thread on 2026-11-19, Claude Code 2.1.328 loaded a folder's file for a view joined to other commands by `&&` or `;`, and for none of the others
+- **Fact:** A project's cloud thread starts with the root `CLAUDE.md` of each repository of the project loaded, whether or not its task touches that repository.
+  - **Relied on:** T34, T232, T233
+  - **Checked:** documented: <https://code.claude.com/docs/en/claude-projects>, read 2026-11-19
+- **Fact:** A project's cloud thread can add a repository to itself partway through its task, whose `CLAUDE.md` was not there when the thread started, and the next thread starts without it.
+  - **Relied on:** T232, T233
+  - **Checked:** documented: <https://code.claude.com/docs/en/claude-projects>, read 2026-11-19
+- **Fact:** A project's cloud thread loads none of a repository's skills, `.mcp.json` servers or `.claude/settings.json`, the plugins that the settings enable and their `claudeMdExcludes` among it, as the documentation of projects says.
+  - **Relied on:** T232, T237, DR-258
+  - **Checked:** documented: <https://code.claude.com/docs/en/claude-projects>, read 2026-11-19
+- **Fact:** In a project's cloud thread, the skills that Claude can run include those under `.claude/skills/` of each of the project's repositories, and a skill of another repository's can share its name with a command that the root `CLAUDE.md` names.
+  - **Relied on:** T232
+  - **Checked:** not yet: none will, since no test may reach Claude Code; in a project's cloud thread on 2026-11-19, Claude Code 2.1.328 listed this repository's skills and another repository's, a skill named `verify` among them, while the documentation of projects, read that day, says that a thread loads no repository's skills
+- **Fact:** In a project's cloud thread, a `CLAUDE.md` below a repository's root loads as it does in other sessions.
+  - **Relied on:** T223, T232, T235
+  - **Checked:** not yet: `add-pr-cost-calculator` task 7.2 checks it; in a project's cloud thread on 2026-11-19, Claude Code 2.1.328 loaded this repository's `docs/CLAUDE.md` and `tests/CLAUDE.md` when Claude read files in those folders, while the documentation of projects, read that day, says that a thread loads no `CLAUDE.md` below a repository's root
+- **Fact:** A folder added to a session with `--add-dir` loads its `CLAUDE.md` files only while the variable `CLAUDE_CODE_ADDITIONAL_DIRECTORIES_CLAUDE_MD` is set to `1`.
+  - **Relied on:** T233
+  - **Checked:** documented: <https://code.claude.com/docs/en/memory>, read 2026-11-19
+- **Fact:** Claude Code's built-in Explore and Plan agents start without the `CLAUDE.md` files that a session loads at its start, as does an agent whose definition sets `omitClaudeMd`, while other subagents start with them, and a lower folder's file loads for such an agent when it works with a file there; a skill whose front matter sets `context: fork` runs its steps in the agent that it names.
+  - **Relied on:** T232, T234
+  - **Checked:** documented: <https://code.claude.com/docs/en/sub-agents>, read 2026-11-19
+- **Fact:** A subagent does not start with the files of the lower folders that the agent which started it has loaded.
+  - **Relied on:** T223
+  - **Checked:** not yet: `add-pr-cost-calculator` task 7.2 checks it; in a project's cloud thread on 2026-11-19, a general-purpose subagent that Claude Code 2.1.328 started reported that its context held the root `CLAUDE.md` of each of the project's repositories, and neither `docs/CLAUDE.md` nor `tests/CLAUDE.md`, which the agent that started it had loaded
+- **Fact:** Claude Code skips each `CLAUDE.md` whose path a pattern of the setting `claudeMdExcludes` matches, a setting that a person's, a project's, a clone's local or an organization's managed settings can hold, and loads no `CLAUDE.md` while the variable `CLAUDE_CODE_DISABLE_CLAUDE_MDS` is set to `1`, nor any `CLAUDE.md`, skill, plugin or hook while `CLAUDE_CODE_SAFE_MODE` is set to `1`; with the instructions setting `managed-only`, which it reads only from a person's own settings, a settings file given at launch or an organization's managed settings, it leaves the project's `CLAUDE.md` files out at launch and still loads a lower folder's `CLAUDE.md` on demand.
+  - **Relied on:** T230
+  - **Checked:** documented: <https://code.claude.com/docs/en/memory>, <https://code.claude.com/docs/en/env-vars>, read 2026-11-19
+- **Fact:** Claude Code loads as instructions, beside a folder's `CLAUDE.md`, its `CLAUDE.local.md` and the rules files under its `.claude/rules/`, and an `AGENTS.md` where no `CLAUDE.md` or `CLAUDE.local.md` is in the session's folder or above it, or where a setting asks for both; a subagent that works in a worktree under `.claude/worktrees/` keeps the instruction files of the conversation that started it, and loads neither the `CLAUDE.md` nor the rules at that worktree's root.
+  - **Relied on:** T225
+  - **Checked:** documented: <https://code.claude.com/docs/en/memory>, <https://code.claude.com/docs/en/worktrees>, read 2026-11-19
+- **Fact:** Claude Code drops a block-level HTML comment from a `CLAUDE.md` before the agent reads it, and reads `@` followed by a path as an import of that file, whose text loads with it.
+  - **Relied on:** T226
+  - **Checked:** documented: <https://code.claude.com/docs/en/memory>, read 2026-11-19
+- **Fact:** Claude Code loads the start of its own memory of a repository into each session there, and each of a project's cloud threads starts with the project's memory and with its instructions, text that a person sets or asks Claude to change.
+  - **Relied on:** T236
+  - **Checked:** documented: <https://code.claude.com/docs/en/memory>, <https://code.claude.com/docs/en/claude-projects>, read 2026-11-19
+- **Fact:** `.claude/settings.json` makes Claude Code load the vendored Superpowers skills into a session that starts in the clone's folder and reads the repository's settings, and a session started outside the repository does not have them.
+  - **Relied on:** T33, T35, DR-142, DR-143, DR-258
   - **Checked:** not yet: none will, since no test may reach Claude Code
 - **Fact:** A Claude Code plugin does not install itself in a fresh session, and a repository's own session-start hook can install one for everyone.
   - **Relied on:** DR-022, DR-041
   - **Checked:** not yet: none will, since no test may reach Claude Code
-- **Fact:** `/simplify`, `/security-review`, `/code-review` and `/verify` are commands that a session here can run, in a context separate from the one that built the change.
+- **Fact:** Claude Code's own `/simplify`, `/security-review` and `/code-review` are commands that a session here can run, in a context separate from the one that built the change.
   - **Relied on:** DR-093
   - **Checked:** not yet: `add-pr-cost-calculator` task 5.1 checks it, by running them
+- **Fact:** Claude Code's own `/verify` is a skill that Claude cannot start on its own, so that a person starts it.
+  - **Relied on:** DR-093, T232
+  - **Checked:** documented: <https://code.claude.com/docs/en/sub-agents>, read 2026-11-19
+- **Fact:** Claude Code reads the MCP servers of a project from a `.mcp.json` at its root, a server that runs as a local command among them, asks before it uses them in an interactive session, and loads them without asking in a `claude -p` run, an Agent SDK session or a cloud session outside a project's threads.
+  - **Relied on:** T237
+  - **Checked:** documented: <https://code.claude.com/docs/en/mcp>, read 2026-11-19
 
 ## A6. The agent runs git in forms that capture recognises, and acts on GitHub as the owner's own account.
 
-- **Rests on it:** R7, R26, R33, R48, R52, R56, R79, R80, R82, R87, R112, T8, T10, T19, T32, T62, T64, T65, T189, DR-007, DR-010, DR-013, DR-014, DR-030, DR-034, DR-035, DR-055, DR-070, DR-111, DR-128, DR-140, DR-141, DR-144
-- **If it is wrong:** Commits made in other forms, through a wrapper, an alias, another tool or a person, would get no ledger file, so their calls would wait for a later commit or reach none (T8), and a change of branch made that way would send calls to the next branch (T19). If an agent could not read back and remove a link that a tool adds, private references would reach the public repository (T32, T65), and if agent sessions had an identity of their own, rulesets could hold what only `CLAUDE.md` holds today (T64).
+- **Rests on it:** R7, R26, R33, R48, R52, R56, R79, R80, R82, R87, R112, T8, T10, T19, T32, T62, T64, T65, T189, T233, DR-007, DR-010, DR-013, DR-014, DR-030, DR-034, DR-035, DR-055, DR-070, DR-111, DR-128, DR-140, DR-141, DR-144
+- **If it is wrong:** Commits made in other forms, through a wrapper, an alias, another tool or a person, would get no ledger file, so their calls would wait for a later commit or reach none (T8), and a change of branch made that way would send calls to the next branch (T19). If an agent could not read back and remove a link that a tool adds, private references would reach the public repository (T32, T65), as they would from a session that works here without the root, which says to remove one (T233), and if agent sessions had an identity of their own, rulesets could hold what only `CLAUDE.md` holds today (T64).
 - **Fact:** Claude Code applies the aliases and functions of the person's shell start-up file to every Bash command, so git run through one of them does not match the hook's condition.
   - **Relied on:** R7, R82, T8, T19, T189, DR-030
   - **Checked:** not yet: none will, since no test may reach Claude Code
@@ -197,7 +245,7 @@ The assumptions about Claude Code: what its transcripts hold, when its hooks run
   - **Relied on:** R26, T62, T64, DR-111, DR-140, DR-141, DR-144
   - **Checked:** not yet: none will, since no test may reach Claude Code; the walking skeleton's run on 2026-11-17 saw the pull request opened through GitHub's API by the account that later merged it and that the workflow's runs named as their actor, with nothing on GitHub to tell the agent's actions from the owner's
 - **Fact:** Tools that Claude Code sessions use can add a link to a Claude session, or an identifier from one, to a commit or a pull request's text.
-  - **Relied on:** R33, T32, T65, DR-070
+  - **Relied on:** R33, T32, T65, T233, DR-070
   - **Checked:** not yet: none will, since no test may reach Claude Code; the walking skeleton's run on 2026-11-17 saw session links added to the commit trailers that the agent wrote and to the pull request's text, and that text rewritten after it was opened with another footer that also linked to the session
 - **Fact:** An agent can read back the text it posted and remove such a link before it does harm.
   - **Relied on:** R33, T32, T65, DR-070
@@ -258,6 +306,79 @@ The assumptions about Claude Code: what its transcripts hold, when its hooks run
   - **Relied on:** R183, R184, DR-204
   - **Checked:** documented: <https://code.claude.com/docs/en/plugins/loading>, read 2026-11-09
 
+## A70. A project's cloud thread starts in a folder that holds each of its clones directly inside it, and its machine pauses after a turn and resumes with its files.
+
+- **Rests on it:** R180, R185, T120, T128, T131, T193, T232, T233, DR-197, DR-198, DR-199
+- **If it is wrong:** If a thread's clones lay deeper in its folder, a plugin's start run would meet none of them, so a thread's first calls in a clone would be left out and flagged for consent until a run met that clone (R180, DR-198). If more of a thread's calls named its folder than the design expects, its figure would be lower still (T128). If a pause rebuilt the machine instead of resuming it, every pause would lose the calls that wait for a commit (T131), and if a resume changed what the fingerprint of the opt-in's files holds, every pause would end the session's interval and drop those calls, with a flag for consent (T120). If a thread started elsewhere than in a folder above its clones, which clones' context files load at its start, and so how far another repository's rules reach work here, would differ from what the threat model says (T232, T233).
+- **Fact:** A cloud session with several repositories starts in a folder above its clones.
+  - **Relied on:** R180, T193, DR-198
+  - **Checked:** documented: <https://code.claude.com/docs/en/settings>, read 2026-11-09
+- **Fact:** A project's cloud thread, with one repository or several, starts in a folder that holds each clone directly inside it and is in no repository, and that folder is the project directory that its hooks get.
+  - **Relied on:** R180, T128, T232, T233, DR-198, DR-199
+  - **Checked:** not yet: `add-pr-cost-calculator` task 7.2 checks it; the walking skeleton's run on 2026-11-17 saw a thread start in a folder that held its clone directly inside it and was in no repository
+- **Fact:** A thread's calls name that folder as their working directory until Claude moves into a clone, and a subagent's calls name it too.
+  - **Relied on:** T128, DR-199
+  - **Checked:** not yet: `add-pr-cost-calculator` task 7.2 checks it; the walking skeleton's run on 2026-11-17 saw its calls name that folder until Claude moved into the clone, and again whenever Claude's directory went back to it, while its subagent, started after the move, named the clone, so whether a subagent's calls name the folder could not be told
+- **Fact:** A new thread's start run comes before its first prompt is written to the transcript.
+  - **Relied on:** R180, DR-198
+  - **Checked:** not yet: `add-pr-cost-calculator` task 7.2 checks it; the walking skeleton's run on 2026-11-17 could not tell, since the skeleton registers no start hook
+- **Fact:** A thread's sandbox pauses between turns and resumes when the thread continues, and one that cannot be resumed continues from a fresh clone.
+  - **Relied on:** T131, DR-197
+  - **Checked:** documented: <https://code.claude.com/docs/en/claude-projects>, read 2026-11-09
+- **Fact:** After a thread's machine pauses and resumes, Claude's current directory is the thread's folder again, whatever clone Claude had moved into, so the calls that follow name that folder until Claude moves into a clone again.
+  - **Relied on:** R185, T128, DR-199
+  - **Checked:** not yet: `add-pr-cost-calculator` task 7.2 checks it; the walking skeleton's run on 2026-11-17 saw it after a resume
+- **Fact:** A pause runs the session-end hooks and the resume runs the start hooks, with the same session and transcript, and a resumed machine keeps its files.
+  - **Relied on:** T131, DR-197
+  - **Checked:** not yet: `add-pr-cost-calculator` task 7.2 checks it; the walking skeleton's run on 2026-11-17 saw the session-end hooks run while the thread waited between turns, as a pause runs them, and the machine resume with its files, while whether the resume ran start hooks could not be told, since the skeleton registers none
+- **Fact:** A resumed machine keeps the device and inode numbers, sizes and modification times of the person's global git configuration files, so that a pause and a resume change nothing that the fingerprint of the opt-in's files holds.
+  - **Relied on:** T120, T131
+  - **Checked:** not yet: `add-pr-cost-calculator` task 7.2 checks it; the walking skeleton's run on 2026-11-17 could not tell, since it did not read those details of the files
+
+## A71. A line in a cloud environment's setup script reaches the global git configuration of each new session in that environment, and an organization can share an environment with its members.
+
+- **Rests on it:** R1, R185, R186, R194, R199, T3, T4, T116, T134, T145, T154, T155, T185, T230, DR-201, DR-202, DR-212
+- **If it is wrong:** If the line did not reach a session's global git configuration, or Claude Code's own setup of a session wrote over it, a person who added it would record nothing, with nothing to say why (R185, DR-201). If a shared environment's setup script did not run in each member's session there, the organization's option would opt no one in (R186, T134). If an environment's variables did not reach a running session's hooks, or the `GIT_CONFIG_` variables that a cloud session sets for itself replaced them, the opt-out that the README gives for an environment would not turn capture off there (R194, T3, T134). If `/hooks` did not run in a cloud session, a person there could not see the hooks that run, as the README says they can (R186, R194). If a restored machine ran the setup script again, an opt-out made in a running session would last only until its next restore (T154). If a member could change a shared environment, or a shared personal environment changed its ID, the README's section on organizations would say what does not hold (R186, T134), and if `CLAUDE_CODE_REMOTE` were `true` on a person's own computer, the organization's hook that the README gives would write the opt-in there too (T155), and if a `SessionStart` hook did not run again after `/clear` or a compaction, an opt-out in a running session would hold longer than the README says (R194, T3, T134, T155). If a cloud session's pushes and pull requests were not the person's, what a session spends would be traced to the person by less than the README's short start says (R199, T4, T116, T145, DR-212). If an environment's variables did not reach Claude Code itself, none of them could keep the context files from loading in its sessions (T230).
+- **Fact:** A cloud environment's setup script runs as root, before Claude Code starts, the first time a session starts in the environment, and the files that it writes are the starting point of the environment's later sessions until the script or the allowed hosts change or that snapshot expires after about seven days, and it does not run again when an idle machine is restored.
+  - **Relied on:** R1, R185, T154, T185, DR-201
+  - **Checked:** documented: <https://code.claude.com/docs/en/cloud-environments>, read 2026-11-09
+- **Fact:** `git config --global` in the setup script writes the global git configuration of the user who runs the session, and Claude Code's own setup of a session leaves the line there.
+  - **Relied on:** R1, R185, T3, DR-201
+  - **Checked:** not yet: `add-pr-cost-calculator` task 7.2 checks it; the walking skeleton's run on 2026-11-17 saw the line reach the session's global git configuration from the file in the home folder, and Claude Code's own setup leave it there
+- **Fact:** An existing session reads an environment's variables again when its machine is restored or rebuilt, so that a change to them reaches it from then on, while a change to the setup script reaches it only when its machine is rebuilt.
+  - **Relied on:** R194, T3, T134, T230
+  - **Checked:** documented: <https://code.claude.com/docs/en/cloud-environments>, read 2026-11-09
+- **Fact:** An environment's variables reach the hooks that its sessions run, and the `GIT_CONFIG_` variables that a cloud session sets for itself leave those that the environment sets in force, in a hook's environment and in the shell of the commands that the agent runs, so that git reads there the `GIT_CONFIG_` variables that the environment sets.
+  - **Relied on:** R194, T3, T134
+  - **Checked:** not yet: `add-pr-cost-calculator` task 7.2 checks it; in a project's cloud thread on 2026-11-10, whose environment sets none, Claude Code started the agent's shell with the session's own pairs from the first index, while its own process started with no `GIT_CONFIG_` variable; the walking skeleton's run on 2026-11-17 could not tell, since the skeleton does not look for them
+- **Fact:** An Owner of a Team or Enterprise organization can create an environment shared with every member, which appears in each member's selector, and an organization's default fills a member's selector until they pick another, while a project's threads use the project's environment.
+  - **Relied on:** R186, T134, DR-202
+  - **Checked:** documented: <https://code.claude.com/docs/en/cloud-environments>, read 2026-11-09
+- **Fact:** A member sees a shared environment's configuration read-only, and only an Owner edits it; an Owner can also share an environment of their own, which keeps its ID, so that the sessions that already use it are unaffected, and every member can then start sessions in it; and a Claude Tag channel's sessions use the organization's shared or self-hosted environments, as its default environment can be.
+  - **Relied on:** R186, T134
+  - **Checked:** documented: <https://code.claude.com/docs/en/cloud-environments>, read 2026-11-10
+- **Fact:** A cloud session's environment carries `CLAUDE_CODE_REMOTE` as `true`, and it is never `true` on a person's own computer.
+  - **Relied on:** R186, T155
+  - **Checked:** documented: <https://code.claude.com/docs/en/cloud-environments>, read 2026-11-10
+- **Fact:** An organization's server-managed settings run their hooks in its members' sessions in Anthropic-hosted environments, as its managed settings run theirs in their terminal sessions, and `/hooks` labels each hook with where it comes from.
+  - **Relied on:** R186, T134, T155, DR-202
+  - **Checked:** documented: <https://code.claude.com/docs/en/cloud-environments>, <https://code.claude.com/docs/en/hooks>, read 2026-11-09
+- **Fact:** A `SessionStart` hook runs as a session starts or resumes, and again after `/clear` or a compaction.
+  - **Relied on:** R186, R194, T3, T134, T155
+  - **Checked:** documented: <https://code.claude.com/docs/en/hooks>, read 2026-11-11
+- **Fact:** `/hooks` runs in a cloud session and lists the hooks that run there.
+  - **Relied on:** R186, R194
+  - **Checked:** not yet: `add-pr-cost-calculator` task 7.2 checks it; the walking skeleton's run on 2026-11-17 could not tell, since its steps did not call for `/hooks`
+- **Fact:** Projects are not offered on Team or Enterprise plans yet.
+  - **Relied on:** R186, DR-202
+  - **Checked:** documented: <https://code.claude.com/docs/en/claude-projects>, read 2026-11-09
+- **Fact:** A cloud session's commits name the author that git's global configuration there gives, `Claude` with the address `noreply@anthropic.com`, while the pushes and the pull requests that carry them are made with the person's own GitHub account.
+  - **Relied on:** R199, T4, T116, T145, DR-212
+  - **Checked:** not yet: `add-pr-cost-calculator` task 7.2 checks it; in a project's cloud thread on 2026-11-10, git's global configuration gave that name and address, and the walking skeleton's run on 2026-11-17 saw its commits name that author, and its pushes and pull request made with the person's account
+- **Fact:** A cloud session reads neither the person's own Claude Code settings nor a plugin's options, which Claude Code keeps there.
+  - **Relied on:** DR-201
+  - **Checked:** documented: <https://code.claude.com/docs/en/settings>, <https://code.claude.com/docs/en/plugins/manifest-reference>, read 2026-11-09
+
 ## A25. Claude Code keeps the hook registrations it read at session start.
 
 - **Rests on it:** R88, T59, DR-022, DR-211
@@ -267,6 +388,20 @@ The assumptions about Claude Code: what its transcripts hold, when its hooks run
   - **Checked:** not yet: `add-pr-cost-calculator` task 1.1 checks it
 - **Fact:** Claude Code normally picks up direct edits to hooks in settings files through its file watcher.
   - **Relied on:** T59
+  - **Checked:** documented: <https://code.claude.com/docs/en/hooks>, read 2026-11-01
+
+## A61. A session that starts in a repository's folder runs the hooks that the repository's settings register, once the folder is trusted, unless it is a cloud thread of a project or a cloud session with several repositories.
+
+- **Rests on it:** R7, T8, T65, DR-126, DR-172
+- **If it is wrong:** The calls of a session that starts in the repository's trusted folder and runs none of its hooks are never recorded, and the comment shows less than was used, with nothing to say why (T8). If a project's cloud thread ran the repository's hooks, the further answer to T65, a hook, would hold there too (T65).
+- **Fact:** A cloud session with one repository, outside a project's threads, reads that repository's `.claude/settings.json`, since the file is part of the clone and the session starts inside it.
+  - **Relied on:** R7, T8, DR-172
+  - **Checked:** documented: <https://code.claude.com/docs/en/settings>, read 2026-11-01
+- **Fact:** In a cloud thread of a project, none of a repository's `.claude/settings.json` hooks, permission rules or `env` apply, and a cloud session with several repositories reads only the `enabledPlugins` and `extraKnownMarketplaces` keys of each repository's file.
+  - **Relied on:** R7, T8, T65, DR-126, DR-172, `add-pr-cost-calculator` task 7.1
+  - **Checked:** documented: <https://code.claude.com/docs/en/settings>, read 2026-11-01
+- **Fact:** An interactive session holds back the hooks of every settings file until the person accepts the folder's workspace trust dialog, while a `-p` or SDK session treats the folder as trusted.
+  - **Relied on:** R7, T8, DR-172
   - **Checked:** documented: <https://code.claude.com/docs/en/hooks>, read 2026-11-01
 
 ## A36. Claude Code writes a call as lines that share one message id, with the call's final usage on each line that gives its stop reason.
@@ -390,93 +525,6 @@ The assumptions about Claude Code: what its transcripts hold, when its hooks run
 - **Fact:** Claude Code moves a command that reaches its timeout to the background, and returns its result while the command still runs.
   - **Relied on:** R113, R116, T10
   - **Checked:** not yet: none will, since no test may reach Claude Code
-
-## A70. A project's cloud thread starts in a folder that holds each of its clones directly inside it, and its machine pauses after a turn and resumes with its files.
-
-- **Rests on it:** R180, R185, T120, T128, T131, T193, DR-197, DR-198, DR-199
-- **If it is wrong:** If a thread's clones lay deeper in its folder, a plugin's start run would meet none of them, so a thread's first calls in a clone would be left out and flagged for consent until a run met that clone (R180, DR-198). If more of a thread's calls named its folder than the design expects, its figure would be lower still (T128). If a pause rebuilt the machine instead of resuming it, every pause would lose the calls that wait for a commit (T131), and if a resume changed what the fingerprint of the opt-in's files holds, every pause would end the session's interval and drop those calls, with a flag for consent (T120).
-- **Fact:** A cloud session with several repositories starts in a folder above its clones.
-  - **Relied on:** R180, T193, DR-198
-  - **Checked:** documented: <https://code.claude.com/docs/en/settings>, read 2026-11-09
-- **Fact:** A project's cloud thread, with one repository or several, starts in a folder that holds each clone directly inside it and is in no repository, and that folder is the project directory that its hooks get.
-  - **Relied on:** R180, T128, DR-198, DR-199
-  - **Checked:** not yet: `add-pr-cost-calculator` task 7.2 checks it; the walking skeleton's run on 2026-11-17 saw a thread start in a folder that held its clone directly inside it and was in no repository
-- **Fact:** A thread's calls name that folder as their working directory until Claude moves into a clone, and a subagent's calls name it too.
-  - **Relied on:** T128, DR-199
-  - **Checked:** not yet: `add-pr-cost-calculator` task 7.2 checks it; the walking skeleton's run on 2026-11-17 saw its calls name that folder until Claude moved into the clone, and again whenever Claude's directory went back to it, while its subagent, started after the move, named the clone, so whether a subagent's calls name the folder could not be told
-- **Fact:** A new thread's start run comes before its first prompt is written to the transcript.
-  - **Relied on:** R180, DR-198
-  - **Checked:** not yet: `add-pr-cost-calculator` task 7.2 checks it; the walking skeleton's run on 2026-11-17 could not tell, since the skeleton registers no start hook
-- **Fact:** A thread's sandbox pauses between turns and resumes when the thread continues, and one that cannot be resumed continues from a fresh clone.
-  - **Relied on:** T131, DR-197
-  - **Checked:** documented: <https://code.claude.com/docs/en/claude-projects>, read 2026-11-09
-- **Fact:** After a thread's machine pauses and resumes, Claude's current directory is the thread's folder again, whatever clone Claude had moved into, so the calls that follow name that folder until Claude moves into a clone again.
-  - **Relied on:** R185, T128, DR-199
-  - **Checked:** not yet: `add-pr-cost-calculator` task 7.2 checks it; the walking skeleton's run on 2026-11-17 saw it after a resume
-- **Fact:** A pause runs the session-end hooks and the resume runs the start hooks, with the same session and transcript, and a resumed machine keeps its files.
-  - **Relied on:** T131, DR-197
-  - **Checked:** not yet: `add-pr-cost-calculator` task 7.2 checks it; the walking skeleton's run on 2026-11-17 saw the session-end hooks run while the thread waited between turns, as a pause runs them, and the machine resume with its files, while whether the resume ran start hooks could not be told, since the skeleton registers none
-- **Fact:** A resumed machine keeps the device and inode numbers, sizes and modification times of the person's global git configuration files, so that a pause and a resume change nothing that the fingerprint of the opt-in's files holds.
-  - **Relied on:** T120, T131
-  - **Checked:** not yet: `add-pr-cost-calculator` task 7.2 checks it; the walking skeleton's run on 2026-11-17 could not tell, since it did not read those details of the files
-
-## A71. A line in a cloud environment's setup script reaches the global git configuration of each new session in that environment, and an organization can share an environment with its members.
-
-- **Rests on it:** R1, R185, R186, R194, R199, T3, T4, T116, T134, T145, T154, T155, T185, DR-201, DR-202, DR-212
-- **If it is wrong:** If the line did not reach a session's global git configuration, or Claude Code's own setup of a session wrote over it, a person who added it would record nothing, with nothing to say why (R185, DR-201). If a shared environment's setup script did not run in each member's session there, the organization's option would opt no one in (R186, T134). If an environment's variables did not reach a running session's hooks, or the `GIT_CONFIG_` variables that a cloud session sets for itself replaced them, the opt-out that the README gives for an environment would not turn capture off there (R194, T3, T134). If `/hooks` did not run in a cloud session, a person there could not see the hooks that run, as the README says they can (R186, R194). If a restored machine ran the setup script again, an opt-out made in a running session would last only until its next restore (T154). If a member could change a shared environment, or a shared personal environment changed its ID, the README's section on organizations would say what does not hold (R186, T134), and if `CLAUDE_CODE_REMOTE` were `true` on a person's own computer, the organization's hook that the README gives would write the opt-in there too (T155), and if a `SessionStart` hook did not run again after `/clear` or a compaction, an opt-out in a running session would hold longer than the README says (R194, T3, T134, T155). If a cloud session's pushes and pull requests were not the person's, what a session spends would be traced to the person by less than the README's short start says (R199, T4, T116, T145, DR-212).
-- **Fact:** A cloud environment's setup script runs as root, before Claude Code starts, the first time a session starts in the environment, and the files that it writes are the starting point of the environment's later sessions until the script or the allowed hosts change or that snapshot expires after about seven days, and it does not run again when an idle machine is restored.
-  - **Relied on:** R1, R185, T154, T185, DR-201
-  - **Checked:** documented: <https://code.claude.com/docs/en/cloud-environments>, read 2026-11-09
-- **Fact:** `git config --global` in the setup script writes the global git configuration of the user who runs the session, and Claude Code's own setup of a session leaves the line there.
-  - **Relied on:** R1, R185, T3, DR-201
-  - **Checked:** not yet: `add-pr-cost-calculator` task 7.2 checks it; the walking skeleton's run on 2026-11-17 saw the line reach the session's global git configuration from the file in the home folder, and Claude Code's own setup leave it there
-- **Fact:** An existing session reads an environment's variables again when its machine is restored or rebuilt, so that a change to them reaches it from then on, while a change to the setup script reaches it only when its machine is rebuilt.
-  - **Relied on:** R194, T3, T134
-  - **Checked:** documented: <https://code.claude.com/docs/en/cloud-environments>, read 2026-11-09
-- **Fact:** An environment's variables reach the hooks that its sessions run, and the `GIT_CONFIG_` variables that a cloud session sets for itself leave those that the environment sets in force, in a hook's environment and in the shell of the commands that the agent runs, so that git reads there the `GIT_CONFIG_` variables that the environment sets.
-  - **Relied on:** R194, T3, T134
-  - **Checked:** not yet: `add-pr-cost-calculator` task 7.2 checks it; in a project's cloud thread on 2026-11-10, whose environment sets none, Claude Code started the agent's shell with the session's own pairs from the first index, while its own process started with no `GIT_CONFIG_` variable; the walking skeleton's run on 2026-11-17 could not tell, since the skeleton does not look for them
-- **Fact:** An Owner of a Team or Enterprise organization can create an environment shared with every member, which appears in each member's selector, and an organization's default fills a member's selector until they pick another, while a project's threads use the project's environment.
-  - **Relied on:** R186, T134, DR-202
-  - **Checked:** documented: <https://code.claude.com/docs/en/cloud-environments>, read 2026-11-09
-- **Fact:** A member sees a shared environment's configuration read-only, and only an Owner edits it; an Owner can also share an environment of their own, which keeps its ID, so that the sessions that already use it are unaffected, and every member can then start sessions in it; and a Claude Tag channel's sessions use the organization's shared or self-hosted environments, as its default environment can be.
-  - **Relied on:** R186, T134
-  - **Checked:** documented: <https://code.claude.com/docs/en/cloud-environments>, read 2026-11-10
-- **Fact:** A cloud session's environment carries `CLAUDE_CODE_REMOTE` as `true`, and it is never `true` on a person's own computer.
-  - **Relied on:** R186, T155
-  - **Checked:** documented: <https://code.claude.com/docs/en/cloud-environments>, read 2026-11-10
-- **Fact:** An organization's server-managed settings run their hooks in its members' sessions in Anthropic-hosted environments, as its managed settings run theirs in their terminal sessions, and `/hooks` labels each hook with where it comes from.
-  - **Relied on:** R186, T134, T155, DR-202
-  - **Checked:** documented: <https://code.claude.com/docs/en/cloud-environments>, <https://code.claude.com/docs/en/hooks>, read 2026-11-09
-- **Fact:** A `SessionStart` hook runs as a session starts or resumes, and again after `/clear` or a compaction.
-  - **Relied on:** R186, R194, T3, T134, T155
-  - **Checked:** documented: <https://code.claude.com/docs/en/hooks>, read 2026-11-11
-- **Fact:** `/hooks` runs in a cloud session and lists the hooks that run there.
-  - **Relied on:** R186, R194
-  - **Checked:** not yet: `add-pr-cost-calculator` task 7.2 checks it; the walking skeleton's run on 2026-11-17 could not tell, since its steps did not call for `/hooks`
-- **Fact:** Projects are not offered on Team or Enterprise plans yet.
-  - **Relied on:** R186, DR-202
-  - **Checked:** documented: <https://code.claude.com/docs/en/claude-projects>, read 2026-11-09
-- **Fact:** A cloud session's commits name the author that git's global configuration there gives, `Claude` with the address `noreply@anthropic.com`, while the pushes and the pull requests that carry them are made with the person's own GitHub account.
-  - **Relied on:** R199, T4, T116, T145, DR-212
-  - **Checked:** not yet: `add-pr-cost-calculator` task 7.2 checks it; in a project's cloud thread on 2026-11-10, git's global configuration gave that name and address, and the walking skeleton's run on 2026-11-17 saw its commits name that author, and its pushes and pull request made with the person's account
-- **Fact:** A cloud session reads neither the person's own Claude Code settings nor a plugin's options, which Claude Code keeps there.
-  - **Relied on:** DR-201
-  - **Checked:** documented: <https://code.claude.com/docs/en/settings>, <https://code.claude.com/docs/en/plugins/manifest-reference>, read 2026-11-09
-
-## A61. A session that starts in a repository's folder runs the hooks that the repository's settings register, once the folder is trusted, unless it is a cloud thread of a project or a cloud session with several repositories.
-
-- **Rests on it:** R7, T8, DR-126, DR-172
-- **If it is wrong:** The calls of a session that starts in the repository's trusted folder and runs none of its hooks are never recorded, and the comment shows less than was used, with nothing to say why (T8).
-- **Fact:** A cloud session with one repository, outside a project's threads, reads that repository's `.claude/settings.json`, since the file is part of the clone and the session starts inside it.
-  - **Relied on:** R7, T8, DR-172
-  - **Checked:** documented: <https://code.claude.com/docs/en/settings>, read 2026-11-01
-- **Fact:** In a cloud thread of a project, none of a repository's `.claude/settings.json` hooks, permission rules or `env` apply, and a cloud session with several repositories reads only the `enabledPlugins` and `extraKnownMarketplaces` keys of each repository's file.
-  - **Relied on:** R7, T8, DR-126, DR-172, `add-pr-cost-calculator` task 7.1
-  - **Checked:** documented: <https://code.claude.com/docs/en/settings>, read 2026-11-01
-- **Fact:** An interactive session holds back the hooks of every settings file until the person accepts the folder's workspace trust dialog, while a `-p` or SDK session treats the folder as trusted.
-  - **Relied on:** R7, T8, DR-172
-  - **Checked:** documented: <https://code.claude.com/docs/en/hooks>, read 2026-11-01
 
 ## A62. A repository opened in Claude Code can already run any hook its own settings register, including one that changes a person's git configuration.
 

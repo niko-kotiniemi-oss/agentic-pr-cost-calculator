@@ -1,12 +1,12 @@
 # DR-237: Data and issue text never instruct, and the guide steers below `CLAUDE.md` and the skills' steps
 
 - **Type:** process
-- **Status:** accepted
+- **Status:** closed
 - **Decided by:** the change `add-pr-cost-calculator`, as the owner asked on 2026-11-13
 - **Requirements:** R134, R219, R220
 - **Threats:** T33, T81, T94, T180, T181
 - **Replaces:** DR-082
-- **Closed by:** none
+- **Closed by:** DR-258
 
 ## Context
 

@@ -1,6 +1,6 @@
 # Contributing
 
-Thank you for helping. This page says how a change gets made here. The rules for anyone working on the repository, person or agent, are in [`CLAUDE.md`](CLAUDE.md), and they apply to every contribution.
+Thank you for helping. This page says how a change gets made here. The rules for anyone working on the repository, person or agent, are in [`CLAUDE.md`](CLAUDE.md) and the folder files that it names, [`docs/CLAUDE.md`](docs/CLAUDE.md) and [`tests/CLAUDE.md`](tests/CLAUDE.md), and they apply to every contribution. You need neither Claude Code nor Superpowers to contribute: the checks below run without them.
 
 ## Before you start
 
@@ -15,6 +15,8 @@ npm ci --ignore-scripts
 ```
 
 The tool supports Python 3.11 and later, so use Python 3.11 locally if you can: CI tests on 3.11 and on the newest release (R25). Node is needed only for the OpenSpec CLI, which is a development tool.
+
+If you work with Claude Code: Start a Claude Code session for this repository in the clone's own folder, so that it loads this repository's `CLAUDE.md` and settings from the start.
 
 ## Making a change
 

@@ -328,3 +328,64 @@ The release workflow SHALL refuse a tag while the threat model at the tag, or at
 
 - **WHEN** a tag's threat model holds no critical risk, and its changelog entry names each high risk that carries an acceptance or a further answer that cites a backlog item, by its ID and its title
 - **THEN** this check passes the tag, and the release goes on to its other checks
+
+### Requirement: Renovate keeps the development Python at the oldest supported release
+
+Renovate SHALL propose no update of `.python-version`, which keeps the Python that the project develops on at the oldest supported release (see "Every copy of the oldest supported Python agrees with its one source"), by one package rule that matches the manager `pyenv` alone and turns its updates off, and nothing else in its configuration, at any depth, SHALL set `enabled`, `ignoreDeps` or `enabledManagers`. Tests SHALL fail otherwise.
+
+#### Scenario: A configuration that would update `.python-version` fails CI
+
+- **WHEN** Renovate's configuration holds no package rule that matches the manager `pyenv` and sets `enabled` to `false`
+- **THEN** a test fails and says that Renovate would propose a newer Python for `.python-version`
+
+#### Scenario: A rule that turns off more than `.python-version` fails CI
+
+- **WHEN** a package rule that sets `enabled` to `false` matches another manager than `pyenv`, or matches by anything else, such as a package's name, a file or an update type
+- **THEN** a test fails and names the rule
+
+#### Scenario: Another setting that turns updates on or off fails CI
+
+- **WHEN** anything else in Renovate's configuration, at any depth, sets `enabled`, as a second rule that turns updates off, a later package rule that turns `pyenv` on again or a manager's own `enabled` does, or sets `ignoreDeps` or `enabledManagers`
+- **THEN** a test fails and names the setting by its path
+
+#### Scenario: The rule for `.python-version` alone passes
+
+- **WHEN** the only setting of `enabled` in Renovate's configuration is a package rule that matches the manager `pyenv` alone and sets it to `false`
+- **THEN** the test passes it
+
+### Requirement: Renovate skips only the paths that its test lists, with no `includePaths` or `allowedVersions`
+
+Renovate's configuration SHALL set `ignorePaths` only at its top level, to the list that its test holds, and SHALL set `includePaths` and `allowedVersions` nowhere, at any depth, nor `packageFiles` or `ignoreNodeModules`, the older names that Renovate rewrites into `includePaths` and `ignorePaths`, since each sets the files that Renovate reads or the versions that it proposes, and an update that one keeps back never shows. Tests SHALL fail otherwise.
+
+#### Scenario: An `includePaths`, an `allowedVersions` or another list of paths to skip fails CI
+
+- **WHEN** Renovate's configuration sets `includePaths` or `allowedVersions` at any depth, as a package rule that caps a tool's versions does, or `packageFiles` or `ignoreNodeModules`, or sets `ignorePaths` anywhere but its top level, as in a manager's own settings, or holds at its top level no `ignorePaths`, or one other than the list that its test holds, such as one that adds `.github/**`
+- **THEN** a test fails and names the setting by its path
+
+#### Scenario: The list of paths that Renovate skips passes
+
+- **WHEN** Renovate's configuration sets `ignorePaths` only at its top level, to the list that its test holds, and sets `includePaths`, `allowedVersions`, `packageFiles` and `ignoreNodeModules` nowhere
+- **THEN** the test passes it
+
+### Requirement: Renovate never merges on its own
+
+Renovate's configuration SHALL set no key whose name begins with `automerge` to anything but `false`, at its top level or in any object within it, and SHALL extend, at any depth, no preset but those that its test lists, a preset written as one string included, since a preset that another repository serves can turn merging on later with no diff here, so that every update that it proposes waits for the owner's merge. Tests SHALL fail otherwise.
+
+#### Scenario: A setting that would let Renovate merge fails CI
+
+- **WHEN** Renovate's configuration sets a key whose name begins with `automerge` to anything but `false` at any depth, as `automerge` to `true` in a package rule, in `vulnerabilityAlerts` or in `lockFileMaintenance`, or `automergeMinor` to `true`, or extends, at any depth, a preset that its test does not list, such as `:automergeMinor`, one that another repository serves, or one written as a string
+- **THEN** a test fails and names the setting or the preset
+
+#### Scenario: A configuration that merges nothing passes
+
+- **WHEN** no key of Renovate's configuration whose name begins with `automerge` is set to anything but `false`, and each preset that it extends is one that its test lists
+- **THEN** the test passes it
+
+### Requirement: An update of OpenSpec or Superpowers says how its files are refreshed
+
+Renovate SHALL give each pull request that updates the pinned OpenSpec or the vendored Superpowers, by a package rule that matches its package by name and by nothing else, the note that the scenario gives, word for word, so that whoever reads it learns that the owner reads the update's diff, then its files refreshed on its branch from a working tree outside any agent session's folder, and that no agent session starts on the branch before then. Tests SHALL fail otherwise.
+
+#### Scenario: An update of OpenSpec or Superpowers without its note fails CI
+
+- **WHEN** Renovate's configuration holds, for the package `@fission-ai/openspec` or `obra/superpowers`, no package rule that matches it by name, holds no other key but its description, and gives it, as the only text of `prBodyNotes`, the note "Before this merges, the owner reads this diff. Its generated or vendored files are then refreshed on this branch from a working tree outside any agent session's folder, by `scripts/verify-openspec.sh` for OpenSpec, which writes the generated skills again, or by `scripts/sync-superpowers.sh` for Superpowers, and the owner reads the refreshed diff before merging. No agent session starts on this branch before the owner has read its refreshed diff.", or Renovate's configuration sets a `prBodyTemplate` at any depth
+- **THEN** a test fails and names each package that lacks it, or the template by its path

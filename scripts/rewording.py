@@ -6,8 +6,11 @@ Run in the repository, it compares HEAD with where HEAD left BASE, which is
 `refs/remotes/origin/main` unless given, in the Markdown files that the wording test
 reads, and prints Markdown for the pull request (task 1.20; design decision 14; T90,
 T94). It names both commits by their full hashes, compares a renamed page with what it
-was, and names each changed file that it does not compare. It lists the changes to
-`CLAUDE.md` first and those to the guide next, since both steer. It reads each page with
+was, and names each changed file that it does not compare. It lists the changes to the
+context files first, the root `CLAUDE.md` and then the folder files, and those to the guide
+next, since they steer, and compares the context files, which are wrapped at 100
+characters, paragraph by paragraph, so that a paragraph that a change reflows shows as the
+words that changed (design decision 21). It reads each page with
 `scripts/wording.py`, as the wording test does, so that a word inside code, among the
 glossary's words to avoid or in a title that an accepted record quotes is never taken
 for a replacement. A replacement is judged by the glossary at HEAD, and a line that
@@ -33,6 +36,7 @@ import subprocess
 import sys
 from collections import Counter
 from pathlib import Path
+from typing import NamedTuple
 
 from wording import (
     BACKTICKS,
@@ -51,8 +55,20 @@ from wording import (
 )
 
 USAGE = "usage: python3 scripts/rewording.py [BASE]"
+# The context files, which are wrapped at 100 characters and compared paragraph by paragraph.
+CONTEXT_FILES = ("CLAUDE.md", "docs/CLAUDE.md", "tests/CLAUDE.md")
 # The files that steer, whose changes are listed first, in this order (T94).
-STEERING = ("CLAUDE.md", "docs/patterns.md")
+STEERING = (*CONTEXT_FILES, "docs/patterns.md")
+# A heading at column 0, as Markdown reads one there: one to six `#`, then a space, a tab or
+# the line's end, so that a wrapped line that starts with an issue's number, such as `#46`, is
+# text.
+HEADING = re.compile(r"#{1,6}(?:[ \t]|$)")
+# A list item at column 0: a bullet, or a number of one to nine digits and `.` or `)`, then a
+# space.
+ITEM = re.compile(r"(?:[-*+]|(?P<number>[0-9]{1,9})[.)]) ")
+# A thematic break at column 0, as Markdown reads one there: three or more of one of `-`, `*`
+# and `_`, with nothing else on the line but spaces and tabs.
+BREAK = re.compile(r"([-*_])(?:[ \t]*\1){2,}[ \t]*$")
 TOKEN = re.compile(r"\S+|\s+")
 # How many tokens, each a word or the spaces after one, are shown on each side of a change.
 CONTEXT = 8
@@ -64,6 +80,61 @@ KEPT_AS_WRITTEN = "which keeps its words as written"
 
 class Refused(Exception):
     """Why the comparison cannot be made."""
+
+
+class Unit(NamedTuple):
+    """What a comparison takes as one line: its first line's index and the index after its
+    last, its text, and its text as the wording test reads it, which keeps each character's
+    place."""
+
+    start: int
+    end: int
+    text: str
+    read: str
+
+
+def starts_a_block(line: str, unit: str) -> bool:
+    """Whether a line that follows a line of text in the unit given starts a block of its
+    own: a heading or a list item, each read only at column 0, and an item's marker only
+    before a space. A numbered item other than 1 continues a unit whose first line is a
+    paragraph's text at column 0, which Markdown lets no such item interrupt, so that a
+    wrapped line that starts with a sentence's last number, such as `200.`, continues its
+    paragraph. After any other, a list item, a quote, a thematic break or an indented line
+    such as a list item's later paragraph, it starts a block, as Markdown does but for an
+    indented paragraph outside a list, where the line is then listed rather than joined.
+    Any other line is taken for text, though Markdown starts a block at some, such as an
+    indented marker or heading, a `>`, a thematic break or a marker before a tab: a rewrap
+    onto one of those that changes no word is not listed, while a change of words is, since
+    it changes the joined text."""
+    item = ITEM.match(line)
+    if item and item["number"] and int(item["number"]) != 1:
+        return unit[:1] in (" ", "\t", ">") or bool(ITEM.match(unit) or BREAK.match(unit))
+    return bool(item or HEADING.match(line))
+
+
+def units(text: str, read: str, wrapped: bool) -> list[Unit]:
+    """A file's lines, or, for a file wrapped in its paragraphs, its paragraphs: a line that
+    follows a line of text, other than a heading, and starts no block of its own continues
+    it, joined to it by one space in place of its line break and its indent."""
+    lines, reads = text.split("\n"), read.split("\n")
+    found: list[Unit] = []
+    for at, (line, seen) in enumerate(zip(lines, reads, strict=True)):
+        previous = lines[at - 1] if at else ""
+        if (
+            wrapped
+            and previous.strip()
+            and not HEADING.match(previous)
+            and line.strip()
+            and not starts_a_block(line, found[-1].text)
+        ):
+            indent = len(line) - len(line.lstrip(" "))
+            last = found[-1]
+            found[-1] = Unit(
+                last.start, at + 1, f"{last.text} {line[indent:]}", f"{last.read} {seen[indent:]}"
+            )
+        else:
+            found.append(Unit(at, at + 1, line, seen))
+    return found
 
 
 def git(*args: str, refused: str = "") -> str:
@@ -203,36 +274,43 @@ def compared(
 ) -> tuple[list[str], list[str], Counter[str], int]:
     """A changed file's hunks that are more than words to avoid replaced, and its lines that
     replace only words to avoid, one of them new to the glossary, as Markdown; the words
-    that the lines that replace only words replaced; and how many lines those are."""
-    before, after = old.split("\n"), new.split("\n")
-    read = readable(path, old, kept)[0].split("\n")
+    that the lines that replace only words replaced; and how many lines those are. A
+    context file is compared paragraph by paragraph, each labelled by its lines."""
+    wrapped = path in CONTEXT_FILES
+    before = units(old, readable(path, old, kept)[0], wrapped)
+    after = units(new, new, wrapped)
     hunks: list[str] = []
     renewed: list[str] = []
     words: Counter[str] = Counter()
     only = 0
-    matcher = difflib.SequenceMatcher(None, before, after, autojunk=False)
+    matcher = difflib.SequenceMatcher(
+        None, [unit.text for unit in before], [unit.text for unit in after], autojunk=False
+    )
     for tag, start, end, new_start, new_end in matcher.get_opcodes():
         if tag == "replace" and end - start == new_end - new_start:
-            for at, new_at in zip(range(start, end), range(new_start, new_end), strict=True):
-                expected, found = replaced(before[at], read[at], entries)
-                if expected == after[new_at]:
+            for was, now in zip(before[start:end], after[new_start:new_end], strict=True):
+                expected, found = replaced(was.text, was.read, entries)
+                if expected == now.text:
                     words.update(found)
-                    only += 1
+                    only += now.end - now.start
                     if fresh.intersection(found):
-                        shown = changed_words(before[at], after[new_at])
-                        renewed += listed(lines(new_at, new_at + 1), shown)
+                        shown = changed_words(was.text, now.text)
+                        renewed += listed(lines(now.start, now.end), shown)
                 else:
-                    shown = changed_words(before[at], after[new_at])
-                    hunks += listed(lines(new_at, new_at + 1), shown)
+                    shown = changed_words(was.text, now.text)
+                    hunks += listed(lines(now.start, now.end), shown)
         elif tag != "equal":
-            shown = [f"- {line}" for line in before[start:end]]
-            shown += [f"+ {line}" for line in after[new_start:new_end]]
+            shown = [f"- {unit.text}" for unit in before[start:end]]
+            shown += [f"+ {unit.text}" for unit in after[new_start:new_end]]
             if tag == "replace":
-                label = f"{lines(new_start, new_end)}, in place of {lines(start, end)}"
+                label = (
+                    f"{lines(after[new_start].start, after[new_end - 1].end)}, in place of "
+                    f"{lines(before[start].start, before[end - 1].end)}"
+                )
             elif tag == "delete":
-                label = f"{lines(start, end)} of the base, removed"
+                label = f"{lines(before[start].start, before[end - 1].end)} of the base, removed"
             else:
-                label = f"{lines(new_start, new_end)}, added"
+                label = f"{lines(after[new_start].start, after[new_end - 1].end)}, added"
             hunks += listed(label, shown)
     return hunks, renewed, words, only
 

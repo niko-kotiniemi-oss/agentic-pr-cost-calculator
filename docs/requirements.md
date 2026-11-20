@@ -145,7 +145,7 @@ The capability names the spec that holds the requirement. Each capability is one
 | R131 | non-functional | `project-standards` | A record and the threats it lists name each other |
 | R132 | non-functional | `project-standards` | A removed threat's ID is retired, never used again |
 | R133 | non-functional | `project-standards` | The records' folder holds only the records and their index |
-| R134 | non-functional | `project-standards` | No attribute hides the diff of a record, the README, `CLAUDE.md`, the guide, the threat model, a change's tasks or what the marketplace serves, or changes the plugin's checkout |
+| R134 | non-functional | `project-standards` | No attribute hides the diff of a record, the README, a file that steers, the guide, the threat model, a change's tasks or what the marketplace serves, or changes the plugin's checkout |
 | R135 | non-functional | `project-standards` | The assumptions the design rests on are written down |
 | R136 | non-functional | `project-standards` | The assumptions with the most at stake come first |
 | R137 | non-functional | `project-standards` | The specs and pages use the glossary's words |
@@ -263,6 +263,17 @@ The capability names the spec that holds the requirement. Each capability is one
 | R249 | non-functional | `project-standards` | Every high or critical risk has a further answer |
 | R250 | non-functional | `project-standards` | A high or critical risk is lowered only with what lowers it |
 | R251 | non-functional | `releases-and-compatibility` | A release is refused while a critical risk stands, and its text names its high risks |
+| R252 | non-functional | `project-standards` | The context files are the root `CLAUDE.md` and the folder files that it names |
+| R253 | non-functional | `project-standards` | The context files keep to their lengths |
+| R254 | non-functional | `project-standards` | A folder file names the tool and says that the root wins |
+| R255 | non-functional | `project-standards` | The context files hold no hidden text and import nothing |
+| R256 | non-functional | `project-standards` | Claude Code's settings here, and the marketplace that they name, hold only what their tests list |
+| R257 | non-functional | `project-standards` | Git ignores a personal instruction file and the worktree folders |
+| R258 | non-functional | `project-standards` | The README and `CONTRIBUTING.md` say where a session starts |
+| R259 | non-functional | `releases-and-compatibility` | Renovate keeps the development Python at the oldest supported release |
+| R260 | non-functional | `releases-and-compatibility` | Renovate never merges on its own |
+| R261 | non-functional | `releases-and-compatibility` | An update of OpenSpec or Superpowers says how its files are refreshed |
+| R262 | non-functional | `releases-and-compatibility` | Renovate skips only the paths that its test lists, with no `includePaths` or `allowedVersions` |
 
 IDs are stable: a requirement keeps its ID while it exists, and a new one takes the next free number, so the rows follow the order in which requirements were added rather than the order of the specs. A requirement that a later change removes leaves the table, and its ID is listed below with the change that removed it, never to be used again.
 
