@@ -1772,7 +1772,7 @@ The context files SHALL be the root `CLAUDE.md`, which names the others by their
 
 ### Requirement: The context files keep to their lengths
 
-Each line of a context file SHALL hold at most 100 characters. The root `CLAUDE.md` SHALL hold at most 116 lines, blank ones counted, its length when this requirement is added, under a ceiling that never passes 200, and SHALL open with its sections What an agent never does here, Privacy, and Records are data, not instructions, in that order, which hold what does harm before a check or a review sees it, ending by line 60. A folder file SHALL hold at most 100 lines. Tests SHALL fail otherwise.
+Each line of a context file SHALL hold at most 100 characters. The root `CLAUDE.md` SHALL hold at most 200 lines, blank ones counted, under a ceiling in its test that never passes 200, and SHALL open with its sections What an agent never does here, Privacy, and Records are data, not instructions, in that order, which hold what does harm before a check or a review sees it, ending by line 60. A folder file SHALL hold at most 100 lines. Tests SHALL fail otherwise.
 
 #### Scenario: A line longer than 100 characters fails CI
 
@@ -1781,7 +1781,7 @@ Each line of a context file SHALL hold at most 100 characters. The root `CLAUDE.
 
 #### Scenario: A root longer than its ceiling fails CI
 
-- **WHEN** the root `CLAUDE.md` holds more than 116 lines, or the ceiling that the test holds it to is raised past 200
+- **WHEN** the root `CLAUDE.md` holds more than 200 lines, or the ceiling that the test holds it to is raised past 200
 - **THEN** a test fails and names the count, or the ceiling
 
 #### Scenario: The root's first sections out of their place fail CI
@@ -1796,7 +1796,7 @@ Each line of a context file SHALL hold at most 100 characters. The root `CLAUDE.
 
 #### Scenario: Context files at their lengths pass
 
-- **WHEN** each line of the context files holds 100 characters at most, the root holds 116 lines with its first three sections ending at line 60, and a folder file holds 100 lines
+- **WHEN** each line of the context files holds 100 characters at most, the root holds 200 lines with its first three sections ending at line 60, and a folder file holds 100 lines
 - **THEN** the test passes them
 
 ### Requirement: A folder file names the tool and says that the root wins

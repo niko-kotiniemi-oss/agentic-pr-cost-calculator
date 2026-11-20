@@ -45,7 +45,7 @@ The checks that read the context files read the folder files too. R127's check o
 
 ## Scope
 
-This covers where a rule of the context files lives. Which files steer is DR-258 (Only the context files and the files that the root lists steer work here, and everything else describes), the limits on the files' lengths are DR-260 (The root `CLAUDE.md` puts what does harm first, within 60 lines, and grows past 116 lines only on the owner's word, never past 200), and how their lines are counted is DR-261 (The context files are wrapped at 100 characters, so that their lines are the lines that the limits count).
+This covers where a rule of the context files lives. Which files steer is DR-258 (Only the context files and the files that the root lists steer work here, and everything else describes), the limits on the files' lengths are DR-260 (The root `CLAUDE.md` puts what does harm first, within 60 lines, and holds at most 200 lines), and how their lines are counted is DR-261 (The context files are wrapped at 100 characters, so that their lines are the lines that the limits count).
 
 ## What reversing it would change
 

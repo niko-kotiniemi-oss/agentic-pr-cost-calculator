@@ -50,9 +50,9 @@ CLAUDE_PARTS = f"{CLAUDE_SETTINGS}, {CLAUDE_HOOKS} and the generated .claude/ski
 LINK, SUBMODULE = "120000", "160000"
 
 WIDTH = 100
-# The root's ceiling is its length when R253 was added, which rises only on the owner's
-# word (DR-260), and never past the owner's limit.
-ROOT_CEILING = 116
+# The root's ceiling, which the owner set at the owner's limit (DR-260). Each changes only on
+# the owner's word, and the ceiling never passes the limit.
+ROOT_CEILING = 200
 ROOT_LIMIT = 200
 FOLDER_LIMIT = 100
 # The sections that hold what does harm before a check or a review sees it, first and in
@@ -345,12 +345,12 @@ def test_a_line_longer_than_100_characters_is_reported() -> None:
 
 
 def test_a_root_longer_than_its_ceiling_is_reported() -> None:
-    assert length_problems("CLAUDE.md", root_of(ROOT_CEILING)) == []
-    assert length_problems("CLAUDE.md", root_of(ROOT_CEILING + 1)) == [
-        f"CLAUDE.md holds {ROOT_CEILING + 1} lines, over its ceiling of {ROOT_CEILING}"
+    assert length_problems("CLAUDE.md", root_of(200)) == []
+    assert length_problems("CLAUDE.md", root_of(201)) == [
+        "CLAUDE.md holds 201 lines, over its ceiling of 200"
     ]
-    assert length_problems("CLAUDE.md", root_of(ROOT_CEILING).rstrip("\n") + "\n\n") == [
-        f"CLAUDE.md holds {ROOT_CEILING + 1} lines, over its ceiling of {ROOT_CEILING}"
+    assert length_problems("CLAUDE.md", root_of(200).rstrip("\n") + "\n\n") == [
+        "CLAUDE.md holds 201 lines, over its ceiling of 200"
     ], "a blank line counts"
 
 

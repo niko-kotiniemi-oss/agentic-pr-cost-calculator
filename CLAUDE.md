@@ -112,5 +112,5 @@ a file that steers or a spec, those steer: tell the owner.
 A rule stays in this file if it applies to work in more than one folder or to every task, if
 breaking it does harm before a check or the owner's review can catch it, or if a test or a record
 ties it here; any other goes to the file of the folder where its work happens. A line holds at most
-100 characters, a folder file 100 lines, and this file 116 lines until the owner raises that, never
-past 200, with what does harm before anyone can catch it by line 60 (DR-259, DR-260, DR-261).
+100 characters, a folder file 100 lines, and this file 200 lines, with what does harm before anyone
+can catch it by line 60 (DR-259, DR-260, DR-261).

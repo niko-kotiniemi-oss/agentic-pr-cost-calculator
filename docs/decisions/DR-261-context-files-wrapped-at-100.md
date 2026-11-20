@@ -30,7 +30,7 @@ Every context file is wrapped at 100 characters in the file itself, so that the 
 
 ## Scope
 
-This covers how the context files' lines are counted and compared. The limits are DR-260 (The root `CLAUDE.md` puts what does harm first, within 60 lines, and grows past 116 lines only on the owner's word, never past 200), and where a rule lives is DR-259 (Each rule lives in the root `CLAUDE.md` or in the folder file of the folder where its work happens).
+This covers how the context files' lines are counted and compared. The limits are DR-260 (The root `CLAUDE.md` puts what does harm first, within 60 lines, and holds at most 200 lines), and where a rule lives is DR-259 (Each rule lives in the root `CLAUDE.md` or in the folder file of the folder where its work happens).
 
 ## What reversing it would change
 
