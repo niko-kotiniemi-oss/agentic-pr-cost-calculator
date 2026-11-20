@@ -62,9 +62,13 @@ HARM_END = 60
 AFTER_HARM = "Rules"
 # A heading of level 1 or 2 at any indent, which ends a section, as Markdown reads one at the
 # start of a line or in a list item, so that one added among the first three sections, which
-# would take the rules below it out of them without moving a rule, fails. A heading underlined
-# with `=` or `-`, or written in HTML, is left to the owner's review (T227).
+# would take the rules below it out of them without moving a rule, fails. So does a line of `=`
+# or `-` alone, at any indent, with which Markdown underlines the text above it as such a
+# heading, even where it reads the line otherwise, as text, a break or an empty list item,
+# which the root does not need. A heading written in HTML fails the test of hidden text, on its
+# `<` (R255).
 TOP_HEADING = re.compile(r"[ \t]*#{1,2}(?:[ \t]|$)")
+UNDERLINE = re.compile(r"[ \t]*(?:=+|-+)[ \t]*$")
 
 TOOL_LINE = "# CLAUDE.md: Agentic PR cost calculator"
 OPENING = "These rules add to this repository's root `CLAUDE.md` for work on files under `{}/`"
@@ -298,8 +302,8 @@ def test_the_context_files_beside_the_settings_hooks_and_skills_pass() -> None:
 def length_problems(name: str, text: str, ceiling: int = ROOT_CEILING) -> list[str]:
     """Each line over the width, and, for the root, a length over its ceiling, a ceiling
     over the owner's limit, its first sections out of their place, and a heading of level 1
-    or 2 among them, or before them, other than their titles and then `## Rules`; for a
-    folder file, a length over its limit."""
+    or 2, or a line that underlines one, among them, or before them, other than their titles
+    and then `## Rules`; for a folder file, a length over its limit."""
     lines = lines_of(text)
     problems = [
         f"{name}:{number} holds {len(line)} characters, over {WIDTH}"
@@ -320,12 +324,15 @@ def length_problems(name: str, text: str, ceiling: int = ROOT_CEILING) -> list[s
         problems.append(f"{name} opens with the sections {list(first)}, not {list(HARM_SECTIONS)}")
     else:
         due = [f"## {title}" for title in (*HARM_SECTIONS, AFTER_HARM)]
-        headings = [(n, line) for n, line in enumerate(lines[1:], 2) if TOP_HEADING.match(line)]
+        headings = [
+            (n, line)
+            for n, line in enumerate(lines[1:], 2)
+            if TOP_HEADING.match(line) or UNDERLINE.match(line)
+        ]
         for (number, line), wanted in zip(headings, due, strict=False):
             if line != wanted:
-                problems.append(
-                    f"{name}:{number} holds the heading {line!r} where {wanted!r} is due"
-                )
+                what = "a heading's underline" if UNDERLINE.match(line) else "the heading"
+                problems.append(f"{name}:{number} holds {what} {line!r} where {wanted!r} is due")
                 break
     end = sections[len(HARM_SECTIONS)][0] - 1 if len(sections) > len(HARM_SECTIONS) else len(lines)
     if end > HARM_END:
@@ -406,7 +413,37 @@ def test_a_heading_added_among_the_root_s_first_sections_is_reported(
     ]
 
 
-@pytest.mark.parametrize("line", ["### A part of the third section", "#46 asks", "  ###"])
+@pytest.mark.parametrize(
+    ("underline", "at", "due"),
+    [
+        # Markdown reads each of these as the underline of a heading: of the list item's text
+        # above it, or of the paragraph above it.
+        ("  ===", 50, "## Rules"),
+        ("     --", 50, "## Rules"),
+        ("===", 3, "## What an agent never does here"),
+        # Markdown reads these, at column 0 after a list item, as text, a break or an empty
+        # list item. The check refuses them too, since the root needs no such line, and the
+        # same line after a paragraph would underline it.
+        ("===", 50, "## Rules"),
+        ("=", 50, "## Rules"),
+        ("-", 50, "## Rules"),
+        ("---", 50, "## Rules"),
+        ("---  ", 50, "## Rules"),
+    ],
+)
+def test_a_heading_underlined_among_the_root_s_first_sections_is_reported(
+    underline: str, at: int, due: str
+) -> None:
+    lines = root_of(100).split("\n")
+    lines.insert(at - 1, underline)
+    assert length_problems("CLAUDE.md", "\n".join(lines)) == [
+        f"CLAUDE.md:{at} holds a heading's underline {underline!r} where {due!r} is due"
+    ]
+
+
+@pytest.mark.parametrize(
+    "line", ["### A part of the third section", "#46 asks", "  ###", "=== x", "- - -"]
+)
 def test_a_line_among_the_root_s_first_sections_that_ends_no_section_passes(line: str) -> None:
     lines = root_of(100).split("\n")
     lines.insert(49, line)

@@ -1786,8 +1786,8 @@ Each line of a context file SHALL hold at most 100 characters. The root `CLAUDE.
 
 #### Scenario: The root's first sections out of their place fail CI
 
-- **WHEN** the root's first three sections are not What an agent never does here, Privacy, and Records are data, not instructions, in that order, or they end after its line 60, or a heading of level 1 or 2 other than their titles stands before its section Rules, as one added among them would
-- **THEN** a test fails and names the section, the heading and its line, or the line where they end
+- **WHEN** the root's first three sections are not What an agent never does here, Privacy, and Records are data, not instructions, in that order, or they end after its line 60, or a heading of level 1 or 2 other than their titles, or a line of `=` or `-` alone, which can underline one, stands before its section Rules, as one added among them would
+- **THEN** a test fails and names the section, the heading or the underline and its line, or the line where they end
 
 #### Scenario: A folder file longer than 100 lines fails CI
 
