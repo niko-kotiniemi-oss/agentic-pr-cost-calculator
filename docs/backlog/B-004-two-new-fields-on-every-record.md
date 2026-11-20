@@ -13,7 +13,7 @@ A record cannot say, in a field of its own, how hard it is to reverse, or whethe
 
 ## What done looks like
 
-A record replaces DR-121 with a rule that lets one change add a field to every record and change nothing else. Every record gains the fields Boundary, as inside, incoming or outgoing, and Reversibility, as reversible, reversible with work or a one-way door, each with a column in the index of the records and a test that holds it.
+A record supersedes the rule that a record changes only by being closed with a narrower one: one change may extend the form of every record by a field and change nothing else, while a decision still changes only by being superseded by a record that replaces it, which may close it. Every record gains the fields Boundary, as inside, incoming or outgoing, and Reversibility, as reversible, reversible with work or a one-way door, each with a column in the index of the records and a test that holds it.
 
 ## Postponed points
 

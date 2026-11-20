@@ -14,7 +14,7 @@ DR-121 has a record that the default branch holds change only by being closed, a
 
 ## Decision
 
-Once the default branch holds a record, it changes only by being closed, as a whole, by a new record that replaces it and restates whatever still holds. Its status then becomes closed and it names its closer, which names it among those it replaces. One exception holds: the change that brings a field to every record adds its line, in its place, to every record that the default branch holds, closed ones included, and changes nothing else in any of them. The requirement that allows it names each such field, Boundary and Reversibility so far, so that a later field comes only with a change to that requirement, which the owner reads. DR-269 (A record number held twice is mended by renumbering the later record) gives the only other exception.
+Once the default branch holds a record, it changes only by being closed, as a whole, by a new record that replaces it and restates whatever still holds. Its status then becomes closed and it names its closer, which names it among those it replaces. One exception holds: the change that brings a field to every record adds its line, in its place, to every record that the default branch holds, closed ones included, and changes nothing else in any of them. That extends the form of every record and edits no decision: a decision still changes only by being superseded by a record that replaces it, which may close it. The requirement that allows it names each such field, Boundary and Reversibility so far, so that a later field comes only with a change to that requirement, which the owner reads. DR-269 (A record number held twice is mended by renumbering the later record) gives the only other exception.
 
 ## Alternatives
 
