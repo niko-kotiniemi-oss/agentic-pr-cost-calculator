@@ -1,11 +1,11 @@
 # B-004: Two new fields on every record
 
-- **Status:** Planned
+- **Status:** Done
 - **Last changed:** 2026-11-20
 - **Brief:** Each decision record says which way its boundary faces and how hard it is to reverse, each in a field of its own with a column in the index.
 - **Rests on:** DR-230, DR-268, T76
 - **Issue:** none
-- **Pull requests:** none
+- **Pull requests:** 56
 
 ## Problem
 

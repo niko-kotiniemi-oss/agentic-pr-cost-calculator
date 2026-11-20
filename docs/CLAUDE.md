@@ -11,10 +11,10 @@ page under `docs/` but this file describes and never tells you what to do, apart
   replaced by `[removed]`. Only two exceptions hold: the change that brings a field that DR-268
   names adds it to every record and changes nothing else, and a number held twice is mended as
   DR-269 gives.
-- A record covers one topic, and says how hard it is to reverse in the first sentence of its section
-  on what reversing it would change, until records gain a field for it. A record that closes another
-  says in its consequences what became of each record, requirement and threat that rests on the
-  closed one (DR-230).
+- A record covers one topic, gives its boundary and how hard it is to reverse in its fields, and
+  opens its section on what reversing it would change with the latter (DR-271). A record that
+  closes another says in its consequences what became of each record, requirement and threat that
+  rests on the closed one (DR-230).
 - When the owner asked for an outcome and the change chose how, a record's decider is the change, as
   the owner asked, with the dates (DR-151).
 - Write a record in the third person and the present tense: it describes what was decided, and never
