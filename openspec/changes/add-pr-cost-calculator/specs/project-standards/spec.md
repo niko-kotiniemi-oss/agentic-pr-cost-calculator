@@ -417,14 +417,14 @@ A commit MAY change the records that the base commit holds by adding to every on
 - **WHEN** a commit adds to a record that the base holds a line of a field other than Boundary and Reversibility, or a field line that the base's copy already has
 - **THEN** a test fails and names the record
 
-### Requirement: A record number held twice is mended by renumbering the later record
-
-When each base commit holds two records with one number, a commit MAY move the one that the base's first-parent history added later to the number after the base's highest, changing only its heading's number, and replace the old number with the new one in the records that the same commit of that history added and in the Closed by of each record that it replaces. Tests SHALL fail on any other removal or renaming, and on a repeat that this cannot mend.
-
 #### Scenario: A field added to some held records and not to others fails CI
 
 - **WHEN** a commit adds Boundary and Reversibility to some of the records that the base holds and leaves others without them
 - **THEN** a test fails and names a record left without them
+
+### Requirement: A record number held twice is mended by renumbering the later record
+
+When each base commit holds two records with one number, a commit MAY move the one that the base's first-parent history added later to the number after the base's highest, changing only its heading's number, and replace the old number with the new one in the records that the same commit of that history added and in the Closed by of each record that it replaces. Tests SHALL fail on any other removal or renaming, and on a repeat that this cannot mend.
 
 #### Scenario: The later of two records with one number renumbered passes
 

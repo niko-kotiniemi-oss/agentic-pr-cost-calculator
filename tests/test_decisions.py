@@ -13,13 +13,15 @@ These tests hold what a machine can check:
 - every record has its fields and its sections, each once, in order, none of
   them empty, and no other line that starts with `#`; its type, status and
   decider take a form from their lists, and a date that it gives is a real one,
-  no later than today; its file name and heading carry its number, in ASCII
+  no later than today and no earlier than 2026-10-17, the owner's first brief;
+  its file name and heading carry its number, in ASCII
   digits padded to three; and it holds plain text: printable ASCII and line
   breaks, with no fenced block, no `<`, `][` or table outside inline code, no
   web address or link reference definition, and no link but from a record's ID
   to that record's file;
 - the records' folder holds the records and their index and nothing else, no
-  link among them, no file elsewhere is named as a record, and the numbers run
+  link among them and each of git's mode 100644 in the index and in HEAD's
+  tree, no file elsewhere is named as a record, and the numbers run
   from DR-001 without a gap or a repeat;
 - the index lists every record once, in order, as the record itself has it,
   and every line of its table, which runs to its first blank line, is a row
@@ -89,6 +91,8 @@ SECTIONS = (
     "Scope",
     "What reversing it would change",
 )
+# The owner's first brief for the tool, a day before the repository's first commit (DR-272).
+FIRST_BRIEF = date(2026, 10, 17)
 TYPES = {"scope", "architecture", "technical", "security and privacy", "process"}
 STATUSES = {"accepted", "closed"}
 INDEX_CELLS = ("title", "Type", "Status", "Decided by", "Requirements", "Threats")
@@ -339,6 +343,11 @@ def decider_problems(record: Record, changes: set[str]) -> list[str]:
             continue
         if given > today:
             problems.append(f"{record.ident} gives {day}, which is later than today")
+        elif given < FIRST_BRIEF:
+            problems.append(
+                f"{record.ident} gives {day}, which is earlier than {FIRST_BRIEF},"
+                " the day of the owner's first brief"
+            )
     change = match.group("change")
     if change and change not in changes:
         problems.append(
@@ -865,6 +874,33 @@ def misplaced_problems(paths: Iterable[str]) -> list[str]:
     ]
 
 
+def mode_problems(root: Path) -> list[str]:
+    """Each file in the records' folder that the index or HEAD's tree gives a mode other
+    than an ordinary file's: an executable file or a link.
+
+    Raises LookupError when git cannot list them.
+    """
+    folder = DECISIONS.as_posix()
+    problems = []
+    for how, args in (
+        ("staged", ("ls-files", "-s", "-z", "--", folder)),
+        ("committed", ("ls-tree", "-r", "-z", "HEAD", "--", f"{folder}/")),
+    ):
+        done = git(root, *args)
+        if done.returncode != 0:
+            raise LookupError(f"git {args[0]} failed: {done.stderr.decode().strip()}")
+        for entry in done.stdout.decode("utf-8", "surrogateescape").split("\0"):
+            if not entry:
+                continue
+            meta, path = entry.split("\t", 1)
+            mode = meta.split(" ", 1)[0]
+            if mode != "100644":
+                problems.append(
+                    f"{path} is {how} with git's mode {mode}, and every file in {folder} has 100644"
+                )
+    return problems
+
+
 def attribute_problems(root: Path, paths: list[str]) -> list[str]:
     """The attributes that would change how these files' diffs show. Only the repository's
     attributes count, not a contributor's own file of them.
@@ -910,6 +946,13 @@ def test_no_attribute_changes_how_a_record_s_diff_shows() -> None:
     assert paths, "no record was listed, so this test covered nothing"
     problems = attribute_problems(ROOT, paths)
     assert not problems, "\n".join(problems)
+
+
+def test_every_file_in_the_records_folder_has_git_s_ordinary_file_mode() -> None:
+    problems = mode_problems(ROOT)
+    assert not problems, "\n".join(problems)
+    listing = git(ROOT, "ls-files", "--", DECISIONS.as_posix()).stdout
+    assert listing, "no record was listed, so this test covered nothing"
 
 
 def test_no_record_the_default_branch_holds_was_changed_but_to_be_closed() -> None:
@@ -1071,6 +1114,7 @@ def test_a_closed_record_and_the_record_that_closed_it_name_each_other(tmp_path:
 @pytest.mark.parametrize(
     "decider",
     [
+        "the owner, 2026-10-17",
         "the owner, 2026-10-18",
         "the owner, 2026-10-18 and 2026-10-20",
         "the owner, 2026-10-17, 2026-10-18 and 2026-10-20",
@@ -1149,6 +1193,17 @@ def test_a_placeholder_or_a_pipe_in_inline_code_is_neither_html_nor_a_table(
         ("the change `demo`", "the owner, 18 October", "which is not a form from the list"),
         ("the change `demo`", "the owner, 2026-02-30", "gives 2026-02-30, which is not a date"),
         ("the change `demo`", "the owner, 2999-01-01", "gives 2999-01-01, which is later than"),
+        (
+            "the change `demo`",
+            "the owner, 2026-10-16",
+            "DR-001 gives 2026-10-16, which is earlier than 2026-10-17, the day of the owner's"
+            " first brief",
+        ),
+        (
+            "the change `demo`",
+            "the change `demo`, as the owner asked on 2025-12-31 and 2026-10-18",
+            "gives 2025-12-31, which is earlier than 2026-10-17",
+        ),
         (
             "the change `demo`",
             "the change `demo`, as the owner asked on 2026-10-18 and 2999-01-01",
@@ -1780,6 +1835,42 @@ def test_a_record_renamed_moved_or_replaced_is_reported(tmp_path: Path, move: st
     commit(tmp_path)
     problems, _ = compared(tmp_path)
     assert len(problems) == 1 and "DR-001-a-choice.md" in problems[0], problems
+
+
+def test_records_of_git_s_ordinary_file_mode_are_not_reported(tmp_path: Path) -> None:
+    repository_with_history(tmp_path, [record(1), record(2)])
+    assert mode_problems(tmp_path) == []
+
+
+@pytest.mark.parametrize("committed", [False, True])
+def test_a_file_in_the_records_folder_of_another_mode_is_reported(
+    tmp_path: Path, committed: bool
+) -> None:
+    """An executable record is reported once it is staged, and again once it is committed,
+    since CI reads the commit and a contributor's run reads what they staged."""
+    folder = repository_with_history(tmp_path, [record(1)])
+    (folder / "DR-002-a-choice.md").write_text(record(2))
+    (folder / "DR-002-a-choice.md").chmod(0o755)
+    run_git(tmp_path, "add", "--", "docs/decisions/DR-002-a-choice.md")
+    expected = [
+        "docs/decisions/DR-002-a-choice.md is staged with git's mode 100755, and every file in"
+        " docs/decisions has 100644"
+    ]
+    if committed:
+        commit(tmp_path)
+        expected.append(
+            "docs/decisions/DR-002-a-choice.md is committed with git's mode 100755, and every file"
+            " in docs/decisions has 100644"
+        )
+    assert mode_problems(tmp_path) == expected
+
+
+def test_a_link_in_the_records_folder_is_reported_by_its_mode_too(tmp_path: Path) -> None:
+    folder = repository_with_history(tmp_path, [record(1)])
+    (folder / "DR-002-a-choice.md").symlink_to(folder / "DR-001-a-choice.md")
+    commit(tmp_path)
+    problems = mode_problems(tmp_path)
+    assert len(problems) == 2 and all("mode 120000" in each for each in problems), problems
 
 
 def test_a_change_counts_only_once_it_is_committed(tmp_path: Path) -> None:
