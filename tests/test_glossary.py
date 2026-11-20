@@ -33,7 +33,7 @@ rest of its file unread; a line that it cannot place, as above; a symbolic link,
 which is not followed; and a file or a path that is not UTF-8.
 
 Some files keep the words that they were written with and are not read: the
-records' folder, since an accepted record changes only to be closed (DR-121) and
+records' folder, since an accepted record changes only to be closed (DR-268) and
 the index gives each record's title as the record has it; the archived changes;
 the changelog's released entries, which are the sections under a version's
 heading; the vendored files; and the skills that OpenSpec generates. A version's

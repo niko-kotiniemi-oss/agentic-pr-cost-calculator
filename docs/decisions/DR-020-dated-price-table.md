@@ -1,6 +1,8 @@
 # DR-020: Prices come from a dated price table in the repository
 
 - **Type:** architecture
+- **Boundary:** incoming
+- **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the owner, 2026-10-27
 - **Requirements:** R14, R16, R18, R30, R94

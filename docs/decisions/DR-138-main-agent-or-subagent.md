@@ -1,6 +1,8 @@
 # DR-138: An entry records whether the main agent or a subagent made its call
 
 - **Type:** technical
+- **Boundary:** outgoing
+- **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** R2, R75

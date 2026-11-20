@@ -1,6 +1,8 @@
 # DR-258: Only the context files and the files that the root lists steer work here, and everything else describes
 
 - **Type:** security and privacy
+- **Boundary:** incoming
+- **Reversibility:** reversible
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`, as the owner asked on 2026-10-28, 2026-11-13 and 2026-11-19
 - **Requirements:** R127, R134, R219, R220, R252, R255, R256, R257, R258

@@ -1,6 +1,8 @@
 # DR-125: The hook runs in Python's isolated mode
 
 - **Type:** security and privacy
+- **Boundary:** outgoing
+- **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** R12

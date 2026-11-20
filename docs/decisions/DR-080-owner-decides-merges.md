@@ -1,6 +1,8 @@
 # DR-080: The owner decides every merge
 
 - **Type:** process
+- **Boundary:** inside
+- **Reversibility:** reversible
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** none

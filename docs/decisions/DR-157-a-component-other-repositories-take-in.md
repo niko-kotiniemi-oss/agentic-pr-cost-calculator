@@ -1,6 +1,8 @@
 # DR-157: The tool is a component that other repositories take in
 
 - **Type:** scope
+- **Boundary:** outgoing
+- **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the owner, 2026-10-20
 - **Requirements:** R71, R122

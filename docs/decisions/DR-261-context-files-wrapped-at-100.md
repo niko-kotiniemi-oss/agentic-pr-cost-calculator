@@ -1,6 +1,8 @@
 # DR-261: The context files are wrapped at 100 characters, so that their lines are the lines that the limits count
 
 - **Type:** process
+- **Boundary:** inside
+- **Reversibility:** reversible
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`, as the owner asked on 2026-11-19
 - **Requirements:** R253

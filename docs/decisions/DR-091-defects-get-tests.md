@@ -1,6 +1,8 @@
 # DR-091: A defect found gets a test before the fix
 
 - **Type:** process
+- **Boundary:** inside
+- **Reversibility:** reversible
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`, as the owner asked on 2026-10-18
 - **Requirements:** none

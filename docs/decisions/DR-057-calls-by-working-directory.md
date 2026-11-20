@@ -1,6 +1,8 @@
 # DR-057: Calls are kept by the session's working directory
 
 - **Type:** security and privacy
+- **Boundary:** incoming
+- **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** R3

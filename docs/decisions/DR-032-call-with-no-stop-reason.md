@@ -1,6 +1,8 @@
 # DR-032: A call with no stop reason is read from its last line, as a lower bound
 
 - **Type:** technical
+- **Boundary:** incoming
+- **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** R42, R95

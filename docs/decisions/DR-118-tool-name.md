@@ -1,6 +1,8 @@
 # DR-118: The tool is named `agentic-pr-cost-calculator`
 
 - **Type:** scope
+- **Boundary:** outgoing
+- **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the owner, 2026-10-17
 - **Requirements:** none

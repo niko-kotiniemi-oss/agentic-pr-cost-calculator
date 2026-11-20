@@ -1,6 +1,8 @@
 # DR-159: A record and the threats it lists name each other
 
 - **Type:** process
+- **Boundary:** inside
+- **Reversibility:** reversible
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** R131

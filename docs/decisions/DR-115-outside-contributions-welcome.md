@@ -1,6 +1,8 @@
 # DR-115: Outside contributions are welcome
 
 - **Type:** process
+- **Boundary:** incoming
+- **Reversibility:** reversible
 - **Status:** closed
 - **Decided by:** the owner, 2026-10-18
 - **Requirements:** none

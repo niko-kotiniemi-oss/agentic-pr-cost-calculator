@@ -1,6 +1,8 @@
 # DR-063: The calling workflow grants only what the report needs
 
 - **Type:** security and privacy
+- **Boundary:** outgoing
+- **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** R24

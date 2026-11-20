@@ -1,6 +1,8 @@
 # DR-236: The walking skeleton runs apart from this repository and records only with the switch and the opt-in
 
 - **Type:** security and privacy
+- **Boundary:** inside
+- **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** R223, R229

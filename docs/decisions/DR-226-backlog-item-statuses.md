@@ -1,6 +1,8 @@
 # DR-226: Each backlog item has one of five statuses, and only a merged pull request makes it planned
 
 - **Type:** process
+- **Boundary:** inside
+- **Reversibility:** reversible
 - **Status:** accepted
 - **Decided by:** the owner, 2026-11-11 and 2026-11-13
 - **Requirements:** R207, R214, R218

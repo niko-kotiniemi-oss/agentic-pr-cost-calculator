@@ -1,6 +1,8 @@
 # DR-120: Threat IDs are retired, never renumbered
 
 - **Type:** process
+- **Boundary:** inside
+- **Reversibility:** reversible
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** R130, R132

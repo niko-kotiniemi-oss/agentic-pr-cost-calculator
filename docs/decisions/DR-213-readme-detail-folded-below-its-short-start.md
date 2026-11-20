@@ -1,6 +1,8 @@
 # DR-213: The README keeps its detail, folded below its short start
 
 - **Type:** process
+- **Boundary:** outgoing
+- **Reversibility:** reversible
 - **Status:** accepted
 - **Decided by:** the owner, 2026-11-10
 - **Requirements:** R200

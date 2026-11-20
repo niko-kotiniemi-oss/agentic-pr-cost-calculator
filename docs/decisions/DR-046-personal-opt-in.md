@@ -1,6 +1,8 @@
 # DR-046: Each person turns on capture of their own sessions
 
 - **Type:** security and privacy
+- **Boundary:** outgoing
+- **Reversibility:** reversible with work
 - **Status:** closed
 - **Decided by:** the owner, 2026-10-18
 - **Requirements:** R1

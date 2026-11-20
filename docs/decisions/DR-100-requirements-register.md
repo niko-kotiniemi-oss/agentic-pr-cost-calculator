@@ -1,6 +1,8 @@
 # DR-100: A register lists every requirement with its kind
 
 - **Type:** process
+- **Boundary:** inside
+- **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the owner, 2026-10-20
 - **Requirements:** R29, R73, R100, R130

@@ -1,6 +1,8 @@
 # DR-169: A change to the files that hold the opt-in is taken as an opt-out
 
 - **Type:** security and privacy
+- **Boundary:** incoming
+- **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the owner, 2026-11-02
 - **Requirements:** R107, R108, R162

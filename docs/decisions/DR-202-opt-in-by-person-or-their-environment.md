@@ -1,6 +1,8 @@
 # DR-202: Capture needs an opt-in that the person sets, or that the environment they use sets
 
 - **Type:** security and privacy
+- **Boundary:** outgoing
+- **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the owner, 2026-10-18 and 2026-11-09
 - **Requirements:** R1, R182, R186

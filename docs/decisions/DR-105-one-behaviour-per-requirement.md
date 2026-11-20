@@ -1,6 +1,8 @@
 # DR-105: Each requirement states one behaviour
 
 - **Type:** process
+- **Boundary:** inside
+- **Reversibility:** reversible
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** none

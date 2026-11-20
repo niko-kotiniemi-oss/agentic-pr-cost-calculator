@@ -1,6 +1,8 @@
 # DR-216: The comment says when the hook's registration does not run the hook file
 
 - **Type:** technical
+- **Boundary:** outgoing
+- **Reversibility:** reversible
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** R202

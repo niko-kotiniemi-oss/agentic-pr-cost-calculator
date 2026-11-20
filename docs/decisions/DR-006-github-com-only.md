@@ -1,6 +1,8 @@
 # DR-006: GitHub.com only, not GitHub Enterprise Server
 
 - **Type:** scope
+- **Boundary:** incoming
+- **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** none

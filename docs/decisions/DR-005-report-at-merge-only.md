@@ -1,6 +1,8 @@
 # DR-005: The report runs once, at merge
 
 - **Type:** scope
+- **Boundary:** outgoing
+- **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`, as the owner asked on 2026-10-17
 - **Requirements:** R20, R68

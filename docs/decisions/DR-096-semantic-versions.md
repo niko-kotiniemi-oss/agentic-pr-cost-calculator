@@ -1,6 +1,8 @@
 # DR-096: Versions are semantic
 
 - **Type:** process
+- **Boundary:** outgoing
+- **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the owner, 2026-10-20
 - **Requirements:** R27, R71, R123

@@ -1,6 +1,8 @@
 # DR-074: Releases are immutable
 
 - **Type:** security and privacy
+- **Boundary:** outgoing
+- **Reversibility:** reversible
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** none

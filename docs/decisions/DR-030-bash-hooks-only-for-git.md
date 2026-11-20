@@ -1,6 +1,8 @@
 # DR-030: The Bash hooks run only for commands that run git
 
 - **Type:** technical
+- **Boundary:** outgoing
+- **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** R7

@@ -1,6 +1,8 @@
 # DR-126: Development dependencies are locked with hashes
 
 - **Type:** security and privacy
+- **Boundary:** incoming
+- **Reversibility:** reversible
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** none

@@ -1,6 +1,8 @@
 # DR-168: Consent holds for each call, inside intervals that runs begin and end
 
 - **Type:** security and privacy
+- **Boundary:** inside
+- **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`, as the owner asked on 2026-11-02
 - **Requirements:** R40, R108, R109, R144, R165, R166

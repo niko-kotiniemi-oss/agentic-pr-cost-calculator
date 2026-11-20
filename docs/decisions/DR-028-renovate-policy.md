@@ -1,6 +1,8 @@
 # DR-028: Renovate waits 14 days, and proposes vulnerability fixes at once
 
 - **Type:** technical
+- **Boundary:** incoming
+- **Reversibility:** reversible
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`, as the owner asked on 2026-10-17 and 2026-10-20
 - **Requirements:** R26

@@ -1,6 +1,8 @@
 # DR-208: Each ledger file names the release that wrote it, and the comment says when it is later than the report's
 
 - **Type:** technical
+- **Boundary:** outgoing
+- **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** R156, R193, R195

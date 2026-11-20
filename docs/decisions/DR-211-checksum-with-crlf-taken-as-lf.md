@@ -1,6 +1,8 @@
 # DR-211: The capture step runs only when its checksum matches, with each CRLF taken as LF
 
 - **Type:** security and privacy
+- **Boundary:** outgoing
+- **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** R88, R122, R179

@@ -1,6 +1,8 @@
 # DR-081: Outside pull requests are reviewed from `main`
 
 - **Type:** process
+- **Boundary:** incoming
+- **Reversibility:** reversible
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** none

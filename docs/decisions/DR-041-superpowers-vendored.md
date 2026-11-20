@@ -1,6 +1,8 @@
 # DR-041: Superpowers is vendored and compared with upstream in CI
 
 - **Type:** technical
+- **Boundary:** incoming
+- **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** none

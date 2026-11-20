@@ -1,6 +1,8 @@
 # DR-154: The public surface is what adopters configure or depend on
 
 - **Type:** technical
+- **Boundary:** outgoing
+- **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** R71, R122

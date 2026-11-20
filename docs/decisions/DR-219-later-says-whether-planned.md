@@ -1,6 +1,8 @@
 # DR-219: Each item under Next and Later says whether it is planned
 
 - **Type:** process
+- **Boundary:** outgoing
+- **Reversibility:** reversible
 - **Status:** closed
 - **Decided by:** the owner, 2026-11-11
 - **Requirements:** R207

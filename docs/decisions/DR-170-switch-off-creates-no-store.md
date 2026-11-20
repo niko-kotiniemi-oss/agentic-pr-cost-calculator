@@ -1,6 +1,8 @@
 # DR-170: A run that finds a switch off creates no store
 
 - **Type:** security and privacy
+- **Boundary:** inside
+- **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`, as the owner asked on 2026-11-02
 - **Requirements:** R118, R145

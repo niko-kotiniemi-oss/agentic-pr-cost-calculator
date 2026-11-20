@@ -1,6 +1,8 @@
 # DR-039: The report keeps to a call budget and a time limit
 
 - **Type:** technical
+- **Boundary:** incoming
+- **Reversibility:** reversible
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** R64, R70

@@ -1,6 +1,8 @@
 # DR-070: Public text carries no link to a Claude session
 
 - **Type:** security and privacy
+- **Boundary:** outgoing
+- **Reversibility:** reversible
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`, as the owner asked on 2026-10-20
 - **Requirements:** R33

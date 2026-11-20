@@ -1,6 +1,8 @@
 # DR-223: A report that shows a pull request as still in progress is left to a change after the first build
 
 - **Type:** scope
+- **Boundary:** outgoing
+- **Reversibility:** reversible
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`, as the owner asked on 2026-11-09
 - **Requirements:** R206, R207

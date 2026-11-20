@@ -1,6 +1,8 @@
 # DR-061: The report runs only for a push to the default branch
 
 - **Type:** security and privacy
+- **Boundary:** incoming
+- **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** R68

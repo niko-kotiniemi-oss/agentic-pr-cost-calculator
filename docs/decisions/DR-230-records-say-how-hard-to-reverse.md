@@ -1,6 +1,8 @@
 # DR-230: Each record says how hard it is to reverse, and replacing one starts an assessment of what rests on it
 
 - **Type:** process
+- **Boundary:** inside
+- **Reversibility:** reversible
 - **Status:** accepted
 - **Decided by:** the owner, 2026-11-13
 - **Requirements:** none

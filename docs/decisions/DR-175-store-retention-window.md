@@ -1,6 +1,8 @@
 # DR-175: The store keeps nothing past a retention window of 30 days, and removes itself when empty
 
 - **Type:** security and privacy
+- **Boundary:** inside
+- **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the owner, 2026-11-02 and 2026-11-03
 - **Requirements:** R150, R151

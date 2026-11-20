@@ -1,6 +1,8 @@
 # DR-052: An entry records the UTC day of a call, not its time
 
 - **Type:** security and privacy
+- **Boundary:** outgoing
+- **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** R2, R4

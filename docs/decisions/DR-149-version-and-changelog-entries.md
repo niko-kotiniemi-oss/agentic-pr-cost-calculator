@@ -1,6 +1,8 @@
 # DR-149: `pyproject.toml` holds the version, and the changelog has one entry per release
 
 - **Type:** process
+- **Boundary:** outgoing
+- **Reversibility:** reversible
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** R27, R71, R123

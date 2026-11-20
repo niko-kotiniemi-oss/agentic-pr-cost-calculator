@@ -1,6 +1,8 @@
 # DR-252: Each kind of sentence that the sweep of B-022 left reaches the specs' rule by its own route
 
 - **Type:** process
+- **Boundary:** inside
+- **Reversibility:** reversible
 - **Status:** accepted
 - **Decided by:** the owner, 2026-11-17 and 2026-11-18
 - **Requirements:** none

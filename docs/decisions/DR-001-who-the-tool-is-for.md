@@ -1,6 +1,8 @@
 # DR-001: The tool is for teams that build pull requests with AI coding agents
 
 - **Type:** scope
+- **Boundary:** inside
+- **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`, as the owner asked on 2026-10-17
 - **Requirements:** R20

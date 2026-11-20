@@ -1,6 +1,8 @@
 # DR-198: A plugin run works on each repository that it meets
 
 - **Type:** architecture
+- **Boundary:** inside
+- **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** R54, R76, R180, R197

@@ -1,6 +1,8 @@
 # DR-014: A ledger file that no commit took is taken back
 
 - **Type:** architecture
+- **Boundary:** inside
+- **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** R9, R51, R57, R87, R110, R113, R114

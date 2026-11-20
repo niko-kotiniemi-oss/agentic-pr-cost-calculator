@@ -1,6 +1,8 @@
 # DR-160: GitHub is the only repository and CI service `add-pr-cost-calculator` supports
 
 - **Type:** scope
+- **Boundary:** incoming
+- **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the owner, 2026-10-27
 - **Requirements:** R30

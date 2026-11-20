@@ -1,6 +1,8 @@
 # DR-094: Threats are rated for impact and likelihood
 
 - **Type:** process
+- **Boundary:** inside
+- **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the owner, 2026-10-20
 - **Requirements:** R31

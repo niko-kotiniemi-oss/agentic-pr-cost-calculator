@@ -1,6 +1,8 @@
 # DR-143: Skills are used as written, never from memory
 
 - **Type:** process
+- **Boundary:** inside
+- **Reversibility:** reversible
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`, as the owner asked on 2026-10-25
 - **Requirements:** none

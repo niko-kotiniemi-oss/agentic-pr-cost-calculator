@@ -1,6 +1,8 @@
 # DR-151: A record's decider takes one of three forms
 
 - **Type:** process
+- **Boundary:** inside
+- **Reversibility:** reversible
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** R124, R126

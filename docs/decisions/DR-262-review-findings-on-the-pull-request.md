@@ -1,6 +1,8 @@
 # DR-262: Each review lane's findings and then their resolutions go on the pull request as comments of their own, under one index comment
 
 - **Type:** process
+- **Boundary:** inside
+- **Reversibility:** reversible
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`, as the owner asked on 2026-10-27 and 2026-11-04
 - **Requirements:** none

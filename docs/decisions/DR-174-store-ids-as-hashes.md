@@ -1,6 +1,8 @@
 # DR-174: The store keeps ids as hashes, and plain paths only while a ledger file needs them
 
 - **Type:** security and privacy
+- **Boundary:** inside
+- **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`, as the owner asked on 2026-11-02
 - **Requirements:** R149

@@ -1,6 +1,8 @@
 # DR-266: The owner accepts the high risk that another repository's context files steer work here
 
 - **Type:** security and privacy
+- **Boundary:** incoming
+- **Reversibility:** reversible
 - **Status:** accepted
 - **Decided by:** the owner, 2026-11-19
 - **Requirements:** R249

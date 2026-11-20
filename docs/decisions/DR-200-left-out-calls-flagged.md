@@ -1,6 +1,8 @@
 # DR-200: A ledger file flags calls left out, with no count
 
 - **Type:** technical
+- **Boundary:** outgoing
+- **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the owner, 2026-11-02 and 2026-11-09
 - **Requirements:** R155, R157

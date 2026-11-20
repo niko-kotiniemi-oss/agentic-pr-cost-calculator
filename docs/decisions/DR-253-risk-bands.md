@@ -1,6 +1,8 @@
 # DR-253: Risks are banded by OWASP's table of overall risk severity: 1 note, 2 low, 3 and 4 medium, 6 high and 9 critical
 
 - **Type:** process
+- **Boundary:** inside
+- **Reversibility:** reversible
 - **Status:** accepted
 - **Decided by:** the owner, 2026-11-18
 - **Requirements:** R247, R249, R251

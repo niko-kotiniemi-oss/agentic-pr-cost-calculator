@@ -1,6 +1,8 @@
 # DR-197: The capture step also comes as a Claude Code plugin, beside the hook file that adopters copy
 
 - **Type:** architecture
+- **Boundary:** outgoing
+- **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`, as the owner asked on 2026-11-01
 - **Requirements:** R12, R90, R179, R188

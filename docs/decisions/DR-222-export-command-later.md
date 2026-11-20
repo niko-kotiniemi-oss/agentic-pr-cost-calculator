@@ -1,6 +1,8 @@
 # DR-222: A command that writes each pull request's cost as a file is left to a change after the first build
 
 - **Type:** scope
+- **Boundary:** outgoing
+- **Reversibility:** reversible
 - **Status:** accepted
 - **Decided by:** the owner, 2026-11-01
 - **Requirements:** R206, R207

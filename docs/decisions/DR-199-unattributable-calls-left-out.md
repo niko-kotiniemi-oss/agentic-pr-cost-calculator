@@ -1,6 +1,8 @@
 # DR-199: A call whose repository cannot be told is left out
 
 - **Type:** security and privacy
+- **Boundary:** incoming
+- **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the owner, 2026-11-02 and 2026-11-09
 - **Requirements:** R3, R147, R155

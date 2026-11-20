@@ -1,6 +1,8 @@
 # DR-072: The ruleset on `main` requires a pull request and the `ci` check
 
 - **Type:** security and privacy
+- **Boundary:** inside
+- **Reversibility:** reversible
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`, as the owner asked on 2026-10-18 and 2026-10-20
 - **Requirements:** none

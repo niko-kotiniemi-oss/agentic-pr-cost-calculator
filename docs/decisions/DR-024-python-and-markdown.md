@@ -1,6 +1,8 @@
 # DR-024: The tool, its release and its documentation are Python and Markdown
 
 - **Type:** technical
+- **Boundary:** inside
+- **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the owner, 2026-10-20 and 2026-10-27
 - **Requirements:** none

@@ -1,6 +1,8 @@
 # DR-234: Agents other than Claude Code are planned for after the first version
 
 - **Type:** scope
+- **Boundary:** outgoing
+- **Reversibility:** reversible
 - **Status:** accepted
 - **Decided by:** the owner, 2026-11-12 and 2026-11-14
 - **Requirements:** none

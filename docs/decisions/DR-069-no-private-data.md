@@ -1,6 +1,8 @@
 # DR-069: The public repository holds no private data
 
 - **Type:** security and privacy
+- **Boundary:** outgoing
+- **Reversibility:** reversible
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`, as the owner asked on 2026-10-17 and 2026-10-18
 - **Requirements:** R33, R72

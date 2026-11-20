@@ -1,6 +1,8 @@
 # DR-190: A configuration file with a key that the tool does not know is not valid
 
 - **Type:** technical
+- **Boundary:** outgoing
+- **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the owner, 2026-11-03
 - **Requirements:** R92, R122, R171

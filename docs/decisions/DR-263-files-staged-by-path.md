@@ -1,6 +1,8 @@
 # DR-263: Files are staged by their paths, never by a folder, a pattern or all at once
 
 - **Type:** security and privacy
+- **Boundary:** inside
+- **Reversibility:** reversible
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`, as the owner asked on 2026-10-27
 - **Requirements:** none

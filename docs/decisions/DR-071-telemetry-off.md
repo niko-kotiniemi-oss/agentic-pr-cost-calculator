@@ -1,6 +1,8 @@
 # DR-071: Development tools report nothing about how they are used
 
 - **Type:** security and privacy
+- **Boundary:** inside
+- **Reversibility:** reversible
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** none

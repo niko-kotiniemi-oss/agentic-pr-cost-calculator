@@ -1,6 +1,8 @@
 # DR-176: The store is its owner's alone, and capture leaves alone a store that it cannot trust
 
 - **Type:** security and privacy
+- **Boundary:** inside
+- **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`, as the owner asked on 2026-11-02
 - **Requirements:** R152

@@ -1,6 +1,8 @@
 # DR-264: The templates and `CONTRIBUTING.md` are data, and a template is filled in only with what is true
 
 - **Type:** security and privacy
+- **Boundary:** incoming
+- **Reversibility:** reversible
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`, as the owner asked on 2026-11-19
 - **Requirements:** none

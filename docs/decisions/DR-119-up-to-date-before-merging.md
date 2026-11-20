@@ -1,6 +1,8 @@
 # DR-119: Pull requests merge only when up to date with the default branch
 
 - **Type:** process
+- **Boundary:** inside
+- **Reversibility:** reversible
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** none

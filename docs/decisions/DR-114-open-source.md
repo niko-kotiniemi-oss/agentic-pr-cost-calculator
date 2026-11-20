@@ -1,6 +1,8 @@
 # DR-114: The tool is open source, in a public repository
 
 - **Type:** scope
+- **Boundary:** outgoing
+- **Reversibility:** one-way door
 - **Status:** closed
 - **Decided by:** the owner, 2026-10-17
 - **Requirements:** none

@@ -1,6 +1,8 @@
 # DR-241: Where the guide says the project stands is held true, before the build and at each release
 
 - **Type:** process
+- **Boundary:** outgoing
+- **Reversibility:** reversible
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`, as the owner asked on 2026-10-29 and 2026-11-14
 - **Requirements:** R226, R227, R230, R233

@@ -1,6 +1,8 @@
 # DR-059: The hook starts only git, by absolute path, from a safe folder
 
 - **Type:** security and privacy
+- **Boundary:** inside
+- **Reversibility:** reversible with work
 - **Status:** closed
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** R54, R118

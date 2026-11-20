@@ -1,6 +1,8 @@
 # DR-015: The ledger stays in the repository as the record
 
 - **Type:** architecture
+- **Boundary:** outgoing
+- **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the owner, 2026-10-18
 - **Requirements:** R22

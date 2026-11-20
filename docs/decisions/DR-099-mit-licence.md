@@ -1,6 +1,8 @@
 # DR-099: The licence is MIT
 
 - **Type:** process
+- **Boundary:** outgoing
+- **Reversibility:** one-way door
 - **Status:** closed
 - **Decided by:** the owner, 2026-10-17
 - **Requirements:** R28

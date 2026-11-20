@@ -1,6 +1,8 @@
 # DR-134: The oldest supported Python rises only near its end of life or for a security fix
 
 - **Type:** technical
+- **Boundary:** outgoing
+- **Reversibility:** reversible
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`, as the owner asked on 2026-10-20 and 2026-10-27
 - **Requirements:** R26

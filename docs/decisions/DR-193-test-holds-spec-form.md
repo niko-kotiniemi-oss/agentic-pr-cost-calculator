@@ -1,6 +1,8 @@
 # DR-193: A test of the repository's own holds the specs' form
 
 - **Type:** process
+- **Boundary:** inside
+- **Reversibility:** reversible
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`, as the owner asked on 2026-11-09
 - **Requirements:** R173, R174, R175, R177

@@ -1,6 +1,8 @@
 # DR-084: Acceptance tests come first
 
 - **Type:** process
+- **Boundary:** inside
+- **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`, as the owner asked on 2026-10-18
 - **Requirements:** none

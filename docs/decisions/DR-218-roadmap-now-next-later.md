@@ -1,6 +1,8 @@
 # DR-218: A roadmap says what is now, next and later
 
 - **Type:** process
+- **Boundary:** outgoing
+- **Reversibility:** reversible
 - **Status:** closed
 - **Decided by:** the change `add-pr-cost-calculator`, as the owner asked on 2026-10-29
 - **Requirements:** R206

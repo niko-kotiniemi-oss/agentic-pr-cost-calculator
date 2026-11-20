@@ -1,6 +1,8 @@
 # DR-067: Workflow tokens are read-only, except for releases and the report's comment
 
 - **Type:** security and privacy
+- **Boundary:** inside
+- **Reversibility:** reversible
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** R27

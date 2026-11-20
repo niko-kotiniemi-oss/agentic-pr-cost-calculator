@@ -1,6 +1,8 @@
 # DR-017: A pull request's usage is the ledger files its merge adds
 
 - **Type:** architecture
+- **Boundary:** inside
+- **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** R58, R119

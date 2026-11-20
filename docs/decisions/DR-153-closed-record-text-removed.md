@@ -1,6 +1,8 @@
 # DR-153: A closed record's lines may be replaced by `[removed]`
 
 - **Type:** security and privacy
+- **Boundary:** inside
+- **Reversibility:** reversible
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** R129

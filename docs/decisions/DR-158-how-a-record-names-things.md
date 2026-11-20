@@ -1,6 +1,8 @@
 # DR-158: A record names other things by ID, number or path, and its change by name
 
 - **Type:** process
+- **Boundary:** inside
+- **Reversibility:** reversible
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** R126, R127

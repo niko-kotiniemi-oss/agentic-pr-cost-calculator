@@ -1,6 +1,8 @@
 # DR-089: Every check is shown to fail
 
 - **Type:** process
+- **Boundary:** inside
+- **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`, as the owner asked on 2026-10-18
 - **Requirements:** none

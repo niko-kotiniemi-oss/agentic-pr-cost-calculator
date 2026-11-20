@@ -1,6 +1,8 @@
 # DR-210: The owner's opt-in for this repository is set only in the environment of its own project
 
 - **Type:** security and privacy
+- **Boundary:** inside
+- **Reversibility:** reversible
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** none

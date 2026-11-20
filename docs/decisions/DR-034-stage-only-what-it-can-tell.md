@@ -1,6 +1,8 @@
 # DR-034: Capture stages only for a commit whose branch and contents it can tell
 
 - **Type:** technical
+- **Boundary:** inside
+- **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** R8, R48, R49, R82, R83, R86, R112

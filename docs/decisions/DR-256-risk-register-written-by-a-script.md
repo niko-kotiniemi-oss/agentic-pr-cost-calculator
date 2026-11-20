@@ -1,6 +1,8 @@
 # DR-256: The risk register is written by a script from the threat model
 
 - **Type:** process
+- **Boundary:** inside
+- **Reversibility:** reversible
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`, as the owner asked on 2026-10-29
 - **Requirements:** R245, R246, R247, R248

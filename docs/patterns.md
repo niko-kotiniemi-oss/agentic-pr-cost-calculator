@@ -275,9 +275,9 @@ The entries are read again at each assessment and before each release, and were 
 - **Implications:** Replacing a record starts an assessment of what rests on it (DR-230), and a record about what agents may do lands with the change to `CLAUDE.md` that steers by it.
 - **Pattern:** Architecture decision records. Source: Michael Nygard, Documenting Architecture Decisions (2011), with the one-way and two-way doors of Jeff Bezos's letters to Amazon's shareholders for 2015 and 2016.
 - **Anti-patterns:** A record edited once accepted, recognised by a change to an accepted record's text; close it with one that replaces it. Missing or straw-man alternatives, recognised by alternatives that nobody would choose; weigh the options that a reasonable person would.
-- **Held by:** `tests/test_decisions.py`, DR-108, DR-121 and DR-230.
-- **Rests on:** DR-108, DR-121, DR-230, B-004
-- **Where we stand:** Gap. Before the build. B-004 gives every record a field that says how hard it is to reverse, which the first sentence of its section on what reversing it would change says until then (DR-230).
+- **Held by:** `tests/test_decisions.py`, DR-108, DR-230 and DR-268.
+- **Rests on:** DR-108, DR-230, DR-268, B-004
+- **Where we stand:** Followed. Every record gives how hard it is to reverse in a field of its own, and from DR-268 on the first sentence of its section on what reversing it would change gives the same value, which `tests/test_decisions.py` holds (DR-271).
 
 ### Usage is written once and only added to
 

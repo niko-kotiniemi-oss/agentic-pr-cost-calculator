@@ -132,7 +132,7 @@ The assumptions about GitHub: this repository's settings there, and its workflow
 
 ## A18. A merge into the default branch makes one push, and that push starts the adopter's calling workflow.
 
-- **Rests on it:** R19, R27, R58, R62, R68, R69, R93, R120, R129, T19, T20, T21, T22, T23, T50, T67, T68, T70, T88, T191, DR-005, DR-017, DR-018, DR-019, DR-051, DR-061, DR-073, DR-092, DR-121, DR-122, DR-133, DR-147, DR-148, DR-186
+- **Rests on it:** R19, R27, R58, R62, R68, R69, R93, R120, R129, T19, T20, T21, T22, T23, T50, T67, T68, T70, T88, T191, DR-005, DR-017, DR-018, DR-019, DR-051, DR-061, DR-073, DR-092, DR-122, DR-133, DR-147, DR-148, DR-186, DR-268
 - **If it is wrong:** A merge that makes no push, or whose push starts no workflow, would get no report, and nothing would say why (T21, T23). A push that named another commit as the one it replaced would make the report count the wrong ledger files as the merge's own (T19, T20), and a run that a merge starts through another event, created before the merge time, would be counted as the pull request's, so the CI figure would be too high without saying so (T22, T88).
 - **Fact:** Every merge into the default branch, by hand, by auto-merge or through a merge queue, makes a push to that branch, and that push starts the adopter's calling workflow.
   - **Relied on:** R19, R58, R68, R69, T19, T21, T23, T191, DR-005, DR-018, DR-061, DR-092, DR-133, DR-147
@@ -141,7 +141,7 @@ The assumptions about GitHub: this repository's settings there, and its workflow
   - **Relied on:** R68, T50, DR-018
   - **Checked:** documented: <https://github.com/github/docs/blob/33b1f4a6fec2d9b6fd3d374afa56bcd9f0875b57/data/reusables/actions/actions-do-not-trigger-workflows.md>, read 2026-11-01
 - **Fact:** The push that a merge makes names, as the commit it replaced, the default branch just before the merge, and its own commit is the default branch just after it.
-  - **Relied on:** R19, R58, R129, T19, T20, T70, DR-017, DR-121
+  - **Relied on:** R19, R58, R129, T19, T20, T70, DR-017, DR-268
   - **Checked:** not yet: `add-pr-cost-calculator` task 7.1 meets it once, at the merge of that task's own pull request
 - **Fact:** GitHub creates a workflow run that a merge starts through an event other than its push, such as the pull request's `closed` event, no earlier than the pull request's merge time. Its documentation does not order the two times.
   - **Relied on:** R62, R120, T22, T88, DR-019, DR-147

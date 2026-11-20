@@ -1,6 +1,8 @@
 # DR-023: The hook and the report use Python's standard library only
 
 - **Type:** technical
+- **Boundary:** incoming
+- **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** R12, R25

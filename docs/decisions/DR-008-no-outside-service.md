@@ -1,6 +1,8 @@
 # DR-008: Capture uses no service outside GitHub and the repository
 
 - **Type:** architecture
+- **Boundary:** incoming
+- **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** R30

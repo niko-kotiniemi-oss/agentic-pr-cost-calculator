@@ -1,6 +1,8 @@
 # DR-124: What the price table does not price is named, never guessed
 
 - **Type:** technical
+- **Boundary:** outgoing
+- **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** R14, R17, R20, R61, R63

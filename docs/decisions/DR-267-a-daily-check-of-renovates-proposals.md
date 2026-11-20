@@ -1,6 +1,8 @@
 # DR-267: A daily check fails when an update is overdue or Renovate has been quiet for five days
 
 - **Type:** technical
+- **Boundary:** incoming
+- **Reversibility:** reversible
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`, as the owner asked on 2026-11-20
 - **Requirements:** R263

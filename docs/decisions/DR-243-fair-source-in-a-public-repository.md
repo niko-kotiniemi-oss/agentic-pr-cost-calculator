@@ -1,6 +1,8 @@
 # DR-243: The tool is fair source, in a public repository
 
 - **Type:** scope
+- **Boundary:** outgoing
+- **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the owner, 2026-11-16
 - **Requirements:** none

@@ -1,6 +1,8 @@
 # DR-111: Major updates wait for the owner's approval
 
 - **Type:** technical
+- **Boundary:** incoming
+- **Reversibility:** reversible
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`, as the owner asked on 2026-10-20
 - **Requirements:** R26

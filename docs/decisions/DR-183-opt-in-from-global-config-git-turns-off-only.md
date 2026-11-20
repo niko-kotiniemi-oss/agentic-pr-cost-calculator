@@ -1,6 +1,8 @@
 # DR-183: The opt-in is read only from the person's global git configuration, and git's own reading of it can only turn capture off
 
 - **Type:** security and privacy
+- **Boundary:** outgoing
+- **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`, as the owner asked on 2026-11-02
 - **Requirements:** R1, R37, R38, R103, R104, R105, R160

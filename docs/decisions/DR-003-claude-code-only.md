@@ -1,6 +1,8 @@
 # DR-003: Claude Code is the only agent `add-pr-cost-calculator` captures
 
 - **Type:** scope
+- **Boundary:** incoming
+- **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the owner, 2026-10-27
 - **Requirements:** R7, R13, R76

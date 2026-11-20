@@ -1,6 +1,8 @@
 # DR-047: Consent holds for each recorded call
 
 - **Type:** security and privacy
+- **Boundary:** inside
+- **Reversibility:** reversible with work
 - **Status:** closed
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** R40, R107, R108, R109, R118

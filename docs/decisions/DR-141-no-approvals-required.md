@@ -1,6 +1,8 @@
 # DR-141: The ruleset on `main` requires no approvals
 
 - **Type:** process
+- **Boundary:** inside
+- **Reversibility:** reversible
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`, as the owner asked on 2026-10-18 and 2026-10-20
 - **Requirements:** none

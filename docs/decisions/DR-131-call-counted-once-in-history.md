@@ -1,6 +1,8 @@
 # DR-131: A call counts at most once in the default branch's history
 
 - **Type:** technical
+- **Boundary:** inside
+- **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** R59, R67, R119

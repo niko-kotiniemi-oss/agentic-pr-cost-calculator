@@ -1,6 +1,8 @@
 # DR-117: The tool does nothing its documentation leaves out
 
 - **Type:** scope
+- **Boundary:** outgoing
+- **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the owner, 2026-10-20
 - **Requirements:** R29, R30, R101

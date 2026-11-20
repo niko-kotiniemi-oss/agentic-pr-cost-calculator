@@ -1,6 +1,8 @@
 # DR-122: A release tag names a commit in the default branch's first-parent history
 
 - **Type:** security and privacy
+- **Boundary:** outgoing
+- **Reversibility:** reversible
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** R27

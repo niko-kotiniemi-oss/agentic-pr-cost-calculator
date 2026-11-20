@@ -1,6 +1,8 @@
 # DR-217: The report runs its own pinned code
 
 - **Type:** security and privacy
+- **Boundary:** incoming
+- **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** R24

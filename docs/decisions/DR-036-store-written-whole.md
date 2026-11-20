@@ -1,6 +1,8 @@
 # DR-036: The store is replaced whole, under a lock
 
 - **Type:** technical
+- **Boundary:** inside
+- **Reversibility:** reversible
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** R11

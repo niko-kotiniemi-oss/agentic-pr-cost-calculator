@@ -1,6 +1,8 @@
 # DR-212: The README opens with a short start
 
 - **Type:** process
+- **Boundary:** outgoing
+- **Reversibility:** reversible
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`, as the owner asked on 2026-11-10
 - **Requirements:** R198, R199, R205

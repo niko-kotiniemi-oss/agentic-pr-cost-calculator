@@ -1,6 +1,8 @@
 # DR-245: The walking skeleton's code lives in its own folder here, under tests, and the build grows from it
 
 - **Type:** architecture
+- **Boundary:** inside
+- **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the owner, 2026-11-14
 - **Requirements:** R234, R238, R242

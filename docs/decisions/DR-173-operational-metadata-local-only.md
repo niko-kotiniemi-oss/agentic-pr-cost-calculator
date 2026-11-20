@@ -1,6 +1,8 @@
 # DR-173: Capture keeps operational metadata on the person's machine only where it needs it, and never publishes it
 
 - **Type:** security and privacy
+- **Boundary:** outgoing
+- **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the owner, 2026-11-02
 - **Requirements:** R4, R89, R149

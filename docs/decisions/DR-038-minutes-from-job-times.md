@@ -1,6 +1,8 @@
 # DR-038: CI minutes come from job times, rounded up per job
 
 - **Type:** technical
+- **Boundary:** incoming
+- **Reversibility:** reversible
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** R18, R62

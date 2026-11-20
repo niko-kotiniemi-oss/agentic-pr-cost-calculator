@@ -1,6 +1,8 @@
 # DR-035: Capture never changes what the agent's commit would do
 
 - **Type:** technical
+- **Boundary:** inside
+- **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** R56, R84, R85

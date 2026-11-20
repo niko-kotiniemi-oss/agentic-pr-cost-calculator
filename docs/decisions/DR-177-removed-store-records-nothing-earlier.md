@@ -1,6 +1,8 @@
 # DR-177: A removed store lets no earlier call be recorded, and leaves staged ledger files to git
 
 - **Type:** security and privacy
+- **Boundary:** inside
+- **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`, as the owner asked on 2026-11-02
 - **Requirements:** R153

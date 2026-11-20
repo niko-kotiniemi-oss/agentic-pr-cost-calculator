@@ -1,6 +1,8 @@
 # DR-247: This repository keeps from the skeleton's run only a transcript's shape with no values, and what was observed
 
 - **Type:** security and privacy
+- **Boundary:** inside
+- **Reversibility:** reversible
 - **Status:** accepted
 - **Decided by:** the owner, 2026-11-14
 - **Requirements:** R236

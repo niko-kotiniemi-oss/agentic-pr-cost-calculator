@@ -1,6 +1,8 @@
 # DR-148: Each release is made from a tag
 
 - **Type:** process
+- **Boundary:** outgoing
+- **Reversibility:** reversible
 - **Status:** accepted
 - **Decided by:** the owner, 2026-10-20
 - **Requirements:** R27, R123

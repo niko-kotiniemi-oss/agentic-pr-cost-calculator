@@ -1,6 +1,8 @@
 # DR-078: Outside contributors' workflows wait for approval
 
 - **Type:** security and privacy
+- **Boundary:** incoming
+- **Reversibility:** reversible
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** none

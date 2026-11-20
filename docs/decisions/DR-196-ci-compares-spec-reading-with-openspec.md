@@ -1,6 +1,8 @@
 # DR-196: CI compares the test's reading of the specs with OpenSpec's
 
 - **Type:** process
+- **Boundary:** incoming
+- **Reversibility:** reversible
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`, as the owner asked on 2026-11-09
 - **Requirements:** R178

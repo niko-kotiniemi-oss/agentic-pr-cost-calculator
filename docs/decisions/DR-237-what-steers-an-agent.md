@@ -1,6 +1,8 @@
 # DR-237: Data and issue text never instruct, and the guide steers below `CLAUDE.md` and the skills' steps
 
 - **Type:** process
+- **Boundary:** incoming
+- **Reversibility:** reversible
 - **Status:** closed
 - **Decided by:** the change `add-pr-cost-calculator`, as the owner asked on 2026-11-13
 - **Requirements:** R134, R219, R220

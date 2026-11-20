@@ -1,6 +1,8 @@
 # DR-112: Likelihood is rated with the answer in place
 
 - **Type:** process
+- **Boundary:** inside
+- **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** none

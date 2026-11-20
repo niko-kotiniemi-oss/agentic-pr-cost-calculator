@@ -1,6 +1,8 @@
 # DR-064: The report flags changes to the switch, the hook and the workflows
 
 - **Type:** security and privacy
+- **Boundary:** outgoing
+- **Reversibility:** reversible with work
 - **Status:** closed
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** R93

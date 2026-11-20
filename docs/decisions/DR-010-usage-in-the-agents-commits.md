@@ -1,6 +1,8 @@
 # DR-010: Usage travels inside the agent's own commits
 
 - **Type:** architecture
+- **Boundary:** outgoing
+- **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** R7

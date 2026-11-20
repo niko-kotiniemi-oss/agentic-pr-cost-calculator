@@ -1,6 +1,8 @@
 # DR-092: The hook and the report are tested end to end
 
 - **Type:** process
+- **Boundary:** inside
+- **Reversibility:** reversible
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`, as the owner asked on 2026-10-18
 - **Requirements:** none

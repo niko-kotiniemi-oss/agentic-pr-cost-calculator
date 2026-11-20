@@ -1,6 +1,8 @@
 # DR-242: The licence is the Fair Core License, with MIT as its future licence
 
 - **Type:** process
+- **Boundary:** outgoing
+- **Reversibility:** one-way door
 - **Status:** accepted
 - **Decided by:** the owner, 2026-11-16
 - **Requirements:** R28

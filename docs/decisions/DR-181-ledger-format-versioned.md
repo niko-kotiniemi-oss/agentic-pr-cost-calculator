@@ -1,6 +1,8 @@
 # DR-181: Each ledger file states its format's version, and each version has a published schema
 
 - **Type:** technical
+- **Boundary:** outgoing
+- **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the owner, 2026-11-02
 - **Requirements:** R156, R158, R163, R167, R168

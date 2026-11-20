@@ -1,6 +1,8 @@
 # DR-029: Activity types come from tool names, which are never recorded
 
 - **Type:** technical
+- **Boundary:** inside
+- **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`, as the owner asked on 2026-10-17
 - **Requirements:** R4, R6

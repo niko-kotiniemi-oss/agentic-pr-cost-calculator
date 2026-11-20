@@ -1,6 +1,8 @@
 # DR-066: A ledger edited by hand is an accepted risk
 
 - **Type:** security and privacy
+- **Boundary:** incoming
+- **Reversibility:** reversible
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** none

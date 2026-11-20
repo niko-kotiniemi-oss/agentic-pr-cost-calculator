@@ -1,6 +1,8 @@
 # DR-191: The report says when a merge leaves the tool off
 
 - **Type:** technical
+- **Boundary:** outgoing
+- **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** R172

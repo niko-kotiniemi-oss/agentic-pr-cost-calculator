@@ -361,7 +361,7 @@ A record and the index SHALL hold only printable ASCII characters and line break
 
 ### Requirement: An accepted record changes only to be closed
 
-Tests SHALL fail when a commit removes, renames or moves a record that the base commit holds, or changes it except to close it, by its status from accepted to closed and its closer named, after which any line of text under its sections may become `[removed]`. They SHALL compare git trees with where HEAD left the default branch and with any base commit that CI names, and SHALL fail when either cannot be found, or holds the records' folder with no record in it.
+Tests SHALL fail when a commit removes, renames or moves a record that the base commit holds, or changes it except to close it, by its status set to closed and its closer named, after which any line of text under its sections may become `[removed]`, or as the next two requirements allow. They SHALL compare git trees with where HEAD left the default branch and with any base commit that CI names, and SHALL fail when either cannot be found, or holds the records' folder with no record in it.
 
 #### Scenario: A record removed, renamed or changed fails CI
 
@@ -397,6 +397,69 @@ Tests SHALL fail when a commit removes, renames or moves a record that the base 
 
 - **WHEN** CI runs the tests for a pull request, for a change of its base, or for a push to the default branch
 - **THEN** it clones the whole history and names the pull request's base commit, or the commit that the push replaced
+
+### Requirement: A field added to every record leaves the rest of each record as it was
+
+A commit MAY change the records that the base commit holds by adding to every one of them the lines of the fields Boundary and Reversibility that its copy lacks, each in its place, and nothing else, a record that it closes included. Tests SHALL fail when such a commit adds another field, adds them to some of those records and not to others, or changes any other line of a record beyond what closing it allows.
+
+#### Scenario: A field added to every record passes
+
+- **WHEN** a commit adds to each record that the base holds the lines of Boundary and Reversibility that its copy lacks, and changes nothing else in it, or only closes it as well
+- **THEN** the test passes
+
+#### Scenario: A field added together with another edit fails CI
+
+- **WHEN** a commit adds such a field to a record that the base holds and also changes, adds or removes another line of it
+- **THEN** a test fails and names the record
+
+#### Scenario: A field that the form does not give fails CI
+
+- **WHEN** a commit adds to a record that the base holds a line of a field other than Boundary and Reversibility, or a field line that the base's copy already has
+- **THEN** a test fails and names the record
+
+#### Scenario: A field added to some held records and not to others fails CI
+
+- **WHEN** a commit adds Boundary and Reversibility to some of the records that the base holds and leaves others without them
+- **THEN** a test fails and names a record left without them
+
+### Requirement: A record number held twice is mended by renumbering the later record
+
+When each base commit other than HEAD holds two records with one number, a commit MAY move the one that the base's first-parent history added later to the number after the base's highest, changing only its heading's number, and replace the old number with the new one, mention by mention, in the records that the same commit of that history added and in the Closed by of each record that it replaces. Tests SHALL fail on any other removal or renaming, and on a repeat that this cannot mend.
+
+#### Scenario: The later of two records with one number renumbered passes
+
+- **WHEN** the base holds two records with one number, and a commit moves the one that the base's first-parent history added later to the number after the base's highest, changing only its heading's number, and changes the other records added with it only by that number
+- **THEN** the test passes
+
+#### Scenario: The earlier of two records with one number renumbered fails CI
+
+- **WHEN** the base holds two records with one number, and a commit moves the one that the base's first-parent history added earlier
+- **THEN** a test fails and names the record
+
+#### Scenario: A renumbering that changes more fails CI
+
+- **WHEN** a commit moves the later record but changes its text beyond its heading's number, takes another number than the one after the base's highest, or changes a record added with it in another way
+- **THEN** a test fails and names the record
+
+#### Scenario: A record renumbered when no number is held twice fails CI
+
+- **WHEN** the base holds no number twice and a commit moves a record that it holds to another number, or only a base that the pull request chose holds it twice
+- **THEN** a test fails and names the record
+
+#### Scenario: The later record renumbered, with each record that it closed naming it anew, passes
+
+- **WHEN** the moved record replaces records that another merge added, and the commit changes only their Closed by from the old number to the new one
+- **THEN** the test passes
+
+#### Scenario: A mend merged to the default branch passes there
+
+- **WHEN** a push to the default branch merges such a mend, so that HEAD, one of the bases, no longer holds the repeat
+- **THEN** the test passes
+
+#### Scenario: A repeat that renumbering cannot mend fails CI
+
+- **WHEN** a base holds a number three times, two numbers twice each, or two records with one number that one commit of its first-parent history added
+- **THEN** a test fails, names the records and says that the owner decides how to mend them
 
 ### Requirement: IDs that the default branch holds stay held or retired
 
@@ -437,12 +500,17 @@ The threat model SHALL number its threats from T1 in order, and a threat that a 
 
 ### Requirement: The records' folder holds only the records and their index
 
-`docs/decisions/` SHALL hold only the records and their index, each a file and not a link, with no folder in it, and no file elsewhere SHALL be named as a record, so that every record is one that the checks read.
+`docs/decisions/` SHALL hold only the records and their index, each a file of git's mode 100644 and not a link or an executable file, with no folder in it, and no file elsewhere SHALL be named as a record, so that every record is one that the checks read.
 
 #### Scenario: A file out of place fails CI
 
 - **WHEN** `docs/decisions/` holds a folder, a link, or a file that is neither a record nor the index, or a file elsewhere is named as a record
 - **THEN** a test fails and names the file
+
+#### Scenario: A record committed as executable fails CI
+
+- **WHEN** HEAD's tree or the index gives a file in `docs/decisions/` a mode other than 100644
+- **THEN** a test fails and names the file and its mode
 
 ### Requirement: No attribute hides the diff of a record, the README, a file that steers, the guide, the threat model, a change's tasks or what the marketplace serves, or changes the plugin's checkout
 
@@ -1883,3 +1951,41 @@ The README's section on working on this repository and `CONTRIBUTING.md` SHALL e
 
 - **WHEN** the README's section on working on this repository, or `CONTRIBUTING.md`, does not give, whitespace aside, the sentence "Start a Claude Code session for this repository in the clone's own folder, so that it loads this repository's `CLAUDE.md` and settings from the start."
 - **THEN** a test fails and names the file
+
+### Requirement: Each record gives its boundary and how hard it is to reverse
+
+Each record SHALL give, right after its type, its boundary, as `inside`, `incoming` or `outgoing`, and its reversibility, as `reversible`, `reversible with work` or `one-way door`, and the index SHALL give both, in columns of their own right after the type. A record from DR-268 on SHALL open its section on what reversing it would change with "How hard it is to reverse: " and its reversibility, which MAY become `[removed]` once the record is closed. Tests SHALL fail otherwise.
+
+#### Scenario: A record with its boundary and its reversibility passes
+
+- **WHEN** a record gives each of the two fields once, right after its type, with a value from its list, and the index gives the same values in its two columns
+- **THEN** the test passes it
+
+#### Scenario: A record without its boundary or its reversibility fails CI
+
+- **WHEN** a record lacks either field, gives one twice or out of its place, or gives a value outside its list
+- **THEN** a test fails and names the record
+
+#### Scenario: An index without the two columns fails CI
+
+- **WHEN** the index's table lacks the column of either field, holds it out of its place, or gives a value that the record does not
+- **THEN** a test fails and names the record
+
+#### Scenario: A reversibility sentence that disagrees with its field fails CI
+
+- **WHEN** a record from DR-268 on does not open its section on what reversing it would change with "How hard it is to reverse: " followed by its reversibility and a full stop
+- **THEN** a test fails and names the record
+
+### Requirement: A record's decider gives no date before the owner's first brief
+
+Each date that a record's decider gives SHALL be no earlier than 2026-10-17, the day of the owner's first brief for the tool, before the repository's first commit, and no later than the day the tests run. Tests SHALL fail otherwise.
+
+#### Scenario: A decider's date before the first brief fails CI
+
+- **WHEN** a record's decider gives a date earlier than 2026-10-17
+- **THEN** a test fails and names the record and the date
+
+#### Scenario: A decider's date on the day of the first brief passes
+
+- **WHEN** a record's decider gives 2026-10-17
+- **THEN** the test passes it

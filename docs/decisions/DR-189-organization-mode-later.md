@@ -1,6 +1,8 @@
 # DR-189: An organization mode, in which capture cannot be turned off, is left to a later change
 
 - **Type:** scope
+- **Boundary:** outgoing
+- **Reversibility:** reversible
 - **Status:** accepted
 - **Decided by:** the owner, 2026-11-03
 - **Requirements:** R1, R37, R160
