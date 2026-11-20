@@ -41,7 +41,12 @@ These tests hold what a machine can check:
   diff;
 - a record that the default branch holds is never removed, and never changed
   except to be closed, after which any line of text under its sections may
-  become `[removed]`; an ID that the default branch's register, threat model
+  become `[removed]`, or by the change that adds Boundary and Reversibility,
+  right after Type, to every one of them; when every base holds one number
+  twice, the record that its first-parent history added later may move to the
+  number after its highest, the records added with it and those that it
+  replaces naming the new number, and a repeat that this cannot mend is left
+  to the owner; an ID that the default branch's register, threat model
   or assumptions' index holds stays held or retired, an ID counting as retired
   only where the section "Retired IDs" lists it; and a requirement's or a
   scenario's title that the default branch's specs hold and an accepted record
@@ -170,6 +175,7 @@ DECISION_MENTION = re.compile(
     rf"\b(?:([Dd]esign)(?:'s)? )?[Dd]ecisions? ({NUMBERS})(?: of `([a-z0-9-]+)`)?(?!\.\d)"
 )
 CHANGE_DECISION = re.compile(rf"`([a-z0-9-]+)` decisions? ({NUMBERS})")
+REPLACES = re.compile(r"^- \*\*Replaces:\*\* (.*)$", re.M)
 CLOSER = re.compile(rf"^- \*\*Closed by:\*\* (DR-{NUMBER})$", re.M)
 COMMIT_ID = re.compile(r"[0-9a-f]{40}")
 TASK_NUMBERS = r"[0-9]+\.[0-9]+(?:(?:,? and |,? or |, | to )[0-9]+\.[0-9]+)*"
@@ -770,14 +776,124 @@ def without_added_fields(old: str, new: str) -> str | None:
     return "\n".join(lines[: at + 1] + lines[at + 1 + len(ADDED_FIELDS) :])
 
 
+@dataclass(frozen=True)
+class Mend:
+    """A record that a base holds under a number it holds twice, moved to the number after
+    the base's highest, as R266 allows: the paths of the records added by the same commit of
+    the base's first-parent history, and of those that the moved one replaces, may change
+    only by its number."""
+
+    later: str
+    target: str
+    old: str
+    new: str
+    siblings: frozenset[str]
+    closed: frozenset[str]
+
+
+def added_order(root: Path, base: str) -> dict[str, tuple[int, str]]:
+    """For each record that the base's first-parent history added, how many commits of that
+    history came after the newest one that added it, and that commit."""
+    done = git(
+        root,
+        "log",
+        "--first-parent",
+        "--diff-merges=first-parent",
+        "--no-renames",
+        "--diff-filter=A",
+        "--name-only",
+        "--format=%x01%H",
+        base,
+        "--",
+        f"{DECISIONS.as_posix()}/",
+    )
+    if done.returncode != 0:
+        raise LookupError(f"cannot read the history of {base}")
+    order: dict[str, tuple[int, str]] = {}
+    at, made = -1, ""
+    for line in done.stdout.decode("utf-8", "surrogateescape").split("\n"):
+        if line.startswith("\x01"):
+            at, made = at + 1, line[1:]
+        elif line:
+            order.setdefault(line, (at, made))
+    return order
+
+
+def named_together(groups: list[list[str]]) -> str:
+    def joined(names: list[str]) -> str:
+        return names[0] if len(names) == 1 else f"{', '.join(names[:-1])} and {names[-1]}"
+
+    return ", and ".join(
+        joined(sorted(posixpath.basename(path) for path in group)) for group in groups
+    )
+
+
+def mends_in(
+    root: Path, base: str, found: Mapping[str, tuple[str, str]]
+) -> tuple[set[Mend], list[str]]:
+    """The renumbering that would mend a number that the base holds twice, or what makes
+    the base's repeat one that renumbering cannot mend."""
+    folder = DECISIONS.as_posix()
+    numbers: dict[int, list[str]] = {}
+    for path in found:
+        named = FILE_NAME.fullmatch(posixpath.basename(path))
+        if named and posixpath.dirname(path) == folder:
+            numbers.setdefault(int(named.group(1)), []).append(path)
+    groups = [sorted(paths) for _, paths in sorted(numbers.items()) if len(paths) > 1]
+    if not groups:
+        return set(), []
+    order = added_order(root, base)
+    pair = groups[0]
+    ages = [order.get(path) for path in pair]
+    if len(groups) > 1 or len(pair) > 2 or None in ages or ages[0] == ages[1]:
+        return set(), [
+            f"{base} holds {named_together(groups)} with a number held twice in a way that"
+            " renumbering the later record cannot mend: the owner decides how to mend them"
+        ]
+    later = min(pair, key=lambda path: order[path][0])
+    made = order[later][1]
+    old = posixpath.basename(later)[:6]
+    new = f"DR-{max(numbers) + 1:03d}"
+    given = REPLACES.search(content(root, found[later][1]))
+    replaced = set(re.findall(rf"DR-{NUMBER}", given[1])) if given else set()
+    mend = Mend(
+        later=later,
+        target=f"{folder}/{new}{posixpath.basename(later)[6:]}",
+        old=old,
+        new=new,
+        siblings=frozenset(
+            path for path, (_, commit) in order.items() if commit == made and path != later
+        ),
+        closed=frozenset(path for path in found if posixpath.basename(path)[:6] in replaced),
+    )
+    return {mend}, []
+
+
+def mended(mend: Mend, path: str, old: str, new: str) -> bool:
+    """Whether `new` is `old` changed only by the mend's new number."""
+    if path in mend.siblings and new == re.sub(rf"\b{mend.old}\b", mend.new, old):
+        return True
+    line = "\n- **Closed by:** {}\n"
+    return path in mend.closed and new == old.replace(
+        line.format(mend.old), line.format(mend.new), 1
+    )
+
+
 def change_problems(root: Path, *bases: str) -> tuple[list[str], int]:
     """What changed in the records that the bases hold, and how many they hold."""
     current = records_in_tree(root, "HEAD")
     problems: dict[str, None] = {}
     held: set[str] = set()
     folder = DECISIONS.as_posix()
-    for base in bases:
-        found = records_in_tree(root, base)
+    trees = {base: records_in_tree(root, base) for base in bases}
+    each: list[set[Mend]] = []
+    for base, found in trees.items():
+        mends, unmendable = mends_in(root, base, found)
+        each.append(mends)
+        problems.update(dict.fromkeys(unmendable))
+    # A mend holds only where every base holds the repeat, never only a base a pull request chose.
+    allowed = set.intersection(*each) if each else set()
+    for base, found in trees.items():
         if not found and git(root, "cat-file", "-e", f"{base}:{folder}").returncode == 0:
             problems[
                 f"{base} holds {folder} but no file named as a record, so nothing was compared"
@@ -786,6 +902,17 @@ def change_problems(root: Path, *bases: str) -> tuple[list[str], int]:
         for path, (mode, item) in sorted(found.items()):
             held.add(path)
             now = current.get(path)
+            mend = next((each for each in allowed if each.later == path), None)
+            target = current.get(mend.target) if mend else None
+            if (
+                mend
+                and now is None
+                and target is not None
+                and target[0] == mode
+                and content(root, target[1])
+                == content(root, item).replace(f"# {mend.old}: ", f"# {mend.new}: ", 1)
+            ):
+                continue
             if now is None:
                 problems[
                     f"{path}, which the default branch holds, was removed, renamed or moved:"
@@ -798,6 +925,8 @@ def change_problems(root: Path, *bases: str) -> tuple[list[str], int]:
                 problems[f"{path} {CHANGED}"] = None
                 continue
             old, new = content(root, item), content(root, now[1])
+            if any(mended(mend, path, old, new) for mend in allowed):
+                continue
             bare = without_added_fields(old, new)
             added = added or bare is not None
             if bare is None:
@@ -2027,6 +2156,192 @@ def test_the_two_fields_added_to_some_held_records_and_not_to_others_are_reporte
         "docs/decisions/DR-002-a-choice.md was left without Boundary and Reversibility, which"
         " this change adds to other records that the default branch holds: a change that adds"
         " them adds them to every one"
+    ]
+
+
+def merged(root: Path, files: dict[str, str]) -> None:
+    """One commit on `main` that writes these files under the records' folder."""
+    for name, text in files.items():
+        (root / DECISIONS / name).write_text(text)
+    run_git(root, "add", "-A")
+    run_git(root, "commit", "-q", "-m", f"Merge {', '.join(files)}")
+
+
+def repeated(root: Path, *merges: dict[str, str], branch: bool = True) -> Path:
+    """A repository whose `main` holds DR-001 and then each merge, in order, and a branch
+    `mend` from it, with `origin/main` at `main`'s end unless `branch` is false."""
+    folder = repository_with_history(root, [record(1)])
+    run_git(root, "checkout", "-q", "main")
+    for files in merges:
+        merged(root, files)
+    if branch:
+        run_git(root, "update-ref", DEFAULT_BRANCH, "main")
+    run_git(root, "checkout", "-q", "-b", "mend")
+    return folder
+
+
+def moved(folder: Path, name: str, number: int, text: str | None = None) -> None:
+    """The record in `name` moved to `number`, its heading's number changed and nothing else."""
+    old = folder / name
+    words = name.split("-", 2)[2]
+    body = old.read_text() if text is None else text
+    ident = name[:6]
+    new_text = body.replace(f"# {ident}: ", f"# DR-{number:03d}: ", 1)
+    old.unlink()
+    (folder / f"DR-{number:03d}-{words}").write_text(new_text)
+
+
+EARLY = {"DR-002-early.md": record(2, title="Early")}
+LATE = {"DR-002-late.md": record(2, title="Late")}
+
+
+def test_the_later_of_two_records_with_one_number_moved_to_the_next_is_not_reported(
+    tmp_path: Path,
+) -> None:
+    folder = repeated(tmp_path, EARLY, LATE)
+    moved(folder, "DR-002-late.md", 3)
+    commit(tmp_path)
+    assert compared(tmp_path) == ([], 3)
+
+
+def test_the_records_added_with_the_moved_one_and_closed_by_it_may_name_it_anew(
+    tmp_path: Path,
+) -> None:
+    late = record(2, title="Late", replaces="DR-001") + "It follows DR-002 (Late).\n"
+    folder = repeated(
+        tmp_path,
+        EARLY,
+        {
+            "DR-001-a-choice.md": record(1, status="closed", closed_by="DR-002"),
+            "DR-002-late.md": late,
+            "DR-003-other.md": record(3, title="Other") + "See [DR-002](DR-002-late.md).\n",
+        },
+    )
+    moved(folder, "DR-002-late.md", 4)
+    (folder / "DR-003-other.md").write_text(
+        record(3, title="Other") + "See [DR-004](DR-004-late.md).\n"
+    )
+    (folder / "DR-001-a-choice.md").write_text(record(1, status="closed", closed_by="DR-004"))
+    commit(tmp_path)
+    assert compared(tmp_path) == ([], 4)
+
+
+def removed(path: str) -> str:
+    return (
+        f"{path}, which the default branch holds, was removed, renamed or moved: a record is"
+        " never removed, only closed by a record that replaces it"
+    )
+
+
+@pytest.mark.parametrize(
+    ("how", "expected"),
+    [
+        ("earlier", [removed("docs/decisions/DR-002-early.md")]),
+        ("another number", [removed("docs/decisions/DR-002-late.md")]),
+        ("other words", [removed("docs/decisions/DR-002-late.md")]),
+        ("text changed", [removed("docs/decisions/DR-002-late.md")]),
+        ("executable", [removed("docs/decisions/DR-002-late.md")]),
+        ("kept", []),
+    ],
+)
+def test_a_renumbering_of_another_record_or_that_changes_more_is_reported(
+    tmp_path: Path, how: str, expected: list[str]
+) -> None:
+    folder = repeated(tmp_path, EARLY, LATE)
+    if how == "earlier":
+        moved(folder, "DR-002-early.md", 3)
+    elif how == "another number":
+        moved(folder, "DR-002-late.md", 4)
+    elif how == "other words":
+        (folder / "DR-002-late.md").unlink()
+        (folder / "DR-003-later.md").write_text(record(3, title="Late"))
+    elif how == "text changed":
+        moved(folder, "DR-002-late.md", 3, record(2, title="Later"))
+    elif how == "executable":
+        moved(folder, "DR-002-late.md", 3)
+        (folder / "DR-003-late.md").chmod(0o755)
+    else:
+        moved(folder, "DR-002-late.md", 3)
+        (folder / "DR-002-late.md").write_text(record(2, title="Late"))
+    commit(tmp_path)
+    assert compared(tmp_path)[0] == expected
+
+
+@pytest.mark.parametrize("which", ["added with it", "closed by it", "closed by the other"])
+def test_a_renumbering_that_changes_a_record_beside_it_in_another_way_is_reported(
+    tmp_path: Path, which: str
+) -> None:
+    closed = record(1, status="closed", closed_by="DR-002")
+    closer = "Late" if which == "closed by it" else "Early"
+    early = {"DR-002-early.md": record(2, title="Early", replaces="DR-001")}
+    late = {
+        "DR-002-late.md": record(2, title="Late", replaces="DR-001"),
+        "DR-003-other.md": record(3, title="Other", threats="none"),
+    }
+    if closer == "Early":
+        early["DR-001-a-choice.md"] = closed
+        late["DR-002-late.md"] = record(2, title="Late")
+    else:
+        early["DR-002-early.md"] = record(2, title="Early")
+        late["DR-001-a-choice.md"] = closed
+    folder = repeated(tmp_path, early, late)
+    moved(folder, "DR-002-late.md", 4)
+    if which == "added with it":
+        changed = "DR-003-other.md"
+        (folder / changed).write_text(record(3, title="Other", threats="T1"))
+    else:
+        changed = "DR-001-a-choice.md"
+        number = 4 if which == "closed by the other" else 5
+        (folder / changed).write_text(record(1, status="closed", closed_by=f"DR-{number:03d}"))
+    commit(tmp_path)
+    assert compared(tmp_path)[0] == [f"docs/decisions/{changed} {CHANGED}"]
+
+
+def test_a_record_renumbered_when_no_number_is_held_twice_is_reported(tmp_path: Path) -> None:
+    folder = repeated(tmp_path, LATE)
+    moved(folder, "DR-002-late.md", 3)
+    commit(tmp_path)
+    assert compared(tmp_path)[0] == [removed("docs/decisions/DR-002-late.md")]
+
+
+def test_a_repeat_that_only_a_chosen_base_holds_is_not_mended(tmp_path: Path) -> None:
+    folder = repeated(tmp_path, EARLY, LATE, branch=False)
+    chosen = run_git(tmp_path, "rev-parse", "HEAD")
+    run_git(tmp_path, "update-ref", DEFAULT_BRANCH, "main~2")
+    moved(folder, "DR-002-late.md", 3)
+    commit(tmp_path)
+    bases = base_commits(tmp_path, {"BASE_COMMIT": chosen})
+    assert len(bases) == 2
+    assert change_problems(tmp_path, *bases)[0] == [removed("docs/decisions/DR-002-late.md")]
+
+
+@pytest.mark.parametrize(
+    ("merges", "names"),
+    [
+        (
+            [EARLY, LATE, {"DR-002-last.md": record(2, title="Last")}],
+            "DR-002-early.md, DR-002-last.md and DR-002-late.md",
+        ),
+        (
+            [
+                EARLY,
+                {**LATE, "DR-003-one.md": record(3, title="One")},
+                {"DR-003-two.md": record(3, title="Two")},
+            ],
+            "DR-002-early.md and DR-002-late.md, and DR-003-one.md and DR-003-two.md",
+        ),
+        ([{**EARLY, **LATE}], "DR-002-early.md and DR-002-late.md"),
+    ],
+)
+def test_a_repeat_that_renumbering_cannot_mend_is_reported_for_the_owner(
+    tmp_path: Path, merges: list[dict[str, str]], names: str
+) -> None:
+    repeated(tmp_path, *merges)
+    commit(tmp_path)
+    base = base_commits(tmp_path, {})[0]
+    assert compared(tmp_path)[0] == [
+        f"{base} holds {names} with a number held twice in a way that renumbering the later"
+        " record cannot mend: the owner decides how to mend them"
     ]
 
 
