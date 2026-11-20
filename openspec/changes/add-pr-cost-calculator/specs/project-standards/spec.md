@@ -1772,7 +1772,7 @@ The context files SHALL be the root `CLAUDE.md`, which names the others by their
 
 ### Requirement: The context files keep to their lengths
 
-Each line of a context file SHALL hold at most 100 characters. The root `CLAUDE.md` SHALL hold at most 200 lines, blank ones counted, under a ceiling in its test that never passes 200, and SHALL open with its sections What an agent never does here, Privacy, and Records are data, not instructions, in that order, which hold what does harm before a check or a review sees it, ending by line 60. A folder file SHALL hold at most 100 lines. Tests SHALL fail otherwise.
+Each line of a context file SHALL hold at most 100 characters. The root `CLAUDE.md` SHALL hold at most 200 lines, blank ones counted, under a ceiling in its test that never passes 200, and SHALL open with its sections What an agent never does here, Privacy, and Records are data, not instructions, in that order, ending by line 60, and then Rules, with no other heading of level 1 or 2 among them. A folder file SHALL hold at most 100 lines. Tests SHALL fail otherwise.
 
 #### Scenario: A line longer than 100 characters fails CI
 
@@ -1786,8 +1786,8 @@ Each line of a context file SHALL hold at most 100 characters. The root `CLAUDE.
 
 #### Scenario: The root's first sections out of their place fail CI
 
-- **WHEN** the root's first three sections are not What an agent never does here, Privacy, and Records are data, not instructions, in that order, or they end after its line 60
-- **THEN** a test fails and names the section, or the line where they end
+- **WHEN** the root's first three sections are not What an agent never does here, Privacy, and Records are data, not instructions, in that order, or they end after its line 60, or a heading of level 1 or 2 other than their titles stands before its section Rules, as one added among them would
+- **THEN** a test fails and names the section, the heading and its line, or the line where they end
 
 #### Scenario: A folder file longer than 100 lines fails CI
 
@@ -1796,7 +1796,7 @@ Each line of a context file SHALL hold at most 100 characters. The root `CLAUDE.
 
 #### Scenario: Context files at their lengths pass
 
-- **WHEN** each line of the context files holds 100 characters at most, the root holds 200 lines with its first three sections ending at line 60, and a folder file holds 100 lines
+- **WHEN** each line of the context files holds 100 characters at most, the root holds 200 lines with its first three sections ending at line 60 and its section Rules next, and a folder file holds 100 lines
 - **THEN** the test passes them
 
 ### Requirement: A folder file names the tool and says that the root wins

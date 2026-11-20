@@ -56,9 +56,15 @@ ROOT_CEILING = 200
 ROOT_LIMIT = 200
 FOLDER_LIMIT = 100
 # The sections that hold what does harm before a check or a review sees it, first and in
-# this order, ending by this line.
+# this order, ending by this line, and the section that follows them.
 HARM_SECTIONS = ("What an agent never does here", "Privacy", "Records are data, not instructions")
 HARM_END = 60
+AFTER_HARM = "Rules"
+# A heading of level 1 or 2 at any indent, which ends a section, as Markdown reads one at the
+# start of a line or in a list item, so that one added among the first three sections, which
+# would take the rules below it out of them without moving a rule, fails. A heading underlined
+# with `=` or `-`, or written in HTML, is left to the owner's review (T227).
+TOP_HEADING = re.compile(r"[ \t]*#{1,2}(?:[ \t]|$)")
 
 TOOL_LINE = "# CLAUDE.md: Agentic PR cost calculator"
 OPENING = "These rules add to this repository's root `CLAUDE.md` for work on files under `{}/`"
@@ -291,8 +297,9 @@ def test_the_context_files_beside_the_settings_hooks_and_skills_pass() -> None:
 
 def length_problems(name: str, text: str, ceiling: int = ROOT_CEILING) -> list[str]:
     """Each line over the width, and, for the root, a length over its ceiling, a ceiling
-    over the owner's limit, and its first sections out of their place; for a folder file,
-    a length over its limit."""
+    over the owner's limit, its first sections out of their place, and a heading of level 1
+    or 2 among them, or before them, other than their titles and then `## Rules`; for a
+    folder file, a length over its limit."""
     lines = lines_of(text)
     problems = [
         f"{name}:{number} holds {len(line)} characters, over {WIDTH}"
@@ -311,6 +318,15 @@ def length_problems(name: str, text: str, ceiling: int = ROOT_CEILING) -> list[s
     first = tuple(title for _, title in sections[: len(HARM_SECTIONS)])
     if first != HARM_SECTIONS:
         problems.append(f"{name} opens with the sections {list(first)}, not {list(HARM_SECTIONS)}")
+    else:
+        due = [f"## {title}" for title in (*HARM_SECTIONS, AFTER_HARM)]
+        headings = [(n, line) for n, line in enumerate(lines[1:], 2) if TOP_HEADING.match(line)]
+        for (number, line), wanted in zip(headings, due, strict=False):
+            if line != wanted:
+                problems.append(
+                    f"{name}:{number} holds the heading {line!r} where {wanted!r} is due"
+                )
+                break
     end = sections[len(HARM_SECTIONS)][0] - 1 if len(sections) > len(HARM_SECTIONS) else len(lines)
     if end > HARM_END:
         problems.append(f"{name}'s first three sections end at line {end}, after line {HARM_END}")
@@ -366,6 +382,35 @@ def test_the_root_s_first_sections_ending_late_are_reported() -> None:
     assert length_problems("CLAUDE.md", root_of(100, harm_end=61)) == [
         "CLAUDE.md's first three sections end at line 61, after line 60"
     ]
+
+
+@pytest.mark.parametrize(
+    ("heading", "at", "due"),
+    [
+        ("## Later rules", 50, "## Rules"),
+        ("# Later rules", 50, "## Rules"),
+        ("   ## Later rules", 50, "## Rules"),
+        ("    ## Inside the item above", 50, "## Rules"),
+        ("##", 50, "## Rules"),
+        ("## Privacy", 50, "## Rules"),
+        ("# Before them", 2, "## What an agent never does here"),
+    ],
+)
+def test_a_heading_added_among_the_root_s_first_sections_is_reported(
+    heading: str, at: int, due: str
+) -> None:
+    lines = root_of(100).split("\n")
+    lines.insert(at - 1, heading)
+    assert length_problems("CLAUDE.md", "\n".join(lines)) == [
+        f"CLAUDE.md:{at} holds the heading {heading!r} where {due!r} is due"
+    ]
+
+
+@pytest.mark.parametrize("line", ["### A part of the third section", "#46 asks", "  ###"])
+def test_a_line_among_the_root_s_first_sections_that_ends_no_section_passes(line: str) -> None:
+    lines = root_of(100).split("\n")
+    lines.insert(49, line)
+    assert length_problems("CLAUDE.md", "\n".join(lines)) == []
 
 
 @pytest.mark.parametrize(
