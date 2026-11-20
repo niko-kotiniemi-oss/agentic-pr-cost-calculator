@@ -28,7 +28,7 @@ import time
 import urllib.error
 import urllib.parse
 import urllib.request
-from collections.abc import Callable, Mapping, Sequence
+from collections.abc import Callable, Iterable, Mapping, Sequence
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
@@ -248,15 +248,20 @@ def renovate(pulls: Any, issues: Any, fetch: Fetch, base: str, now: datetime) ->
 
 
 def overdue(
-    pin: Pin, releases: Mapping[str, datetime], proposed: Sequence[tuple[int, ...]], now: datetime
+    pin: Pin,
+    releases: Mapping[str, datetime],
+    proposed: Sequence[tuple[int, ...]],
+    now: datetime,
+    listed: Iterable[str],
 ) -> str | None:
     """The finding for a pinned tool whose newest minor or patch release that passed the
     wait and the grace is newer than its pin and proposed by none of Renovate's pull
-    requests, for it or a later version, or None."""
+    requests, for it or a later version, or None. `listed` is every version that the
+    registry lists, withdrawn ones too, among which the pin must be."""
     current = numbers(pin.version)
     if current is None:
         raise ReadError(f"{pin.name} is pinned to no version of numbers")
-    if not any(numbers(name) == current for name in releases):
+    if not any(numbers(name) == current for name in listed):
         raise ReadError(f"the registry lists no release {pin.version} that the check can compare")
     due = [
         (version, name, published)
@@ -291,7 +296,7 @@ def parsed(body: bytes, what: str) -> Any:
     error, never the response's own text."""
     try:
         return json.loads(body)
-    except ValueError as error:
+    except (ValueError, RecursionError) as error:
         raise ReadError(f"could not read {what}: {type(error).__name__}") from None
 
 
@@ -337,16 +342,32 @@ def check(root: Path, fetch: Fetch, now: datetime, repo: str, api: str) -> list[
     issues = pages(fetch, f"{base}/issues?state=open&creator=renovate%5Bbot%5D&per_page=100")
     activity = renovate(pulls, issues, fetch, base, now)
     findings = []
+    # A registry's host whose request failed is not asked again, so that every failed
+    # request of a run fits inside the job's time limit.
+    down: set[str] = set()
     for pin in tools:
+        if pin.registry == "pypi":
+            url, read, key = (
+                f"https://pypi.org/pypi/{urllib.parse.quote(pin.name)}/json",
+                pypi_releases,
+                "releases",
+            )
+        else:
+            url = f"https://registry.npmjs.org/{urllib.parse.quote(pin.name, safe='@')}"
+            read, key = npm_releases, "versions"
+        host = urllib.parse.urlsplit(url).netloc
         try:
-            if pin.registry == "pypi":
-                url = f"https://pypi.org/pypi/{urllib.parse.quote(pin.name)}/json"
-                releases = pypi_releases(parsed(fetch(url).body, url))
-            else:
-                url = f"https://registry.npmjs.org/{urllib.parse.quote(pin.name, safe='@')}"
-                releases = npm_releases(parsed(fetch(url).body, url))
+            if host in down:
+                raise ReadError(f"{host} did not answer an earlier request")
+            try:
+                body = fetch(url).body
+            except ReadError:
+                down.add(host)
+                raise
+            doc = parsed(body, url)
+            releases = read(doc)
             proposed = activity.proposed.get(normal(pin.name, pin.registry), [])
-            finding = overdue(pin, releases, proposed, now)
+            finding = overdue(pin, releases, proposed, now, doc[key])
         except ReadError as error:
             finding = f"not read: {pin.name} {pin.version}: {error}"
         if finding:

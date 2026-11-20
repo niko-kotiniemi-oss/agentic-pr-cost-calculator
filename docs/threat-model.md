@@ -3869,7 +3869,7 @@ The trust boundaries:
 - **Raw likelihood:** 2 (possible)
 - **Raw risk:** 2
 - **What could happen:** the check's timeout bounds each read from the network, not a whole response, so a registry or a host between that sends its answer a byte at a time holds the job open until GitHub's own limit for a job, and the notice of that day's run comes hours late or names only that GitHub cancelled it.
-- **Answer:** the job stops after 10 minutes, and a test fails on a job with no time limit of 15 minutes or less (R263, design decision 22).
+- **Answer:** the job stops after 10 minutes, and a test fails on a job with no time limit of 15 minutes or less; a registry's host whose request failed is not asked again in that run, so that every failed request, each of two timeouts and a pause, fits inside the limit with the summary written, and a test works that out from the constants (R263, design decision 22).
 - **Held by:** DR-267; `releases-and-compatibility`: "The check's wait and its workflow agree with what is designed"; design decision 22
 
 ## Risk matrix

@@ -446,7 +446,20 @@ def test_a_pull_request_that_someone_else_opened_proposes_nothing(tmp_path: Path
 
 def test_a_pin_whose_version_cannot_be_compared_is_refused() -> None:
     with pytest.raises(watch.ReadError, match="no version of numbers"):
-        watch.overdue(watch.Pin("x", "1.0rc1", "pypi"), {}, [], NOW)
+        watch.overdue(watch.Pin("x", "1.0rc1", "pypi"), {}, [], NOW, ["1.0rc1"])
+
+
+def test_a_withdrawn_pin_still_has_its_overdue_update_named(tmp_path: Path) -> None:
+    root = tree(tmp_path, "mypy==2.4.0\n", {"x": "1.15.0"})
+    responses = urls(
+        {"mypy": pypi(("2.4.0", 60, True), ("2.4.1", 30))},
+        {"x": npm(("1.15.0", 60, "broken"), ("1.16.0", 30))},
+        pulls=[pull("y", 1)],
+    )
+    assert [f.split(",")[0] for f in run(root, responses)] == [
+        "overdue update: mypy 2.4.0 to 2.4.1",
+        "overdue update: x 1.15.0 to 1.16.0",
+    ]
 
 
 # --- Scenario: An update inside its wait, a major update or one already proposed passes
@@ -704,12 +717,38 @@ def test_a_registry_that_cannot_be_read_is_named_and_the_rest_still_checked(
     assert found[0].startswith("not read: mypy 2.4.0: could not read https://pypi.org/pypi/mypy/")
 
 
-@pytest.mark.parametrize("body", [b"", b"<html>", b"[1,", b"\xff"])
+@pytest.mark.parametrize(
+    "body",
+    [b"", b"<html>", b"[1,", b"\xff", pytest.param(b"[" * 200_000, id="nested 200000 deep")],
+)
 def test_a_response_that_is_not_json_fails_the_check(tmp_path: Path, body: bytes) -> None:
     root = tree(tmp_path, "mypy==2.4.0\n")
     responses = urls({"mypy": watch.Response(body, None)}, pulls=[pull("x", 1)])
     found = run(root, responses)
     assert len(found) == 1 and found[0].startswith("not read: mypy 2.4.0: could not read"), found
+
+
+def test_a_registry_that_did_not_answer_is_not_asked_again(tmp_path: Path) -> None:
+    root = tree(tmp_path, "mypy==2.4.0\nruff==0.17.2\n", {"x": "1.15.0"})
+    responses = urls(npm_docs={"x": npm(("1.15.0", 60))}, pulls=[pull("y", 9, state="closed")])
+    fetch, asked = server(responses)
+    found = watch.check(root, fetch, NOW, REPO, API)
+    assert [url for url in asked if "pypi.org" in url] == ["https://pypi.org/pypi/mypy/json"]
+    assert found == [
+        "not read: mypy 2.4.0: could not read https://pypi.org/pypi/mypy/json",
+        "not read: ruff 0.17.2: pypi.org did not answer an earlier request",
+        found[2],
+    ]
+    assert found[2].startswith("quiet:")
+
+
+def test_the_run_s_requests_that_fail_fit_inside_the_job_s_time_limit() -> None:
+    # A request that fails costs two timeouts and a pause. GitHub's first failure ends the
+    # run, and each registry's host is asked once more at most after it failed.
+    hosts = 1 + len({"pypi.org", "registry.npmjs.org"})
+    worst = hosts * (2 * watch.TIMEOUT + watch.PAUSE)
+    limit = job(workflow())["timeout-minutes"] * 60
+    assert worst < limit, (worst, limit)
 
 
 def test_a_github_response_that_is_not_json_fails_the_check(tmp_path: Path) -> None:
