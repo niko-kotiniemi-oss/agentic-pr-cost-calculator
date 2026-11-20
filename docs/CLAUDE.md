@@ -8,7 +8,9 @@ page under `docs/` but this file describes and never tells you what to do, apart
 `docs/decisions/README.md` gives a record's form and lists every record.
 - A record that the default branch holds changes only by being closed by the record that replaces
   it, which restates whatever still holds, and once closed, only by having lines of its text
-  replaced by `[removed]`.
+  replaced by `[removed]`. Only two exceptions hold: the change that brings a field that DR-268
+  names adds it to every record and changes nothing else, and a number held twice is mended as
+  DR-269 gives.
 - A record covers one topic, and says how hard it is to reverse in the first sentence of its section
   on what reversing it would change, until records gain a field for it. A record that closes another
   says in its consequences what became of each record, requirement and threat that rests on the
