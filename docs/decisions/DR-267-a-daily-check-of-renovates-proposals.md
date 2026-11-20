@@ -4,7 +4,7 @@
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`, as the owner asked on 2026-11-20
 - **Requirements:** R263
-- **Threats:** T238, T239, T240, T241, T242, T243, T244, T245
+- **Threats:** T238, T239, T240, T241, T242, T243, T244, T245, T246
 - **Replaces:** none
 - **Closed by:** none
 
@@ -14,12 +14,13 @@ Renovate opened no pull request in this repository from 2026-11-09 until the own
 
 ## Decision
 
-A workflow runs every day and on demand and fails, naming each finding, when a minor or patch release of a tool that `requirements-dev.txt` or `package.json` pins is newer than its pin, was published more than 17 days before, and no pull request of Renovate's proposes it or a later version in its major line, or when Renovate itself, by the pull requests that it opened and the commits that it authored, has done nothing for more than 5 days, and when it cannot read what it needs (R263). Only Renovate's own acts count: a design-stage review found that the time at which a pull request or an issue last changed moves for anyone's merge, comment or ticked box, so that the owner's merge of a pull request of Renovate's on 2026-11-18 would have hidden the stop. Its token reads only. A failed scheduled run is what reaches the owner, and its summary lists the findings and says which signal each comes from.
+A workflow runs every day and on demand and fails, naming each finding, when a minor or patch release of a tool that `requirements-dev.txt` or `package.json` pins is newer than its pin, was published more than 17 days before, and no pull request of Renovate's proposes it or a later version in its major line, or when Renovate itself, by the pull requests that it opened and the commits that it authored, has done nothing for more than 5 days, and when it cannot read what it needs (R263). Only Renovate's own acts count: a design-stage review found that the time at which a pull request or an issue last changed moves for anyone's merge, comment or ticked box, so that the owner's merge of a pull request of Renovate's on 2026-11-18 would have hidden the stop, and the owner chose on 2026-11-20 to count Renovate's own acts alone, over any activity or a note that fails nothing. Its token reads only. A failed scheduled run is what reaches the owner, and its summary lists the findings and says which signal each comes from.
 
 ## Alternatives
 
 - Five quiet days alone, the owner's first example: it warns in normal quiet weeks, and cannot tell a stop from a week with nothing to propose.
 - The overdue update alone, with a long backstop of 30 days for the tools that the registries do not cover: proposed in the design, and the owner chose the five days in its place.
+- Five quiet days counted by any activity on Renovate's pull requests and dashboard, or named only as a note that fails no run: the owner chose Renovate's own acts and a failed run.
 - An issue opened or updated by the check: more visible than a failed run, but it needs `issues: write`, a write permission that CI here does not hold (DR-067).
 - Running Renovate itself in CI and comparing what it would propose: it needs a token for GitHub's lookups and runs a large program with the workflow's token, for a question that the registries answer directly.
 
@@ -37,4 +38,4 @@ This covers how the repository learns that Renovate has stopped. What Renovate p
 
 ## What reversing it would change
 
-How hard it is to reverse: reversible. The check is one workflow and one script, held by R263 and its tests, and removing them takes away the answers of T238 to T241 with them.
+How hard it is to reverse: reversible. The check is one workflow and one script, held by R263 and its tests, and removing them takes away the answers of T238 to T246 with them.

@@ -411,13 +411,13 @@ A workflow SHALL run every day and on demand, with a token that only reads, and 
 
 #### Scenario: A check that cannot read fails
 
-- **WHEN** a request to the Python Package Index, the npm registry or GitHub fails, is redirected to another host or away from HTTPS, or returns what the check cannot read, or a pin is not one exact version of numbers, or the check finds no pinned tool, no pull request of Renovate's or no open dependency dashboard that Renovate opened
-- **THEN** the run fails and names what it could not read, and never passes
+- **WHEN** a request to the Python Package Index, the npm registry or GitHub fails, is redirected to another host or away from HTTPS, gives its next page on another host or away from HTTPS, or returns what the check cannot read, or a registry lists no release of the pinned version that the check can compare, or a pin is not one exact version of numbers, or `GITHUB_REPOSITORY` is not an owner and a name, or the check finds no pinned tool, no pull request of Renovate's or no open dependency dashboard that Renovate opened, or fails in any other way
+- **THEN** the run fails and names what it could not read, and never passes; a registry that it could not read is named for its tool, and the other tools and the quiet days are still checked
 
 #### Scenario: A check run as at another time reads only what existed then
 
 - **WHEN** the check is given a day, which it reads as that day's start in UTC, and Renovate opened a pull request or authored a commit after that time
-- **THEN** the check leaves that pull request and that commit out, so that a run as at a past day finds what a run on that day would have found
+- **THEN** the check leaves that pull request and that commit out
 
 #### Scenario: Text from a response never reaches the run's commands or summary
 
@@ -426,5 +426,5 @@ A workflow SHALL run every day and on demand, with a token that only reads, and 
 
 #### Scenario: The check's wait and its workflow agree with what is designed
 
-- **WHEN** a package rule of Renovate's configuration sets a wait other than 14 days for minor or patch updates, or the workflow runs on no daily schedule, cannot be started by hand, runs on any other event, grants the workflow anything but `contents: read` or its job anything but `contents: read`, `pull-requests: read` and `issues: read`, or checks out the code keeping its credentials
+- **WHEN** a package rule of Renovate's configuration sets a wait other than 14 days for minor or patch updates, or the workflow runs on no daily schedule, cannot be started by hand, runs on any other event, grants the workflow anything but `contents: read` or its job anything but `contents: read`, `pull-requests: read` and `issues: read`, gives its job no time limit of 15 minutes or less, or checks out the code keeping its credentials
 - **THEN** a test fails and names the difference

@@ -5,6 +5,7 @@ given through the check's one fetch function, and every time is given."""
 
 from __future__ import annotations
 
+import http.client
 import json
 import re
 import time
@@ -84,20 +85,31 @@ def dashboard(days_ago: float = 0) -> dict[str, Any]:
     }
 
 
-def commit(days_ago: float, login: str | None = "renovate[bot]") -> dict[str, Any]:
+def commit(
+    days_ago: float, login: str | None = "renovate[bot]", committed: float | None = None
+) -> dict[str, Any]:
+    """A head commit as GitHub gives it, authored so many days before NOW by `login`, and
+    committed then too unless `committed` says otherwise."""
     return {
         "author": {"login": login} if login else None,
-        "commit": {"committer": {"date": at(days_ago)}},
+        "commit": {
+            "author": {"date": at(days_ago)},
+            "committer": {"date": at(days_ago if committed is None else committed)},
+        },
     }
 
 
-def tree(tmp_path: Path, requirements: str, dev: dict[str, str] | None = None) -> Path:
+def tree(
+    tmp_path: Path,
+    requirements: str,
+    dev: dict[str, str] | None = None,
+    runtime: dict[str, str] | None = None,
+) -> Path:
     (tmp_path / "requirements-dev.txt").write_text(requirements, encoding="utf-8")
-    package = {"name": "x", "private": True, "devDependencies": dev or {}}
+    package: dict[str, Any] = {"name": "x", "private": True, "devDependencies": dev or {}}
+    if runtime is not None:
+        package["dependencies"] = runtime
     (tmp_path / "package.json").write_text(json.dumps(package), encoding="utf-8")
-    (tmp_path / "renovate.json").write_text(
-        (ROOT / "renovate.json").read_text(encoding="utf-8"), encoding="utf-8"
-    )
     return tmp_path
 
 
@@ -167,6 +179,20 @@ def test_the_pins_are_read_from_both_files(tmp_path: Path) -> None:
     ]
 
 
+def test_a_package_s_runtime_dependencies_are_pins_too(tmp_path: Path) -> None:
+    root = tree(tmp_path, "mypy==2.4.0\n", {"a": "1.0.0"}, {"b": "2.0.0"})
+    assert [pin.name for pin in watch.pins(root)] == ["mypy", "a", "b"]
+
+
+@pytest.mark.parametrize("section", [[], "x", {"a": 1}])
+def test_a_package_section_that_cannot_be_read_fails(tmp_path: Path, section: Any) -> None:
+    root = tree(tmp_path, "mypy==2.4.0\n")
+    package = {"devDependencies": section}
+    (root / "package.json").write_text(json.dumps(package), encoding="utf-8")
+    with pytest.raises(watch.ReadError, match="package.json"):
+        watch.pins(root)
+
+
 def test_this_repository_s_pins_are_read() -> None:
     found = watch.pins(ROOT)
     assert {pin.registry for pin in found} == {"pypi", "npm"}
@@ -175,7 +201,15 @@ def test_this_repository_s_pins_are_read() -> None:
 
 @pytest.mark.parametrize(
     "line",
-    ["mypy>=2.4.0", "mypy", "-r other.txt", "mypy==2.4.0; python_version<'3.12'", "mypy==2.*"],
+    [
+        "mypy>=2.4.0",
+        "mypy",
+        "-r other.txt",
+        "mypy==2.4.0; python_version<'3.12'",
+        "mypy==2.*",
+        "mypy==2.4.0 --hash=sha256:00",
+        "mypy==\uff12.4.0",
+    ],
 )
 def test_a_requirement_that_is_not_an_exact_pin_fails(tmp_path: Path, line: str) -> None:
     with pytest.raises(watch.ReadError, match="requirements-dev.txt"):
@@ -227,6 +261,8 @@ def test_a_package_json_that_cannot_be_read_fails(tmp_path: Path) -> None:
         ("1!2.0", None),
         ("v2.4.1", None),
         ("2..4", None),
+        ("\uff12.\uff14.\uff11", None),
+        pytest.param("2.4." + "9" * 5000, None, id="a part of 5000 digits"),
         ("", None),
     ],
 )
@@ -311,6 +347,27 @@ def test_an_npm_document_that_cannot_be_read_fails(doc: Any) -> None:
 # --- Scenario: An update that Renovate has not proposed in time fails the check ------
 
 
+@pytest.mark.parametrize(
+    ("pypi_doc", "npm_doc"),
+    [
+        ({"releases": {}}, None),
+        (pypi(("2.4.1rc1", 30)), None),
+        (pypi(("2.4.1", 30)), None),
+        (pypi(("2.4.0", 60), ("2.4.1", 30)), {"versions": {}, "time": {}}),
+        (pypi(("2.4.0", 60), ("2.4.1", 30)), npm(("1.16.0", 30))),
+    ],
+)
+def test_a_document_without_the_pin_is_named_as_not_read_and_the_rest_still_checked(
+    tmp_path: Path, pypi_doc: dict[str, Any], npm_doc: dict[str, Any] | None
+) -> None:
+    root = tree(tmp_path, "mypy==2.4.0\n", {"x": "1.15.0"})
+    other = npm_doc if npm_doc is not None else npm(("1.15.0", 60))
+    found = run(root, urls({"mypy": pypi_doc}, {"x": other}, pulls=[pull("y", 9, state="closed")]))
+    reader = "mypy" if npm_doc is None else "x"
+    assert [f.split(":")[0] for f in found if not f.startswith("overdue")] == ["not read", "quiet"]
+    assert f"not read: {reader} " in "\n".join(found), found
+
+
 def test_an_overdue_update_is_named_with_its_pin_version_and_day(tmp_path: Path) -> None:
     root = tree(tmp_path, "mypy==2.4.0\n")
     found = run(root, urls({"mypy": pypi(("2.4.0", 60), ("2.4.1", 18))}, pulls=[pull("x", 1)]))
@@ -376,15 +433,20 @@ def test_a_pull_request_that_does_not_propose_the_update_leaves_it_overdue(
     tmp_path: Path, title: str
 ) -> None:
     root = tree(tmp_path, "mypy==2.4.0\n")
-    found = run(root, urls({"mypy": pypi(("2.4.1", 18))}, pulls=[pull(title, 1)]))
+    found = run(root, urls({"mypy": pypi(("2.4.0", 60), ("2.4.1", 18))}, pulls=[pull(title, 1)]))
     assert len(found) == 1 and found[0].startswith("overdue update: mypy"), found
 
 
 def test_a_pull_request_that_someone_else_opened_proposes_nothing(tmp_path: Path) -> None:
     root = tree(tmp_path, "mypy==2.4.0\n")
     others = [pull("Update dependency mypy to v2.4.1", 1, login="someone"), pull("x", 1)]
-    found = run(root, urls({"mypy": pypi(("2.4.1", 18))}, pulls=others))
+    found = run(root, urls({"mypy": pypi(("2.4.0", 60), ("2.4.1", 18))}, pulls=others))
     assert len(found) == 1 and found[0].startswith("overdue update: mypy"), found
+
+
+def test_a_pin_whose_version_cannot_be_compared_is_refused() -> None:
+    with pytest.raises(watch.ReadError, match="no version of numbers"):
+        watch.overdue(watch.Pin("x", "1.0rc1", "pypi"), {}, [], NOW)
 
 
 # --- Scenario: An update inside its wait, a major update or one already proposed passes
@@ -435,7 +497,7 @@ def test_a_deprecated_npm_version_is_not_overdue(tmp_path: Path) -> None:
 def test_an_update_that_renovate_proposed_passes(tmp_path: Path, title: str, state: str) -> None:
     root = tree(tmp_path, "mypy==2.4.0\n")
     proposed = pull(title, 40, state=state, number=2)
-    responses = urls({"mypy": pypi(("2.4.1", 18))}, pulls=[proposed, pull("x", 1)])
+    responses = urls({"mypy": pypi(("2.4.0", 60), ("2.4.1", 18))}, pulls=[proposed, pull("x", 1)])
     assert run(root, responses) == []
 
 
@@ -444,7 +506,7 @@ def test_a_python_tool_s_name_is_compared_as_the_package_index_compares_it(
 ) -> None:
     root = tree(tmp_path, "Types_PyYAML==6.0.12.20260906\n")
     proposed = pull("Update dependency types-pyyaml to v6.0.12.20261103", 30, number=2)
-    doc = pypi(("6.0.12.20261103", 20))
+    doc = pypi(("6.0.12.20260906", 60), ("6.0.12.20261103", 20))
     responses = urls({"Types_PyYAML": doc}, pulls=[proposed, pull("x", 1)])
     assert run(root, responses) == []
 
@@ -454,7 +516,8 @@ def test_a_closed_pull_request_for_a_major_update_hides_no_minor_one(tmp_path: P
     major = pull("Update dependency mypy to v3", 40, state="closed", number=2)
     major3 = pull("Update dependency mypy to v3.0.0", 40, state="closed", number=3)
     responses = urls(
-        {"mypy": pypi(("2.4.1", 18), ("3.0.0", 40))}, pulls=[major, major3, pull("x", 1)]
+        {"mypy": pypi(("2.4.0", 60), ("2.4.1", 18), ("3.0.0", 40))},
+        pulls=[major, major3, pull("x", 1)],
     )
     found = run(root, responses)
     assert [f.split(",")[0] for f in found] == ["overdue update: mypy 2.4.0 to 2.4.1"]
@@ -463,8 +526,8 @@ def test_a_closed_pull_request_for_a_major_update_hides_no_minor_one(tmp_path: P
 def test_the_recorded_pull_requests_propose_the_updates_that_they_name(tmp_path: Path) -> None:
     root = tree(tmp_path, "mypy==2.4.0\nruff==0.17.2\n", {"@fission-ai/openspec": "1.15.0"})
     responses = urls(
-        {"mypy": pypi(("2.4.1", 30)), "ruff": pypi(("0.17.4", 30))},
-        {"@fission-ai/openspec": npm(("1.16.0", 30))},
+        {"mypy": pypi(("2.4.0", 60), ("2.4.1", 30)), "ruff": pypi(("0.17.2", 60), ("0.17.4", 30))},
+        {"@fission-ai/openspec": npm(("1.15.0", 60), ("1.16.0", 30))},
         pulls=recorded("github-pulls.json"),
         issues=recorded("github-issues.json"),
     )
@@ -489,9 +552,31 @@ def test_five_quiet_days_are_named_with_the_last_activity(tmp_path: Path) -> Non
     ]
 
 
-def test_exactly_five_days_is_not_yet_quiet(tmp_path: Path) -> None:
+def test_exactly_five_days_is_not_yet_quiet_and_a_second_more_is(tmp_path: Path) -> None:
     root = tree(tmp_path, "mypy==2.4.0\n")
     assert run(root, urls({"mypy": pypi(("2.4.0", 60))}, pulls=[pull("x", 5)])) == []
+    past = 5 + 1 / 86400
+    found = run(root, urls({"mypy": pypi(("2.4.0", 60))}, pulls=[pull("x", past)]))
+    assert [f.split(":")[0] for f in found] == ["quiet"]
+
+
+def test_exactly_seventeen_days_is_not_yet_overdue_and_a_second_more_is(tmp_path: Path) -> None:
+    root = tree(tmp_path, "mypy==2.4.0\n")
+    recent = [pull("x", 1)]
+    assert run(root, urls({"mypy": pypi(("2.4.0", 60), ("2.4.1", 17))}, pulls=recent)) == []
+    past = 17 + 1 / 86400
+    found = run(root, urls({"mypy": pypi(("2.4.0", 60), ("2.4.1", past))}, pulls=recent))
+    assert [f.split(",")[0] for f in found] == ["overdue update: mypy 2.4.0 to 2.4.1"]
+
+
+def test_a_commit_that_renovate_authored_long_ago_and_someone_rebased_today_is_quiet(
+    tmp_path: Path,
+) -> None:
+    root = tree(tmp_path, "mypy==2.4.0\n")
+    item = pull("x", 9)
+    commits = {item["head"]["sha"]: commit(9, committed=0)}
+    responses = urls({"mypy": pypi(("2.4.0", 60))}, pulls=[item], commits=commits)
+    assert [f.split(":")[0] for f in run(root, responses)] == ["quiet"]
 
 
 @pytest.mark.parametrize(
@@ -534,7 +619,10 @@ def test_a_commit_with_no_author_on_github_is_not_renovate_s(tmp_path: Path) -> 
 
 def test_both_signals_are_named_together(tmp_path: Path) -> None:
     root = tree(tmp_path, "mypy==2.4.0\n")
-    found = run(root, urls({"mypy": pypi(("2.4.1", 20))}, pulls=[pull("x", 6, state="closed")]))
+    found = run(
+        root,
+        urls({"mypy": pypi(("2.4.0", 60), ("2.4.1", 20))}, pulls=[pull("x", 6, state="closed")]),
+    )
     assert [f.split(":")[0] for f in found] == ["overdue update", "quiet"]
 
 
@@ -544,7 +632,9 @@ def test_both_signals_are_named_together(tmp_path: Path) -> None:
 def test_a_pull_request_opened_after_the_check_s_time_is_left_out(tmp_path: Path) -> None:
     root = tree(tmp_path, "mypy==2.4.0\n")
     later = pull("Update dependency mypy to v2.4.1", 1, number=2)
-    responses = urls({"mypy": pypi(("2.4.1", 30))}, pulls=[pull("x", 5, state="closed"), later])
+    responses = urls(
+        {"mypy": pypi(("2.4.0", 60), ("2.4.1", 30))}, pulls=[pull("x", 5, state="closed"), later]
+    )
     then = NOW - timedelta(days=2)
     found = run(root, responses, now=then)
     assert [f.split(",")[0] for f in found] == ["overdue update: mypy 2.4.0 to 2.4.1"]
@@ -579,7 +669,7 @@ def test_text_from_a_response_never_reaches_the_output(
         pull(planted, 30, number=3, state="closed"),
         pull("x", 9, state="closed"),
     ]
-    doc = pypi(("2.4.1", 30), (planted, 30))
+    doc = pypi(("2.4.0", 60), ("2.4.1", 30), (planted, 30))
     issues = [dashboard() | {"title": planted}, dashboard()]
     fetch, _ = server(urls({"mypy": doc}, pulls=hostile, issues=issues))
     assert watch.main(["--root", str(root)], environment(tmp_path), fetch, lambda: NOW) == 1
@@ -605,18 +695,28 @@ def test_an_error_names_no_text_from_a_response(
 # --- Scenario: A check that cannot read fails ---------------------------------------
 
 
-def test_a_request_that_fails_fails_the_check(tmp_path: Path) -> None:
+def test_a_registry_that_cannot_be_read_is_named_and_the_rest_still_checked(
+    tmp_path: Path,
+) -> None:
     root = tree(tmp_path, "mypy==2.4.0\n")
-    responses = urls(pulls=[pull("x", 1)])
-    with pytest.raises(watch.ReadError, match="pypi.org/pypi/mypy/json"):
-        run(root, responses)
+    found = run(root, urls(pulls=[pull("x", 9, state="closed")]))
+    assert [f.split(":")[0] for f in found] == ["not read", "quiet"]
+    assert found[0].startswith("not read: mypy 2.4.0: could not read https://pypi.org/pypi/mypy/")
 
 
 @pytest.mark.parametrize("body", [b"", b"<html>", b"[1,", b"\xff"])
 def test_a_response_that_is_not_json_fails_the_check(tmp_path: Path, body: bytes) -> None:
     root = tree(tmp_path, "mypy==2.4.0\n")
     responses = urls({"mypy": watch.Response(body, None)}, pulls=[pull("x", 1)])
-    with pytest.raises(watch.ReadError, match="mypy"):
+    found = run(root, responses)
+    assert len(found) == 1 and found[0].startswith("not read: mypy 2.4.0: could not read"), found
+
+
+def test_a_github_response_that_is_not_json_fails_the_check(tmp_path: Path) -> None:
+    root = tree(tmp_path, "mypy==2.4.0\n")
+    responses = urls({"mypy": pypi(("2.4.0", 60))}, pulls=[pull("x", 1)])
+    responses[f"{API}/repos/{REPO}/pulls?state=all&per_page=100"] = watch.Response(b"<", None)
+    with pytest.raises(watch.ReadError, match="could not read page 1 of"):
         run(root, responses)
 
 
@@ -628,11 +728,13 @@ def test_a_response_that_is_not_json_fails_the_check(tmp_path: Path, body: bytes
         [{"title": "x"}],
         [{"title": "x", "user": {"login": "renovate[bot]"}, "created_at": "now"}],
         [pull("x", 1) | {"state": "open", "head": None}],
+        [pull("x", 1) | {"head": {"sha": "../../evil"}}],
+        [pull("x", 1) | {"head": {"sha": "A" * 40}}],
     ],
 )
 def test_pull_requests_that_cannot_be_read_fail_the_check(tmp_path: Path, pulls: Any) -> None:
     root = tree(tmp_path, "mypy==2.4.0\n")
-    with pytest.raises(watch.ReadError, match="pull requests"):
+    with pytest.raises(watch.ReadError, match="pull"):
         run(root, urls({"mypy": pypi(("2.4.0", 60))}, pulls=pulls))
 
 
@@ -679,7 +781,7 @@ def test_every_page_of_pull_requests_is_read(tmp_path: Path) -> None:
     root = tree(tmp_path, "mypy==2.4.0\n")
     first = f"{API}/repos/{REPO}/pulls?state=all&per_page=100"
     second = f"{API}/repositories/1/pulls?state=all&per_page=100&page=2"
-    responses = urls({"mypy": pypi(("2.4.1", 18))}, pulls=[pull("x", 1)])
+    responses = urls({"mypy": pypi(("2.4.0", 60), ("2.4.1", 18))}, pulls=[pull("x", 1)])
     responses[first] = watch.Response(json.dumps([pull("x", 1)]).encode(), second)
     responses[second] = [pull("Update dependency mypy to v2.4.1", 30)]
     fetch, asked = server(responses)
@@ -687,13 +789,41 @@ def test_every_page_of_pull_requests_is_read(tmp_path: Path) -> None:
     assert second in asked
 
 
-def test_a_next_page_on_another_host_is_refused(tmp_path: Path) -> None:
+PLANTED = "::stop-commands::x"
+
+
+@pytest.mark.parametrize(
+    "link",
+    [f"https://example.com/{PLANTED}", f"http://api.github.com/{PLANTED}", f"//{PLANTED}"],
+)
+def test_a_next_page_on_another_host_or_away_from_https_is_refused_unnamed(
+    tmp_path: Path, link: str
+) -> None:
     root = tree(tmp_path, "mypy==2.4.0\n")
     first = f"{API}/repos/{REPO}/pulls?state=all&per_page=100"
     responses = urls({"mypy": pypi(("2.4.0", 60))}, pulls=[pull("x", 1)])
-    responses[first] = watch.Response(b"[]", "https://example.com/next")
-    with pytest.raises(watch.ReadError, match="another host"):
+    responses[first] = watch.Response(b"[]", link)
+    fetch, asked = server(responses)
+    with pytest.raises(watch.ReadError, match="another host or away from HTTPS") as raised:
+        watch.check(root, fetch, NOW, REPO, API)
+    assert PLANTED not in str(raised.value) and "example.com" not in str(raised.value)
+    assert link not in asked
+
+
+@pytest.mark.parametrize("body", [None, b"<", b"{}"])
+def test_a_next_page_that_cannot_be_read_is_named_by_its_number_alone(
+    tmp_path: Path, body: bytes | None
+) -> None:
+    root = tree(tmp_path, "mypy==2.4.0\n")
+    first = f"{API}/repos/{REPO}/pulls?state=all&per_page=100"
+    second = f"{API}/{PLANTED}"
+    responses = urls({"mypy": pypi(("2.4.0", 60))}, pulls=[pull("x", 1)])
+    responses[first] = watch.Response(b"[]", second)
+    if body is not None:
+        responses[second] = watch.Response(body, None)
+    with pytest.raises(watch.ReadError) as raised:
         run(root, responses)
+    assert str(raised.value) == f"could not read page 2 of {first}"
 
 
 def test_pages_that_never_end_are_refused(tmp_path: Path) -> None:
@@ -701,8 +831,9 @@ def test_pages_that_never_end_are_refused(tmp_path: Path) -> None:
     first = f"{API}/repos/{REPO}/pulls?state=all&per_page=100"
     responses = urls({"mypy": pypi(("2.4.0", 60))}, pulls=[pull("x", 1)])
     responses[first] = watch.Response(b"[]", first)
-    with pytest.raises(watch.ReadError, match="pages"):
+    with pytest.raises(watch.ReadError) as raised:
         run(root, responses)
+    assert str(raised.value) == f"{first} gives more than {watch.PAGES} pages"
 
 
 # --- The fetch function -------------------------------------------------------------
@@ -710,7 +841,7 @@ def test_pages_that_never_end_are_refused(tmp_path: Path) -> None:
 
 def test_only_https_is_fetched() -> None:
     with pytest.raises(watch.ReadError, match="HTTPS"):
-        watch.fetcher(None, API)("http://pypi.org/pypi/mypy/json")
+        watch.fetcher("t0ken", API)("http://pypi.org/pypi/mypy/json")
 
 
 @pytest.mark.parametrize(
@@ -775,8 +906,9 @@ def test_the_token_is_sent_only_to_github_s_api_and_never_on_a_redirect(
 )
 def test_a_redirect_away_from_https_or_to_another_host_is_refused(target: str) -> None:
     request = urllib.request.Request("https://api.github.com/x")
-    with pytest.raises(watch.ReadError, match="redirect"):
-        watch.Redirects().redirect_request(request, None, 302, "Found", {}, target)
+    with pytest.raises(watch.ReadError, match="redirect") as raised:
+        watch.Redirects().redirect_request(request, None, 302, "Found", {}, target + PLANTED)
+    assert PLANTED not in str(raised.value) and "/x" not in str(raised.value)
 
 
 def test_a_redirect_on_the_same_host_over_https_is_followed() -> None:
@@ -797,9 +929,9 @@ def test_a_response_larger_than_the_limit_is_refused(monkeypatch: pytest.MonkeyP
     monkeypatch.setattr(watch, "LIMIT", 4)
     monkeypatch.setattr(watch, "open_url", lambda request, timeout: Answer(b"12345"))
     with pytest.raises(watch.ReadError, match="larger"):
-        watch.fetcher(None, API)("https://pypi.org/pypi/mypy/json")
+        watch.fetcher("t0ken", API)("https://pypi.org/pypi/mypy/json")
     monkeypatch.setattr(watch, "open_url", lambda request, timeout: Answer(b"1234"))
-    assert watch.fetcher(None, API)("https://pypi.org/pypi/mypy/json").body == b"1234"
+    assert watch.fetcher("t0ken", API)("https://pypi.org/pypi/mypy/json").body == b"1234"
 
 
 def test_a_failed_request_is_tried_once_more_then_named_without_its_response(
@@ -814,9 +946,36 @@ def test_a_failed_request_is_tried_once_more_then_named_without_its_response(
     monkeypatch.setattr(watch, "open_url", open_url)
     monkeypatch.setattr(time, "sleep", lambda seconds: tries.append(-seconds))
     with pytest.raises(watch.ReadError) as raised:
-        watch.fetcher(None, API)("https://pypi.org/pypi/mypy/json")
+        watch.fetcher("t0ken", API)("https://pypi.org/pypi/mypy/json")
     assert str(raised.value) == "could not read https://pypi.org/pypi/mypy/json: URLError"
     assert tries == [watch.TIMEOUT, -watch.PAUSE, watch.TIMEOUT]
+
+
+@pytest.mark.parametrize(
+    "error",
+    [
+        http.client.IncompleteRead(b"::x"),
+        http.client.RemoteDisconnected("::x"),
+        http.client.BadStatusLine("::x"),
+    ],
+)
+def test_a_failure_of_http_itself_is_tried_once_more_then_named_by_its_kind(
+    monkeypatch: pytest.MonkeyPatch, error: Exception
+) -> None:
+    tries: list[str] = []
+
+    def open_url(request: Any, timeout: float) -> Any:
+        tries.append(request.full_url)
+        raise error
+
+    monkeypatch.setattr(watch, "open_url", open_url)
+    monkeypatch.setattr(time, "sleep", lambda seconds: None)
+    with pytest.raises(watch.ReadError) as raised:
+        watch.fetcher("t0ken", API)("https://pypi.org/pypi/mypy/json")
+    assert len(tries) == 2
+    assert str(raised.value) == (
+        f"could not read https://pypi.org/pypi/mypy/json: {type(error).__name__}"
+    )
 
 
 def test_a_request_that_succeeds_the_second_time_is_read(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -830,7 +989,7 @@ def test_a_request_that_succeeds_the_second_time_is_read(monkeypatch: pytest.Mon
 
     monkeypatch.setattr(watch, "open_url", open_url)
     monkeypatch.setattr(time, "sleep", lambda seconds: None)
-    assert watch.fetcher(None, API)("https://pypi.org/pypi/x/json").body == b"[1]"
+    assert watch.fetcher("t0ken", API)("https://pypi.org/pypi/x/json").body == b"[1]"
 
 
 # --- The command line ---------------------------------------------------------------
@@ -862,7 +1021,7 @@ def test_a_run_with_a_finding_fails_and_writes_it_to_the_summary(
 ) -> None:
     (tmp_path / "t").mkdir()
     root = tree(tmp_path / "t", "mypy==2.4.0\n")
-    fetch, _ = server(urls({"mypy": pypi(("2.4.1", 30))}, pulls=[pull("x", 1)]))
+    fetch, _ = server(urls({"mypy": pypi(("2.4.0", 60), ("2.4.1", 30))}, pulls=[pull("x", 1)]))
     env = environment(tmp_path)
     when = NOW.date().isoformat()
     assert watch.main(["--root", str(root), "--now", when], env, fetch, lambda: NOW) == 1
@@ -880,6 +1039,47 @@ def test_a_run_that_cannot_read_fails_and_says_why(
     fetch, _ = server({})
     assert watch.main(["--root", str(root)], environment(tmp_path), fetch, lambda: NOW) == 1
     assert "could not read" in capsys.readouterr().out
+
+
+def test_an_unexpected_failure_fails_the_run_named_by_its_kind_alone(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    (tmp_path / "t").mkdir()
+    root = tree(tmp_path / "t", "mypy==2.4.0\n")
+
+    def fetch(url: str) -> watch.Response:
+        raise RuntimeError(PLANTED)
+
+    assert watch.main(["--root", str(root)], environment(tmp_path), fetch, lambda: NOW) == 1
+    out = capsys.readouterr().out
+    summary = (tmp_path / "summary.md").read_text(encoding="utf-8")
+    for text in (out, summary):
+        assert "the check failed: RuntimeError" in text and PLANTED not in text
+
+
+@pytest.mark.parametrize(
+    "repo",
+    ["owner", "a/b/c", "../x", "a/..", "a/.", "a b/c", "a/b?x=1", "a/b\n## x", "a/b#x", "/b", "a/"],
+)
+def test_a_repository_that_is_not_an_owner_and_a_name_fails(tmp_path: Path, repo: str) -> None:
+    env = environment(tmp_path) | {"GITHUB_REPOSITORY": repo}
+    fetch, asked = server({})
+    assert watch.main(["--root", str(ROOT)], env, fetch, lambda: NOW) == 1
+    assert asked == []
+    assert "GITHUB_REPOSITORY" in (tmp_path / "summary.md").read_text(encoding="utf-8")
+
+
+def test_a_summary_that_cannot_be_written_fails_the_run_and_says_so(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    (tmp_path / "t").mkdir()
+    root = tree(tmp_path / "t", "mypy==2.4.0\n")
+    fetch, _ = server(urls({"mypy": pypi(("2.4.0", 60))}, pulls=[pull("x", 1)]))
+    env = environment(tmp_path) | {"GITHUB_STEP_SUMMARY": str(tmp_path / "missing" / "s.md")}
+    assert watch.main(["--root", str(root)], env, fetch, lambda: NOW) == 1
+    out = capsys.readouterr().out
+    assert "no finding" in out
+    assert "could not write the summary: FileNotFoundError" in out
 
 
 @pytest.mark.parametrize("missing", ["GITHUB_REPOSITORY", "GITHUB_API_URL", "GITHUB_TOKEN"])
@@ -902,7 +1102,7 @@ def test_an_empty_day_means_the_clock_s_time_and_a_given_day_its_start(tmp_path:
     (tmp_path / "t").mkdir()
     root = tree(tmp_path / "t", "mypy==2.4.0\n")
     # 2.4.1 is 17.5 days old at NOW and so overdue; on the day before NOW it is not.
-    responses = urls({"mypy": pypi(("2.4.1", 17.5))}, pulls=[pull("x", 2)])
+    responses = urls({"mypy": pypi(("2.4.0", 60), ("2.4.1", 17.5))}, pulls=[pull("x", 2)])
     env = environment(tmp_path)
     fetch, _ = server(responses)
     assert watch.main(["--root", str(root), "--now", ""], env, fetch, lambda: NOW) == 1
@@ -910,12 +1110,78 @@ def test_an_empty_day_means_the_clock_s_time_and_a_given_day_its_start(tmp_path:
     assert watch.main(["--root", str(root), "--now", day_before], env, fetch, lambda: NOW) == 0
 
 
-# --- Scenario: The check's wait agrees with Renovate's configuration ----------------
+# --- Scenario: The check's wait and its workflow agree with what is designed --------
+
+
+def configured_wait(config: Any) -> timedelta | None:
+    """The wait that Renovate's configuration sets for minor and patch updates, or None
+    unless every setting of a wait that can apply to one of them, at the top level or in
+    a package rule, gives the same number of days, and package rules set it for both."""
+    waits = []
+    covered: set[str] = set()
+    if "minimumReleaseAge" in config:
+        waits.append(config["minimumReleaseAge"])
+    for rule in config.get("packageRules", []):
+        if "minimumReleaseAge" not in rule:
+            continue
+        kinds = rule.get("matchUpdateTypes")
+        if kinds is not None and not isinstance(kinds, list):
+            return None
+        if kinds is None or {"minor", "patch"} & set(kinds):
+            waits.append(rule["minimumReleaseAge"])
+            covered |= {"minor", "patch"} & set(kinds or ["minor", "patch"])
+    if covered != {"minor", "patch"} or len(set(map(str, waits))) != 1:
+        return None
+    days = re.fullmatch(r"([0-9]+) days", str(waits[0]))
+    return timedelta(days=int(days[1])) if days else None
+
+
+WORKFLOW_GRANTS = {"contents": "read"}
+JOB_GRANTS = {"contents": "read", "pull-requests": "read", "issues": "read"}
+# The longest that the job may run before GitHub stops it, in minutes.
+TIME_LIMIT = 15
+
+
+def workflow_problems(doc: dict[Any, Any]) -> list[str]:
+    """What keeps the workflow from what R263 designs: run every day and by hand, on those
+    events alone, with one job, the grants above and nothing else, a time limit, and a
+    checkout that keeps no credentials."""
+    on = doc.get("on", doc.get(True))
+    events = on if isinstance(on, dict) else {}
+    problems = []
+    crons = [entry.get("cron", "") for entry in events.get("schedule") or []]
+    if not any(re.fullmatch(r"[0-9]+ [0-9]+ \* \* \*", cron) for cron in crons):
+        problems.append("the workflow runs on no daily schedule")
+    if "workflow_dispatch" not in events:
+        problems.append("the workflow cannot be started by hand")
+    if set(events) - {"schedule", "workflow_dispatch"}:
+        problems.append(f"the workflow runs on another event: {sorted(set(events))}")
+    if doc.get("permissions") != WORKFLOW_GRANTS:
+        problems.append(f"the workflow grants the workflow {doc.get('permissions')}")
+    jobs = doc.get("jobs") or {}
+    if len(jobs) != 1:
+        problems.append("the workflow has not one job")
+    for job in jobs.values():
+        if job.get("permissions") != JOB_GRANTS:
+            problems.append(f"the workflow grants the job {job.get('permissions')}")
+        limit = job.get("timeout-minutes")
+        if not isinstance(limit, int) or isinstance(limit, bool) or not 0 < limit <= TIME_LIMIT:
+            problems.append(f"the workflow gives the job no time limit of {TIME_LIMIT} or less")
+        checkouts = [
+            step
+            for step in job.get("steps") or []
+            if str(step.get("uses", "")).startswith("actions/checkout@")
+        ]
+        if not checkouts or any(
+            (step.get("with") or {}).get("persist-credentials") is not False for step in checkouts
+        ):
+            problems.append("the workflow checks out the code and keeps its credentials")
+    return problems
 
 
 def test_the_check_s_wait_is_the_one_that_renovate_s_configuration_sets() -> None:
     config = json.loads((ROOT / "renovate.json").read_text(encoding="utf-8"))
-    assert watch.configured_wait(config) == watch.WAIT
+    assert configured_wait(config) == watch.WAIT
 
 
 DESIGNED = {
@@ -927,7 +1193,7 @@ DESIGNED = {
 def test_a_rule_that_sets_no_wait_or_none_for_minor_and_patch_leaves_it() -> None:
     pins = {"matchUpdateTypes": ["pin", "pinDigest"], "minimumReleaseAge": None}
     other = {"matchUpdateTypes": ["major"], "dependencyDashboardApproval": True}
-    assert watch.configured_wait({"packageRules": [DESIGNED, pins, other]}) == watch.WAIT
+    assert configured_wait({"packageRules": [DESIGNED, pins, other]}) == watch.WAIT
 
 
 @pytest.mark.parametrize(
@@ -945,12 +1211,12 @@ def test_a_rule_that_sets_no_wait_or_none_for_minor_and_patch_leaves_it() -> Non
     ],
 )
 def test_a_wait_that_differs_or_cannot_be_read_is_named(rules: list[dict[str, Any]]) -> None:
-    assert watch.configured_wait({"packageRules": rules}) != watch.WAIT
+    assert configured_wait({"packageRules": rules}) != watch.WAIT
 
 
 def test_a_wait_at_the_top_level_that_differs_is_named() -> None:
     config = {"minimumReleaseAge": "3 days", "packageRules": [DESIGNED]}
-    assert watch.configured_wait(config) is None
+    assert configured_wait(config) is None
 
 
 def workflow() -> dict[Any, Any]:
@@ -972,7 +1238,7 @@ def checkout(doc: dict[Any, Any]) -> dict[str, Any]:
 
 
 def test_the_workflow_runs_daily_and_by_hand_and_reads_only() -> None:
-    assert watch.workflow_problems(workflow()) == []
+    assert workflow_problems(workflow()) == []
 
 
 @pytest.mark.parametrize(
@@ -995,6 +1261,11 @@ def test_the_workflow_runs_daily_and_by_hand_and_reads_only() -> None:
         (lambda d: job(d)["permissions"].update(actions="read"), "grants the job"),
         (lambda d: job(d)["permissions"].pop("issues"), "grants the job"),
         (lambda d: d["jobs"].update(other={"steps": []}), "one job"),
+        (lambda d: job(d).pop("timeout-minutes"), "no time limit"),
+        (lambda d: job(d).update({"timeout-minutes": 360}), "no time limit"),
+        (lambda d: job(d).update({"timeout-minutes": 0}), "no time limit"),
+        (lambda d: job(d).update({"timeout-minutes": "10"}), "no time limit"),
+        (lambda d: job(d).update({"timeout-minutes": True}), "no time limit"),
         (lambda d: checkout(d).pop("with"), "keeps its credentials"),
         (
             lambda d: checkout(d)["with"].update({"persist-credentials": True}),
@@ -1006,7 +1277,7 @@ def test_the_workflow_runs_daily_and_by_hand_and_reads_only() -> None:
 def test_a_workflow_that_differs_from_its_design_is_named(change: Any, problem: str) -> None:
     doc = workflow()
     change(doc)
-    found = watch.workflow_problems(doc)
+    found = workflow_problems(doc)
     assert any(problem in item for item in found), found
 
 

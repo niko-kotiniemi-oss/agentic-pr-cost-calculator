@@ -26,6 +26,8 @@ permissions:
 jobs:
   check:
     runs-on: ubuntu-latest
+    # A response that trickles in a byte at a time cannot hold the run past this.
+    timeout-minutes: 10
     permissions:
       contents: read
       pull-requests: read

@@ -7,7 +7,8 @@ their releases was published, and asks GitHub which pull requests Renovate opene
 when its dependency dashboard last changed. It names a finding for each minor or patch
 release that Renovate should already have proposed and has not, and for five days in
 which Renovate did nothing, and exits with 1 when it names one or cannot read what it
-needs, so that the scheduled run fails and GitHub tells the owner.
+needs, so that the scheduled run fails and GitHub tells the owner. A tool whose registry
+cannot be read is named as not read, and the rest are still checked.
 
 Run it with `python3 -I scripts/renovate_watch.py`. It needs `GITHUB_REPOSITORY`,
 `GITHUB_API_URL` and `GITHUB_TOKEN`, and writes its findings to `GITHUB_STEP_SUMMARY`
@@ -18,6 +19,7 @@ token only to GitHub's API.
 from __future__ import annotations
 
 import argparse
+import http.client
 import json
 import os
 import re
@@ -51,9 +53,13 @@ TITLE = re.compile(
     r"(?: \[SECURITY\]| - autoclosed| - abandoned)?",
     re.IGNORECASE,
 )
-PIN = re.compile(r"(?P<name>[A-Za-z0-9][A-Za-z0-9._-]*)==(?P<version>[^\s;#]+)")
-VERSION = re.compile(r"\d+(?:\.\d+)*")
-DAY = re.compile(r"\d{4}-\d{2}-\d{2}")
+# A version of numbers and dots, in ASCII digits, each part short enough to read as a
+# number at once.
+VERSION = r"[0-9]{1,20}(?:\.[0-9]{1,20})*"
+PIN = re.compile(rf"(?P<name>[A-Za-z0-9][A-Za-z0-9._-]*)==(?P<version>{VERSION})")
+DAY = re.compile(r"[0-9]{4}-[0-9]{2}-[0-9]{2}")
+# An owner and a repository's name as GitHub allows them, and never `.` or `..`.
+REPOSITORY = re.compile(r"[A-Za-z0-9-]+/(?!\.\.?$)[A-Za-z0-9_.-]+")
 
 # The largest response that the check reads, so that a hostile one cannot exhaust the
 # runner. The Python Package Index's documents for ruff are the largest it reads.
@@ -89,7 +95,7 @@ def numbers(version: str) -> tuple[int, ...] | None:
     """A version's numbers without its trailing zeros, so that 1.0 and 1.0.0 are one
     version, or None for one with anything but numbers and dots, such as a pre-release, a
     post-release or an epoch, which the check does not compare."""
-    if not VERSION.fullmatch(version):
+    if not re.fullmatch(VERSION, version):
         return None
     parts = [int(part) for part in version.split(".")]
     while len(parts) > 1 and parts[-1] == 0:
@@ -104,7 +110,8 @@ def normal(name: str, registry: str) -> str:
 
 
 def pins(root: Path) -> list[Pin]:
-    """The tools that `requirements-dev.txt` and `package.json` pin, in that order.
+    """The tools that `requirements-dev.txt` and `package.json`'s development and runtime
+    dependencies pin, in that order.
 
     Raises ReadError for a file that is missing or cannot be read, a line or a version
     that is not an exact pin, and a tree that pins nothing."""
@@ -119,19 +126,21 @@ def pins(root: Path) -> list[Pin]:
         if not text:
             continue
         pinned = PIN.fullmatch(text)
-        if not pinned or not numbers(pinned["version"]):
+        if not pinned:
             raise ReadError(f"requirements-dev.txt:{number} is not an exact pin")
         found.append(Pin(pinned["name"], pinned["version"], "pypi"))
     try:
         package = json.loads((root / "package.json").read_text(encoding="utf-8"))
-        dev = package.get("devDependencies", {})
-        assert isinstance(dev, dict)
-    except (OSError, ValueError, AttributeError, AssertionError) as error:
+        sections = [package.get(key, {}) for key in ("devDependencies", "dependencies")]
+    except (OSError, ValueError, AttributeError) as error:
         raise ReadError(f"could not read package.json: {type(error).__name__}") from None
-    for name, version in dev.items():
-        if not isinstance(version, str) or not numbers(version):
-            raise ReadError(f"package.json pins {name} to no exact version")
-        found.append(Pin(name, version, "npm"))
+    for section in sections:
+        if not isinstance(section, dict):
+            raise ReadError("could not read package.json: a section of dependencies")
+        for name, version in section.items():
+            if not isinstance(version, str) or not numbers(version):
+                raise ReadError(f"package.json pins {name} to no exact version")
+            found.append(Pin(name, version, "npm"))
     if not found:
         raise ReadError("found no pinned tool in requirements-dev.txt or package.json")
     return found
@@ -180,7 +189,8 @@ class Renovate:
     # The versions that Renovate's pull requests propose, by the name of their tool as
     # normal() gives it for each registry.
     proposed: dict[str, list[tuple[int, ...]]]
-    # When Renovate last opened a pull request or authored the head commit of an open one.
+    # When Renovate last opened a pull request or authored the head commit of an open one,
+    # by the commit's author time, which a rebase by anyone else leaves as it was.
     last: datetime
 
 
@@ -214,10 +224,10 @@ def renovate(pulls: Any, issues: Any, fetch: Fetch, base: str, now: datetime) ->
     if not times:
         raise ReadError("found no pull request of Renovate's")
     for sha in heads:
-        commit = document(fetch, f"{base}/commits/{sha}")
+        commit = parsed(fetch(f"{base}/commits/{sha}").body, f"the commit {sha}")
         try:
             author = commit["author"]
-            authored = moment(commit["commit"]["committer"]["date"])
+            authored = moment(commit["commit"]["author"]["date"])
         except (KeyError, TypeError, ValueError) as error:
             raise ReadError(f"could not read the commit {sha}: {type(error).__name__}") from None
         if isinstance(author, dict) and author.get("login") == RENOVATE and authored <= now:
@@ -244,7 +254,10 @@ def overdue(
     wait and the grace is newer than its pin and proposed by none of Renovate's pull
     requests, for it or a later version, or None."""
     current = numbers(pin.version)
-    assert current is not None  # pins() reads only versions that numbers() reads
+    if current is None:
+        raise ReadError(f"{pin.name} is pinned to no version of numbers")
+    if not any(numbers(name) == current for name in releases):
+        raise ReadError(f"the registry lists no release {pin.version} that the check can compare")
     due = [
         (version, name, published)
         for name, published in releases.items()
@@ -273,40 +286,51 @@ def quiet(last: datetime, now: datetime) -> str | None:
     )
 
 
-def document(fetch: Fetch, url: str) -> Any:
-    body = fetch(url).body
+def parsed(body: bytes, what: str) -> Any:
+    """A response's JSON. An error names `what`, which the check built, and the kind of
+    error, never the response's own text."""
     try:
         return json.loads(body)
     except ValueError as error:
-        raise ReadError(f"could not read {url}: {type(error).__name__}") from None
+        raise ReadError(f"could not read {what}: {type(error).__name__}") from None
 
 
-def pages(fetch: Fetch, url: str) -> list[Any]:
-    """Every item of a list that GitHub gives in pages, following each next link only on
-    the host of the first page."""
-    host = urllib.parse.urlsplit(url).netloc
+def pages(fetch: Fetch, first: str) -> list[Any]:
+    """Every item of a list that GitHub gives in pages, following each next link only over
+    HTTPS on the host of the first page. An error names the first page's address, which
+    the check built, and the page's number, never an address that a response gave."""
+    host = urllib.parse.urlsplit(first).netloc
     items: list[Any] = []
-    for _ in range(PAGES):
-        response = fetch(url)
+    url = first
+    for number in range(1, PAGES + 1):
+        failed = ReadError(f"could not read page {number} of {first}")
         try:
-            page = json.loads(response.body)
-        except ValueError as error:
-            raise ReadError(f"could not read {url}: {type(error).__name__}") from None
+            response = fetch(url)
+        except ReadError:
+            if number == 1:
+                raise
+            raise failed from None
+        try:
+            page = parsed(response.body, url)
+        except ReadError:
+            raise failed from None
         if not isinstance(page, list):
-            raise ReadError(f"could not read the pull requests or issues at {url}")
+            raise failed
         items += page
         if response.next is None:
             return items
-        if urllib.parse.urlsplit(response.next).netloc != host:
-            raise ReadError(f"{url} gives its next page on another host")
+        link = urllib.parse.urlsplit(response.next)
+        if link.scheme != "https" or link.netloc != host:
+            raise ReadError(f"{first} gives its next page on another host or away from HTTPS")
         url = response.next
-    raise ReadError(f"{url} gives more than {PAGES} pages")
+    raise ReadError(f"{first} gives more than {PAGES} pages")
 
 
 def check(root: Path, fetch: Fetch, now: datetime, repo: str, api: str) -> list[str]:
-    """Each finding, overdue updates first and then the quiet days.
+    """Each finding, an overdue update or a registry not read for each tool in turn, and
+    then the quiet days.
 
-    Raises ReadError for anything that it could not read."""
+    Raises ReadError for anything else that it could not read."""
     tools = pins(root)
     base = f"{api.rstrip('/')}/repos/{repo}"
     pulls = pages(fetch, f"{base}/pulls?state=all&per_page=100")
@@ -314,79 +338,22 @@ def check(root: Path, fetch: Fetch, now: datetime, repo: str, api: str) -> list[
     activity = renovate(pulls, issues, fetch, base, now)
     findings = []
     for pin in tools:
-        if pin.registry == "pypi":
-            url = f"https://pypi.org/pypi/{urllib.parse.quote(pin.name)}/json"
-            releases = pypi_releases(document(fetch, url))
-        else:
-            url = f"https://registry.npmjs.org/{urllib.parse.quote(pin.name, safe='@')}"
-            releases = npm_releases(document(fetch, url))
-        proposed = activity.proposed.get(normal(pin.name, pin.registry), [])
-        if finding := overdue(pin, releases, proposed, now):
+        try:
+            if pin.registry == "pypi":
+                url = f"https://pypi.org/pypi/{urllib.parse.quote(pin.name)}/json"
+                releases = pypi_releases(parsed(fetch(url).body, url))
+            else:
+                url = f"https://registry.npmjs.org/{urllib.parse.quote(pin.name, safe='@')}"
+                releases = npm_releases(parsed(fetch(url).body, url))
+            proposed = activity.proposed.get(normal(pin.name, pin.registry), [])
+            finding = overdue(pin, releases, proposed, now)
+        except ReadError as error:
+            finding = f"not read: {pin.name} {pin.version}: {error}"
+        if finding:
             findings.append(finding)
     if finding := quiet(activity.last, now):
         findings.append(finding)
     return findings
-
-
-def configured_wait(config: Any) -> timedelta | None:
-    """The wait that Renovate's configuration sets for minor and patch updates, or None
-    unless every setting of a wait that can apply to one of them, at the top level or in
-    a package rule, gives the same number of days, and package rules set it for both."""
-    waits = []
-    covered: set[str] = set()
-    if "minimumReleaseAge" in config:
-        waits.append(config["minimumReleaseAge"])
-    for rule in config.get("packageRules", []):
-        if "minimumReleaseAge" not in rule:
-            continue
-        kinds = rule.get("matchUpdateTypes")
-        if kinds is not None and not isinstance(kinds, list):
-            return None
-        if kinds is None or {"minor", "patch"} & set(kinds):
-            waits.append(rule["minimumReleaseAge"])
-            covered |= {"minor", "patch"} & set(kinds or ["minor", "patch"])
-    if covered != {"minor", "patch"} or len(set(map(str, waits))) != 1:
-        return None
-    days = re.fullmatch(r"(\d+) days", str(waits[0]))
-    return timedelta(days=int(days[1])) if days else None
-
-
-WORKFLOW_GRANTS = {"contents": "read"}
-JOB_GRANTS = {"contents": "read", "pull-requests": "read", "issues": "read"}
-
-
-def workflow_problems(doc: Mapping[Any, Any]) -> list[str]:
-    """What keeps the workflow from what R263 designs: run every day and by hand, on those
-    events alone, with one job, the grants above and nothing else, and a checkout that
-    keeps no credentials."""
-    on = doc.get("on", doc.get(True))
-    events = on if isinstance(on, dict) else {}
-    problems = []
-    crons = [entry.get("cron", "") for entry in events.get("schedule") or []]
-    if not any(re.fullmatch(r"\d+ \d+ \* \* \*", cron) for cron in crons):
-        problems.append("the workflow runs on no daily schedule")
-    if "workflow_dispatch" not in events:
-        problems.append("the workflow cannot be started by hand")
-    if set(events) - {"schedule", "workflow_dispatch"}:
-        problems.append(f"the workflow runs on another event: {sorted(set(events))}")
-    if doc.get("permissions") != WORKFLOW_GRANTS:
-        problems.append(f"the workflow grants the workflow {doc.get('permissions')}")
-    jobs = doc.get("jobs") or {}
-    if len(jobs) != 1:
-        problems.append("the workflow has not one job")
-    for job in jobs.values():
-        if job.get("permissions") != JOB_GRANTS:
-            problems.append(f"the workflow grants the job {job.get('permissions')}")
-        checkouts = [
-            step
-            for step in job.get("steps") or []
-            if str(step.get("uses", "")).startswith("actions/checkout@")
-        ]
-        if not checkouts or any(
-            (step.get("with") or {}).get("persist-credentials") is not False for step in checkouts
-        ):
-            problems.append("the workflow checks out the code and keeps its credentials")
-    return problems
 
 
 def next_page(link: str | None) -> str | None:
@@ -407,7 +374,7 @@ class Redirects(urllib.request.HTTPRedirectHandler):
     ) -> urllib.request.Request | None:
         old, new = urllib.parse.urlsplit(req.full_url), urllib.parse.urlsplit(newurl)
         if new.scheme != "https" or new.netloc != old.netloc:
-            raise ReadError(f"refused a redirect from {req.full_url} to another host or scheme")
+            raise ReadError("refused a redirect to another host or away from HTTPS")
         return super().redirect_request(req, fp, code, msg, headers, newurl)
 
 
@@ -418,7 +385,7 @@ def open_url(request: urllib.request.Request, timeout: float) -> Any:
     return OPENER.open(request, timeout=timeout)
 
 
-def fetcher(token: str | None, api: str) -> Fetch:
+def fetcher(token: str, api: str) -> Fetch:
     """A fetch function that reads over HTTPS only, sends the token only to the host of
     GitHub's API and never on a redirect, tries a failed request once more after a pause,
     and refuses a response larger than LIMIT."""
@@ -431,7 +398,7 @@ def fetcher(token: str | None, api: str) -> Fetch:
         request = urllib.request.Request(
             url, headers={"Accept": "application/json", "User-Agent": "renovate-watch"}
         )
-        if token and parts.netloc == api_host:
+        if parts.netloc == api_host:
             request.add_unredirected_header("Authorization", f"Bearer {token}")
         for attempt in (1, 2):
             try:
@@ -439,7 +406,7 @@ def fetcher(token: str | None, api: str) -> Fetch:
                     body = answer.read(LIMIT + 1)
                     link = answer.headers.get("Link")
                 break
-            except (urllib.error.URLError, OSError, ValueError) as error:
+            except (urllib.error.URLError, OSError, ValueError, http.client.HTTPException) as error:
                 if attempt == 2:
                     raise ReadError(f"could not read {url}: {type(error).__name__}") from None
                 time.sleep(PAUSE)
@@ -464,7 +431,6 @@ def main(
         help="a day, YYYY-MM-DD in UTC, to check as at its start; empty for the clock's time",
     )
     args = parser.parse_args(argv)
-    findings: list[str]
     try:
         if args.now:
             if not DAY.fullmatch(args.now):
@@ -482,6 +448,8 @@ def main(
         ]
         if missing:
             raise ReadError(f"the environment gives no {', '.join(missing)}")
+        if not REPOSITORY.fullmatch(environ["GITHUB_REPOSITORY"]):
+            raise ReadError("GITHUB_REPOSITORY gives no owner and name")
         api = environ["GITHUB_API_URL"]
         fetch = fetch or fetcher(environ["GITHUB_TOKEN"], api)
         findings = check(Path(args.root), fetch, now, environ["GITHUB_REPOSITORY"], api)
@@ -490,12 +458,19 @@ def main(
     except ReadError as error:
         lines = [f"the check failed: {error}"]
         status = 1
+    except Exception as error:  # noqa: BLE001 - its text may come from a response
+        lines = [f"the check failed: {type(error).__name__}"]
+        status = 1
     for line in lines:
         print(line)
     summary = environ.get("GITHUB_STEP_SUMMARY")
     if summary:
-        with open(summary, "a", encoding="utf-8") as out:
-            out.write("## Renovate's proposals\n\n" + "".join(f"- {x}\n" for x in lines))
+        try:
+            with open(summary, "a", encoding="utf-8") as out:
+                out.write("## Renovate's proposals\n\n" + "".join(f"- {x}\n" for x in lines))
+        except OSError as error:
+            print(f"could not write the summary: {type(error).__name__}")
+            status = 1
     return status
 
 
