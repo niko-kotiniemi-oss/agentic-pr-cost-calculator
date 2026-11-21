@@ -32,8 +32,8 @@ Every file that this repository writes holds only printable ASCII characters and
 - The design's risks write the arrow that OpenSpec's template gives as `->`, and the roadmap's test reads that form, so an agent that follows the template meets a failure that names the arrow. The mapping of B-022 writes the arrows that it quotes from the base as `->` too, and says so at its start: it is the evidence of a sweep that has merged, which its script no longer compares.
 - The page on how the tool works writes its formulas with `*` and `sum`, an ellipsis becomes three full stops, and the tests write the characters that they plant as escapes of their code points.
 - The checks of single pages keep their own rules on what GitHub hides; for characters, this test covers every page that they read, as git holds it, and DR-279 holds every page to the text that GitHub shows.
-- A clone in which git writes a carriage return before each line feed, as `core.autocrlf` does, fails the test, as it fails the checks of single pages.
-- Commit messages and the text of pull requests are not files, and a session reads them too: tasks 1.9 and 1.14 check them for private references only, and their characters are left to the owner's review (T251).
+- A clone in which git writes a carriage return before each line feed, as `core.autocrlf` does, fails the test, as it fails the checks of single pages (B-027).
+- Commit messages and the text of pull requests are not files, and a session reads them too: tasks 1.9 and 1.14 check them for private references only, and their characters are left to the owner's review (T251, B-025).
 
 ## Scope
 

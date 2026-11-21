@@ -22,7 +22,7 @@ The repository's attributes give a tracked file only `text` and `eol`, which set
 
 - Refusing a named set of attributes, as R134 does for some files: an attribute that git or GitHub adds later would pass until a threat found it, as `export-subst` and `filter` passed the design of this change.
 - No attributes file at all: `text` and `eol` change only line endings, which the test of characters reads in the working tree, and a later fix for clones that write carriage returns may need them.
-- Reading the attributes from the working tree alone, as the checks of R134 did: an attributes file that re-encodes itself hides every attribute from them (T259).
+- Reading the attributes from the working tree alone, as the checks of R134 did: an attributes file that re-encodes itself hides from them each line that a checkout rewrites (T259).
 
 ## Consequences
 
