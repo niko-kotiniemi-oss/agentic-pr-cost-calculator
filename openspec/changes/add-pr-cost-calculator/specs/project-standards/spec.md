@@ -242,7 +242,7 @@ Tests SHALL fail when a spec that they read holds a character other than printab
 
 #### Scenario: Text that GitHub would hide or show otherwise fails CI
 
-- **WHEN** a spec holds a character other than printable ASCII and line breaks, such as a carriage return, a byte-order mark or a line separator, bytes that are not UTF-8, inline code that does not close on its line, or, outside inline code, an HTML comment, a character reference, an escaped character, a table, a link, a link reference definition, a mathematical expression or struck-through text
+- **WHEN** a spec holds a character other than printable ASCII and line breaks, such as a lone carriage return, a byte-order mark or a line separator, bytes that are not UTF-8, inline code that does not close on its line, or, outside inline code, an HTML comment, a character reference, an escaped character, a table, a link, a link reference definition, a mathematical expression or struck-through text
 - **THEN** a test fails and names the spec, the line and what it holds
 
 #### Scenario: Inline code may hold those marks
@@ -1020,7 +1020,7 @@ The roadmap, each file in `docs/backlog/`, and each feature page's section on kn
 
 #### Scenario: Text that GitHub hides fails a test
 
-- **WHEN** the roadmap, a file in `docs/backlog/` or such a section holds a character other than printable ASCII and a line feed, such as a carriage return, a zero-width space or a bidirectional control, or, inline code included, a `<`, as in an HTML comment, a `&`, as in a character reference, a backslash, as in an escape, a `]:`, as in a link reference definition, a `|`, as in a table whose row holds a cell more than its header, or a link with a title
+- **WHEN** the roadmap, a file in `docs/backlog/` or such a section holds a character other than printable ASCII and a line feed, such as a lone carriage return, a zero-width space or a bidirectional control, or, inline code included, a `<`, as in an HTML comment, a `&`, as in a character reference, a backslash, as in an escape, a `]:`, as in a link reference definition, a `|`, as in a table whose row holds a cell more than its header, or a link with a title
 - **THEN** a test fails and names the file, the line and what it holds
 
 ### Requirement: A backlog item has its form
@@ -1892,7 +1892,7 @@ The context files SHALL hold to the rule that "The roadmap, the backlog and the 
 
 #### Scenario: Text that GitHub hides in a context file fails CI
 
-- **WHEN** a context file, read as its bytes give it, holds a character other than printable ASCII and a line feed, a carriage return among them, or a `<`, as in an HTML comment, which Claude Code also strips before an agent reads the file, a `&`, a backslash, a `]:` or a `|`, or a line that opens a code fence with three backticks or three tildes
+- **WHEN** a context file, read as its bytes give it with each CRLF taken as LF, holds a character other than printable ASCII and a line feed, a lone carriage return among them, or a `<`, as in an HTML comment, which Claude Code also strips before an agent reads the file, a `&`, a backslash, a `]:` or a `|`, or a line that opens a code fence with three backticks or three tildes
 - **THEN** a test fails and names the file, the line and what it holds
 
 #### Scenario: A link or an import in a context file fails CI
@@ -1996,7 +1996,7 @@ Every tracked file that this repository writes SHALL hold only printable ASCII a
 
 #### Scenario: A character beyond printable ASCII in a file that this repository writes fails CI
 
-- **WHEN** a tracked file that this repository writes holds a character other than printable ASCII and a line feed, such as a tab, a carriage return, a byte-order mark, a zero-width space, a direction-changing character, a non-breaking space, an em dash, an arrow or an accented letter
+- **WHEN** a tracked file that this repository writes holds a character other than printable ASCII and a line feed, such as a tab, a carriage return that git's index holds, a byte-order mark, a zero-width space, a direction-changing character, a non-breaking space, an em dash, an arrow or an accented letter
 - **THEN** a test fails and names the file, the line, the column and the character by its code point and its name, never by the character itself
 
 #### Scenario: A path beyond printable ASCII fails CI
@@ -2059,7 +2059,7 @@ The test of characters SHALL read each tracked file as git's index holds it, and
 
 #### Scenario: An edit not yet staged is read
 
-- **WHEN** the working tree holds a character beyond printable ASCII in a tracked file that this repository writes, while git's index holds that file in printable ASCII alone
+- **WHEN** the working tree holds a character beyond printable ASCII, other than a carriage return right before a line feed, in a tracked file that this repository writes, while git's index holds that file in printable ASCII alone
 - **THEN** a test fails and names the file, the line, the column and the character by its code point and its name
 
 #### Scenario: A file that the test cannot read as text fails CI
@@ -2098,7 +2098,7 @@ The repository's attributes SHALL give a tracked file no attribute but `text` an
 
 #### Scenario: Line endings alone pass
 
-- **WHEN** the repository's attributes give tracked files only `text` and `eol`, or nothing
+- **WHEN** the repository's attributes give tracked files only `text` and `eol`
 - **THEN** the test passes them
 
 #### Scenario: A person's own attributes are not read as the repository's
@@ -2106,13 +2106,56 @@ The repository's attributes SHALL give a tracked file no attribute but `text` an
 - **WHEN** a person's global attributes file gives a tracked file an attribute other than `text` and `eol`
 - **THEN** the test of attributes does not read it
 
+### Requirement: Every checkout holds line feeds, and the checks read Windows line endings as git stages them
+
+The repository's attributes SHALL give every tracked file `text=auto` and `eol=lf`, so that a checkout on any system writes line feeds whatever `core.autocrlf` says, and each check that reads a file of this repository but a script from the working tree SHALL take each carriage return right before a line feed as a line feed, as git does when it stages a text file, so that a file saved with Windows line endings passes as git will commit it. Tests SHALL fail otherwise.
+
+#### Scenario: A clone made with Windows line endings holds what git's index holds
+
+- **WHEN** the repository is cloned with `core.autocrlf` set to `true`, which otherwise makes git write a carriage return before each line feed
+- **THEN** each file there that git reads as text holds the bytes that git's index holds, with line feeds alone, so that the session's start hook and the scripts run and the tests pass as in any other clone
+
+#### Scenario: Files saved with Windows line endings pass every test
+
+- **WHEN** each file that this repository writes, but its scripts, holds a carriage return before each line feed in the working tree, as an editor on Windows can save it, and nothing is staged
+- **THEN** every test passes on that working tree, as it does on the files as git's index holds them
+
+#### Scenario: A lone carriage return, or one that git's index or a script holds, still fails
+
+- **WHEN** git's index holds a carriage return in a file that this repository writes, or the working tree holds one there that no line feed follows, or holds one anywhere in a script, a file whose name ends in `.sh` or that starts with `#!`, which bash or the system reads as part of its line
+- **THEN** the test of characters fails and names the file, the line, the column and the character by its code point and its name
+
+#### Scenario: Attributes that give a file other line endings fail CI
+
+- **WHEN** the repository's attributes do not give a tracked file both `text=auto` and `eol=lf`, as when no attributes file is tracked, or a line gives some files `text`, `-text` or `eol=crlf`
+- **THEN** a test fails and names the file and what its attributes give
+
+### Requirement: Every tracked path is one that Windows can write
+
+Every tracked path SHALL hold none of the characters `<`, `>`, `:`, `"`, `\`, `|`, `?` and `*`, no part that ends in a dot or that Windows keeps for a device, such as `CON`, `NUL` or `COM1`, alone or before an extension and in any case, and at most 150 characters, so that a clone on Windows, in a folder whose own path holds at most 100 characters, can write every file within the 260 characters that Windows allows a full path. Tests SHALL fail otherwise.
+
+#### Scenario: A path that Windows cannot write fails CI
+
+- **WHEN** a tracked path, of any file, holds a `<`, `>`, `:`, `"`, `\`, `|`, `?` or `*`, a part that ends in a dot, or a part that is, alone or before an extension and in any case, one of the names that Windows keeps for a device, `CON`, `PRN`, `AUX`, `NUL`, `COM0` to `COM9`, `LPT0` to `LPT9`, `CONIN$` and `CONOUT$`, as in `docs/aux.md` or `scripts/Nul`
+- **THEN** a test fails and names the path and what Windows refuses in it
+
+#### Scenario: A path longer than 150 characters fails CI
+
+- **WHEN** a tracked path is longer than 150 characters
+- **THEN** a test fails and names the path and its length
+
+#### Scenario: Paths that Windows can write pass
+
+- **WHEN** every tracked path holds none of those characters, no part that ends in a dot or that names a device, though a part may begin with such a name, as `docs/console.md` and `scripts/com10.py` do, and at most 150 characters
+- **THEN** the test passes them
+
 ### Requirement: The files that others write hold no character that a reader cannot see
 
 Each file that others write SHALL hold, as itself or by an escape, only printable ASCII, tabs, line feeds and the visible characters that its test lists for Markdown or any file, by code point and Unicode name, with variation selector 16 only right after a character listed for it, and the list SHALL give only punctuation and symbols, none that shows as blank, so that an update brings none that cannot be seen, and a visible one only once its pull request lists it. Tests SHALL fail otherwise.
 
 #### Scenario: A character that a reader cannot see in a file that others write fails CI
 
-- **WHEN** a file that others write holds a character that is not printable ASCII, a tab, a line feed or a listed character, such as a carriage return, a zero-width space, a right-to-left override, a byte-order mark, a non-breaking space or a tag character, or holds variation selector 16 right after a character that the list does not give for it
+- **WHEN** a file that others write holds a character that is not printable ASCII, a tab, a line feed or a listed character, such as a carriage return that git's index holds or that no line feed follows, a zero-width space, a right-to-left override, a byte-order mark, a non-breaking space or a tag character, or holds variation selector 16 right after a character that the list does not give for it
 - **THEN** a test fails and names the file, the line, the column and the character by its code point and its name, never by the character itself
 
 #### Scenario: A visible character that the list does not give fails CI

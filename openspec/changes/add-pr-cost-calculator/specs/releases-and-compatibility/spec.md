@@ -177,7 +177,7 @@ Each release SHALL carry the plugin as a zip built from its tag's files alone, a
 
 #### Scenario: The plugin's zip is the same on every build
 
-- **WHEN** the plugin's zip is built twice from one tag, at different times, once on Linux and once on Windows from a clone that git made with `core.autocrlf` set to `true`, with different umasks
+- **WHEN** the plugin's zip is built twice from one tag, at different times, once on Linux and once on Windows from a clone whose files git wrote with CRLF line endings, as a `.git/info/attributes` that gives `eol=crlf` makes it write them, with different umasks
 - **THEN** the two zips are the same, byte for byte
 
 #### Scenario: A pull request that leaves the zip's checksum behind fails CI

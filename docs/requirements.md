@@ -287,6 +287,8 @@ The capability names the spec that holds the requirement. Each capability is one
 | R273 | non-functional | `project-standards` | The pages that this repository writes hold no text that GitHub hides |
 | R274 | non-functional | `project-standards` | The repository's attributes set nothing but line endings |
 | R275 | non-functional | `project-standards` | The vendored copy of Superpowers holds only what its pinned commit gives |
+| R276 | non-functional | `project-standards` | Every checkout holds line feeds, and the checks read Windows line endings as git stages them |
+| R277 | non-functional | `project-standards` | Every tracked path is one that Windows can write |
 
 IDs are stable: a requirement keeps its ID while it exists, and a new one takes the next free number, so the rows follow the order in which requirements were added rather than the order of the specs. A requirement that a later change removes leaves the table, and its ID is listed below with the change that removed it, never to be used again.
 

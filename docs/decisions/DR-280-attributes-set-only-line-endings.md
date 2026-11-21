@@ -21,7 +21,7 @@ The repository's attributes give a tracked file only `text` and `eol`, which set
 ## Alternatives
 
 - Refusing a named set of attributes, as R134 does for some files: an attribute that git or GitHub adds later would pass until a threat found it, as `export-subst` and `filter` passed the design of this change.
-- No attributes file at all: `text` and `eol` change only line endings, which the test of characters reads in the working tree, and a later fix for clones that write carriage returns may need them.
+- No attributes file at all: each clone's line endings would be left to the person's git, and a clone made with `core.autocrlf` set to `true` fails the tests and runs neither its hook nor its scripts, which DR-281 answers with `text` and `eol`, the only attributes that this rule lets in.
 - Reading the attributes from the working tree alone, as the checks of R134 did: an attributes file that re-encodes itself hides from them each line that a checkout rewrites (T259).
 
 ## Consequences
@@ -32,7 +32,7 @@ The repository's attributes give a tracked file only `text` and `eol`, which set
 
 ## Scope
 
-This covers the attributes that the repository sets and how the checks read them. Which diffs no attribute may hide is part of DR-108 (Each decision has a record of its own, in an index) and of R134, and the characters that a checkout holds are DR-274 (Everything that this repository writes holds printable ASCII).
+This covers the attributes that the repository sets and how the checks read them. Which diffs no attribute may hide is part of DR-108 (Each decision has a record of its own, in an index) and of R134. The characters that a checkout holds are DR-274 (Everything that this repository writes holds printable ASCII), and the line endings that the attributes give are DR-281 (Every checkout holds line feeds, and the checks read Windows line endings as git stages them).
 
 ## What reversing it would change
 

@@ -988,7 +988,7 @@ The tool SHALL also ship the capture step as a Claude Code plugin, whose hooks S
 
 #### Scenario: The plugin runs its step from a checkout with Windows line endings
 
-- **WHEN** the plugin comes from a clone of the marketplace that git made with `core.autocrlf` set to `true`, so that the capture step in the plugin's folder has CRLF line endings, and an opted-in person's session works in a repository that turns the tool on and then commits there
+- **WHEN** the capture step in the plugin's folder has CRLF line endings, as git writes it in a clone of the marketplace whose own `.git/info/attributes` gives it `eol=crlf`, and an opted-in person's session works in a repository that turns the tool on and then commits there
 - **THEN** the plugin's command runs the step, and the commit adds a ledger file that holds the session's calls
 
 ### Requirement: The capture step writes only its own words and numbers to standard error
