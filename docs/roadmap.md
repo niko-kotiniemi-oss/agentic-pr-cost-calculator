@@ -27,6 +27,7 @@ What follows the first build.
 - [B-023: A contributor licence agreement](backlog/B-023-a-contributor-licence-agreement.md) - Open to feedback and contributions, last changed 2026-11-16. Terms that each outside contributor agrees to, which let the licensor also offer their contribution under other licences, such as in a paid version, while the contributor keeps their copyright.
 - [B-025: Commit messages and pull request text without hidden characters](backlog/B-025-commit-messages-and-pull-request-text-without-hidden-characters.md) - Open to feedback and contributions, last changed 2026-11-21. A check that holds the messages of the commits that a pull request adds, and its title and body, to characters that a reader can see, as the files that this repository writes are held.
 - [B-026: A check of the keys in skills' front matter and OpenSpec's configuration](backlog/B-026-a-check-of-the-keys-in-skills-and-openspecs-configuration.md) - Open to feedback and contributions, last changed 2026-11-21. A test that lists the keys that a skill's front matter and OpenSpec's configuration may give, and fails on any other, so that a key which widens what a session does is read before it lands.
+- [B-027: This repository's checks on Windows and macOS](backlog/B-027-this-repositorys-checks-on-windows-and-macos.md) - Open to feedback and contributions, last changed 2026-11-21. This repository's own checks, scripts and hooks run on Windows and macOS as they do on Linux, so that a contributor on either can work on the tool, and CI shows it.
 
 ## Later
 
