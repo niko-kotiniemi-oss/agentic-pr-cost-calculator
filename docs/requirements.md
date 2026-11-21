@@ -283,7 +283,10 @@ The capability names the spec that holds the requirement. Each capability is one
 | R269 | non-functional | `project-standards` | The files that others write hold no character that a reader cannot see |
 | R270 | non-functional | `project-standards` | An image, a PDF or a video is tracked only with a record that names it |
 | R271 | non-functional | `project-standards` | Python names follow PEP 8, as ruff's naming rules check them |
-| R272 | non-functional | `project-standards` | The test of characters reads every file as git holds it |
+| R272 | non-functional | `project-standards` | The test of characters reads every file as git holds it, and prints only printable ASCII |
+| R273 | non-functional | `project-standards` | The pages that this repository writes hold no text that GitHub hides |
+| R274 | non-functional | `project-standards` | The repository's attributes set nothing but line endings |
+| R275 | non-functional | `project-standards` | The vendored copy of Superpowers holds only what its pinned commit gives |
 
 IDs are stable: a requirement keeps its ID while it exists, and a new one takes the next free number, so the rows follow the order in which requirements were added rather than the order of the specs. A requirement that a later change removes leaves the table, and its ID is listed below with the change that removed it, never to be used again.
 
