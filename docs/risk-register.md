@@ -11,11 +11,11 @@ Each risk takes the band that the overall risk severity of OWASP's Risk Rating M
 | Band | Risk | Raw | With the answer in place |
 |---|---|---|---|
 | critical | 9 | 35 | 0 |
-| high | 6 | 162 | 14 |
-| medium | 3 and 4 | 47 | 138 |
-| low | 2 | 6 | 93 |
+| high | 6 | 167 | 14 |
+| medium | 3 and 4 | 47 | 143 |
+| low | 2 | 7 | 94 |
 | note | 1 | 0 | 5 |
-| all | 1 to 9 | 250 | 250 |
+| all | 1 to 9 | 256 | 256 |
 
 ## Raw matrix
 
@@ -23,9 +23,9 @@ Each cell lists the threats whose raw impact and raw likelihood it names.
 
 | Impact by likelihood | 1 unlikely | 2 possible | 3 likely |
 |---|---|---|---|
-| 3 high | T92, T213, T214, T217, T219 | T11, T12, T24, T28, T29, T35, T37, T38, T41, T43, T46, T58, T62, T63, T64, T66, T68, T73, T77, T81, T82, T83, T84, T93, T94, T95, T103, T104, T105, T107, T108, T109, T111, T112, T116, T119, T121, T125, T129, T133, T137, T140, T141, T142, T144, T146, T147, T148, T149, T150, T151, T155, T156, T160, T163, T164, T165, T169, T175, T176, T177, T178, T180, T183, T184, T187, T188, T192, T210, T211, T212, T226, T229, T230, T231, T233, T234, T237, T240 | T1, T2, T3, T4, T14, T15, T23, T31, T32, T33, T34, T59, T61, T65, T67, T127, T132, T134, T138, T145, T154, T158, T167, T171, T172, T174, T179, T185, T186, T190, T197, T224, T225, T227, T232 |
+| 3 high | T92, T213, T214, T217, T219 | T11, T12, T24, T28, T29, T35, T37, T38, T41, T43, T46, T58, T62, T63, T64, T66, T68, T73, T77, T81, T82, T83, T84, T93, T94, T95, T103, T104, T105, T107, T108, T109, T111, T112, T116, T119, T121, T125, T129, T133, T137, T140, T141, T142, T144, T146, T147, T148, T149, T150, T151, T155, T156, T160, T163, T164, T165, T169, T175, T176, T177, T178, T180, T183, T184, T187, T188, T192, T210, T211, T212, T226, T229, T230, T231, T233, T234, T237, T240, T251, T252, T253, T254, T256 | T1, T2, T3, T4, T14, T15, T23, T31, T32, T33, T34, T59, T61, T65, T67, T127, T132, T134, T138, T145, T154, T158, T167, T171, T172, T174, T179, T185, T186, T190, T197, T224, T225, T227, T232 |
 | 2 medium | T220, T250 | T6, T25, T30, T45, T47, T50, T55, T57, T60, T76, T79, T86, T87, T88, T90, T98, T99, T114, T118, T120, T122, T124, T126, T135, T139, T153, T166, T199, T202, T203, T204, T207, T216, T221, T222, T228, T235, T236, T239, T245 | T5, T7, T8, T9, T10, T13, T16, T17, T18, T19, T20, T21, T22, T26, T27, T39, T40, T42, T44, T48, T49, T51, T52, T53, T54, T56, T69, T70, T71, T72, T74, T75, T78, T80, T85, T89, T91, T96, T97, T100, T101, T102, T106, T110, T113, T115, T117, T123, T128, T130, T131, T136, T143, T152, T157, T159, T161, T162, T168, T170, T173, T181, T182, T189, T191, T193, T194, T195, T196, T198, T200, T201, T206, T208, T209, T215, T223, T238, T241, T242, T247, T248, T249 |
-| 1 low | | T218, T243, T244, T246 | T36, T205 |
+| 1 low | | T218, T243, T244, T246, T255 | T36, T205 |
 
 ## Matrix with the answers in place
 
@@ -33,9 +33,9 @@ Each cell lists the threats whose impact and likelihood it names.
 
 | Impact by likelihood | 1 unlikely | 2 possible | 3 likely |
 |---|---|---|---|
-| 3 high | T1, T12, T14, T15, T23, T24, T28, T29, T35, T43, T46, T58, T59, T63, T64, T66, T67, T68, T73, T77, T81, T82, T83, T92, T93, T94, T95, T103, T107, T108, T119, T125, T133, T138, T140, T141, T142, T144, T147, T148, T150, T151, T160, T163, T164, T165, T167, T169, T174, T175, T177, T178, T180, T183, T184, T186, T187, T188, T190, T192, T210, T211, T212, T213, T214, T217, T219, T225, T226, T227, T229, T230, T231, T233, T234, T237, T240 | T2, T32, T33, T34, T61, T62, T65, T132, T137, T232 | |
+| 3 high | T1, T12, T14, T15, T23, T24, T28, T29, T35, T43, T46, T58, T59, T63, T64, T66, T67, T68, T73, T77, T81, T82, T83, T92, T93, T94, T95, T103, T107, T108, T119, T125, T133, T138, T140, T141, T142, T144, T147, T148, T150, T151, T160, T163, T164, T165, T167, T169, T174, T175, T177, T178, T180, T183, T184, T186, T187, T188, T190, T192, T210, T211, T212, T213, T214, T217, T219, T225, T226, T227, T229, T230, T231, T233, T234, T237, T240, T251, T252, T253, T254, T256 | T2, T32, T33, T34, T61, T62, T65, T132, T137, T232 | |
 | 2 medium | T4, T6, T11, T13, T18, T25, T26, T38, T41, T42, T53, T55, T56, T57, T60, T69, T70, T76, T78, T79, T80, T84, T85, T86, T87, T88, T89, T90, T91, T97, T98, T99, T100, T101, T102, T104, T105, T109, T112, T115, T124, T126, T127, T135, T139, T146, T149, T152, T153, T155, T156, T157, T162, T172, T173, T179, T181, T182, T185, T189, T191, T193, T194, T195, T196, T197, T198, T199, T202, T203, T204, T206, T207, T215, T216, T220, T221, T223, T228, T235, T236, T238, T239, T245, T247, T248, T250 | T3, T9, T10, T17, T19, T20, T21, T22, T27, T30, T39, T40, T44, T45, T47, T48, T49, T50, T51, T52, T54, T71, T72, T74, T75, T96, T111, T116, T120, T121, T122, T123, T129, T130, T131, T134, T136, T143, T145, T154, T158, T159, T161, T166, T168, T170, T171, T176, T200, T201, T208, T209, T222, T224, T241, T242, T249 | T7, T8, T16, T128 |
-| 1 low | T113, T218, T243, T244, T246 | T31, T36, T37, T110, T114, T118 | T5, T106, T117, T205 |
+| 1 low | T113, T218, T243, T244, T246 | T31, T36, T37, T110, T114, T118, T255 | T5, T106, T117, T205 |
 
 ## High and critical risks
 
@@ -208,6 +208,11 @@ The highest risk with the answer in place first, then the highest raw risk, then
 | [T234](threat-model.md#t234-an-agent-that-starts-without-the-context-files-reads-data-without-the-rules-and-its-report-brings-that-data-back) | An agent that starts without the context files reads data without the rules, and its report brings that data back | 9 | elevation of privilege, information disclosure | 6 high (3, 2) | 3 medium (3, 1) | R252; DR-258; `CLAUDE.md` | A5, A16 |
 | [T237](threat-model.md#t237-a-tracked-file-names-a-server-that-sessions-here-start) | A tracked file names a server that sessions here start | 7 | elevation of privilege, tampering | 6 high (3, 2) | 3 medium (3, 1) | R252, R256; DR-258 | A5 |
 | [T240](threat-model.md#t240-the-scheduled-checks-token-is-used-to-write) | The scheduled check's token is used to write | 7 | elevation of privilege | 6 high (3, 2) | 3 medium (3, 1) | R263, R101; DR-067, DR-267 | A15 |
+| [T251](threat-model.md#t251-a-character-that-a-reader-cannot-see-makes-a-file-read-one-way-and-act-another) | A character that a reader cannot see makes a file read one way and act another | 7 | tampering, elevation of privilege | 6 high (3, 2) | 3 medium (3, 1) | R268, R272; DR-274; `add-pr-cost-calculator` task 1.48 | A15 |
+| [T252](threat-model.md#t252-an-update-of-superpowers-or-openspec-brings-a-character-that-hides-text-into-a-skill-or-a-script-that-sessions-here-load-or-run) | An update of Superpowers or OpenSpec brings a character that hides text into a skill or a script that sessions here load or run | 7 | tampering, elevation of privilege | 6 high (3, 2) | 3 medium (3, 1) | R269; DR-275; `add-pr-cost-calculator` task 1.48 | A15 |
+| [T253](threat-model.md#t253-a-list-of-the-checks-exceptions-is-widened-to-let-hidden-text-in) | A list of the check's exceptions is widened to let hidden text in | 7 | tampering | 6 high (3, 2) | 3 medium (3, 1) | R269, R270; DR-275, DR-276; `add-pr-cost-calculator` task 1.48; `add-pr-cost-calculator` task 1.49 | A15 |
+| [T254](threat-model.md#t254-an-image-a-pdf-or-a-video-carries-what-a-reviewer-cannot-read-in-the-diff) | An image, a PDF or a video carries what a reviewer cannot read in the diff | 7 | elevation of privilege, tampering | 6 high (3, 2) | 3 medium (3, 1) | R270, R272; DR-276; `add-pr-cost-calculator` task 1.49 | A15 |
+| [T256](threat-model.md#t256-an-attribute-makes-a-checkout-write-a-file-otherwise-than-git-holds-it-so-that-a-check-of-the-working-tree-passes-hidden-text) | An attribute makes a checkout write a file otherwise than git holds it, so that a check of the working tree passes hidden text | 7 | tampering | 6 high (3, 2) | 3 medium (3, 1) | R272; DR-274; `add-pr-cost-calculator` task 1.48 | A15 |
 | [T92](threat-model.md#t92-the-assumptions-behind-the-threats-that-matter-most-are-listed-after-ones-that-matter-less) | The assumptions behind the threats that matter most are listed after ones that matter less | 7 | elevation of privilege, reliability | 3 medium (3, 1) | 3 medium (3, 1) | R136; DR-163; `add-pr-cost-calculator` task 1.19; `add-pr-cost-calculator` decision 14 | none |
 | [T205](threat-model.md#t205-a-reader-cannot-follow-a-requirements-id-from-a-page-to-what-the-requirement-says) | A reader cannot follow a requirement's ID from a page to what the requirement says | 6 | reliability | 3 medium (1, 3) | 3 medium (1, 3) | DR-232; `add-pr-cost-calculator` task 1.37 | A15 |
 | [T213](threat-model.md#t213-a-tag-is-released-while-the-default-branch-already-holds-a-critical-risk) | A tag is released while the default branch already holds a critical risk | 8 | reliability | 3 medium (3, 1) | 3 medium (3, 1) | R251; DR-255 | none |
@@ -307,6 +312,7 @@ The highest risk with the answer in place first, then the highest raw risk, then
 | [T36](threat-model.md#t36-a-development-tool-reports-how-it-is-used) | A development tool reports how it is used | 7 | information disclosure | 3 medium (1, 3) | 2 low (1, 2) | DR-071; `.claude/settings.json`; `scripts/verify-openspec.sh`; `tests/test_repository.py` | A5, A65 |
 | [T220](threat-model.md#t220-a-high-risk-that-the-default-branch-learns-after-a-tag-never-reaches-that-releases-text) | A high risk that the default branch learns after a tag never reaches that release's text | 8 | information disclosure, reliability | 2 low (2, 1) | 2 low (2, 1) | R251; DR-255 | none |
 | [T250](threat-model.md#t250-a-repeated-number-that-renumbering-cannot-mend-keeps-ci-failing) | A repeated number that renumbering cannot mend keeps CI failing | 7 | denial of service | 2 low (2, 1) | 2 low (2, 1) | R266; DR-269 | A15 |
+| [T255](threat-model.md#t255-a-sound-update-of-superpowers-or-openspec-is-held-up-by-a-character-that-the-list-does-not-give) | A sound update of Superpowers or OpenSpec is held up by a character that the list does not give | 7 | denial of service | 2 low (1, 2) | 2 low (1, 2) | R269; DR-275 | A15 |
 | [T113](threat-model.md#t113-capture-keeps-notes-for-someone-who-never-opted-in) | Capture keeps notes for someone who never opted in | 2 | information disclosure | 6 high (2, 3) | 1 note (1, 1) | R145, R118; DR-170; `add-pr-cost-calculator` task 2.4 | none |
 | [T218](threat-model.md#t218-the-copy-for-the-reviewers-of-raw-ratings-shows-which-threats-are-high) | The copy for the reviewers of raw ratings shows which threats are high | 7 | information disclosure, reliability | 2 low (1, 2) | 1 note (1, 1) | DR-254; `add-pr-cost-calculator` task 1.38; `add-pr-cost-calculator` decision 20; `tests/test_risk_register.py` | none |
 | [T243](threat-model.md#t243-text-from-a-response-or-from-a-run-started-by-hand-reaches-the-runners-commands-or-the-summary) | Text from a response or from a run started by hand reaches the runner's commands or the summary | 7 | tampering, elevation of privilege | 2 low (1, 2) | 1 note (1, 1) | R263; DR-267 | none |

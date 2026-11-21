@@ -1989,3 +1989,118 @@ Each date that a record's decider gives SHALL be no earlier than 2026-10-17, the
 
 - **WHEN** a record's decider gives 2026-10-17
 - **THEN** the test passes it
+
+### Requirement: The files that this repository writes hold only printable ASCII
+
+Every tracked file that this repository writes SHALL hold only printable ASCII characters and line feeds, and every tracked path only printable ASCII characters other than the space, so that no character that a reader cannot see, that reorders text or that looks like another reaches its code, its pages or its names. The files that others write are those under `vendor/superpowers/` but its `UPSTREAM.lock`, and those under `.claude/skills/openspec-*/`. Tests SHALL fail otherwise.
+
+#### Scenario: A character beyond printable ASCII in a file that this repository writes fails CI
+
+- **WHEN** a tracked file that this repository writes holds a character other than printable ASCII and a line feed, such as a tab, a carriage return, a byte-order mark, a zero-width space, a direction-changing character, a non-breaking space, an em dash, an arrow or an accented letter
+- **THEN** a test fails and names the file, the line, the column and the character by its code point and its name, never by the character itself
+
+#### Scenario: A path beyond printable ASCII fails CI
+
+- **WHEN** a tracked path, of any file, holds a character other than printable ASCII, or a space
+- **THEN** a test fails and names the path, with each such character by its code point
+
+#### Scenario: Printable ASCII and line feeds pass
+
+- **WHEN** every tracked file that this repository writes holds only printable ASCII and line feeds, and every tracked path only printable ASCII other than the space
+- **THEN** the test passes them
+
+### Requirement: The test of characters reads every file as git holds it
+
+The test of characters SHALL read each tracked file as git's index holds it, and also as the working tree holds it wherever that holds a file, and a link as the path that it holds, never followed, and the repository's attributes SHALL give no tracked file a `working-tree-encoding`, so that neither an attribute that rewrites a checkout nor an edit not yet staged hides a character, and no check that reads the working tree is shown other text than GitHub shows. Tests SHALL fail otherwise.
+
+#### Scenario: A character that only git's index holds fails CI
+
+- **WHEN** git's index holds a character beyond printable ASCII in a file that this repository writes, while the working tree holds that file in printable ASCII alone, as an attribute such as `working-tree-encoding=UTF-7` makes a checkout write it
+- **THEN** a test fails and names the file, the line, the column and the character by its code point and its name
+
+#### Scenario: An edit not yet staged is read
+
+- **WHEN** the working tree holds a character beyond printable ASCII in a tracked file that this repository writes, while git's index holds that file in printable ASCII alone
+- **THEN** a test fails and names the file, the line, the column and the character by its code point and its name
+
+#### Scenario: An attribute that re-encodes a checkout fails CI
+
+- **WHEN** a `.gitattributes` file of the repository gives a tracked file a `working-tree-encoding`, whatever its value
+- **THEN** a test fails and names the file and the attribute, reading none of a person's own attributes
+
+#### Scenario: A file that the test cannot read as text fails CI
+
+- **WHEN** a tracked file that no exception lets in holds bytes that are not UTF-8, in git's index or in the working tree, or a tracked path is neither a file nor a link, such as a submodule
+- **THEN** a test fails and names the path
+
+#### Scenario: A link is read as the path that it holds
+
+- **WHEN** a tracked link holds a path beyond printable ASCII, or names a file outside the repository that holds such a character
+- **THEN** the test fails on the first, names the link and its path's characters by their code points, and reads nothing through either
+
+#### Scenario: A check of characters that reads no file fails
+
+- **WHEN** git lists no tracked file, or the test reads none
+- **THEN** the test fails and says that it read nothing
+
+### Requirement: The files that others write hold no character that a reader cannot see
+
+Each file that others write SHALL hold only printable ASCII, tabs, line feeds and the visible characters that its test lists, by code point and Unicode name, with variation selector 16 only right after a character listed for it, and the list SHALL give only letters, digits, punctuation and symbols, by Unicode category, none that shows as blank. So an update that brings an invisible character fails, and a visible one passes only once its pull request lists it. Tests SHALL fail otherwise.
+
+#### Scenario: A character that a reader cannot see in a file that others write fails CI
+
+- **WHEN** a file that others write holds a character that is not printable ASCII, a tab, a line feed or a listed character, such as a carriage return, a zero-width space, a right-to-left override, a byte-order mark, a non-breaking space or a tag character, or holds variation selector 16 right after a character that the list does not give for it
+- **THEN** a test fails and names the file, the line, the column and the character by its code point and its name, never by the character itself
+
+#### Scenario: A visible character that the list does not give fails CI
+
+- **WHEN** a file that others write holds a visible character beyond printable ASCII that the test does not list, such as a Cyrillic letter that looks like a Latin one
+- **THEN** a test fails and names the file, the line, the column and the character by its code point and its name
+
+#### Scenario: The characters that the list gives pass
+
+- **WHEN** a file that others write holds only printable ASCII, tabs, line feeds and listed characters, with variation selector 16 only right after a character listed for it
+- **THEN** the test passes it
+
+#### Scenario: A list that gives a character that cannot be seen fails CI
+
+- **WHEN** the test's list gives a character that is not a letter, a digit, a mark of punctuation or a symbol, one that shows as blank, such as a Hangul filler or the blank Braille pattern, or a name other than the one that Unicode gives it
+- **THEN** a test fails and names the entry
+
+### Requirement: An image, a PDF or a video is tracked only with a record that names it
+
+A tracked file with the extension of an image, a PDF or a video, in any case, or whose bytes are not UTF-8, SHALL be one that the test's list of exceptions gives with an accepted record whose text names its path in a code span, and the list SHALL give no other file, so that a diagram stays text and what a diff cannot show enters only with a record that the owner reviews. Tests SHALL fail otherwise.
+
+#### Scenario: An image, a PDF or a video that no record names fails CI
+
+- **WHEN** a tracked file has the extension of an image, a PDF or a video, such as `.png`, `.jpg`, `.gif`, `.svg`, `.webp`, `.ico`, `.pdf`, `.mp4`, `.mov` or `.webm`, in any case, or holds bytes that are not UTF-8, and the list of exceptions does not give it with an accepted record that names its path in a code span
+- **THEN** a test fails and names the file
+
+#### Scenario: A file that the list gives with its record passes
+
+- **WHEN** the list of exceptions gives such a file with an accepted record whose text names its path in a code span
+- **THEN** the test passes it, and the test of characters does not read its bytes
+
+#### Scenario: An exception out of its form fails CI
+
+- **WHEN** the list of exceptions gives a path that git does not track, a file that is neither an image, a PDF or a video by its extension nor bytes that are not UTF-8, a record that does not exist or is closed, or a record whose text does not name the path in a code span
+- **THEN** a test fails and names the entry
+
+### Requirement: Python names follow PEP 8, as ruff's naming rules check them
+
+`pyproject.toml` SHALL select ruff's naming rules, `N`, among those that `ruff check` applies, and SHALL ignore none of them, for every file or for some, so that a name in the tool's code, the scripts, the skeleton or the tests that PEP 8 does not give, such as a class named in lower case or an exception class whose name does not end in `Error`, fails CI. Tests SHALL fail otherwise.
+
+#### Scenario: Ruff's configuration without the naming rules fails CI
+
+- **WHEN** `pyproject.toml` selects no `N` among ruff's rules, or ignores one of them, for every file or for some
+- **THEN** a test fails and names the setting
+
+#### Scenario: A name that PEP 8 does not give fails ruff's check
+
+- **WHEN** a Python file that `ruff check` reads with the repository's configuration names a class in lower case, a function in mixed case, or an exception class without `Error` at its end
+- **THEN** `ruff check` fails and names the rule and the line
+
+#### Scenario: Names that PEP 8 gives pass ruff's check
+
+- **WHEN** a Python file that `ruff check` reads with the repository's configuration gives only names that PEP 8 gives
+- **THEN** `ruff check` passes it

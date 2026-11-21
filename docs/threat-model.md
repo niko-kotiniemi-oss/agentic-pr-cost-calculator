@@ -2,7 +2,7 @@
 
 What could go wrong with the tool, for the people who use it and for this repository, and what answers each threat. Every change revisits this file (see `CLAUDE.md`).
 
-It was written for the first change, `add-pr-cost-calculator`, before any code, so the answers are requirements and tasks rather than code. It holds 250 threats across 9 trust boundaries. T38 to T69 were found by the design-stage review, T70 to T78 by the design-stage review of the decision records in `docs/decisions/`, T79 to T81 by the implementation-stage review of those records and their checks, T82 to T100 by the design-stage review of the assumptions, the glossary and the golden set, T101 by the implementation-stage review of the assumptions, T102 and T103 by the implementation-stage review of the glossary, T104 to T116 at the design of the revision of consent, the store and the ledger's format, T117 and T118 by the design-stage review of that revision, T119 to T122 by the review of that revision after its approval, T123 with the owner's answer to a question that the check of that review's fixes raised, T124 to T126 by the design-stage review of the test of the specs' form, T127 by the implementation-stage review of that test, T128 to T135 at the design of the plugin that brings capture to a project's cloud threads, T136 to T142 by the design-stage review of that plugin, T143 by its implementation-stage review, T144 by its security review, T145 to T147 at the design of the README's short start, T148 to T156 by the design-stage review of that short start, T157 and T158 by its implementation-stage review, T159 to T162 at the design of the roadmap, T163 to T165 by the design-stage review of the roadmap, T166 to T168 at the design of the backlog, T169 by the design-stage review of the backlog, T170 at the design of the guide, T171 to T174 by the design-stage review of the guide, T175 and T176 by the design-stage review of one opt-in for every agent, T177 to T182 by the second design-stage review of the guide, T183 by the final review of its build, T184 by its implementation-stage review, T185 to T189 at the design of the walking skeleton and T190 to T194 by its design-stage review, and T195 to T197 at the design of the specs' citation sweep, T198 to T200 by its design-stage review and T201 to T205 by its implementation-stage review, T206 to T215 by the design-stage review of the risk register and T216 to T222 by its implementation-stage review, and T223 to T236 by the design-stage reviews of the context files and T237 by their implementation-stage reviews, and T238 to T241 at the design of the check of Renovate's proposals, T242 to T245 by its design-stage review and T246 by its implementation-stage review, and T247 to T249 at the design of the two fields on every record and T250 by its design-stage review; they follow T37, each under a heading for its boundary, so that the numbers stay in order, and a threat that a change removes keeps its ID out of use (see Retired IDs). Where an answer can be a scenario in a spec, it is one, so that an acceptance test holds it. `tests/test_threat_model.py` checks that every citation below names a scenario, task, decision, decision record or file that exists.
+It was written for the first change, `add-pr-cost-calculator`, before any code, so the answers are requirements and tasks rather than code. It holds 256 threats across 9 trust boundaries. T38 to T69 were found by the design-stage review, T70 to T78 by the design-stage review of the decision records in `docs/decisions/`, T79 to T81 by the implementation-stage review of those records and their checks, T82 to T100 by the design-stage review of the assumptions, the glossary and the golden set, T101 by the implementation-stage review of the assumptions, T102 and T103 by the implementation-stage review of the glossary, T104 to T116 at the design of the revision of consent, the store and the ledger's format, T117 and T118 by the design-stage review of that revision, T119 to T122 by the review of that revision after its approval, T123 with the owner's answer to a question that the check of that review's fixes raised, T124 to T126 by the design-stage review of the test of the specs' form, T127 by the implementation-stage review of that test, T128 to T135 at the design of the plugin that brings capture to a project's cloud threads, T136 to T142 by the design-stage review of that plugin, T143 by its implementation-stage review, T144 by its security review, T145 to T147 at the design of the README's short start, T148 to T156 by the design-stage review of that short start, T157 and T158 by its implementation-stage review, T159 to T162 at the design of the roadmap, T163 to T165 by the design-stage review of the roadmap, T166 to T168 at the design of the backlog, T169 by the design-stage review of the backlog, T170 at the design of the guide, T171 to T174 by the design-stage review of the guide, T175 and T176 by the design-stage review of one opt-in for every agent, T177 to T182 by the second design-stage review of the guide, T183 by the final review of its build, T184 by its implementation-stage review, T185 to T189 at the design of the walking skeleton and T190 to T194 by its design-stage review, and T195 to T197 at the design of the specs' citation sweep, T198 to T200 by its design-stage review and T201 to T205 by its implementation-stage review, T206 to T215 by the design-stage review of the risk register and T216 to T222 by its implementation-stage review, and T223 to T236 by the design-stage reviews of the context files and T237 by their implementation-stage reviews, and T238 to T241 at the design of the check of Renovate's proposals, T242 to T245 by its design-stage review and T246 by its implementation-stage review, and T247 to T249 at the design of the two fields on every record and T250 by its design-stage review, and T251 to T256 at the design of the conventions; they follow T37, each under a heading for its boundary, so that the numbers stay in order, and a threat that a change removes keeps its ID out of use (see Retired IDs). Where an answer can be a scenario in a spec, it is one, so that an acceptance test holds it. `tests/test_threat_model.py` checks that every citation below names a scenario, task, decision, decision record or file that exists.
 
 ## How it was built
 
@@ -3936,15 +3936,107 @@ The trust boundaries:
 - **Held by:** `project-standards`: "The later record renumbered, with each record that it closed naming it anew, passes"; `project-standards`: "A repeat that renumbering cannot mend fails CI"; DR-269
 - **Assumptions:** A15
 
+## Boundary 7, continued: found at the design of the conventions
+
+### T251. A character that a reader cannot see makes a file read one way and act another
+
+- **Kind:** tampering, elevation of privilege
+- **Impact:** 3 (high)
+- **Likelihood:** 1 (unlikely)
+- **Risk:** 3
+- **Raw impact:** 3 (high)
+- **Raw likelihood:** 2 (possible)
+- **Raw risk:** 6
+- **What could happen:** a pull request adds, to a script, a test, a workflow, a hook, the tool's code or a page that no check of its own reads, a character that changes the order in which text is shown, which can make code read as a comment while it runs, as Nicholas Boucher and Ross Anderson's Trojan Source (2021) shows, an invisible one that splits a word so that a check that matches the word misses it, or a letter of another script that looks like a Latin one, so that two names read alike. The owner approves what the diff seems to say, a check passes what it cannot match, and adopters copy the hook or call the workflow as it was released. Before this change, only the records, the specs, the README's sections of detail, the roadmap and the backlog, the guide, the risk register and the context files were held to printable ASCII.
+- **Answer:** every file that this repository writes holds only printable ASCII and line feeds, and every tracked path only printable ASCII but the space; the test reads each file's bytes, as git's index holds them and as the working tree does, so that a carriage return, a byte-order mark or an edit not yet staged is seen, and it names each character by its code point and its name, never by the character itself (R268, R272, DR-274). The files that others write are held to the characters that their test lists (T252).
+- **Residual:** text in printable ASCII can still mislead, which the owner's review of the diff reads.
+- **Held by:** `project-standards`: "A character beyond printable ASCII in a file that this repository writes fails CI"; `project-standards`: "A path beyond printable ASCII fails CI"; `project-standards`: "An edit not yet staged is read"; `project-standards`: "A check of characters that reads no file fails"; DR-274; `add-pr-cost-calculator` task 1.48
+- **Assumptions:** A15
+
+### T252. An update of Superpowers or OpenSpec brings a character that hides text into a skill or a script that sessions here load or run
+
+- **Kind:** tampering, elevation of privilege
+- **Impact:** 3 (high)
+- **Likelihood:** 1 (unlikely)
+- **Risk:** 3
+- **Raw impact:** 3 (high)
+- **Raw likelihood:** 2 (possible)
+- **Raw risk:** 6
+- **What could happen:** the vendored Superpowers and OpenSpec's generated skills are loaded into every session here, and the vendored hook scripts run at its start with its credentials (T35). Their checks compare each file with its source, which shows that it is upstream's, not that it hides nothing: a release that upstream makes, or that someone who took over its account makes, could hide an instruction in a skill with characters that a reader cannot see or that reorder the text, and the update's pull request would show a diff that reads as harmless. On 2026-11-21 three of those files held variation selectors, each after a warning sign, so such characters already reach them.
+- **Answer:** each file that others write holds only printable ASCII, tabs, line feeds and the visible characters that its test lists, with variation selector 16 only right after a character listed for it, and a character outside the list fails the update until its pull request adds it, in a diff that the owner reads (R269, DR-275).
+- **Residual:** a listed character is visible but can still mislead, as an arrow or a mathematical sign can; that rests on the review of the update.
+- **Held by:** `project-standards`: "A character that a reader cannot see in a file that others write fails CI"; `project-standards`: "A visible character that the list does not give fails CI"; DR-275; `add-pr-cost-calculator` task 1.48
+- **Assumptions:** A15
+
+### T253. A list of the check's exceptions is widened to let hidden text in
+
+- **Kind:** tampering
+- **Impact:** 3 (high)
+- **Likelihood:** 1 (unlikely)
+- **Risk:** 3
+- **Raw impact:** 3 (high)
+- **Raw likelihood:** 2 (possible)
+- **Raw risk:** 6
+- **What could happen:** a pull request adds to the list of characters that the files others write may hold one that cannot be seen, under the name of one that can, or adds to the list of exceptions for images, PDFs and videos a page of text, so that the test of characters no longer reads it. Each is one line in a test, among a pull request's other lines.
+- **Answer:** the test fails on a listed character that is not a letter, a digit, a mark of punctuation or a symbol by its Unicode category, on one that shows as blank and on a name other than the one that Unicode gives it (R269), and on an exception for a path that git does not track, for a file that is neither an image, a PDF nor a video by its extension nor bytes that are not UTF-8, or with a record that is missing, closed or silent on the path (R270).
+- **Residual:** a visible character, or an image, that a pull request lists, with its record, is let in by the owner's review of that diff.
+- **Held by:** `project-standards`: "A list that gives a character that cannot be seen fails CI"; `project-standards`: "An exception out of its form fails CI"; DR-275; DR-276; `add-pr-cost-calculator` task 1.48; `add-pr-cost-calculator` task 1.49
+- **Assumptions:** A15
+
+### T254. An image, a PDF or a video carries what a reviewer cannot read in the diff
+
+- **Kind:** elevation of privilege, tampering
+- **Impact:** 3 (high)
+- **Likelihood:** 1 (unlikely)
+- **Risk:** 3
+- **Raw impact:** 3 (high)
+- **Raw likelihood:** 2 (possible)
+- **Raw risk:** 6
+- **What could happen:** a pull request adds a picture whose words instruct an agent, which a session here reads when a page or a task leads it to the file, a PDF or an SVG that carries a script, or a diagram as an image whose content no diff shows, so that what the owner approves is not what agents and readers get. No check of text reads such a file.
+- **Answer:** a file whose extension is that of an image, a PDF or a video, in any case, and any file that is not UTF-8, is tracked only where the test's list of exceptions gives it with an accepted record that names its path, and a diagram is Mermaid, in the Markdown that shows it (R270, DR-276).
+- **Residual:** an image that a record lets in can still carry such words, which only the owner's review of the image itself reads, and a diagram written as text in another notation is for review (DR-251).
+- **Held by:** `project-standards`: "An image, a PDF or a video that no record names fails CI"; `project-standards`: "A file that the list gives with its record passes"; `project-standards`: "A file that the test cannot read as text fails CI"; DR-276; `add-pr-cost-calculator` task 1.49
+- **Assumptions:** A15
+
+### T255. A sound update of Superpowers or OpenSpec is held up by a character that the list does not give
+
+- **Kind:** denial of service
+- **Impact:** 1 (low)
+- **Likelihood:** 2 (possible)
+- **Risk:** 2
+- **Raw impact:** 1 (low)
+- **Raw likelihood:** 2 (possible)
+- **Raw risk:** 2
+- **What could happen:** an update of Superpowers or OpenSpec brings a visible character that the list does not give, such as a new emoji, so CI fails on the update's pull request until someone adds it, and an agent asked to make CI pass could add a character to the list without reading what it is.
+- **Answer:** the failure names the file, the line, the column and the character by its code point and its Unicode name, so that the update's pull request can add it to the list under that name, which the list's own check holds to Unicode's (R269), and the owner reads it in that diff (DR-275). A character that cannot be seen cannot be added (T253).
+- **Residual:** each such update takes one more step, a trade-off that the design's risks give.
+- **Held by:** `project-standards`: "A visible character that the list does not give fails CI"; `project-standards`: "A list that gives a character that cannot be seen fails CI"; DR-275
+- **Assumptions:** A15
+
+### T256. An attribute makes a checkout write a file otherwise than git holds it, so that a check of the working tree passes hidden text
+
+- **Kind:** tampering
+- **Impact:** 3 (high)
+- **Likelihood:** 1 (unlikely)
+- **Risk:** 3
+- **Raw impact:** 3 (high)
+- **Raw likelihood:** 2 (possible)
+- **Raw risk:** 6
+- **What could happen:** an attribute that the repository commits, `working-tree-encoding=UTF-7`, makes git keep in its index and its commits a file that holds a right-to-left override, or an HTML comment, while every checkout writes the file in other text that a check passes, so that a check that reads the working tree, as the checks of single pages do, passes what GitHub shows and what a release is built from. A trial with git 2.43.0 on 2026-11-21 kept such an override, and such a comment, in files that a fresh clone wrote without either.
+- **Answer:** the test of characters reads each tracked file as git's index holds it, as well as the working tree, and fails on any `working-tree-encoding` that the repository's attributes give a tracked file, reading none of a person's own attributes, so that no check that reads the working tree is shown other text than GitHub shows (R272, DR-274).
+- **Residual:** a person's own attributes and filters change only their own checkout, which CI's checkout does not share.
+- **Held by:** `project-standards`: "A character that only git's index holds fails CI"; `project-standards`: "An attribute that re-encodes a checkout fails CI"; DR-274; `add-pr-cost-calculator` task 1.48
+- **Assumptions:** A15
+
 ## Risk matrix
 
 Generated from the ratings above. Each cell lists the threats whose impact and likelihood it names.
 
 | Impact \ Likelihood | 1 unlikely | 2 possible | 3 likely |
 |---|---|---|---|
-| 3 high | T1, T12, T14, T15, T23, T24, T28, T29, T35, T43, T46, T58, T59, T63, T64, T66, T67, T68, T73, T77, T81, T82, T83, T92, T93, T94, T95, T103, T107, T108, T119, T125, T133, T138, T140, T141, T142, T144, T147, T148, T150, T151, T160, T163, T164, T165, T167, T169, T174, T175, T177, T178, T180, T183, T184, T186, T187, T188, T190, T192, T210, T211, T212, T213, T214, T217, T219, T225, T226, T227, T229, T230, T231, T233, T234, T237, T240 | T2, T32, T33, T34, T61, T62, T65, T132, T137, T232 | |
+| 3 high | T1, T12, T14, T15, T23, T24, T28, T29, T35, T43, T46, T58, T59, T63, T64, T66, T67, T68, T73, T77, T81, T82, T83, T92, T93, T94, T95, T103, T107, T108, T119, T125, T133, T138, T140, T141, T142, T144, T147, T148, T150, T151, T160, T163, T164, T165, T167, T169, T174, T175, T177, T178, T180, T183, T184, T186, T187, T188, T190, T192, T210, T211, T212, T213, T214, T217, T219, T225, T226, T227, T229, T230, T231, T233, T234, T237, T240, T251, T252, T253, T254, T256 | T2, T32, T33, T34, T61, T62, T65, T132, T137, T232 | |
 | 2 medium | T4, T6, T11, T13, T18, T25, T26, T38, T41, T42, T53, T55, T56, T57, T60, T69, T70, T76, T78, T79, T80, T84, T85, T86, T87, T88, T89, T90, T91, T97, T98, T99, T100, T101, T102, T104, T105, T109, T112, T115, T124, T126, T127, T135, T139, T146, T149, T152, T153, T155, T156, T157, T162, T172, T173, T179, T181, T182, T185, T189, T191, T193, T194, T195, T196, T197, T198, T199, T202, T203, T204, T206, T207, T215, T216, T220, T221, T223, T228, T235, T236, T238, T239, T245, T247, T248, T250 | T3, T9, T10, T17, T19, T20, T21, T22, T27, T30, T39, T40, T44, T45, T47, T48, T49, T50, T51, T52, T54, T71, T72, T74, T75, T96, T111, T116, T120, T121, T122, T123, T129, T130, T131, T134, T136, T143, T145, T154, T158, T159, T161, T166, T168, T170, T171, T176, T200, T201, T208, T209, T222, T224, T241, T242, T249 | T7, T8, T16, T128 |
-| 1 low | T113, T218, T243, T244, T246 | T31, T36, T37, T110, T114, T118 | T5, T106, T117, T205 |
+| 1 low | T113, T218, T243, T244, T246 | T31, T36, T37, T110, T114, T118, T255 | T5, T106, T117, T205 |
 
 The threats with a risk of 6 or more:
 
