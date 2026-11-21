@@ -6,7 +6,7 @@ What holds for the whole tool rather than for one feature: documentation that na
 
 **Spec:** `project-standards`
 
-**Requirements:** R29, R100, R101, R30, R31, R33, R34, R73, R74, R177, R173, R174, R175, R176, R178, R124, R125, R126, R127, R128, R129, R265, R266, R130, R131, R132, R133, R134, R135, R140, R143, R136, R137, R138, R139, R141, R159, R164, R185, R194, R186, R187, R195, R196, R198, R199, R200, R201, R203, R204, R205, R206, R207, R208, R209, R210, R211, R212, R213, R214, R215, R216, R217, R218, R219, R220, R221, R222, R226, R227, R228, R231, R233, R223, R229, R232, R224, R234, R235, R236, R237, R238, R239, R240, R241, R242, R243, R142, R244, R245, R246, R247, R248, R249, R250, R252, R253, R254, R255, R256, R257, R258, R264, R267
+**Requirements:** R29, R100, R101, R30, R31, R33, R34, R73, R74, R177, R173, R174, R175, R176, R178, R124, R125, R126, R127, R128, R129, R265, R266, R130, R131, R132, R133, R134, R135, R140, R143, R136, R137, R138, R139, R141, R159, R164, R185, R194, R186, R187, R195, R196, R198, R199, R200, R201, R203, R204, R205, R206, R207, R208, R209, R210, R211, R212, R213, R214, R215, R216, R217, R218, R219, R220, R221, R222, R226, R227, R228, R231, R233, R223, R229, R232, R224, R234, R235, R236, R237, R238, R239, R240, R241, R242, R243, R142, R244, R245, R246, R247, R248, R249, R250, R252, R253, R254, R255, R256, R257, R258, R264, R267, R268, R273, R272, R274, R276, R277, R269, R275, R270, R271
 
 ## Expected behaviour
 
@@ -63,6 +63,12 @@ The design's risks that concern this feature and are not on the roadmap, each wi
 - **The glossary, an assumption or a page that one links to reads as an instruction to an agent**: such a page could steer an agent, so they describe and never instruct.
 - **The walking skeleton's run shows that a fact the design takes from Claude Code is wrong**: the design would rest on a wrong fact, so what the run shows goes into the assumptions and the specs before the build starts.
 - **The walking skeleton leaves out most of what the design asks**: the skeleton is not the tool, so the design lists each part that it leaves out, and no release holds it.
+- **An update of Superpowers or OpenSpec brings a visible character that the list does not give**: such an update fails CI until its pull request lists the character, so that each one is read before it is allowed, and one whose character only a joiner or a combining mark shows waits for the owner's decision on the rule.
+- **A page or a file needs what the conventions refuse, such as a folded section on a page other than the README, a price written with a dollar sign or an attribute beyond line endings**: GitHub would hide or redraw such text, or the attribute would change what a reader gets, so it is written in code or left out, or the rule changes in a pull request that says why.
+- **A script that an editor saves with Windows line endings does not run in bash, which reads each carriage return as part of its line**: the script fails on the machine where it was so saved, while git commits it with line feeds alone, so CI and every other clone are not affected, and the test of characters names the script and why, a file that git records as executable counting as a script.
+- **A clone made with Windows line endings before the attributes keeps them in each file that no later checkout writes**: its hooks and scripts fail in bash until each is written again, so the test of characters names each script there that holds a carriage return and says how to write it again.
+- **Git reads a text file as binary, as it does one that holds a carriage return that no line feed follows, and commits its carriage returns as they are**: such a file would reach git with its carriage returns, so the test of characters reads git's index as well as the working tree and fails on any carriage return there.
+- **Windows opens a file by a short name that another tracked path spells**: such a path could stand in for another file in a clone on Windows, so no tracked path holds a `~`, which Windows writes in every short name.
 
 The [roadmap](../roadmap.md) gives what is planned next and later, and the limitations that an adopter notices.
 

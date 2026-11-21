@@ -2,7 +2,7 @@
 
 What could go wrong with the tool, for the people who use it and for this repository, and what answers each threat. Every change revisits this file (see `CLAUDE.md`).
 
-It was written for the first change, `add-pr-cost-calculator`, before any code, so the answers are requirements and tasks rather than code. It holds 250 threats across 9 trust boundaries. T38 to T69 were found by the design-stage review, T70 to T78 by the design-stage review of the decision records in `docs/decisions/`, T79 to T81 by the implementation-stage review of those records and their checks, T82 to T100 by the design-stage review of the assumptions, the glossary and the golden set, T101 by the implementation-stage review of the assumptions, T102 and T103 by the implementation-stage review of the glossary, T104 to T116 at the design of the revision of consent, the store and the ledger's format, T117 and T118 by the design-stage review of that revision, T119 to T122 by the review of that revision after its approval, T123 with the owner's answer to a question that the check of that review's fixes raised, T124 to T126 by the design-stage review of the test of the specs' form, T127 by the implementation-stage review of that test, T128 to T135 at the design of the plugin that brings capture to a project's cloud threads, T136 to T142 by the design-stage review of that plugin, T143 by its implementation-stage review, T144 by its security review, T145 to T147 at the design of the README's short start, T148 to T156 by the design-stage review of that short start, T157 and T158 by its implementation-stage review, T159 to T162 at the design of the roadmap, T163 to T165 by the design-stage review of the roadmap, T166 to T168 at the design of the backlog, T169 by the design-stage review of the backlog, T170 at the design of the guide, T171 to T174 by the design-stage review of the guide, T175 and T176 by the design-stage review of one opt-in for every agent, T177 to T182 by the second design-stage review of the guide, T183 by the final review of its build, T184 by its implementation-stage review, T185 to T189 at the design of the walking skeleton and T190 to T194 by its design-stage review, and T195 to T197 at the design of the specs' citation sweep, T198 to T200 by its design-stage review and T201 to T205 by its implementation-stage review, T206 to T215 by the design-stage review of the risk register and T216 to T222 by its implementation-stage review, and T223 to T236 by the design-stage reviews of the context files and T237 by their implementation-stage reviews, and T238 to T241 at the design of the check of Renovate's proposals, T242 to T245 by its design-stage review and T246 by its implementation-stage review, and T247 to T249 at the design of the two fields on every record and T250 by its design-stage review; they follow T37, each under a heading for its boundary, so that the numbers stay in order, and a threat that a change removes keeps its ID out of use (see Retired IDs). Where an answer can be a scenario in a spec, it is one, so that an acceptance test holds it. `tests/test_threat_model.py` checks that every citation below names a scenario, task, decision, decision record or file that exists.
+It was written for the first change, `add-pr-cost-calculator`, before any code, so the answers are requirements and tasks rather than code. It holds 269 threats across 9 trust boundaries. T38 to T69 were found by the design-stage review, T70 to T78 by the design-stage review of the decision records in `docs/decisions/`, T79 to T81 by the implementation-stage review of those records and their checks, T82 to T100 by the design-stage review of the assumptions, the glossary and the golden set, T101 by the implementation-stage review of the assumptions, T102 and T103 by the implementation-stage review of the glossary, T104 to T116 at the design of the revision of consent, the store and the ledger's format, T117 and T118 by the design-stage review of that revision, T119 to T122 by the review of that revision after its approval, T123 with the owner's answer to a question that the check of that review's fixes raised, T124 to T126 by the design-stage review of the test of the specs' form, T127 by the implementation-stage review of that test, T128 to T135 at the design of the plugin that brings capture to a project's cloud threads, T136 to T142 by the design-stage review of that plugin, T143 by its implementation-stage review, T144 by its security review, T145 to T147 at the design of the README's short start, T148 to T156 by the design-stage review of that short start, T157 and T158 by its implementation-stage review, T159 to T162 at the design of the roadmap, T163 to T165 by the design-stage review of the roadmap, T166 to T168 at the design of the backlog, T169 by the design-stage review of the backlog, T170 at the design of the guide, T171 to T174 by the design-stage review of the guide, T175 and T176 by the design-stage review of one opt-in for every agent, T177 to T182 by the second design-stage review of the guide, T183 by the final review of its build, T184 by its implementation-stage review, T185 to T189 at the design of the walking skeleton and T190 to T194 by its design-stage review, and T195 to T197 at the design of the specs' citation sweep, T198 to T200 by its design-stage review and T201 to T205 by its implementation-stage review, T206 to T215 by the design-stage review of the risk register and T216 to T222 by its implementation-stage review, and T223 to T236 by the design-stage reviews of the context files and T237 by their implementation-stage reviews, and T238 to T241 at the design of the check of Renovate's proposals, T242 to T245 by its design-stage review and T246 by its implementation-stage review, and T247 to T249 at the design of the two fields on every record and T250 by its design-stage review, and T251 to T256 at the design of the conventions, T257 to T265 by its design-stage reviews, T266 at its revision for Windows and T267 to T269 by that revision's design-stage review; they follow T37, each under a heading for its boundary, so that the numbers stay in order, and a threat that a change removes keeps its ID out of use (see Retired IDs). Where an answer can be a scenario in a spec, it is one, so that an acceptance test holds it. `tests/test_threat_model.py` checks that every citation below names a scenario, task, decision, decision record or file that exists.
 
 ## How it was built
 
@@ -1280,9 +1280,9 @@ The trust boundaries:
 - **Raw likelihood:** 2 (possible)
 - **Raw risk:** 6
 - **What could happen:** a line in `.gitattributes` can give the records an attribute that changes how their diff shows: with `-diff` or `binary`, git shows a changed record as a binary file, and GitHub's documentation says that it hides by default the diff of a file marked `linguist-generated`. The owner's review of a pull request's diff is what accepts its records (T72, T73), so a record could be added or closed without being read. The same holds for the root marketplace file and the plugin folder that it names, whose changes reach everyone who added the marketplace (T132), for the README, whose steps people follow to set the tool up (T147), for the context files and the guide, whose changes the owner reads as changes to what steers agents (T33, T180), and for the other files that steer, `.claude/settings.json`, the hooks, the skills, the workflows and `renovate.json`, and the two tests that hold what they may say.
-- **Answer:** CI fails on an attribute that hides the diff of a file that R134 names, among them the records, the README, the context files, the other files that steer and the tests that hold them, the threat model, a change's tasks and what the marketplace serves, and reads none of a person's own attributes (R134). The line that sets such an attribute shows in the pull request's own diff. An attribute that changes what git's checkout of the hook file or of the marketplace's plugin folder writes, rather than how its diff shows, is T143.
+- **Answer:** CI fails on an attribute that hides the diff of a file that R134 names, among them the records, the README, the context files, the other files that steer and the tests that hold them, the threat model, a change's tasks and what the marketplace serves, and reads none of a person's own attributes (R134). The line that sets such an attribute shows in the pull request's own diff. An attribute that changes what git's checkout of the hook file or of the marketplace's plugin folder writes, rather than how its diff shows, is T143. Beside R134, the repository's attributes give no tracked file anything but line endings, which holds the vendored files and the tests too, and every check reads them as git's index holds them as well as the working tree (R274, T259).
 - **Residual:** whether GitHub's view of a pull request honours `-diff` was not checked; the check refuses it either way.
-- **Held by:** `project-standards`: "An attribute that hides a record's diff fails CI"; `project-standards`: "A person's own attributes are not read"; `project-standards`: "An attribute that hides the marketplace's diff fails CI"; `project-standards`: "An attribute that hides the README's diff fails CI"; `project-standards`: "An attribute that hides the guide's diff fails CI"; `project-standards`: "An attribute that hides `CLAUDE.md`'s diff fails CI"; `project-standards`: "An attribute that hides a folder file's diff fails CI"; `project-standards`: "An attribute that hides the diff of another file that steers fails CI"; `project-standards`: "An attribute that hides a change's tasks' diff fails CI"; DR-108; DR-215; DR-258; `add-pr-cost-calculator` task 1.18; `add-pr-cost-calculator` task 1.30; `add-pr-cost-calculator` task 4.4; `add-pr-cost-calculator` task 6.9; `project-standards`: "An attribute that hides the threat model's diff fails CI"
+- **Held by:** `project-standards`: "An attribute that hides a record's diff fails CI"; `project-standards`: "A person's own attributes are not read"; `project-standards`: "An attribute that hides the marketplace's diff fails CI"; `project-standards`: "An attribute that hides the README's diff fails CI"; `project-standards`: "An attribute that hides the guide's diff fails CI"; `project-standards`: "An attribute that hides `CLAUDE.md`'s diff fails CI"; `project-standards`: "An attribute that hides a folder file's diff fails CI"; `project-standards`: "An attribute that hides the diff of another file that steers fails CI"; `project-standards`: "An attribute that hides a change's tasks' diff fails CI"; DR-108; DR-215; DR-258; `add-pr-cost-calculator` task 1.18; `add-pr-cost-calculator` task 1.30; `add-pr-cost-calculator` task 4.4; `add-pr-cost-calculator` task 6.9; `project-standards`: "An attribute that hides the threat model's diff fails CI"; `project-standards`: "An attribute other than `text` and `eol` fails CI"
 - **Assumptions:** A9, A15
 
 ## Boundary 1, continued: found at the design review of the assumptions, the glossary and the golden set
@@ -1608,7 +1608,7 @@ The trust boundaries:
 - **Raw risk:** 6
 - **What could happen:** the wording test reads what a pull request puts in the repository. A word to avoid under emphasis, with a curly apostrophe or across a no-break space would pass a test that matched only its plain spelling, and one on a page in another extension that GitHub shows as Markdown, such as `.mkd`, a test that read only `.md` files; a record that the pull request adds, with its status accepted, would keep the words of any title that it quotes; a page that is a symbolic link would have the test read a file outside the repository and tell whether, and on which line, it holds a word to avoid; a page that is not UTF-8 would stop the test with an error that names no file; a fence that the test ends or closes where GitHub does not would hide the prose after it; and a line of many spaces, which a pattern can match in many ways, or of many runs of backticks, would slow the test until CI's job limit stops it. A word that the test passes over stays on a page, where a later reader takes it at its old meaning.
 - **Answer:** the test reads every tracked file that GitHub shows as Markdown, by the extensions and the name that GitHub's language list gives the languages that it renders as Markdown. It finds a word to avoid under emphasis, with its apostrophe straight or curly, and with any run of spaces between its words, no-break spaces among them, that holds at most one line break, which it matches in one way only. The spaces after a heading's or a title's text are matched in one way too, and a line's code spans are found in one pass over its backticks; a test times each of the reader's patterns on a long run of spaces after each shape that it reads, and the reading of a line of many runs of backticks, so that neither slows the test. A fence that a list item's marker opens ends, as GitHub ends the item, at the first line that is not blank and is indented less than the fence, so the test reads that line. A fence that opens on its own line, two columns in or more, may be held by a list item or not, so the test fails on a line that GitHub reads one way in an item and another outside one, and reads no further. A blank line is one of spaces and tabs alone, and a closing fence is indented no further than GitHub allows. It leaves as written only the titles that the specs hold and an accepted record quotes where HEAD left the default branch, and it fails, naming the file, on a page that it cannot read whole (R137) and on a path that is not UTF-8.
-- **Residual:** a page can still hide a word in a way that the test does not read as prose, such as a letter from another alphabet that looks the same, an invisible character or markup inside the word, a character reference such as `&nbsp;` among them, or a backtick escaped with a backslash, which GitHub shows as a plain backtick and the test takes as code. A fence can still hide prose where the test takes for a fence's opening line one that GitHub reads as the text of the paragraph before it, such as a line of tildes indented four spaces or more right after a paragraph outside a list, since an indented code block cannot interrupt a paragraph, or a line after a number other than 1 and its marker right after a paragraph that no list holds, since an ordered list interrupts a paragraph only when it starts at 1; the test then reads nothing up to the run that closes that fence. A fence's line inside an HTML block, which GitHub shows as text, hides prose the same way, though not in a spec, where a test fails on every line that starts as a fence's does (T124). A version's heading that a pull request adds to the changelog hides what follows it, up to the next `#` or `##` heading, as a released entry would, though no tag says that the version was released. The owner's reading of the diff is left to see these, and a file in an extension that GitHub's list gains later, which the test does not read until its own list gains it too. A page is read whole, so its size is bounded by the runner's memory alone.
+- **Residual:** a page can still hide a word in a way that the test does not read as prose, such as emphasis inside the word, or a backtick escaped with a backslash, which GitHub shows as a plain backtick and the test takes as code; a letter from another alphabet, an invisible character, raw HTML and a character reference such as `&nbsp;` are refused on every page of this repository's own, and an invisible character or a letter in the files that others write (R268, R269, R273). A fence can still hide prose where the test takes for a fence's opening line one that GitHub reads as the text of the paragraph before it, such as a line of tildes indented four spaces or more right after a paragraph outside a list, since an indented code block cannot interrupt a paragraph, or a line after a number other than 1 and its marker right after a paragraph that no list holds, since an ordered list interrupts a paragraph only when it starts at 1; the test then reads nothing up to the run that closes that fence. A fence's line inside an HTML block, which GitHub shows as text, hides prose the same way, though not in a spec, where a test fails on every line that starts as a fence's does (T124). A version's heading that a pull request adds to the changelog hides what follows it, up to the next `#` or `##` heading, as a released entry would, though no tag says that the version was released. The owner's reading of the diff is left to see these, and a file in an extension that GitHub's list gains later, which the test does not read until its own list gains it too. A page is read whole, so its size is bounded by the runner's memory alone.
 - **Held by:** `project-standards`: "A page that the test cannot read whole fails CI"; `project-standards`: "A title that only a new record quotes is read"; `scripts/wording.py`; `tests/test_glossary.py`; `add-pr-cost-calculator` decision 14; `add-pr-cost-calculator` task 1.20
 - **Assumptions:** A15
 
@@ -2259,9 +2259,9 @@ The trust boundaries:
 - **Raw likelihood:** 3 (likely)
 - **Raw risk:** 6
 - **What could happen:** the plugin's command and the hook file's registered command run the capture step only when its SHA-256 is the one that they carry, and otherwise run none of it and exit with success, so that capture stops with no store, no ledger file and no flag. Claude Code clones a marketplace that a person adds from its command line with the person's own git and its configuration (A72), and git writes Windows line endings on checkout where the person's git has `core.autocrlf` set to `true`, or where an attribute gives a file `eol=crlf`, or `text=auto` where git's own line ending is CRLF; a contributor's clone of an adopting repository does the same to the copied hook file. An attribute such as `working-tree-encoding` that a merged pull request gives the plugin's files changes what every checkout writes, while their blobs and their diff stay as they were. A zip built from a checkout on a Windows runner would meet the same conversion.
-- **Answer:** both commands take each CRLF in the step as LF before they compare its SHA-256, so that a checkout that changes only its line endings runs the step, while a change to any other byte, a lone carriage return among them, runs none of it (R88, R179). The zip is built from the tag's files as git's objects hold them, never from a checkout (R183). CI fails on an attribute that would change the checkout of the hook file or of the plugin's files (R134).
+- **Answer:** both commands take each CRLF in the step as LF before they compare its SHA-256, so that a checkout that changes only its line endings runs the step, while a change to any other byte, a lone carriage return among them, runs none of it (R88, R179). This repository's attributes give every file `text=auto` and `eol=lf`, so that a clone of its marketplace holds the step with line feeds whatever `core.autocrlf` says, while a person's own attributes, such as a `.git/info/attributes` that gives `eol=crlf`, and a clone of the marketplace made before that line, which keeps its line endings in each file that no later checkout writes, leave the commands' reading to answer (R276, DR-281). Since the line makes a clone with `core.autocrlf` set to `true` write line feeds, the trials of the commands and of the zip use such a `.git/info/attributes`, and each test that plants Windows line endings fails where it meets none (R276). The zip is built from the tag's files as git's objects hold them, never from a checkout (R183). CI fails on an attribute that would change the checkout of the hook file or of the plugin's files (R134).
 - **Residual:** a person's own git configuration that changes a checkout in another way than its line endings, such as a filter that their own attributes file gives those paths, which no check here reads, still stops their capture without a flag.
-- **Held by:** `usage-capture`: "A hook file checked out with Windows line endings still runs"; `usage-capture`: "The plugin runs its step from a checkout with Windows line endings"; `releases-and-compatibility`: "The plugin's zip is the same on every build"; `project-standards`: "An attribute that changes the plugin's checkout fails CI"; DR-211; `add-pr-cost-calculator` task 2.3; `add-pr-cost-calculator` task 2.6; `add-pr-cost-calculator` task 6.6; `add-pr-cost-calculator` task 6.9
+- **Held by:** `usage-capture`: "A hook file checked out with Windows line endings still runs"; `usage-capture`: "The plugin runs its step from a checkout with Windows line endings"; `releases-and-compatibility`: "The plugin's zip is the same on every build"; `project-standards`: "An attribute that changes the plugin's checkout fails CI"; `project-standards`: "A clone made with Windows line endings holds what git's index holds"; `project-standards`: "A test of Windows line endings that meets none fails"; DR-211; DR-281; `add-pr-cost-calculator` task 1.54; `add-pr-cost-calculator` task 2.3; `add-pr-cost-calculator` task 2.6; `add-pr-cost-calculator` task 6.6; `add-pr-cost-calculator` task 6.9
 - **Assumptions:** A72
 
 ## Boundary 2, continued: found at the security review of the plugin for cloud threads
@@ -3565,9 +3565,9 @@ The trust boundaries:
 - **Raw likelihood:** 2 (possible)
 - **Raw risk:** 6
 - **What could happen:** GitHub's view of a file shows less than an agent reads: a character that renders as nothing or turns the text around it, a link's target or a link reference definition, a character written by its code, a table's cells past its header's, front matter and raw HTML. Claude Code also drops an HTML comment from a context file before the agent reads it, and reads an `@` that starts a word as an import of the file that it names, so that a context file can bring in text that its diff does not show. A skill under `.claude/skills/`, which steers as the context files do, could hide text in the same ways. A rule hidden in such a way steers every session on the branch, or a rule that the owner reads binds nobody.
-- **Answer:** a test holds the context files to the rule that "The roadmap, the backlog and the feature pages' roadmap sections hold no hidden text" gives the roadmap, so that it fails on a character other than printable ASCII and a line feed in the file's bytes, a carriage return among them, on a `<`, a `&`, a backslash, a `]:`, a `|` or a line that opens a code fence, and on any link, web address or `@`, inline code included (R255, DR-258). A test fails on a skill under `.claude/skills/` other than those that the pinned OpenSpec generates, which `scripts/verify-openspec.sh` holds to what that CLI writes (R252). Each context file's first line is its heading, which leaves no room for front matter (R254), and no attribute hides a context file's diff (R134).
+- **Answer:** a test holds the context files to the rule that "The roadmap, the backlog and the feature pages' roadmap sections hold no hidden text" gives the roadmap, so that it fails on a character other than printable ASCII and a line feed in the file's bytes, with each CRLF taken as LF, a lone carriage return among them (R276), on a `<`, a `&`, a backslash, a `]:`, a `|` or a line that opens a code fence, and on any link, web address or `@`, inline code included (R255, DR-258). A test fails on a skill under `.claude/skills/` other than those that the pinned OpenSpec generates, which `scripts/verify-openspec.sh` holds to what that CLI writes (R252). Each context file's first line is its heading, which leaves no room for front matter (R254), and no attribute hides a context file's diff (R134).
 - **Residual:** a form of hidden text that the check does not know, which rests on the owner's review of the raw diff (A15).
-- **Held by:** DR-258; `project-standards`: "Text that GitHub hides in a context file fails CI"; `project-standards`: "A file under `.claude/` outside its named parts fails CI"; `scripts/verify-openspec.sh`; `project-standards`: "A link or an import in a context file fails CI"; `project-standards`: "A context file whose first line does not name the tool fails CI"; `project-standards`: "An attribute that hides a folder file's diff fails CI"
+- **Held by:** DR-258; `project-standards`: "Text that GitHub hides in a context file fails CI"; `project-standards`: "A file under `.claude/` outside its named parts fails CI"; `scripts/verify-openspec.sh`; `project-standards`: "A link or an import in a context file fails CI"; `project-standards`: "A context file whose first line does not name the tool fails CI"; `project-standards`: "An attribute that hides a folder file's diff fails CI"; `project-standards`: "Files saved with Windows line endings pass every check"; DR-281; `add-pr-cost-calculator` task 1.54
 - **Assumptions:** A5, A9, A15
 
 ### T227. The limits on the root's length push a needed rule out of it, or into weaker words
@@ -3936,15 +3936,309 @@ The trust boundaries:
 - **Held by:** `project-standards`: "The later record renumbered, with each record that it closed naming it anew, passes"; `project-standards`: "A repeat that renumbering cannot mend fails CI"; DR-269
 - **Assumptions:** A15
 
+## Boundary 7, continued: found at the design of the conventions
+
+### T251. A character that a reader cannot see makes a file read one way and act another
+
+- **Kind:** tampering, elevation of privilege
+- **Impact:** 3 (high)
+- **Likelihood:** 1 (unlikely)
+- **Risk:** 3
+- **Raw impact:** 3 (high)
+- **Raw likelihood:** 2 (possible)
+- **Raw risk:** 6
+- **What could happen:** a pull request adds, to a script, a test, a workflow, a hook, the tool's code or a page that no check of its own reads, a character that changes the order in which text is shown, which can make code read as a comment while it runs, as Nicholas Boucher and Ross Anderson's Trojan Source (2021) shows, an invisible one that splits a word so that a check that matches the word misses it, or a letter of another script that looks like a Latin one, so that two names read alike. The owner approves what the diff seems to say, a check passes what it cannot match, and adopters copy the hook or call the workflow as it was released. Before this change, only the records, the specs, the README's sections of detail, the roadmap and the backlog, the guide, the risk register and the context files were held to printable ASCII.
+- **Answer:** every file that this repository writes holds only printable ASCII and line feeds, and every tracked path only printable ASCII but the space; the test reads each file's bytes, as git's index holds them and as the working tree does, so that a carriage return that git's index holds or that no line feed follows, a byte-order mark or an edit not yet staged is seen, and it names each character by its code point and its name, never by the character itself (R268, R272, DR-274). It reads a carriage return right before a line feed in the working tree as the line feed that git stages, in every file but a script, where it fails too (R276, DR-281). The files that others write are held to the characters that their test lists (T252), and every page to the text that GitHub shows (T257).
+- **Residual:** text in printable ASCII can still mislead, ASCII's own look-alikes, such as `l`, `I` and `1`, among it, which the owner's review of the diff reads. Commit messages and the text of pull requests, which a session reads through `git log` and GitHub's tools, are not files, and no check reads their characters: tasks 1.9 and 1.14 check them for private references, and could take this rule when they are built (B-025).
+- **Held by:** `project-standards`: "A character beyond printable ASCII in a file that this repository writes fails CI"; `project-standards`: "A path beyond printable ASCII fails CI"; `project-standards`: "An edit not yet staged is read"; `project-standards`: "A check of characters that reads no file fails"; `project-standards`: "A lone carriage return, or one that git's index or a script holds, still fails"; DR-274; DR-281; `add-pr-cost-calculator` task 1.48; `add-pr-cost-calculator` task 1.54
+- **Assumptions:** A15
+
+### T252. An update of Superpowers or OpenSpec brings a character that hides text into a skill or a script that sessions here load or run
+
+- **Kind:** tampering, elevation of privilege
+- **Impact:** 3 (high)
+- **Likelihood:** 1 (unlikely)
+- **Risk:** 3
+- **Raw impact:** 3 (high)
+- **Raw likelihood:** 2 (possible)
+- **Raw risk:** 6
+- **What could happen:** the vendored Superpowers and OpenSpec's generated skills are loaded into every session here, and the vendored hook scripts run at its start with its credentials (T35). Their checks compare each file with its source, which shows that it is upstream's, not that it hides nothing: a release that upstream makes, or that someone who took over its account makes, could hide an instruction in a skill with characters that a reader cannot see or that reorder the text, or bring a letter of another script that passes for a Latin one, or a curly quotation mark into a script, where it reads as quoting text that bash runs, and the update's pull request would show a diff that reads as harmless. On 2026-11-21 three of those files held variation selectors, each after a warning sign, so such characters already reach them.
+- **Answer:** each file that others write holds only printable ASCII, tabs, line feeds and the visible characters that its test lists, for Markdown alone or for any file, with variation selector 16 only right after a character listed for it, and a character outside the list fails the update until its pull request adds it, in a diff that the owner reads; the list gives only punctuation and symbols, so no letter, and a character listed for prose alone fails in a script (R269, DR-275). A character that an escape writes is held as that character (T263).
+- **Residual:** a listed character is visible but can still mislead, as an arrow or a mathematical sign can; that rests on the review of the update. A key that an update adds to a skill's front matter is T265.
+- **Held by:** `project-standards`: "A character that a reader cannot see in a file that others write fails CI"; `project-standards`: "A visible character that the list does not give fails CI"; `project-standards`: "A character listed for Markdown alone fails in another file"; DR-275; `add-pr-cost-calculator` task 1.48
+- **Assumptions:** A15
+
+### T253. A list of the check's exceptions is widened to let hidden text in
+
+- **Kind:** tampering
+- **Impact:** 3 (high)
+- **Likelihood:** 1 (unlikely)
+- **Risk:** 3
+- **Raw impact:** 3 (high)
+- **Raw likelihood:** 2 (possible)
+- **Raw risk:** 6
+- **What could happen:** a pull request adds to the list of characters that the files others write may hold one that cannot be seen, under the name of one that can, or a letter that passes for a Latin one under its own name, or adds to the list of exceptions for images, PDFs and videos a page of text, or a script in another encoding, so that the test of characters no longer reads it. Each is one line in a test, among a pull request's other lines, and an attribute that folds the test's diff, in the same pull request, would keep that line from the owner's eyes.
+- **Answer:** the test fails on a listed character that is not a mark of punctuation or a symbol by its Unicode category, on one that shows as blank and on a name other than the one that Unicode gives it (R269); on an exception for a path that git does not track, for a file whose extension is not that of an image, a PDF or a video, whatever its bytes, without the file's object id, or with a record that is missing, closed or silent on the path, and it still reads a listed file whose bytes are UTF-8 (R270); and the repository's attributes give no file anything but line endings, so that the test's diff shows (R274).
+- **Residual:** a visible character, or an image, that a pull request lists, with its record, is let in by the owner's review of that diff, and a pull request that loosens the test and brings what it would refuse in the same diff rests on that review too, as T71's residual gives for the records' check.
+- **Held by:** `project-standards`: "A list that gives a character that cannot be seen fails CI"; `project-standards`: "An exception out of its form fails CI"; `project-standards`: "A listed file of text is still read by the test of characters"; `project-standards`: "An attribute other than `text` and `eol` fails CI"; DR-275; DR-276; `add-pr-cost-calculator` task 1.48; `add-pr-cost-calculator` task 1.49
+- **Assumptions:** A15
+
+### T254. An image, a PDF or a video carries what a reviewer cannot read in the diff
+
+- **Kind:** elevation of privilege, tampering
+- **Impact:** 3 (high)
+- **Likelihood:** 1 (unlikely)
+- **Risk:** 3
+- **Raw impact:** 3 (high)
+- **Raw likelihood:** 2 (possible)
+- **Raw risk:** 6
+- **What could happen:** a pull request adds a picture whose words instruct an agent, which a session here reads when a page or a task leads it to the file, a PDF or an SVG that carries a script, or a diagram as an image whose content no diff shows, so that what the owner approves is not what agents and readers get. No check of text reads such a file. Once a record lets a file in, a later pull request could replace it at the same path with one that carries such words, with no new record, and an SVG, which is text, could hold characters that the test of characters refuses elsewhere.
+- **Answer:** a file whose extension is that of an image, a PDF or a video, in any case, is tracked only where the test's list of exceptions gives it with its object id and an accepted record that names its path, so that each new version needs a changed entry; a listed file whose bytes are UTF-8 is still read by the test of characters; any other file whose bytes are not UTF-8 fails; and a diagram is Mermaid, in the Markdown that shows it (R270, DR-276).
+- **Residual:** an image that a record lets in can still carry such words, and a PDF text that its pages do not show, which only the owner's review of the file itself reads, and a diagram written as text in another notation is for review (DR-251).
+- **Held by:** `project-standards`: "An image, a PDF or a video that no record names fails CI"; `project-standards`: "A file that the list gives with its record passes"; `project-standards`: "A listed file whose bytes changed fails CI"; `project-standards`: "A listed file of text is still read by the test of characters"; `project-standards`: "A file that the test cannot read as text fails CI"; DR-276; `add-pr-cost-calculator` task 1.49
+- **Assumptions:** A15
+
+### T255. A sound update of Superpowers or OpenSpec is held up by a character that the list does not give
+
+- **Kind:** denial of service
+- **Impact:** 1 (low)
+- **Likelihood:** 2 (possible)
+- **Risk:** 2
+- **Raw impact:** 2 (medium)
+- **Raw likelihood:** 3 (likely)
+- **Raw risk:** 6
+- **What could happen:** an update of Superpowers or OpenSpec brings a visible character that the list does not give, such as a new emoji, so CI fails on the update's pull request until someone adds it, and an agent asked to make CI pass could add a character to the list without reading what it is. A character newer than the Unicode of CI's oldest Python, or one that only a joiner or a combining mark shows, could not be listed at all.
+- **Answer:** the failure names the file, the line, the column and the character by its code point and its Unicode name, and says that the owner decides whether the list gives it, with no step for adding it, so that the update's pull request can add it under that name, which the list's own check holds to Unicode's, on the oldest supported Python where its database knows the character and on every later Python in CI (R269), and the owner reads it in that diff (DR-275). A character that cannot be seen cannot be added (T253).
+- **Residual:** each such update takes one more step, a trade-off that the design's risks give, and a character that only a joiner or a combining mark shows cannot be listed, so an update that brings one waits for the owner's decision on the rule.
+- **Held by:** `project-standards`: "A visible character that the list does not give fails CI"; `project-standards`: "A list that gives a character that cannot be seen fails CI"; `project-standards`: "A listed character that the oldest supported Python does not know is checked on a later one"; DR-275
+- **Assumptions:** A15
+
+### T256. An attribute gives a checkout, an archive or a diff other text than git holds
+
+- **Kind:** tampering
+- **Impact:** 3 (high)
+- **Likelihood:** 1 (unlikely)
+- **Risk:** 3
+- **Raw impact:** 3 (high)
+- **Raw likelihood:** 2 (possible)
+- **Raw risk:** 6
+- **What could happen:** an attribute that the repository commits changes what some reader of a file gets. With `working-tree-encoding=UTF-7`, git keeps in its index and its commits a file that holds a right-to-left override, or an HTML comment, while every checkout writes the file in other text, and writes each `+` as `+-`, so that code in printable ASCII alone does other than git holds, as when `print(1+1)` printed 0 in a trial with git 2.43.0 on 2026-11-21; with `filter`, a checkout runs a driver of the person's own, such as Git LFS's, which can write what neither git's index nor the diff holds; and with `export-subst`, `git archive` writes a commit's message into a file. A check that reads the working tree is then shown other text than GitHub shows and than a release is built from: in a trial with git 2.43.0 on 2026-11-21, the checks of the context files and of the guide failed on pages so re-encoded, with problems that named neither the attribute nor the comment, so that whoever made them pass could mend the wrong thing, and a page with no check of its own would pass. In another trial that day, `export-subst` wrote a commit's subject, with a direction-changing character, into the file that `git archive` gave.
+- **Answer:** the repository's attributes give a tracked file nothing but `text` and `eol`, read as git's index holds them and as the working tree does, and none of a person's own, which the checks read in a git folder of their own that holds no `info/attributes` (R274, DR-280), and they give every tracked file `text=auto` and `eol=lf`, so that each file that a checkout writes holds what git's index holds, whatever `core.autocrlf` says (R276, DR-281). The test of characters reads each tracked file as git's index holds it as well as the working tree (R272, DR-274).
+- **Residual:** a person's own attributes and filters change only their own checkout, which CI's checkout does not share.
+- **Held by:** `project-standards`: "A character that only git's index holds fails CI"; `project-standards`: "An attribute other than `text` and `eol` fails CI"; `project-standards`: "An attributes file that a checkout re-encodes is read as git holds it"; `project-standards`: "A clone made with Windows line endings holds what git's index holds"; `project-standards`: "Attributes that give a file other line endings fail CI"; `project-standards`: "A person's own attributes are not read as the repository's"; DR-274; DR-280; DR-281; `add-pr-cost-calculator` task 1.48; `add-pr-cost-calculator` task 1.51; `add-pr-cost-calculator` task 1.54
+- **Assumptions:** A15
+
+## Boundary 6, continued: found at the design-stage review of the conventions
+
+### T257. A page that adopters read holds text that GitHub does not show them
+
+- **Kind:** tampering, spoofing
+- **Impact:** 3 (high)
+- **Likelihood:** 1 (unlikely)
+- **Risk:** 3
+- **Raw impact:** 3 (high)
+- **Raw likelihood:** 2 (possible)
+- **Raw risk:** 6
+- **What could happen:** a pull request puts into a page that adopters read, such as the changelog, whose entry becomes a release's text, the page on how the tool works, a feature page, the glossary, `SECURITY.md`, `CONTRIBUTING.md` or the conventions page, text in printable ASCII that GitHub hides or shows otherwise: an HTML comment, a character reference such as `&#x202E;`, which GitHub shows as the character that it names, an entity code in a Mermaid block, a link or footnote definition, an image fetched from a web address, a mathematical expression, or a table cell past its header's. A check that matches the page's source then passes text that its readers never see, such as a breaking change named only inside a comment, while an agent that reads the raw file reads what the page's readers do not. A link from the roadmap or a backlog item can lead to any of those pages, which the seven checks of single pages do not read, and the design of the conventions answered only characters.
+- **Answer:** every Markdown file that this repository writes holds, outside code, no HTML comment or other raw HTML, no character reference, no link or footnote definition, no image, no dollar sign and no table row with more cells than its header, and draws no block but Mermaid, whose blocks hold no entity code or comment; only the templates under `.github/` may hold comments, and only the README the `<details>` and `<summary>` elements that fold its sections of detail, whose text a reader opens (R273, DR-279).
+- **Residual:** a page can still mislead in text that GitHub shows, which the owner's review of the diff reads, and the test reads code as `scripts/wording.py` does, whose reading of a fence differs from GitHub's in the cases that T102's residual gives.
+- **Held by:** `project-standards`: "Text that GitHub hides in a page fails CI"; `project-standards`: "A drawn block that can hide text fails CI"; DR-279; `add-pr-cost-calculator` task 1.50
+- **Assumptions:** A9, A15
+
+### T258. Two tracked paths that macOS or Windows takes as one become one file in a clone
+
+- **Kind:** tampering
+- **Impact:** 3 (high)
+- **Likelihood:** 1 (unlikely)
+- **Risk:** 3
+- **Raw impact:** 3 (high)
+- **Raw likelihood:** 2 (possible)
+- **Raw risk:** 6
+- **What could happen:** a pull request adds a path that a clone's file system takes for a tracked one: one that differs from it only in case, such as `.claude-plugin/Marketplace.json` beside the marketplace file, a folder `Plugin/` beside the plugin's folder, or a folder in another case that bears a tracked file's name, such as that of `.claude-plugin/Marketplace.json/notes.md`; or one that spells, on Windows, the short name in the form of DOS that Windows can give a tracked file or folder and opens as the long one, such as `CLAUDE~1/marketplace.json` where it gave `.claude-plugin` the name `CLAUDE~1`. git tracks both, and every check that reads a path exactly passes them, the tests that hold the root marketplace file and `.claude/settings.json` by their names among them, and git itself refuses the short names of `.git` alone. On a file system that ignores case, as macOS and Windows use by default, or one where Windows keeps short names, a clone holds one file, whichever was written last, so that an adopter who added the marketplace could get the added file's content under the real name, and a fork's plugin or other hooks would run with their credentials, as a contributor's clone could run a hook script written through another case of its name, such as `.claude/hooks/Session-start.sh`, or the hooks of a `.claude/settings.json` written through a short name, while the check of what lies in a `.claude` folder refuses another case of the settings file's own name (R252). Whether Claude Code's update of a marketplace's clone takes such a path was not checked, and no trial ran on Windows or on a file system that ignores case.
+- **Answer:** two tracked paths, or a tracked path and a folder that holds another, that are the same once the case of their letters is set aside fail CI (R268, DR-274), and so does a tracked path that holds a `~`, the character that Windows writes in every short name (R277, DR-282).
+- **Residual:** every path is printable ASCII, so no folding of names that rests on other characters, such as a normalization of accented letters, applies; a file system that folds printable ASCII in another way than case and short names would still be met only by the owner's review.
+- **Held by:** `project-standards`: "Two tracked paths that differ only in case fail CI"; `project-standards`: "A file and a folder that differ only in case fail CI"; `project-standards`: "A path that Windows can read as another file's short name fails CI"; DR-274; DR-282; `add-pr-cost-calculator` task 1.48; `add-pr-cost-calculator` task 1.55
+- **Assumptions:** A15
+
+## Boundary 7, continued: found at the design-stage review of the conventions
+
+### T259. An attributes file that re-encodes itself hides attributes from the checks that read them
+
+- **Kind:** tampering
+- **Impact:** 3 (high)
+- **Likelihood:** 1 (unlikely)
+- **Risk:** 3
+- **Raw impact:** 3 (high)
+- **Raw likelihood:** 2 (possible)
+- **Raw risk:** 6
+- **What could happen:** a pull request adds a `.gitattributes` whose first line gives that file itself `working-tree-encoding=UTF-7`, and whose other lines give the records, `CLAUDE.md`, the guide or the threat model `linguist-generated`, or a page another encoding. Every checkout, CI's included, writes the attributes file in UTF-7, which rewrites each line that holds a character such as `=` or `*` into one that git cannot read as the attribute that it gives, so a check that asks git for the attributes as the working tree holds them misses each such line, while git's commits and GitHub, which makes no checkout, read the file as it was committed. In a trial with git 2.43.0 on 2026-11-21, the checks of R134 passed in a fresh clone of such a commit while git, reading the attributes as its index holds them, gave `CLAUDE.md` `linguist-generated`.
+- **Answer:** each check of attributes, the new one and each of R134, reads them as git's index holds them and as the working tree holds them, and the attributes file's own `working-tree-encoding` fails as any attribute but line endings does (R274, DR-280).
+- **Residual:** what T256 leaves.
+- **Held by:** `project-standards`: "An attributes file that a checkout re-encodes is read as git holds it"; `project-standards`: "An attribute other than `text` and `eol` fails CI"; DR-280; `add-pr-cost-calculator` task 1.51
+- **Assumptions:** A15
+
+### T260. A Python file in printable ASCII declares an encoding under which a comment runs as code
+
+- **Kind:** tampering, elevation of privilege
+- **Impact:** 3 (high)
+- **Likelihood:** 1 (unlikely)
+- **Risk:** 3
+- **Raw impact:** 3 (high)
+- **Raw likelihood:** 2 (possible)
+- **Raw risk:** 6
+- **What could happen:** a pull request adds or changes a test, a script or the tool's code whose first line declares `# -*- coding: utf-7 -*-` or `# coding: unicode_escape`, and whose next line reads as a comment that holds an encoded line feed and then code. Every byte is printable ASCII and the diff shows a comment, but Python decodes the file by its declaration, so the code runs at import: at pytest's collection in CI, in each session that runs the tests, with its credentials, and on adopters' machines once the tool's code ships. In a trial on 2026-11-21, such a line ran on Python 3.11 from a file of printable ASCII alone.
+- **Answer:** a file that this repository writes and that Python reads as source declares no encoding but UTF-8, which the test reads as Python does (R268, DR-274).
+- **Residual:** no file that others write is Python; a file in another language that decodes its source by a declaration of its own would need a rule of its own.
+- **Held by:** `project-standards`: "A Python file that declares an encoding other than UTF-8 fails CI"; DR-274; `add-pr-cost-calculator` task 1.48
+- **Assumptions:** A15
+
+### T261. A file below the vendored root that bears the lock's name is compared with nothing
+
+- **Kind:** tampering, elevation of privilege
+- **Impact:** 3 (high)
+- **Likelihood:** 1 (unlikely)
+- **Risk:** 3
+- **Raw impact:** 3 (high)
+- **Raw likelihood:** 2 (possible)
+- **Raw risk:** 6
+- **What could happen:** the vendor check compared `vendor/superpowers/` with its pinned commit leaving out every file or folder named `UPSTREAM.lock`, at any depth, as GNU diff's `--exclude` does, so a pull request could add `vendor/superpowers/skills/UPSTREAM.lock/SKILL.md`, or a file of that name in any folder there, and the check would report the copy as upstream's. If Claude Code loads a skill from such a folder, which was not checked, sessions here would load text that no upstream holds; the rule for the files that others write rests on that comparison (T252, DR-275).
+- **Answer:** the check compares every path below `vendor/superpowers/` with the pinned commit, leaving out only `vendor/superpowers/UPSTREAM.lock`, by its path (R275, DR-275).
+- **Residual:** what the pinned commit itself holds is T35's.
+- **Held by:** `project-standards`: "A vendored file that the pinned commit does not give fails CI"; DR-275; `add-pr-cost-calculator` task 1.52
+- **Assumptions:** A15
+
+### T262. A name is kept from ruff's naming rules while the test of their configuration passes
+
+- **Kind:** tampering
+- **Impact:** 1 (low)
+- **Likelihood:** 1 (unlikely)
+- **Risk:** 1
+- **Raw impact:** 1 (low)
+- **Raw likelihood:** 3 (likely)
+- **Raw risk:** 3
+- **What could happen:** the test of R271 reads what `pyproject.toml` selects and ignores, while ruff passes over a name on a line with a `noqa` comment, in a file with a `ruff: noqa` comment, under a folder with a configuration file of its own, in a file that `.gitignore` names, under a setting of the naming rules that exempts names, or under any folder named `vendor`, which `pyproject.toml` leaves out at any depth. An agent asked to make ruff pass could add such a comment, and a name out of form would stay.
+- **Answer:** a test runs ruff's naming rules on every Python file that this repository writes with no configuration, no `noqa` comment and no ignore file, and `pyproject.toml` leaves out `vendor/superpowers/` alone (R271, DR-277).
+- **Residual:** ruff's other rules can still be kept from a line by a `noqa` comment, which review reads.
+- **Held by:** `project-standards`: "A name kept from the naming rules fails CI"; DR-277; `add-pr-cost-calculator` task 1.53
+- **Assumptions:** A15
+
+## Boundary 9, continued: found at the design-stage review of the conventions
+
+### T263. An escape in a file that others write becomes a hidden character once a loader reads it
+
+- **Kind:** tampering, elevation of privilege
+- **Impact:** 3 (high)
+- **Likelihood:** 1 (unlikely)
+- **Risk:** 3
+- **Raw impact:** 3 (high)
+- **Raw likelihood:** 2 (possible)
+- **Raw risk:** 6
+- **What could happen:** part of what a session loads is decoded from a file's bytes before the session reads it: a skill's front matter is YAML, in which a value in double quotes can write a character by its code, and the vendored hook prints the context that it adds as a JSON string, which Claude Code decodes. An update of Superpowers or OpenSpec could write an instruction in tag characters, or a right-to-left override, as escapes in printable ASCII, which the comparison with the source and a test of bytes both pass, and which the update's diff shows as a run of escapes that reads as noise. In a trial on 2026-11-21, PyYAML 6.0.3 decoded such escapes, in a value whose bytes were printable ASCII, into a tag character, a right-to-left override, an escape character and a non-breaking space.
+- **Answer:** an escape that writes a character by its code, as JSON, JavaScript and YAML allow, and each value of a skill's front matter, read as YAML, are held as the characters that they write, to the same list as the file (R269, DR-275).
+- **Residual:** a script can still write a character as it runs, in another form, such as octal codes given to `printf`, which the pin and the owner's review of the update read (T35).
+- **Held by:** `project-standards`: "A character written by an escape is held as the character"; DR-275; `add-pr-cost-calculator` task 1.48
+- **Assumptions:** A15
+
+### T264. A failing check carries hidden text into a log that a session reads
+
+- **Kind:** tampering, elevation of privilege
+- **Impact:** 3 (high)
+- **Likelihood:** 1 (unlikely)
+- **Risk:** 3
+- **Raw impact:** 3 (high)
+- **Raw likelihood:** 2 (possible)
+- **Raw risk:** 6
+- **What could happen:** a pull request from anyone adds a file whose path spells an instruction in tag characters or variation selectors, or holds a terminal's escape sequence, or a link whose target holds them. CI fails as it should, but a check that quotes the path or the target as it is writes those characters into the job's log, which a session reads when it is asked why the pull request fails, and a terminal's sequence can hide the rest of a line from a person. In a trial with pytest on 2026-11-21, a failure that joined such a path into its message printed its tag character and its variation selector as they are, and the design-stage review found that the roadmap's check of a link's target quotes the target as it is.
+- **Answer:** everything that the test of characters prints is printable ASCII: a character by its code point and its name, a path's other characters by their code points, and a character without a name by its code point and a fixed phrase, a path that Windows cannot write among those that it plants (R272, DR-274); the tests of attributes and of their line endings write such characters by their code points too (R274, DR-280), and so does the roadmap's check of a link's target (task 1.48).
+- **Residual:** GitHub's own list of a pull request's files gives a path as it is, which no check here governs, and an agent reads that list as data (A16); whether Claude Code removes such characters from a tool's output before the model reads it was not checked.
+- **Held by:** `project-standards`: "Everything that the test of characters prints is printable ASCII"; `project-standards`: "Everything that the tests of attributes print is printable ASCII"; DR-274; DR-280; `add-pr-cost-calculator` task 1.48; `add-pr-cost-calculator` task 1.51; `add-pr-cost-calculator` task 1.55
+- **Assumptions:** A15, A16
+
+### T265. A key in a skill's front matter or in OpenSpec's configuration widens what a session does, and no check lists the keys
+
+- **Kind:** elevation of privilege, tampering
+- **Impact:** 3 (high)
+- **Likelihood:** 1 (unlikely)
+- **Risk:** 3
+- **Raw impact:** 3 (high)
+- **Raw likelihood:** 2 (possible)
+- **Raw risk:** 6
+- **What could happen:** a skill's front matter can give keys that act on a session, such as `allowed-tools`, which names the tools that a skill may use, and OpenSpec's generated skills tell the agent to apply the `context` and the `rules` that `openspec/config.yaml` gives. An update of Superpowers or OpenSpec that adds such a key to a skill passes the comparison with its source and the test of characters, and a pull request that adds a `context` to the configuration steers every OpenSpec workflow from a file that `CLAUDE.md` counts among those that describe. On 2026-11-21 the 22 skills gave only `name`, `description`, `allowed-tools`, `license`, `compatibility` and `metadata`, and `allowed-tools` was `Bash(openspec:*)` wherever it was given.
+- **Answer:** the pin of each tool, the comparison with its source and the owner's review of each update's diff, in which a new key shows as a line of its own (T35), and the owner's review of each change to `openspec/config.yaml`; a test that lists the keys is left to a later change (B-026).
+- **Residual:** a key that an update adds, and a change to the configuration, are read only in the owner's review until such a test exists.
+- **Held by:** `scripts/sync-superpowers.sh`; `scripts/verify-openspec.sh`; DR-041; DR-042
+- **Assumptions:** A15
+
+## Boundary 6, continued: found at the revision of the conventions for Windows
+
+### T266. A tracked path that Windows cannot write breaks each Windows clone of the repository and of its marketplace
+
+- **Kind:** reliability, denial of service
+- **Impact:** 2 (medium)
+- **Likelihood:** 1 (unlikely)
+- **Risk:** 2
+- **Raw impact:** 2 (medium)
+- **Raw likelihood:** 2 (possible)
+- **Raw risk:** 4
+- **What could happen:** a pull request adds a path that Linux and macOS write but Windows refuses: one that holds a colon, a question mark or another character that Windows refuses in a file name, a part that ends in a dot, a part named for one of the devices that Windows keeps, such as `aux.md`, `aux.tar.gz` or `nul`, or one long enough that a clone in an ordinary folder passes the 260 characters that Windows allows a path, or the 248 that it allows a folder that a program creates. Its diff reads as ordinary, and CI, which runs the tests on Linux, passes it. Each clone on Windows then fails to write the file, a contributor's and a clone of this repository's marketplace among them, so that a person on Windows cannot work on the repository, or install or update the plugin from the marketplace, until a later change renames the path. An update of the vendored files that brings such a path does the same.
+- **Answer:** every tracked path holds none of the characters that Windows refuses in a file name, no part that ends in a dot or that is a name that Windows keeps for a device, alone or before a dot, and at most 140 characters, so that a clone in a folder whose own path holds up to 100 characters can write every file and every folder within the limits that Windows gives them (R277, DR-282).
+- **Residual:** a clone in a folder whose own path is longer than 100 characters can still pass those limits, unless long paths are turned on: a contributor picks that folder, while Claude Code picks where it keeps its clone of a marketplace and its copy of the plugin, below the person's home folder, which task 7.2 records (A72). The rule rests on what Microsoft documents, and no trial ran on Windows; the jobs on a Windows runner that tasks 2.3, 2.6 and 6.6 add check the repository out there too, and B-027 proposes to run this repository's own checks there.
+- **Held by:** `project-standards`: "A path that Windows cannot write fails CI"; `project-standards`: "A path longer than 140 characters fails CI"; DR-282; `add-pr-cost-calculator` task 1.55
+- **Assumptions:** A15, A72
+
+## Boundary 7, continued: found at the design-stage review of the conventions' revision for Windows
+
+### T267. A clone made before the attributes, or a script by another name, keeps Windows line endings that bash cannot run
+
+- **Kind:** reliability, denial of service
+- **Impact:** 1 (low)
+- **Likelihood:** 2 (possible)
+- **Risk:** 2
+- **Raw impact:** 2 (medium)
+- **Raw likelihood:** 2 (possible)
+- **Raw risk:** 4
+- **What could happen:** git writes only the files that a checkout changes, so a clone made with `core.autocrlf` set to `true` before the commit that adds the attributes, then pulled past it, keeps a carriage return before each line feed in every file that the pull leaves alone, while `git status` shows nothing, as the design-stage review of the revision for Windows saw with git 2.43.0 on 2026-11-21, where `git checkout -- .`, `git reset --hard` and `git add --renormalize .` each left those carriage returns in place. `.claude/hooks/session-start.sh`, the vendored hook that `.claude/settings.json` runs and the scripts then fail in bash at each session's start and at each run, with errors that show a carriage return only as an escape. `vendor/superpowers/hooks/run-hook.cmd`, which `.claude/settings.json` runs with bash, neither ends in `.sh` nor starts with `#!`, so a rule that knew a script by those alone would read its carriage returns as line feeds, and where a person's own attributes give `.cmd` files `eol=crlf`, it would be the one file that fails, with nothing to name it.
+- **Answer:** a script is a file whose name ends in `.sh`, that starts with `#!` or that git records as executable, as `run-hook.cmd` is, and the test of characters, and for a vendored script the test of the files that others write, fails on each carriage return in a script's working tree, names the script and why bash fails on it, and says to delete it and check it out again, or to clone the repository again, as `CONTRIBUTING.md` also says (R269, R276, DR-281). The commands that `.claude/settings.json` runs are values that their test lists (R256), so a hook that runs another file takes a change that the owner reads.
+- **Residual:** a person who does not run the tests learns of it only from the hooks' own errors, and the other files of such a clone keep their carriage returns, which the checks read as git will commit them.
+- **Held by:** `project-standards`: "A clone made before the attributes is told how to write its scripts again"; `project-standards`: "A lone carriage return, or one that git's index or a script holds, still fails"; `project-standards`: "A character that a reader cannot see in a file that others write fails CI"; `project-standards`: "A value that the test does not give fails CI"; DR-281; `add-pr-cost-calculator` task 1.54
+
+### T268. The sync of the vendored copy takes its line endings from the person's git
+
+- **Kind:** reliability, denial of service
+- **Impact:** 2 (medium)
+- **Likelihood:** 1 (unlikely)
+- **Risk:** 2
+- **Raw impact:** 2 (medium)
+- **Raw likelihood:** 2 (possible)
+- **Raw risk:** 4
+- **What could happen:** `scripts/sync-superpowers.sh` wrote and compared the vendored copy through `git archive`, in a clone of upstream that the repository's attributes do not reach, and `git archive` converts line endings by the person's `core.autocrlf`, by a `.git/info/attributes` that git's template gives a new clone, and by upstream's own attributes. In a trial with git 2.43.0 on 2026-11-21, by the design-stage review of the revision for Windows, under a global `core.autocrlf` set to `true` the check reported a vendored copy that matched upstream byte for byte as differing, and a refresh, which each update of Superpowers needs, wrote a carriage return before each line feed into every vendored file, after which the command that `.claude/settings.json` registers for each session's start failed in bash, while `git status` listed every vendored file and `git diff` none. The script reads its lock with `sed`, so a lock that an editor saves with Windows line endings stops it with a message whose carriage returns a terminal hides, and `.editorconfig` asks for no line endings under `vendor/`, the lock among it.
+- **Answer:** the script writes each vendored file from the pinned commit's objects, with its bytes and its mode, whatever the person's git converts, reads its lock with each carriage return before a line feed taken as a line feed, and `.editorconfig` gives the lock line feeds, while CI runs the script's check on a working tree whose own files, the lock among them, hold Windows line endings (R275, R276, DR-281).
+- **Residual:** upstream's own attributes no longer act on the copy, so a file that upstream leaves out of its archives would be copied, which the comparison and the owner's review of each update show.
+- **Held by:** `project-standards`: "The sync copies the pinned commit's bytes whatever the person's git converts"; `project-standards`: "Files saved with Windows line endings pass every check"; DR-281; `add-pr-cost-calculator` task 1.52; `add-pr-cost-calculator` task 1.54
+
+### T269. A check that reads Windows line endings otherwise than git stages them fails a contributor while CI passes
+
+- **Kind:** reliability
+- **Impact:** 2 (medium)
+- **Likelihood:** 1 (unlikely)
+- **Risk:** 2
+- **Raw impact:** 2 (medium)
+- **Raw likelihood:** 2 (possible)
+- **Raw risk:** 4
+- **What could happen:** each check that reads a file of this repository from the working tree takes a carriage return before a line feed as a line feed (R276), and the first design of that rule had CI show it by running the tests alone on a working tree saved with Windows line endings. CI and `CLAUDE.md` also run checks that are not tests: `ruff check`, `ruff format --check`, `mypy`, `scripts/verify-openspec.sh` and `scripts/sync-superpowers.sh --check`. In a trial on 2026-11-21, with the files under `openspec/` saved with Windows line endings and left unstaged, `scripts/verify-openspec.sh` failed, since `scripts/spec_form.py` read none of the specs' requirements, while it passed on the same files with line feeds. A contributor whose editor saves a spec so then cannot pass a check that `CLAUDE.md` asks for before work is called complete, while CI, whose checkout holds line feeds, passes. A job of CI that should show it can also be left out of what the job `ci` needs, and then fails without holding a merge back, or can rewrite nothing and pass.
+- **Answer:** `scripts/spec_form.py` reads through the function that the checks share, and a job of CI saves each file that this repository writes, but its scripts, with Windows line endings, fails where it saved none, and runs every check that CI runs on a pull request there; a test fails where the job `ci` does not need a job of `.github/workflows/ci.yml` (R276, DR-281).
+- **Residual:** a check that a later change adds to CI runs on such a working tree only once that job names it too.
+- **Held by:** `project-standards`: "Files saved with Windows line endings pass every check"; `project-standards`: "A run on Windows line endings that rewrites nothing fails"; `project-standards`: "A job that the job `ci` does not need fails CI"; DR-281; `add-pr-cost-calculator` task 1.54
+
 ## Risk matrix
 
 Generated from the ratings above. Each cell lists the threats whose impact and likelihood it names.
 
 | Impact \ Likelihood | 1 unlikely | 2 possible | 3 likely |
 |---|---|---|---|
-| 3 high | T1, T12, T14, T15, T23, T24, T28, T29, T35, T43, T46, T58, T59, T63, T64, T66, T67, T68, T73, T77, T81, T82, T83, T92, T93, T94, T95, T103, T107, T108, T119, T125, T133, T138, T140, T141, T142, T144, T147, T148, T150, T151, T160, T163, T164, T165, T167, T169, T174, T175, T177, T178, T180, T183, T184, T186, T187, T188, T190, T192, T210, T211, T212, T213, T214, T217, T219, T225, T226, T227, T229, T230, T231, T233, T234, T237, T240 | T2, T32, T33, T34, T61, T62, T65, T132, T137, T232 | |
-| 2 medium | T4, T6, T11, T13, T18, T25, T26, T38, T41, T42, T53, T55, T56, T57, T60, T69, T70, T76, T78, T79, T80, T84, T85, T86, T87, T88, T89, T90, T91, T97, T98, T99, T100, T101, T102, T104, T105, T109, T112, T115, T124, T126, T127, T135, T139, T146, T149, T152, T153, T155, T156, T157, T162, T172, T173, T179, T181, T182, T185, T189, T191, T193, T194, T195, T196, T197, T198, T199, T202, T203, T204, T206, T207, T215, T216, T220, T221, T223, T228, T235, T236, T238, T239, T245, T247, T248, T250 | T3, T9, T10, T17, T19, T20, T21, T22, T27, T30, T39, T40, T44, T45, T47, T48, T49, T50, T51, T52, T54, T71, T72, T74, T75, T96, T111, T116, T120, T121, T122, T123, T129, T130, T131, T134, T136, T143, T145, T154, T158, T159, T161, T166, T168, T170, T171, T176, T200, T201, T208, T209, T222, T224, T241, T242, T249 | T7, T8, T16, T128 |
-| 1 low | T113, T218, T243, T244, T246 | T31, T36, T37, T110, T114, T118 | T5, T106, T117, T205 |
+| 3 high | T1, T12, T14, T15, T23, T24, T28, T29, T35, T43, T46, T58, T59, T63, T64, T66, T67, T68, T73, T77, T81, T82, T83, T92, T93, T94, T95, T103, T107, T108, T119, T125, T133, T138, T140, T141, T142, T144, T147, T148, T150, T151, T160, T163, T164, T165, T167, T169, T174, T175, T177, T178, T180, T183, T184, T186, T187, T188, T190, T192, T210, T211, T212, T213, T214, T217, T219, T225, T226, T227, T229, T230, T231, T233, T234, T237, T240, T251, T252, T253, T254, T256, T257, T258, T259, T260, T261, T263, T264, T265 | T2, T32, T33, T34, T61, T62, T65, T132, T137, T232 | |
+| 2 medium | T4, T6, T11, T13, T18, T25, T26, T38, T41, T42, T53, T55, T56, T57, T60, T69, T70, T76, T78, T79, T80, T84, T85, T86, T87, T88, T89, T90, T91, T97, T98, T99, T100, T101, T102, T104, T105, T109, T112, T115, T124, T126, T127, T135, T139, T146, T149, T152, T153, T155, T156, T157, T162, T172, T173, T179, T181, T182, T185, T189, T191, T193, T194, T195, T196, T197, T198, T199, T202, T203, T204, T206, T207, T215, T216, T220, T221, T223, T228, T235, T236, T238, T239, T245, T247, T248, T250, T266, T268, T269 | T3, T9, T10, T17, T19, T20, T21, T22, T27, T30, T39, T40, T44, T45, T47, T48, T49, T50, T51, T52, T54, T71, T72, T74, T75, T96, T111, T116, T120, T121, T122, T123, T129, T130, T131, T134, T136, T143, T145, T154, T158, T159, T161, T166, T168, T170, T171, T176, T200, T201, T208, T209, T222, T224, T241, T242, T249 | T7, T8, T16, T128 |
+| 1 low | T113, T218, T243, T244, T246, T262 | T31, T36, T37, T110, T114, T118, T255, T267 | T5, T106, T117, T205 |
 
 The threats with a risk of 6 or more:
 
