@@ -16,7 +16,7 @@ Seven requirements held single pages to printable ASCII, each after a threat tha
 
 ## Decision
 
-Every file that this repository writes holds only printable ASCII characters and line feeds, and one that Python reads as source declares no encoding but UTF-8. Every tracked path holds only printable ASCII characters other than the space, and differs from every other path in more than the case of its letters. The files that others write, under `vendor/superpowers/` but the lock at its root and under `.claude/skills/openspec-*/`, are held as DR-275 gives it instead, and a file that DR-276 lets in is read only where its bytes are UTF-8. A test reads each file as git's index holds it and as the working tree holds it, a link as the path that it holds, and prints only printable ASCII: a character by its code point and its name, never by itself, and a path's other characters by their code points.
+Every file that this repository writes holds only printable ASCII characters and line feeds, and one that Python reads as source declares no encoding but UTF-8. Every tracked path holds only printable ASCII characters other than the space, and differs from every other path, and from each folder that holds one, in more than the case of its letters. The files that others write, under `vendor/superpowers/` but the lock at its root and under `.claude/skills/openspec-*/`, are held as DR-275 gives it instead, and a file that DR-276 lets in is read only where its bytes are UTF-8. A test reads each file as git's index holds it and as the working tree holds it, a link as the path that it holds, and prints only printable ASCII: a character by its code point and its name, never by itself, and a path's other characters by their code points.
 
 ## Alternatives
 
@@ -27,12 +27,12 @@ Every file that this repository writes holds only printable ASCII characters and
 
 ## Consequences
 
-- `tests/test_conventions.py` fails on a character other than printable ASCII and a line feed in a file that this repository writes, naming the file, the line, the column and the character by its code point and its name, and on such a path, on two paths that differ only in case, on a Python file that declares an encoding other than UTF-8, on bytes that are not UTF-8, on a path that is neither a file nor a link, and on reading nothing (R268, R272; T251, T258, T260; task 1.48).
+- `tests/test_conventions.py` fails on a character other than printable ASCII and a line feed in a file that this repository writes, naming the file, the line, the column and the character by its code point and its name, and on such a path, on two paths, or a path and a folder, that differ only in case, on a Python file that declares an encoding other than UTF-8, on bytes that are not UTF-8, on a path that is neither a file nor a link, and on reading nothing (R268, R272; T251, T258, T260; task 1.48).
 - Everything that the test prints is printable ASCII, and the roadmap's check of a link's target names such a character by its code point too (R272; T264; task 1.48).
 - The design's risks write the arrow that OpenSpec's template gives as `->`, and the roadmap's test reads that form, so an agent that follows the template meets a failure that names the arrow. The mapping of B-022 writes the arrows that it quotes from the base as `->` too, and says so at its start: it is the evidence of a sweep that has merged, which its script no longer compares.
 - The page on how the tool works writes its formulas with `*` and `sum`, an ellipsis becomes three full stops, and the tests write the characters that they plant as escapes of their code points.
 - The checks of single pages keep their own rules on what GitHub hides; for characters, this test covers every page that they read, as git holds it, and DR-279 holds every page to the text that GitHub shows.
-- Every checkout holds line feeds, and the test reads a carriage return right before a line feed in the working tree as a line feed, as git stages it, in every file but a script, so that a file that an editor saves with Windows line endings passes as git will commit it (DR-281).
+- A checkout writes line feeds whatever `core.autocrlf` says, and the test reads a carriage return right before a line feed in the working tree as a line feed, as git stages it, in every file but a script, so that a file that an editor saves with Windows line endings passes as git will commit it (DR-281).
 - Commit messages and the text of pull requests are not files, and a session reads them too: tasks 1.9 and 1.14 check them for private references only, and their characters are left to the owner's review (T251, B-025).
 
 ## Scope

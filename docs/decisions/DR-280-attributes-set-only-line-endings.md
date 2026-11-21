@@ -6,7 +6,7 @@
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** R274
-- **Threats:** T256, T259
+- **Threats:** T256, T259, T264
 - **Replaces:** none
 - **Closed by:** none
 
@@ -16,7 +16,7 @@ A git attribute that the repository commits can change what a reader of a file g
 
 ## Decision
 
-The repository's attributes give a tracked file only `text` and `eol`, which set its line endings, and no other attribute, in any state. Each check of attributes, this one and each of R134, reads them as git's index holds them and as the working tree holds them, and reads none of a person's own.
+The repository's attributes give a tracked file only `text` and `eol`, which set its line endings, and no other attribute, in any state. Each check of attributes, this one and each of R134, reads them as git's index holds them and as the working tree holds them, and reads none of a person's own: since `git check-attr` reads a clone's `.git/info/attributes` even with `--cached` or `--source`, as a trial with git 2.43.0 showed on 2026-11-21, each reads them in a git folder of its own that holds no `info/attributes`, with no global attributes file.
 
 ## Alternatives
 
@@ -26,13 +26,13 @@ The repository's attributes give a tracked file only `text` and `eol`, which set
 
 ## Consequences
 
-- `tests/test_conventions.py` fails on any other attribute that the repository's attributes give a tracked file, naming the file and the attribute, and the helper that the checks of R134 share reads the attributes as git's index holds them too (R274; T256, T259; task 1.51).
+- `tests/test_conventions.py` fails on any other attribute that the repository's attributes give a tracked file, naming the file and the attribute, and the helper that the checks of R134 share reads the attributes as git's index holds them too, neither of them reading a person's own, and everything that they print is printable ASCII (R274; T256, T259, T264; task 1.51).
 - R134's checks stay as they are, and this rule holds every file besides, the vendored files and the tests among them.
 - An attribute that a later need asks for, such as one that marks the vendored files for GitHub's statistics of languages, takes a change to the test, which the owner reads.
 
 ## Scope
 
-This covers the attributes that the repository sets and how the checks read them. Which diffs no attribute may hide is part of DR-108 (Each decision has a record of its own, in an index) and of R134. The characters that a checkout holds are DR-274 (Everything that this repository writes holds printable ASCII), and the line endings that the attributes give are DR-281 (Every checkout holds line feeds, and the checks read Windows line endings as git stages them).
+This covers the attributes that the repository sets and how the checks read them. Which diffs no attribute may hide is part of DR-108 (Each decision has a record of its own, in an index) and of R134. The characters that a checkout holds are DR-274 (Everything that this repository writes holds printable ASCII), and the line endings that the attributes give are DR-281 (A checkout writes line feeds whatever `core.autocrlf` says, and the checks read Windows line endings as git stages them).
 
 ## What reversing it would change
 
