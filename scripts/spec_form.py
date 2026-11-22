@@ -20,6 +20,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, NamedTuple, TypeVar
 
+from conventions import shown
 from wording import code_spans
 
 OPENSPEC = "openspec"
@@ -126,14 +127,6 @@ class Reading(NamedTuple):
 
     changes: frozenset[str]
     specs: dict[tuple[str, str], tuple[Requirement, ...]]
-
-
-def shown(text: str) -> str:
-    """The text with each character outside printable ASCII replaced by `U+` and its code
-    point, so that no line of a spec or of the CLI's output starts a line here."""
-    return "".join(
-        character if " " <= character <= "~" else f"U+{ord(character):04X}" for character in text
-    )
 
 
 def js_trim(text: str) -> str:

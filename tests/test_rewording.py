@@ -250,10 +250,10 @@ def test_a_long_line_shows_each_change_with_a_few_words_around_it(
         "Line 1:\n"
         "\n"
         "```diff\n"
-        "- The calculator w0 w1 w2 w3 …\n"
-        "+ The tool w0 w1 w2 w3 …\n"
-        "- … w26 w27 w28 w29 ends.\n"
-        "+ … w26 w27 w28 w29 stops.\n"
+        "- The calculator w0 w1 w2 w3 ...\n"
+        "+ The tool w0 w1 w2 w3 ...\n"
+        "- ... w26 w27 w28 w29 ends.\n"
+        "+ ... w26 w27 w28 w29 stops.\n"
         "```\n"
     ) in out
 
@@ -268,8 +268,8 @@ def test_a_change_of_spaces_alone_is_shown_with_as_many_words_around_it(
     _, out, _ = rewording(tmp_path, monkeypatch, capsys)
     assert (
         "```diff\n"
-        "- … w11 w12 w13 w14  w15 w16 w17 w18 …\n"
-        "+ … w11 w12 w13 w14 w15 w16 w17 w18 …\n"
+        "- ... w11 w12 w13 w14  w15 w16 w17 w18 ...\n"
+        "+ ... w11 w12 w13 w14 w15 w16 w17 w18 ...\n"
         "```\n"
     ) in out
 
@@ -468,8 +468,8 @@ def test_a_context_file_s_reflowed_paragraph_is_compared_by_its_words(
         "Lines 5 to 6:\n"
         "\n"
         "```diff\n"
-        "- … calculator that runs on, past the end of …\n"
-        "+ … calculator that runs on, well past the end of …\n"
+        "- ... calculator that runs on, past the end of ...\n"
+        "+ ... calculator that runs on, well past the end of ...\n"
         "```\n"
     ) in out
 
@@ -518,8 +518,8 @@ def test_a_file_that_is_not_a_context_file_is_still_compared_line_by_line(
     _, out, _ = rewording(tmp_path, monkeypatch, capsys)
     assert (
         "Line 5:\n\n```diff\n"
-        "- … calculator that runs on, past the end of …\n"
-        "+ … calculator that runs on, well past the end of …\n"
+        "- ... calculator that runs on, past the end of ...\n"
+        "+ ... calculator that runs on, well past the end of ...\n"
         "```\n"
     ) in out
 
@@ -861,8 +861,8 @@ def test_a_word_to_avoid_added_to_the_glossary_is_listed(
         "Line 8:\n"
         "\n"
         "```diff\n"
-        "- … records calls. | capture hook |\n"
-        "+ … records calls. | capture hook, hook script |\n"
+        "- ... records calls. | capture hook |\n"
+        "+ ... records calls. | capture hook, hook script |\n"
         "```\n"
     ) in out
     assert "## Added, removed or renamed\n\nNone.\n" in out

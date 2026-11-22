@@ -649,7 +649,7 @@ def test_a_carriage_return_in_a_context_file_on_disk_is_reported(tmp_path: Path)
             "| a | b |",
             "|, with which Markdown builds a table, whose cells past its header's it hides",
         ),
-        ("A zero​width space", "U+200B"),
+        ("A zero\u200bwidth space", "U+200B"),
         ("A carriage return\r", "U+000D"),
     ],
 )

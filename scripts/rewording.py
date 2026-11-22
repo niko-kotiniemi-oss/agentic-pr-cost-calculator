@@ -231,12 +231,12 @@ def replaced(line: str, read: str, entries: list[Entry]) -> tuple[str, list[str]
 
 
 def part(tokens: list[str], start: int, end: int) -> str:
-    """These tokens of a line, with an ellipsis on each side where the line goes on."""
+    """These tokens of a line, with three full stops on each side where the line goes on."""
     text = "".join(tokens[start:end])
     if start > 0:
-        text = "… " + text.lstrip()
+        text = "... " + text.lstrip()
     if end < len(tokens):
-        text = text.rstrip() + " …"
+        text = text.rstrip() + " ..."
     return text
 
 

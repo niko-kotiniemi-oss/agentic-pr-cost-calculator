@@ -1,0 +1,1134 @@
+"""Every tracked file holds only the characters that its writer may use.
+
+A file that this repository writes holds only printable ASCII and line feeds, and one that
+Python reads as source, by its extension or by a first line that runs Python, declares on
+its first two lines no encoding but UTF-8. Every tracked path holds only printable ASCII but
+the space, and differs from every other path, and from each folder that holds one, in more
+than the case of its letters (R268, DR-274). The files that others write, which
+`scripts/conventions.py` gives, may also hold tabs and the visible characters that `VISIBLE`
+lists, each for Markdown alone or for any file, and variation selector 16 only right after a
+character listed for it. A character that an escape writes by its code, `\\u` and four
+hexadecimal digits or up to six in braces, `\\U` and eight or `\\x` and two, is held as that
+character, and so is each character that a skill's front matter gives once YAML reads it
+(R269, DR-275). The list gives only punctuation and symbols, by their Unicode categories,
+none in `BLANK`, each under the name that Unicode gives it; on the oldest supported Python,
+an entry that its Unicode database does not know is passed over, and every later Python
+checks it (T255).
+
+The test lists the tracked paths with `git ls-files -s -z` and reads each file as git's index
+holds it, every blob through one `git cat-file --batch` that fetches nothing that the clone
+lacks, and also as the working tree holds it wherever that holds a file or a link, so that an
+edit not yet staged is read too; a link is read as the path that it holds, and the test
+follows no link, in the working tree or in a folder on a path's way (R272). Each problem
+names the file, the line and the column, a character by its code point and its name, never
+by itself, and a path with each other character by its code point, so that everything that
+the test prints is printable ASCII (T264).
+
+Each check is shown to fail on a git repository into which its defect is planted.
+"""
+
+from __future__ import annotations
+
+import codecs
+import os
+import re
+import stat
+import subprocess
+import sys
+import unicodedata
+from collections import defaultdict
+from collections.abc import Iterable, Iterator, Mapping
+from pathlib import Path, PurePosixPath
+from typing import NamedTuple
+
+import pytest
+import yaml
+from conventions import named, shown, shown_path, written_by_others
+from test_decisions import AUTHOR
+from test_repository import oldest_python
+from test_roadmap import isolated_environment, session_free_environment
+from wording import MARKDOWN
+
+ROOT = Path(__file__).resolve().parents[1]
+
+
+class Visible(NamedTuple):
+    """A visible character beyond printable ASCII that a file that others write may hold,
+    by its code point and its Unicode name: in Markdown alone or in any file, and whether
+    variation selector 16 may follow it."""
+
+    code_point: int
+    name: str
+    markdown_only: bool
+    selector: bool = False
+
+
+# What the files that others write may hold beyond printable ASCII, tabs and line feeds
+# (R269, DR-275). The owner decides whether the list gives a character, in the pull request
+# that adds it, and `list_problems` holds each entry to punctuation or a symbol that does not
+# show as blank, under the name that Unicode gives it. On 2026-11-22 those files held these
+# twenty, the first seven in files other than Markdown too, and variation selector 16 only
+# after the warning sign.
+VISIBLE = (
+    Visible(0x2014, "EM DASH", markdown_only=False),
+    Visible(0x2026, "HORIZONTAL ELLIPSIS", markdown_only=False),
+    Visible(0x2192, "RIGHTWARDS ARROW", markdown_only=False),
+    Visible(0x26A0, "WARNING SIGN", markdown_only=False, selector=True),
+    Visible(0x2705, "WHITE HEAVY CHECK MARK", markdown_only=False),
+    Visible(0x1F3AF, "DIRECT HIT", markdown_only=False),
+    Visible(0x1F50D, "LEFT-POINTING MAGNIFYING GLASS", markdown_only=False),
+    Visible(0x00A7, "SECTION SIGN", markdown_only=True),
+    Visible(0x00D7, "MULTIPLICATION SIGN", markdown_only=True),
+    Visible(0x2013, "EN DASH", markdown_only=True),
+    Visible(0x2190, "LEFTWARDS ARROW", markdown_only=True),
+    Visible(0x2260, "NOT EQUAL TO", markdown_only=True),
+    Visible(0x2264, "LESS-THAN OR EQUAL TO", markdown_only=True),
+    Visible(0x2265, "GREATER-THAN OR EQUAL TO", markdown_only=True),
+    Visible(0x2500, "BOX DRAWINGS LIGHT HORIZONTAL", markdown_only=True),
+    Visible(0x2514, "BOX DRAWINGS LIGHT UP AND RIGHT", markdown_only=True),
+    Visible(0x251C, "BOX DRAWINGS LIGHT VERTICAL AND RIGHT", markdown_only=True),
+    Visible(0x2713, "CHECK MARK", markdown_only=True),
+    Visible(0x2717, "BALLOT X", markdown_only=True),
+    Visible(0x274C, "CROSS MARK", markdown_only=True),
+)
+LISTED = {chr(entry.code_point): entry for entry in VISIBLE}
+SELECTED = frozenset(chr(entry.code_point) for entry in VISIBLE if entry.selector)
+# Variation selector 16, which asks for a character's emoji form and shows as nothing itself.
+SELECTOR = "\ufe0f"
+# Characters of those categories that show as blank, which no entry may give: the blank
+# Braille pattern, which a check by category alone once let through (DR-152), and the
+# musical null notehead, which a font draws as nothing.
+BLANK = frozenset({0x2800, 0x1D159})
+
+# An escape that writes a character by its code, as JSON, JavaScript and YAML allow (T263).
+ESCAPE = re.compile(
+    r"\\(?:u\{([0-9A-Fa-f]{1,6})\}|u([0-9A-Fa-f]{4})|U([0-9A-Fa-f]{8})|x([0-9A-Fa-f]{2}))"
+)
+# PEP 263's declaration of a source file's encoding, which Python reads on either of its
+# first two lines.
+CODING = re.compile(r"^[ \t\f]*#.*?coding[:=][ \t]*([-\w.]+)")
+PYTHON_FILE = re.compile(r"\.py[iw]?\Z")
+PYTHON_LINE = re.compile(r"#!.*python")
+
+FILE, EXECUTABLE, LINK, GITLINK = "100644", "100755", "120000", "160000"
+IN_INDEX = ", in git's index,"
+IN_TREE = ", in the working tree,"
+NOT_ASCII = ", which is not printable ASCII"
+NOT_LISTED = ", which the list does not give; the owner decides whether it does"
+MARKDOWN_ALONE = ", which the list gives for Markdown alone"
+READ_NOTHING = "the test of characters read no tracked file"
+
+
+class Entry(NamedTuple):
+    """A path that git's index tracks, with its mode and its object id."""
+
+    mode: str
+    oid: str
+    path: str
+
+
+def git(
+    root: Path, *args: str, stdin: bytes = b"", extra: Mapping[str, str] | None = None
+) -> subprocess.CompletedProcess[bytes]:
+    """git run in the repository at root, with no git variable of the session's and no
+    global or system configuration."""
+    return subprocess.run(
+        ["git", *args],
+        cwd=root,
+        input=stdin,
+        capture_output=True,
+        check=False,
+        env={**isolated_environment(root), **(extra or {})},
+    )
+
+
+def tracked_entries(root: Path) -> list[Entry]:
+    """Each path that git's index tracks, as `git ls-files -s -z` gives it, unquoted, with
+    each byte that is not UTF-8 kept as `surrogateescape` keeps it."""
+    done = git(root, "ls-files", "-s", "-z")
+    done.check_returncode()
+    found = []
+    for record in done.stdout.split(b"\0"):
+        if record:
+            head, _, path = record.partition(b"\t")
+            mode, oid, _ = head.decode("ascii").split(" ")
+            found.append(Entry(mode, oid, path.decode("utf-8", "surrogateescape")))
+    return found
+
+
+def markdown_files(root: Path) -> set[str]:
+    """The tracked paths that `scripts/wording.py` reads as Markdown."""
+    done = git(root, "ls-files", "-z", "--", *MARKDOWN)
+    done.check_returncode()
+    return {path for path in done.stdout.decode("utf-8", "surrogateescape").split("\0") if path}
+
+
+def blobs(root: Path, oids: Iterable[str]) -> dict[str, bytes | None]:
+    """Each object's bytes, read through one `git cat-file --batch`, or None for one that
+    this clone lacks. Git fetches none: in a partial clone, where it would fetch a missing
+    object from the clone's remote, it stops at it instead, and the objects after it are
+    read again."""
+    found: dict[str, bytes | None] = {}
+    pending = list(dict.fromkeys(oids))
+    while pending:
+        done = git(
+            root,
+            "cat-file",
+            "--batch",
+            stdin="".join(f"{oid}\n" for oid in pending).encode("ascii"),
+            extra={"GIT_NO_LAZY_FETCH": "1"},
+        )
+        output, at, read = done.stdout, 0, 0
+        for oid in pending:
+            end = output.find(b"\n", at)
+            if end < 0:
+                break
+            header = output[at:end].split(b" ")
+            if header[1:] == [b"missing"]:
+                found[oid], at = None, end + 1
+            else:
+                size = int(header[2])
+                if len(output) < end + 1 + size + 1:
+                    break
+                found[oid], at = output[end + 1 : end + 1 + size], end + 1 + size + 1
+            read += 1
+        if read == len(pending):
+            break
+        found[pending[read]] = None
+        pending = pending[read + 1 :]
+    return found
+
+
+def kind_of(path: Path) -> str:
+    """What a path of the working tree is, read without following a link."""
+    try:
+        mode = os.lstat(path).st_mode
+    except (FileNotFoundError, NotADirectoryError):
+        return "missing"
+    if stat.S_ISLNK(mode):
+        return "link"
+    if stat.S_ISDIR(mode):
+        return "folder"
+    return "file" if stat.S_ISREG(mode) else "other"
+
+
+def in_working_tree(root: Path, path: str, folders: dict[str, str]) -> tuple[str, bytes] | None:
+    """What the working tree holds at a tracked path, as a kind and its bytes: a file's, a
+    link's path, or nothing for anything else or for a path that lies in a folder that is a
+    link; or None where it holds nothing. It follows no link, and opens a file only once it
+    knows the file to be one."""
+    parts = path.split("/")
+    for depth in range(1, len(parts)):
+        folder = "/".join(parts[:depth])
+        if folder not in folders:
+            folders[folder] = kind_of(root / folder)
+        if folders[folder] == "link":
+            return ("under a link", b"")
+        if folders[folder] != "folder":
+            return None
+    full = root / path
+    kind = kind_of(full)
+    if kind == "missing":
+        return None
+    if kind == "link":
+        return ("link", os.fsencode(os.readlink(full)))
+    if kind != "file":
+        return ("other", b"")
+    flags = os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0) | getattr(os, "O_NONBLOCK", 0)
+    descriptor = os.open(full, flags)
+    try:
+        if not stat.S_ISREG(os.fstat(descriptor).st_mode):
+            return ("other", b"")
+        with open(descriptor, "rb", closefd=False) as file:
+            return ("file", file.read())
+    finally:
+        os.close(descriptor)
+
+
+def refused(character: str, before: str, others: bool, markdown: bool) -> str:
+    """Why a file may not hold a character that follows another, or nothing when it may."""
+    if " " <= character <= "~" or character == "\n":
+        return ""
+    if not others:
+        return NOT_ASCII
+    if character == "\t":
+        return ""
+    if character == SELECTOR:
+        if before in SELECTED:
+            return ""
+        after = named(before) if before else "the start of a line"
+        return f" right after {after}, after which the list does not give it"
+    entry = LISTED.get(character)
+    if entry is None:
+        return NOT_LISTED
+    return MARKDOWN_ALONE if entry.markdown_only and not markdown else ""
+
+
+def escapes(line: str) -> Iterator[tuple[int, str, str]]:
+    """Each character that an escape on the line writes, with its column and the character
+    before it, so that a surrogate pair is read as the character that it writes and variation
+    selector 16 as what follows the character before it, as a loader reads them."""
+    runs: list[list[tuple[int, int]]] = []
+    end = -1
+    for found in ESCAPE.finditer(line):
+        code = int(next(group for group in found.groups() if group), 16)
+        if runs and found.start() == end:
+            runs[-1].append((found.start() + 1, code))
+        else:
+            runs.append([(found.start() + 1, code)])
+        end = found.end()
+    for run in runs:
+        start = run[0][0] - 1
+        before = line[start - 1] if start else ""
+        index = 0
+        while index < len(run):
+            column, code = run[index]
+            index += 1
+            if 0xD800 <= code < 0xDC00 and index < len(run) and 0xDC00 <= run[index][1] < 0xE000:
+                code = 0x10000 + ((code - 0xD800) << 10) + run[index][1] - 0xDC00
+                index += 1
+            if code <= 0x10FFFF:
+                yield column, chr(code), before
+                before = chr(code)
+
+
+def scalars(node: yaml.Node | None, seen: set[int]) -> Iterator[yaml.ScalarNode]:
+    """Each scalar of a YAML document, keys among them, each once, an alias's included."""
+    if node is None or id(node) in seen:
+        return
+    seen.add(id(node))
+    if isinstance(node, yaml.ScalarNode):
+        yield node
+    elif isinstance(node, yaml.SequenceNode):
+        for item in node.value:
+            yield from scalars(item, seen)
+    elif isinstance(node, yaml.MappingNode):
+        for key, value in node.value:
+            yield from scalars(key, seen)
+            yield from scalars(value, seen)
+
+
+def front_matter_problems(path: str, text: str, where: str, markdown: bool) -> list[str]:
+    """Each character that a skill's front matter gives once YAML reads it and that the file
+    may not hold, other than one that the file holds as itself or by an escape there, which
+    the reading of its lines names already (R269, T263)."""
+    lines = text.split("\n")
+    if lines[0] != "---":
+        return []
+    name = shown_path(path)
+    closing = next((number for number in range(1, len(lines)) if lines[number] == "---"), 0)
+    if not closing:
+        return [f"{name}{where} opens front matter that no line of --- closes"]
+    body = "\n".join(lines[1:closing])
+    try:
+        document = yaml.compose(body, Loader=yaml.SafeLoader)
+    except yaml.YAMLError:
+        return [f"{name}{where} gives front matter that the test cannot read as YAML"]
+    held = set(body) | {character for line in lines[1:closing] for _, character, _ in escapes(line)}
+    problems = []
+    for node in scalars(document, set()):
+        before = ""
+        for character in str(node.value):
+            reason = refused(character, before, True, markdown)
+            if reason and character not in held:
+                problems.append(
+                    f"{name}:{node.start_mark.line + 2}{where} gives {named(character)} in its "
+                    f"front matter, read as YAML{reason}"
+                )
+            before = character
+    return problems
+
+
+def encoding_problems(path: str, text: str, where: str = "") -> list[str]:
+    """The encoding that a file that Python reads as source declares, by its extension or by
+    a first line that runs Python, on either of its first two lines, unless it is UTF-8
+    (R268, T260)."""
+    lines = text.split("\n")[:2]
+    if not (PYTHON_FILE.search(path) or PYTHON_LINE.match(lines[0])):
+        return []
+    problems = []
+    for line in lines:
+        declared = CODING.match(line)
+        if declared:
+            try:
+                codec = codecs.lookup(declared.group(1)).name
+            except LookupError:
+                codec = ""
+            if codec != "utf-8":
+                problems.append(
+                    f"{shown_path(path)}{where} declares to Python the encoding "
+                    f"{shown(declared.group(1))}, not UTF-8"
+                )
+    return problems
+
+
+def text_problems(path: str, text: str, where: str, others: bool, markdown: bool) -> list[str]:
+    """Each character of a file's text that its writer may not use, by line and column, each
+    that an escape writes in a file that others write, and each that a skill's front matter
+    gives, and the encoding that a file that this repository writes declares to Python."""
+    name = shown_path(path)
+    problems = []
+    for number, line in enumerate(text.split("\n"), 1):
+        before = ""
+        for column, character in enumerate(line, 1):
+            reason = refused(character, before, others, markdown)
+            if reason:
+                problems.append(f"{name}:{number}:{column}{where} holds {named(character)}{reason}")
+            before = character
+        if others:
+            for column, character, before in escapes(line):
+                reason = refused(character, before, others, markdown)
+                if reason:
+                    problems.append(
+                        f"{name}:{number}:{column}{where} writes {named(character)} by an "
+                        f"escape{reason}"
+                    )
+    if not others:
+        return problems + encoding_problems(path, text, where)
+    if markdown and PurePosixPath(path).name.casefold() == "skill.md":
+        problems += front_matter_problems(path, text, where, markdown)
+    return problems
+
+
+def link_problems(path: str, target: bytes, where: str) -> list[str]:
+    """A link's path, which the test reads and never follows, unless it is printable ASCII."""
+    held = target.decode("utf-8", "surrogateescape")
+    if all(" " <= character <= "~" for character in held):
+        return []
+    return [f"{shown_path(path)}{where} is a link to {shown_path(held)}, beyond printable ASCII"]
+
+
+def version_problems(
+    entry: Entry, where: str, kind: str, data: bytes, others: bool, markdown: bool
+) -> list[str]:
+    """What one version of a tracked path, git's index's or the working tree's, holds that
+    its writer may not use."""
+    name = shown_path(entry.path)
+    if kind == "link":
+        return link_problems(entry.path, data, where)
+    if kind == "under a link":
+        return [f"{name}{where} lies in a folder that is a link, which the test does not follow"]
+    if kind != "file":
+        return [f"{name}{where} is neither a file nor a link, which the test cannot read"]
+    try:
+        text = data.decode("utf-8")
+    except UnicodeDecodeError:
+        return [f"{name}{where} is not UTF-8, so the test cannot read it as text"]
+    return text_problems(entry.path, text, where, others, markdown)
+
+
+def path_problems(paths: Iterable[str]) -> list[str]:
+    """Each tracked path that holds a character other than printable ASCII but the space,
+    and each two paths, or a path and a folder that holds another, that differ only in the
+    case of their letters, which a file system that ignores case holds as one (R268, T258)."""
+    unique = sorted(set(paths))
+    problems = [
+        f"the path {shown_path(path)} holds a character other than printable ASCII but the space"
+        for path in unique
+        if not all("!" <= character <= "~" for character in path)
+    ]
+    by_case: dict[str, list[str]] = defaultdict(list)
+    folders: dict[str, dict[str, str]] = defaultdict(dict)
+    for path in unique:
+        by_case[path.casefold()].append(path)
+        parts = path.split("/")
+        for depth in range(1, len(parts)):
+            folder = "/".join(parts[:depth])
+            folders[folder.casefold()].setdefault(folder, path)
+    for same in by_case.values():
+        if len(same) > 1:
+            problems.append(
+                f"the paths {' and '.join(map(shown_path, same))} differ only in case, which "
+                "a file system that ignores case holds as one file"
+            )
+    for path in unique:
+        for folder, inside in folders.get(path.casefold(), {}).items():
+            if folder != path:
+                problems.append(
+                    f"the path {shown_path(path)} and the folder {shown_path(folder)}, which "
+                    f"holds {shown_path(inside)}, differ only in case, which a file system "
+                    "that ignores case cannot hold both of"
+                )
+    return problems
+
+
+def character_problems(root: Path) -> list[str]:
+    """R268, R269 and R272's reading of every path that git's index tracks, and of each file
+    as git's index holds it and as the working tree holds it, where it holds one."""
+    entries = tracked_entries(root)
+    if not entries:
+        return [f"git lists no tracked file, so {READ_NOTHING}"]
+    markdown = markdown_files(root)
+    contents = blobs(root, (entry.oid for entry in entries if entry.mode != GITLINK))
+    problems = path_problems(entry.path for entry in entries)
+    folders: dict[str, str] = {}
+    read = 0
+    for entry in entries:
+        name = shown_path(entry.path)
+        if entry.mode not in (FILE, EXECUTABLE, LINK):
+            problems.append(
+                f"{name} is neither a file nor a link, but a submodule or another entry that "
+                "the test cannot read"
+            )
+            continue
+        indexed = contents.get(entry.oid)
+        if indexed is None:
+            problems.append(
+                f"{name} names an object that this clone lacks, as a partial clone does, which "
+                "the test does not fetch"
+            )
+            continue
+        read += 1
+        index = ("link" if entry.mode == LINK else "file", indexed)
+        tree = in_working_tree(root, entry.path, folders)
+        versions = [("", index)] if tree in (None, index) else [(IN_INDEX, index), (IN_TREE, tree)]
+        others, page = bool(written_by_others(entry.path)), entry.path in markdown
+        for where, (kind, data) in versions:
+            problems += version_problems(entry, where, kind, data, others, page)
+    if not read:
+        problems.append(READ_NOTHING)
+    return problems
+
+
+def list_problems(visible: Iterable[Visible], oldest: bool) -> list[str]:
+    """Each entry of a list of visible characters that is not punctuation or a symbol by its
+    Unicode category, that shows as blank, that is given twice or under a name other than
+    Unicode's, or, on any Python but the oldest supported, that its database does not know
+    (R269, T255)."""
+    problems, seen = [], set()
+    for entry in visible:
+        label = f"U+{entry.code_point:04X} {shown(entry.name)}"
+        if entry.code_point in seen:
+            problems.append(f"the list gives {label} twice")
+        seen.add(entry.code_point)
+        if not 0 <= entry.code_point <= 0x10FFFF:
+            problems.append(f"the list gives {label}, which is no code point")
+            continue
+        character = chr(entry.code_point)
+        category = unicodedata.category(character)
+        if category == "Cn":
+            if not oldest:
+                problems.append(f"the list gives {label}, which this Python's database lacks")
+            continue
+        if category[0] not in "PS":
+            problems.append(
+                f"the list gives {label}, of category {category}, no punctuation or symbol"
+            )
+        if entry.code_point in BLANK:
+            problems.append(f"the list gives {label}, which shows as blank")
+        if unicodedata.name(character, "") != entry.name:
+            problems.append(f"the list gives {label}, which Unicode names {named(character)}")
+    return problems
+
+
+def plant(
+    root: Path,
+    files: Mapping[str, str | bytes],
+    links: Mapping[str, str] | None = None,
+    executable: Iterable[str] = (),
+) -> Path:
+    """A git repository at root whose index holds these files, each as written, and these
+    links to their paths."""
+    root.mkdir(parents=True, exist_ok=True)
+    git(root, "init", "-q").check_returncode()
+    for name, content in files.items():
+        path = root / name
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(content.encode("utf-8") if isinstance(content, str) else content)
+    for name in executable:
+        (root / name).chmod(0o755)
+    for name, target in (links or {}).items():
+        path = root / name
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.symlink_to(target)
+    git(root, "add", "-A").check_returncode()
+    return root
+
+
+def commit(root: Path) -> None:
+    git(root, "commit", "-q", "-m", "Plant", extra=AUTHOR).check_returncode()
+
+
+# R268: the files that this repository writes hold only printable ASCII and line feeds.
+
+OWN_KINDS = ("page.md", "tool.py", "check.yml", "start.sh")
+# Each character that the scenarios name, by the name of the folder that plants it.
+OWN_CHARACTERS = {
+    "tab": "\t",
+    "return": "\r",
+    "return-and-feed": "\r\n",
+    "byte-order-mark": "\ufeff",
+    "zero-width-space": "\u200b",
+    "right-to-left-override": "\u202e",
+    "non-breaking-space": "\u00a0",
+    "em-dash": "\u2014",
+    "arrow": "\u2192",
+    "accented-letter": "\u00e9",
+}
+OTHERS_KINDS = (
+    "vendor/superpowers/{}/SKILL.md",
+    "vendor/superpowers/{}/start.sh",
+    ".claude/skills/openspec-{}/SKILL.md",
+)
+OTHERS_CHARACTERS = {
+    "return": "\r",
+    "return-and-feed": "\r\n",
+    "zero-width-space": "\u200b",
+    "right-to-left-override": "\u202e",
+    "byte-order-mark": "\ufeff",
+    "non-breaking-space": "\u00a0",
+    "tag": "\U000e0041",
+    "cyrillic-letter": "\u0430",
+}
+
+
+def planted_line(character: str) -> str:
+    """A file's text that holds the character on its second line, in its third column."""
+    return f"The first line.\nab{character}cd\n"
+
+
+@pytest.fixture(scope="module")
+def planted_characters(tmp_path_factory: pytest.TempPathFactory) -> list[str]:
+    files = {
+        f"own/{case}/{kind}": planted_line(character)
+        for case, character in OWN_CHARACTERS.items()
+        for kind in OWN_KINDS
+    }
+    files |= {
+        kind.format(case): planted_line(character)
+        for case, character in OTHERS_CHARACTERS.items()
+        for kind in OTHERS_KINDS
+    }
+    return character_problems(plant(tmp_path_factory.mktemp("characters"), files))
+
+
+@pytest.mark.parametrize("kind", OWN_KINDS)
+@pytest.mark.parametrize("case", OWN_CHARACTERS)
+def test_a_character_beyond_printable_ascii_in_a_file_that_this_repository_writes_fails(
+    planted_characters: list[str], case: str, kind: str
+) -> None:
+    character = OWN_CHARACTERS[case][0]
+    assert f"own/{case}/{kind}:2:3 holds {named(character)}{NOT_ASCII}" in planted_characters
+
+
+@pytest.mark.parametrize("kind", OTHERS_KINDS)
+@pytest.mark.parametrize("case", OTHERS_CHARACTERS)
+def test_a_character_that_a_reader_cannot_see_in_a_file_that_others_write_fails(
+    planted_characters: list[str], case: str, kind: str
+) -> None:
+    character = OTHERS_CHARACTERS[case][0]
+    assert f"{kind.format(case)}:2:3 holds {named(character)}{NOT_LISTED}" in planted_characters
+
+
+def test_each_planted_character_is_named_once_and_nothing_else_is(
+    planted_characters: list[str],
+) -> None:
+    planted = len(OWN_CHARACTERS) * len(OWN_KINDS) + len(OTHERS_CHARACTERS) * len(OTHERS_KINDS)
+    assert len(planted_characters) == len(set(planted_characters)) == planted
+
+
+def test_a_visible_character_that_the_list_does_not_give_is_left_to_the_owner(
+    planted_characters: list[str],
+) -> None:
+    found = [
+        problem for problem in planted_characters if "U+0430 CYRILLIC SMALL LETTER A" in problem
+    ]
+    assert len(found) == len(OTHERS_KINDS)
+    for problem in found:
+        assert problem.endswith(", which the list does not give; the owner decides whether it does")
+        assert "add" not in problem and "VISIBLE" not in problem
+
+
+def test_printable_ascii_and_line_feeds_pass(tmp_path: Path) -> None:
+    files = {
+        "README.md": "# A page\n\nPrintable ASCII, ~ and all.\n",
+        "scripts/tool.py": "#!/usr/bin/env python3\n# -*- coding: utf-8 -*-\nprint('a')\n",
+        ".github/workflows/check.yml": "on: push\n",
+        "vendor/superpowers/UPSTREAM.lock": "commit=0123456789abcdef\n",
+    }
+    root = plant(
+        tmp_path, files, links={"docs/link.md": "../README.md"}, executable=["scripts/tool.py"]
+    )
+    assert character_problems(root) == []
+
+
+# R269: the files that others write hold only the characters that the list gives for them.
+
+
+def test_the_characters_that_the_list_gives_pass_in_the_files_that_others_write(
+    tmp_path: Path,
+) -> None:
+    every = "".join(chr(entry.code_point) for entry in VISIBLE)
+    anywhere = "".join(chr(entry.code_point) for entry in VISIBLE if not entry.markdown_only)
+    files = {
+        "vendor/superpowers/skills/a/SKILL.md": f"# A\n\n{every}\tand \u26a0\ufe0f too.\n",
+        "vendor/superpowers/hooks/start.sh": f"echo '{anywhere}\t\u26a0\ufe0f'\n",
+        ".claude/skills/openspec-a/SKILL.md": (
+            f'---\nname: a\ndescription: "\\u2014 and \\t"\n---\n\n{every}\n'
+        ),
+    }
+    assert character_problems(plant(tmp_path, files)) == []
+
+
+def test_a_character_listed_for_markdown_alone_fails_in_another_file(tmp_path: Path) -> None:
+    files = {
+        "vendor/superpowers/hooks/start.sh": "echo '\u00a7 1'\n",
+        "vendor/superpowers/skills/a/SKILL.md": "\u00a7 1\n",
+    }
+    assert character_problems(plant(tmp_path, files)) == [
+        f"vendor/superpowers/hooks/start.sh:1:7 holds {named(chr(0xA7))}{MARKDOWN_ALONE}"
+    ]
+
+
+@pytest.mark.parametrize(("before", "column"), [("\u2014", 2), ("a", 2), ("", 1)])
+def test_variation_selector_16_after_a_character_not_listed_for_it_fails(
+    tmp_path: Path, before: str, column: int
+) -> None:
+    path = "vendor/superpowers/skills/a/SKILL.md"
+    after = named(before) if before else "the start of a line"
+    assert character_problems(plant(tmp_path, {path: f"{before}{SELECTOR}\n"})) == [
+        f"{path}:1:{column} holds {named(SELECTOR)} right after {after}, after which the list "
+        "does not give it"
+    ]
+
+
+ESCAPED = [
+    ("\\u200b", "\u200b"),
+    ("\\u{202e}", "\u202e"),
+    ("\\U000e0041", "\U000e0041"),
+    ("\\x1b", "\x1b"),
+    ("\\ud83d\\ude00", "\U0001f600"),
+    ("\\ud83d", "\ud83d"),
+]
+
+
+@pytest.mark.parametrize("kind", ["helper.js", "SKILL.md"])
+@pytest.mark.parametrize(("escape", "character"), ESCAPED)
+def test_a_character_written_by_an_escape_is_held_as_the_character(
+    tmp_path: Path, escape: str, character: str, kind: str
+) -> None:
+    path = f"vendor/superpowers/skills/a/{kind}"
+    assert character_problems(plant(tmp_path, {path: f"x = '{escape}'\n"})) == [
+        f"{path}:1:6 writes {named(character)} by an escape{NOT_LISTED}"
+    ]
+
+
+def test_an_escape_of_a_character_that_the_file_may_hold_passes(tmp_path: Path) -> None:
+    files = {
+        "vendor/superpowers/skills/a/helper.js": (
+            "x = '\\u2014 \\ud83c\\udfaf \\x41 \\u{2192} \\x09'\n"
+        ),
+        "vendor/superpowers/skills/a/SKILL.md": "\\u00a7 and \\u26a0\\ufe0f\n",
+    }
+    assert character_problems(plant(tmp_path, files)) == []
+
+
+def test_an_escape_of_a_character_listed_for_markdown_alone_fails_in_a_script(
+    tmp_path: Path,
+) -> None:
+    path = "vendor/superpowers/skills/a/helper.js"
+    assert character_problems(plant(tmp_path, {path: "x = '\\u00a7'\n"})) == [
+        f"{path}:1:6 writes {named(chr(0xA7))} by an escape{MARKDOWN_ALONE}"
+    ]
+
+
+@pytest.mark.parametrize(
+    ("escape", "character"),
+    [("\\e", "\x1b"), ("\\_", "\u00a0"), ("\\N", "\x85"), ("\\L", "\u2028"), ("\\0", "\x00")],
+)
+def test_a_character_that_a_skill_s_front_matter_gives_once_yaml_reads_it_fails(
+    tmp_path: Path, escape: str, character: str
+) -> None:
+    path = ".claude/skills/openspec-a/SKILL.md"
+    text = f'---\nname: a\ndescription: "before {escape} after"\n---\n# A\n'
+    assert character_problems(plant(tmp_path, {path: text})) == [
+        f"{path}:3 gives {named(character)} in its front matter, read as YAML{NOT_LISTED}"
+    ]
+
+
+def test_a_key_of_a_skill_s_front_matter_is_read_too(tmp_path: Path) -> None:
+    path = "vendor/superpowers/skills/a/SKILL.md"
+    text = '---\nname: a\n"na\\eme": a\n---\n'
+    assert character_problems(plant(tmp_path, {path: text})) == [
+        f"{path}:3 gives {named(chr(0x1B))} in its front matter, read as YAML{NOT_LISTED}"
+    ]
+
+
+def test_an_escape_in_a_skill_s_front_matter_is_named_once(tmp_path: Path) -> None:
+    path = "vendor/superpowers/skills/a/SKILL.md"
+    text = '---\nname: a\ndescription: "a \\u200b b"\n---\n'
+    assert character_problems(plant(tmp_path, {path: text})) == [
+        f"{path}:3:17 writes {named(chr(0x200B))} by an escape{NOT_LISTED}"
+    ]
+
+
+@pytest.mark.parametrize(
+    ("text", "problem"),
+    [
+        ("---\nname: [a\n---\n", "gives front matter that the test cannot read as YAML"),
+        ("---\nname: a\n", "opens front matter that no line of --- closes"),
+    ],
+)
+def test_front_matter_that_the_test_cannot_read_fails(
+    tmp_path: Path, text: str, problem: str
+) -> None:
+    path = "vendor/superpowers/skills/a/SKILL.md"
+    assert character_problems(plant(tmp_path, {path: text})) == [f"{path} {problem}"]
+
+
+def test_front_matter_is_read_only_in_a_skill_that_others_write(tmp_path: Path) -> None:
+    files = {
+        "vendor/superpowers/skills/a/notes.md": "---\nname: [a\n---\n",
+        "docs/SKILL.md": '---\nname: "\\e"\n---\n',
+    }
+    assert character_problems(plant(tmp_path, files)) == []
+
+
+# R272: the test reads every file as git's index holds it and as the working tree holds it.
+
+
+def test_a_character_that_only_git_s_index_holds_fails(tmp_path: Path) -> None:
+    files: dict[str, str | bytes] = {
+        ".gitattributes": "page.md working-tree-encoding=UTF-7\n",
+        "page.md": planted_line("\u202e").encode("utf-7"),
+    }
+    source = plant(tmp_path / "source", files)
+    commit(source)
+    clone = tmp_path / "clone"
+    subprocess.run(
+        ["git", "clone", "-q", str(source), str(clone)],
+        check=True,
+        capture_output=True,
+        env=isolated_environment(clone),
+    )
+    assert (clone / "page.md").read_bytes().isascii()
+    assert character_problems(clone) == [
+        f"page.md:2:3{IN_INDEX} holds {named(chr(0x202E))}{NOT_ASCII}"
+    ]
+
+
+def test_an_edit_not_yet_staged_is_read(tmp_path: Path) -> None:
+    root = plant(tmp_path, {"page.md": planted_line("")})
+    (root / "page.md").write_text(planted_line("\u00e9"), encoding="utf-8")
+    assert character_problems(root) == [f"page.md:2:3{IN_TREE} holds {named(chr(0xE9))}{NOT_ASCII}"]
+
+
+@pytest.mark.parametrize("version", ["index", "tree"])
+def test_bytes_that_are_not_utf_8_fail(tmp_path: Path, version: str) -> None:
+    root = plant(tmp_path, {"page.md": b"ab\xffcd\n" if version == "index" else "abcd\n"})
+    if version == "tree":
+        (root / "page.md").write_bytes(b"ab\xffcd\n")
+    where = "" if version == "index" else IN_TREE
+    assert character_problems(root) == [
+        f"page.md{where} is not UTF-8, so the test cannot read it as text"
+    ]
+
+
+def test_a_submodule_fails(tmp_path: Path) -> None:
+    root = plant(tmp_path, {"page.md": "Printable.\n"})
+    git(
+        root, "update-index", "--add", "--cacheinfo", f"{GITLINK},{'1' * 40},vendor/sub"
+    ).check_returncode()
+    assert character_problems(root) == [
+        "vendor/sub is neither a file nor a link, but a submodule or another entry that the test "
+        "cannot read"
+    ]
+
+
+def test_an_object_that_the_clone_lacks_fails(tmp_path: Path) -> None:
+    root = plant(tmp_path, {"page.md": "Printable.\n"})
+    git(
+        root, "update-index", "--add", "--cacheinfo", f"{FILE},{'1' * 40},gone.md"
+    ).check_returncode()
+    assert character_problems(root) == [
+        "gone.md names an object that this clone lacks, as a partial clone does, which the test "
+        "does not fetch"
+    ]
+
+
+def test_a_partial_clone_s_missing_object_is_named_and_not_fetched(tmp_path: Path) -> None:
+    source = plant(tmp_path / "source", {"page.md": "Printable.\n"})
+    commit(source)
+    git(source, "config", "uploadpack.allowFilter", "true").check_returncode()
+    clone = tmp_path / "clone"
+    subprocess.run(
+        ["git", "clone", "-q", "--filter=blob:none", "--no-checkout", source.as_uri(), str(clone)],
+        check=True,
+        capture_output=True,
+        env=isolated_environment(clone),
+    )
+    git(clone, "read-tree", "HEAD").check_returncode()
+    (oid,) = [entry.oid for entry in tracked_entries(clone)]
+
+    def present() -> bool:
+        return git(clone, "cat-file", "-e", oid, extra={"GIT_NO_LAZY_FETCH": "1"}).returncode == 0
+
+    assert not present()
+    assert character_problems(clone) == [
+        "page.md names an object that this clone lacks, as a partial clone does, which the test "
+        "does not fetch",
+        READ_NOTHING,
+    ]
+    assert not present()
+
+
+def test_a_link_whose_path_is_beyond_printable_ascii_fails(tmp_path: Path) -> None:
+    root = plant(
+        tmp_path, {"page.md": "Printable.\n"}, links={"docs/link.md": "caf\u00e9\U000e0041.md"}
+    )
+    assert character_problems(root) == [
+        "docs/link.md is a link to cafU+00E9U+E0041.md, beyond printable ASCII"
+    ]
+
+
+def test_a_link_is_read_as_the_path_that_it_holds_and_never_followed(tmp_path: Path) -> None:
+    outside = tmp_path / "outside.md"
+    outside.write_text(planted_line("\u202e"), encoding="utf-8")
+    links = {"docs/link.md": str(outside), "docs/up.md": "../../outside.md"}
+    assert character_problems(plant(tmp_path / "repo", {"page.md": "Printable.\n"}, links)) == []
+
+
+def test_a_file_in_a_folder_that_the_working_tree_holds_as_a_link_is_not_read_through_it(
+    tmp_path: Path,
+) -> None:
+    root = plant(tmp_path / "repo", {"docs/page.md": "Printable.\n"})
+    elsewhere = tmp_path / "elsewhere"
+    elsewhere.mkdir()
+    (elsewhere / "page.md").write_text(planted_line("\u202e"), encoding="utf-8")
+    (root / "docs" / "page.md").unlink()
+    (root / "docs").rmdir()
+    (root / "docs").symlink_to(elsewhere)
+    assert character_problems(root) == [
+        f"docs/page.md{IN_TREE} lies in a folder that is a link, which the test does not follow"
+    ]
+
+
+def test_a_check_of_characters_that_reads_no_file_fails(tmp_path: Path) -> None:
+    git(tmp_path, "init", "-q").check_returncode()
+    assert character_problems(tmp_path) == [f"git lists no tracked file, so {READ_NOTHING}"]
+    git(
+        tmp_path, "update-index", "--add", "--cacheinfo", f"{GITLINK},{'1' * 40},sub"
+    ).check_returncode()
+    assert character_problems(tmp_path)[-1] == READ_NOTHING
+
+
+# R268: paths.
+
+
+@pytest.mark.parametrize(
+    "path",
+    ["docs/caf\u00e9.md", "docs/a b.md", "docs/a\nb.md", "docs/a\u202eb.md", "docs/\U000e0041.md"],
+)
+def test_a_path_beyond_printable_ascii_fails(tmp_path: Path, path: str) -> None:
+    assert character_problems(plant(tmp_path, {path: "Printable.\n"})) == [
+        f"the path {shown_path(path)} holds a character other than printable ASCII but the space"
+    ]
+
+
+def test_two_tracked_paths_that_differ_only_in_case_fail(tmp_path: Path) -> None:
+    files = {".claude-plugin/Marketplace.json": "{}\n", ".claude-plugin/marketplace.json": "{}\n"}
+    assert character_problems(plant(tmp_path, files)) == [
+        "the paths .claude-plugin/Marketplace.json and .claude-plugin/marketplace.json differ "
+        "only in case, which a file system that ignores case holds as one file"
+    ]
+
+
+def test_a_file_and_a_folder_that_differ_only_in_case_fail(tmp_path: Path) -> None:
+    files = {
+        ".claude-plugin/marketplace.json": "{}\n",
+        ".claude-plugin/Marketplace.json/notes.md": "Notes.\n",
+    }
+    assert character_problems(plant(tmp_path, files)) == [
+        "the path .claude-plugin/marketplace.json and the folder .claude-plugin/Marketplace.json, "
+        "which holds .claude-plugin/Marketplace.json/notes.md, differ only in case, which a file "
+        "system that ignores case cannot hold both of"
+    ]
+
+
+# R268: what Python reads as source declares no encoding but UTF-8.
+
+
+@pytest.mark.parametrize(
+    ("path", "text", "declared"),
+    [
+        ("scripts/tool.py", "# -*- coding: utf-7 -*-\nprint(1)\n", "utf-7"),
+        ("scripts/tool.py", "#!/usr/bin/env python3\n# coding: unicode_escape\n", "unicode_escape"),
+        ("scripts/stub.pyi", "# vim: set fileencoding=latin-1 :\n", "latin-1"),
+        ("hooks/run", "#!/usr/bin/env python3\n# coding=cp1252\n", "cp1252"),
+        ("scripts/tool.py", "# coding: no-such-encoding\n", "no-such-encoding"),
+    ],
+)
+def test_a_python_file_that_declares_an_encoding_other_than_utf_8_fails(
+    tmp_path: Path, path: str, text: str, declared: str
+) -> None:
+    assert character_problems(plant(tmp_path, {path: text})) == [
+        f"{path} declares to Python the encoding {declared}, not UTF-8"
+    ]
+
+
+@pytest.mark.parametrize(
+    ("path", "text"),
+    [
+        ("scripts/tool.py", "# -*- coding: utf-8 -*-\n"),
+        ("scripts/tool.py", "#!/usr/bin/env python3\n# coding: UTF8\n"),
+        ("scripts/tool.py", "print(1)\n"),
+        ("docs/page.md", "# coding: utf-7\n"),
+        ("hooks/run.sh", "#!/bin/sh\n# coding: utf-7\n"),
+    ],
+)
+def test_a_file_that_declares_utf_8_or_that_python_does_not_read_passes(
+    tmp_path: Path, path: str, text: str
+) -> None:
+    assert character_problems(plant(tmp_path, {path: text})) == []
+
+
+# R269: the list gives only punctuation and symbols that show, under Unicode's names.
+
+
+@pytest.mark.parametrize(
+    ("entry", "problem"),
+    [
+        (Visible(0x0430, "CYRILLIC SMALL LETTER A", False), "of category Ll"),
+        (Visible(0x3164, "HANGUL FILLER", False), "of category Lo"),
+        (Visible(0x0661, "ARABIC-INDIC DIGIT ONE", False), "of category Nd"),
+        (Visible(0x0301, "COMBINING ACUTE ACCENT", False), "of category Mn"),
+        (Visible(0xFE0F, "VARIATION SELECTOR-16", False), "of category Mn"),
+        (Visible(0x200B, "ZERO WIDTH SPACE", False), "of category Cf"),
+    ],
+)
+def test_a_list_that_gives_a_character_that_is_no_punctuation_or_symbol_fails(
+    entry: Visible, problem: str
+) -> None:
+    assert list_problems([entry], oldest=False) == [
+        f"the list gives U+{entry.code_point:04X} {entry.name}, {problem}, no punctuation or symbol"
+    ]
+
+
+def test_a_list_that_gives_a_character_that_shows_as_blank_fails() -> None:
+    assert list_problems([Visible(0x2800, "BRAILLE PATTERN BLANK", False)], oldest=False) == [
+        "the list gives U+2800 BRAILLE PATTERN BLANK, which shows as blank"
+    ]
+
+
+def test_a_list_that_gives_a_wrong_name_fails() -> None:
+    assert list_problems([Visible(0x2014, "EN DASH", False)], oldest=False) == [
+        "the list gives U+2014 EN DASH, which Unicode names U+2014 EM DASH"
+    ]
+
+
+def test_a_list_that_gives_a_character_twice_fails() -> None:
+    entries = [VISIBLE[0], VISIBLE[0]._replace(markdown_only=True)]
+    assert list_problems(entries, oldest=False) == ["the list gives U+2014 EM DASH twice"]
+
+
+@pytest.mark.parametrize("oldest", [True, False])
+def test_a_listed_code_point_that_the_running_python_does_not_know_is_checked_on_a_later_one(
+    oldest: bool,
+) -> None:
+    entries = [Visible(0x0378, "A CHARACTER YET TO COME", False)]
+    assert list_problems(entries, oldest) == (
+        []
+        if oldest
+        else ["the list gives U+0378 A CHARACTER YET TO COME, which this Python's database lacks"]
+    )
+
+
+def test_the_list_gives_only_punctuation_and_symbols_that_show_under_their_names() -> None:
+    oldest = f"{sys.version_info.major}.{sys.version_info.minor}" == oldest_python()
+    assert list_problems(VISIBLE, oldest) == []
+
+
+# The definitions that the tests share.
+
+
+@pytest.mark.parametrize(
+    ("path", "folder"),
+    [
+        ("vendor/superpowers/skills/a/SKILL.md", "vendor/superpowers/"),
+        ("vendor/superpowers/LICENSE", "vendor/superpowers/"),
+        ("vendor/superpowers/UPSTREAM.lock", ""),
+        ("vendor/superpowers/UPSTREAM.lock/SKILL.md", "vendor/superpowers/"),
+        ("vendor/superpowers/skills/UPSTREAM.lock", "vendor/superpowers/"),
+        (".claude/skills/openspec-explore/SKILL.md", ".claude/skills/openspec-explore/"),
+        (".claude/skills/a/SKILL.md", ""),
+        (".claude/skills/openspec-explore", ""),
+        ("vendor/other/SKILL.md", ""),
+        ("vendor/superpowersx/SKILL.md", ""),
+        ("docs/vendor/superpowers/a.md", ""),
+    ],
+)
+def test_others_write_the_vendored_copy_but_its_lock_and_the_generated_skills(
+    path: str, folder: str
+) -> None:
+    assert written_by_others(path) == folder
+
+
+def test_a_character_is_named_by_its_code_point_and_its_unicode_name() -> None:
+    assert named("\u202e") == "U+202E RIGHT-TO-LEFT OVERRIDE"
+    assert named("\U000e0041") == "U+E0041 TAG LATIN CAPITAL LETTER A"
+
+
+@pytest.mark.parametrize("character", ["\t", "\r", "\x1b", "\ue000", "\u0378", "\ud800"])
+def test_a_character_without_a_name_is_named_by_its_code_point_and_a_fixed_phrase(
+    character: str,
+) -> None:
+    assert named(character) == f"U+{ord(character):04X} (no name in Python's Unicode database)"
+
+
+def test_a_path_is_shown_with_each_other_character_by_its_code_point() -> None:
+    assert shown_path("a b\n\u202e\U000e0041/\udcff~!") == "aU+0020bU+000AU+202EU+E0041/\\xFF~!"
+
+
+def test_text_is_shown_with_each_character_beyond_printable_ascii_by_its_code_point() -> None:
+    assert shown("a b\t\u2014~") == "a bU+0009U+2014~"
+
+
+# R272: everything that the test prints is printable ASCII.
+
+PLANTED_TEST = """from pathlib import Path
+
+from test_conventions import character_problems
+
+
+def test_the_planted_tree():
+    assert not character_problems(Path({root!r}))
+"""
+
+
+def test_everything_that_a_failing_run_of_the_test_of_characters_prints_is_printable_ascii(
+    tmp_path: Path,
+) -> None:
+    files = {
+        "line\nfeed.md": "Printable.\n",
+        "carriage\rreturn.md": "Printable.\n",
+        "escape\x1b[2Jcharacter.md": "Printable.\n",
+        "tag\U000e0069\U000e0067.md": "Printable.\n",
+        "selector\ufe0f.md": "Printable.\n",
+        "page.md": "ab\u202ecd\x07\ue000\u0378\n",
+        "vendor/superpowers/a.md": "\U000e0041\ufe0f\n",
+    }
+    planted = plant(tmp_path / "planted", files, links={"link.md": "to\u202e\U000e0041\n\x1b.md"})
+    test = tmp_path / "test_planted.py"
+    test.write_text(PLANTED_TEST.format(root=str(planted)), encoding="ascii")
+    done = subprocess.run(
+        [sys.executable, "-m", "pytest", "-p", "no:cacheprovider", "--color=no", "-vv", str(test)],
+        cwd=tmp_path,
+        capture_output=True,
+        env={
+            **session_free_environment(),
+            "PYTHONPATH": os.pathsep.join(str(ROOT / folder) for folder in ("tests", "scripts")),
+        },
+    )
+    printed = done.stdout + done.stderr
+    assert done.returncode == 1, printed.decode("ascii", "backslashreplace")
+    assert b"U+202E RIGHT-TO-LEFT OVERRIDE" in printed
+    assert b"U+E0069" in printed and b"U+000A" in printed and b"U+001B" in printed
+    beyond = sorted({byte for byte in printed if not 0x20 <= byte <= 0x7E and byte != 0x0A})
+    assert not beyond, f"the run printed the bytes {beyond}"
+
+
+# The repository itself.
+
+
+def test_every_tracked_file_holds_only_the_characters_that_its_writer_may_use() -> None:
+    assert character_problems(ROOT) == []

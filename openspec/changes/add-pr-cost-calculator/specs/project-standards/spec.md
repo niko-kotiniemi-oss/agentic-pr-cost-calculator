@@ -997,16 +997,16 @@ Each risk that the risks and trade-offs of any change's design give, active or a
 
 ### Requirement: The roadmap and the backlog link only this repository's own files
 
-Every link, image, autolink, web address, host and `owner/repo` in the roadmap, `docs/backlog/` and each feature page's section on known limitations and the roadmap, prose and code alike, SHALL name a heading of its own page or, by a relative path inside this repository, a tracked file of it outside `vendor/` and `.claude/skills/`. They SHALL name issues and pull requests by number alone, and give no `@`, commit ID, fenced or indented code, or space in inline code. Tests SHALL fail otherwise.
+Every link, image, autolink, web address, host and `owner/repo` in the roadmap, `docs/backlog/` and each feature page's section on known limitations and the roadmap, prose and code alike, SHALL name a heading of its own page or, by a relative path inside this repository, a tracked file of it that others do not write. They SHALL name issues and pull requests by number alone, and give no `@`, commit ID, fenced or indented code, or space in inline code. Tests SHALL fail otherwise.
 
 #### Scenario: The roadmap's and the backlog's links stay within this repository's files
 
 - **WHEN** every link, autolink, web address and `owner/repo` in the roadmap, in the files in `docs/backlog/` and in those sections is read, each link from its `](` whatever its text holds, in prose and in inline code alike
-- **THEN** each names a heading of its own page, or a tracked file of this repository outside `vendor/` and `.claude/skills/` by a relative path that, resolved from the page's folder, stays inside the repository
+- **THEN** each names a heading of its own page, or a tracked file that this repository writes by a relative path that, resolved from the page's folder, stays inside the repository
 
 #### Scenario: A link elsewhere fails a test
 
-- **WHEN** the roadmap, a file in `docs/backlog/` or such a section gives a web address, a host such as `example.org`, in prose or in inline code, that is not a tracked file's path or a name that the test lists as not a host, among them, in prose, one that emphasis marks split, as `evil.*example*` is, which GitHub shows as one name, and four numbers joined by dots, as an IP address is, an image, an `@`, an `owner/repo`, a commit ID, read as seven or more hexadecimal digits that hold both a digit and a letter, a fenced or indented code block, inline code that holds a space, as a command such as `git config --global pr-cost.capture true` does, a relative path that leaves the repository or names no tracked file, as `../../../issues/15` does, or a link into `vendor/` or `.claude/skills/`, whose files others write
+- **WHEN** the roadmap, a file in `docs/backlog/` or such a section gives a web address, a host such as `example.org`, in prose or in inline code, that is not a tracked file's path or a name that the test lists as not a host, among them, in prose, one that emphasis marks split, as `evil.*example*` is, which GitHub shows as one name, and four numbers joined by dots, as an IP address is, an image, an `@`, an `owner/repo`, a commit ID, read as seven or more hexadecimal digits that hold both a digit and a letter, a fenced or indented code block, inline code that holds a space, as a command such as `git config --global pr-cost.capture true` does, a relative path that leaves the repository or names no tracked file, as `../../../issues/15` does, or a link to a file that others write, such as one under `vendor/superpowers/`
 - **THEN** a test fails and names the file and the line
 
 #### Scenario: A name that only looks like a host passes when the test lists it
@@ -1200,11 +1200,11 @@ Each entry SHALL be a `###` heading that names a principle, followed by the fiel
 
 ### Requirement: The guide links only this repository's own files and holds no hidden text
 
-The guide SHALL hold to the rules that "The roadmap and the backlog link only this repository's own files" and "The roadmap, the backlog and the feature pages' roadmap sections hold no hidden text" give the roadmap, apart from inline code with a space in its opening, which is fixed word for word, and SHALL give no `$` and no `~` outside inline code and cite no file under `vendor/` or `.claude/skills/` in Held by, so that it leads no one to what others write or hide. Tests SHALL fail otherwise.
+The guide SHALL hold to the rules that "The roadmap and the backlog link only this repository's own files" and "The roadmap, the backlog and the feature pages' roadmap sections hold no hidden text" give the roadmap, apart from inline code with a space in its opening, which is fixed word for word, and SHALL give no `$` and no `~` outside inline code and cite no file that others write, or its folder, in Held by, so that it leads no one to what others write or hide. Tests SHALL fail otherwise.
 
 #### Scenario: A link elsewhere in the guide fails a test
 
-- **WHEN** the guide gives a web address, a host such as `example.org`, in prose or in inline code, that is not a tracked file's path or a name that the test lists as not a host, among them, in prose, one that emphasis marks split and four numbers joined by dots, an image, an `@`, an `owner/repo`, a commit ID, a fenced or indented code block, inline code that holds a space after its opening, a relative path that leaves the repository or names no tracked file, or a link into `vendor/` or `.claude/skills/`, or an entry's Held by cites a file there, whose text others write
+- **WHEN** the guide gives a web address, a host such as `example.org`, in prose or in inline code, that is not a tracked file's path or a name that the test lists as not a host, among them, in prose, one that emphasis marks split and four numbers joined by dots, an image, an `@`, an `owner/repo`, a commit ID, a fenced or indented code block, inline code that holds a space after its opening, a relative path that leaves the repository or names no tracked file, or a link to a file that others write, or an entry's Held by cites one, or a folder that holds one
 - **THEN** a test fails and names the line
 
 #### Scenario: The guide's opening keeps its fixed words in inline code
@@ -2205,7 +2205,7 @@ Each file that others write SHALL hold, as itself or by an escape, only printabl
 
 #### Scenario: A character written by an escape is held as the character
 
-- **WHEN** a file that others write holds an escape that writes a character that the file may not hold, `\u` and four hexadecimal digits, `\U` and eight or `\x` and two, or a skill's front matter, read as YAML, gives a value that holds such a character, as an escape such as `\e` or `\_` writes it
+- **WHEN** a file that others write holds an escape that writes a character that the file may not hold, `\u` and four hexadecimal digits or up to six in braces, `\U` and eight or `\x` and two, or a skill's front matter, read as YAML, gives a value that holds such a character, as an escape such as `\e` or `\_` writes it
 - **THEN** a test fails and names the file, the line and the character by its code point and its name
 
 #### Scenario: The characters that the list gives pass

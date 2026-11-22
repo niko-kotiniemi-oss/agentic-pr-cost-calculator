@@ -44,12 +44,12 @@ A hook in each Claude Code session, from the hook file that a repository registe
 For each ledger entry counted, on the entry's UTC day *d*:
 
 ```
-token cost = input × rate(model, input, d)
-           + output × rate(model, output, d)
-           + cache write 5 min × rate(model, cache write 5 min, d)
-           + cache write 1 h × rate(model, cache write 1 h, d)
-           + cache read × rate(model, cache read, d)
-           + server-side tool requests × rate(model, request type, d)
+token cost = input * rate(model, input, d)
+           + output * rate(model, output, d)
+           + cache write 5 min * rate(model, cache write 5 min, d)
+           + cache write 1 h * rate(model, cache write 1 h, d)
+           + cache read * rate(model, cache read, d)
+           + server-side tool requests * rate(model, request type, d)
 ```
 
 `rate` is the latest row in `prices/models.json` dated on or before *d*, with every modifier that the table lists for the entry's attributes, combined as the table states (R14, R16). Where the transcript gave no cache lifetime, the cost is a range between the two lifetimes' rates (R15). An entry whose model, attribute or day has no price is counted in tokens and left out of the cost, and the comment names it (R14, R17, R61).
@@ -57,13 +57,13 @@ token cost = input × rate(model, input, d)
 For each attempt of each job of each counted run:
 
 ```
-CI cost = ceil(duration in seconds / 60) × rate(runner type, day the job ran)
+CI cost = ceil(duration in seconds / 60) * rate(runner type, day the job ran)
 ```
 
 The runs counted are those on the pull request's own commits that no push to the default branch started and that were created before the merge (R62, R120). A job on a runner that `prices/github-actions.json` does not list is counted in minutes and left out of the cost (R63).
 
 ```
-total = Σ token cost + Σ CI cost
+total = sum(token cost) + sum(CI cost)
 ```
 
 The comment splits the token cost by model, by token type and by activity type. Every figure can be recomputed from the ledger, the price table and the jobs API.

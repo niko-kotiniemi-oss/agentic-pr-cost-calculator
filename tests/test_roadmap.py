@@ -11,7 +11,7 @@ two spaces that follow it. What Now, Next and Later list, as the index of the ba
 items, is `tests/test_backlog.py`'s to check (R213, R214).
 
 Every risk that the risks and trade-offs of a change's design give, active or
-archived, as a line that opens with `- [title]` and an arrow, is listed by its
+archived, as a line that opens with `- [title]` and `->`, is listed by its
 title, as a line `- **title**: ...`, under Known limitations or in the section on
 known limitations and the roadmap of a page in `docs/features/` named for a spec.
 A line under a design's risks that starts with `- ` in another form fails, and so
@@ -22,9 +22,9 @@ a short list and links each section. A listed title that no design gives fails t
 
 Every link in the roadmap, in each Markdown file in `docs/backlog/` and in each
 feature page's section, is read from its `](` over the whole text, whatever its text
-holds, and names a heading of its page, or a tracked file of this repository outside
-`vendor/` and `.claude/skills/`, whose files others write, by a relative path that
-stays inside it, with a heading of that file when the link names one, and gives no
+holds, and names a heading of its page, or a tracked file that this repository writes,
+not one of those that others write, which `scripts/conventions.py` gives, by a relative
+path that stays inside it, with a heading of that file when the link names one, and gives no
 title. The pages give no web address, no `@`, no image, no fenced or indented code,
 no inline code that holds a space or a line break, so that no command stands in them,
 and no `owner/repo` that is not the path of such a file from the repository's root,
@@ -63,6 +63,7 @@ from pathlib import Path
 from urllib.parse import unquote
 
 import pytest
+from conventions import shown_path, written_by_others
 from spec_form import find_specs
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -123,7 +124,9 @@ BUILD_CHANGE = "add-pr-cost-calculator"
 CHANGE_TASKS = f"openspec/changes/{BUILD_CHANGE}/tasks.md"
 ARCHIVED_TASKS = f"openspec/changes/archive/2026-01-01-{BUILD_CHANGE}/tasks.md"
 ARCHIVED = re.compile(r"\d{4}-\d{2}-\d{2}-(.+)")
-RISK = re.compile(r"^- \[(.+?)\] \u2192 ")
+# A risk as a design gives it, with the arrow of OpenSpec's template written in printable
+# ASCII, which every file that this repository writes holds to (R268).
+RISK = re.compile(r"^- \[(.+?)\] -> ")
 LISTED = re.compile(r"^- \*\*(.+?)\*\*: ", re.M)
 # A link's target, read from its `](` whatever stands before it, over line breaks.
 TARGET = re.compile(r"\]\(([^)]*)\)")
@@ -139,8 +142,6 @@ NAME = re.compile(r"[A-Za-z0-9_./-]+")
 LETTERS = re.compile(r"[A-Za-z]+")
 ADDRESS = re.compile(r"\d+(?:\.\d+){3}")
 COMMIT_ID = re.compile(r"(?<![0-9A-Za-z])[0-9A-Fa-f]{7,}(?![0-9A-Za-z])")
-# Folders whose files others write: a vendored tree and the generated skills.
-OTHERS_WRITE = ("vendor/", ".claude/skills/")
 # Names that read as hosts, two or more labels joined by dots whose last is made of
 # letters, but name none, each with its reason.
 NOT_HOSTS = {
@@ -526,11 +527,6 @@ def shown(text: str) -> str:
     return "".join([*parts, BESIDE_A_DOT.sub("", text[last:])])
 
 
-def others_write(path: str) -> str:
-    """The folder whose files others write that a path lies in, or nothing."""
-    return next((folder for folder in OTHERS_WRITE if path.startswith(folder)), "")
-
-
 def address_problems(name: str, start: int, text: str, files: set[str]) -> list[str]:
     """The paths that the text gives, which name only tracked files outside the folders
     that others write, and the hosts, IP addresses and commit IDs that it names, in prose
@@ -542,10 +538,10 @@ def address_problems(name: str, start: int, text: str, files: set[str]) -> list[
             path = token.rstrip(".")
             if path not in files:
                 problems.append(
-                    f"{name}:{start + offset} names {path}, which is not a tracked file of "
-                    "this repository"
+                    f"{name}:{start + offset} names {shown_path(path)}, which is not a tracked "
+                    "file of this repository"
                 )
-            elif folder := others_write(path):
+            elif folder := written_by_others(path):
                 problems.append(
                     f"{name}:{start + offset} names {path}, a file under {folder} that others write"
                 )
@@ -564,7 +560,9 @@ def address_problems(name: str, start: int, text: str, files: set[str]) -> list[
             if len(labels) > 1 and LETTERS.fullmatch(labels[-1]) and host not in NOT_HOSTS:
                 problems.append(f"{at(found)} names {host}, which reads as a host")
     for found in ADDRESS.finditer(seen):
-        problems.append(f"{at(found)} names {found.group(0)}, which reads as an IP address")
+        problems.append(
+            f"{at(found)} names {shown_path(found.group(0))}, which reads as an IP address"
+        )
     for found in COMMIT_ID.finditer(seen):
         ident = found.group(0)
         if any(c.isdigit() for c in ident) and not ident.isdigit():
@@ -622,25 +620,26 @@ def target_problems(
     if len(parts) > 1:
         return [f"{where} holds a link with a title"]
     address = parts[0]
+    link = shown_path(address)
     if SCHEME.match(address) or address.startswith("//"):
-        return [f"{where} links to {address}, a web address"]
+        return [f"{where} links to {link}, a web address"]
     if address.startswith("#"):
         if address[1:] not in own:
-            return [f"{where} links to {address}, which is not a heading of its page"]
+            return [f"{where} links to {link}, which is not a heading of its page"]
         return []
     path, _, fragment = address.partition("#")
     path = unquote(path)
     if "\\" in path or path.startswith("/"):
-        return [f"{where} links to {address}, which is not a relative path"]
+        return [f"{where} links to {link}, which is not a relative path"]
     resolved = posixpath.normpath(posixpath.join(base, path))
     if resolved == ".." or resolved.startswith("../"):
-        return [f"{where} links to {address}, which leaves the repository"]
-    if folder := others_write(resolved):
-        return [f"{where} links to {address}, a file under {folder} that others write"]
+        return [f"{where} links to {link}, which leaves the repository"]
+    if folder := written_by_others(resolved):
+        return [f"{where} links to {link}, a file under {folder} that others write"]
     if resolved not in files or path.endswith("/"):
-        return [f"{where} links to {address}, which is not a tracked file of this repository"]
+        return [f"{where} links to {link}, which is not a tracked file of this repository"]
     if fragment and fragment not in anchors(read(root / resolved)):
-        return [f"{where} links to {address}, whose file has no such heading"]
+        return [f"{where} links to {link}, whose file has no such heading"]
     return []
 
 
@@ -767,18 +766,19 @@ TREE = {
     "docs/assumptions/README.md": "# Assumptions\n\n- **A1.** An assumption.\n",
     **ITEMS,
     "openspec/changes/c/design.md": (
-        f"# Design\n\n```\n## {RISKS}\n\n- [A fenced risk] \u2192 What.\n```\n\n"
-        f"## {RISKS}\n\n- [A risk] \u2192 What.\n- [Another risk] \u2192 What.\n"
+        f"# Design\n\n```\n## {RISKS}\n\n- [A fenced risk] -> What.\n```\n\n"
+        f"## {RISKS}\n\n- [A risk] -> What.\n- [Another risk] -> What.\n"
         "  - a line of the risk above.\n\n"
-        "## Open Questions\n\n- [Not a risk] \u2192 What.\n"
+        "## Open Questions\n\n- [Not a risk] -> What.\n"
     ),
     "openspec/changes/archive/2026-01-01-old/tasks.md": "- [x] 2.1 Did an old thing\n",
     "openspec/changes/archive/2026-01-01-old/design.md": (
-        f"# Design\n\n## {RISKS}\n\n- [An old risk] \u2192 What.\n"
+        f"# Design\n\n## {RISKS}\n\n- [An old risk] -> What.\n"
     ),
     "docs/features/README.md": "# Features\n\n- [Thing](thing.md)\n",
-    "vendor/a/SKILL.md": "# A skill that others write\n",
-    ".claude/skills/a/SKILL.md": "# A skill that others write\n",
+    "vendor/superpowers/skills/a/SKILL.md": "# A skill that others write\n",
+    "vendor/superpowers/UPSTREAM.lock": "commit=0123456789abcdef\n",
+    ".claude/skills/openspec-a/SKILL.md": "# A skill that others write\n",
     "docs/features/thing.md": (
         "# Thing\n\nIt says `<x>`, a@b and \u2192 outside the section.\n\n"
         f"## {FEATURE_SECTION}\n\n"
@@ -1129,7 +1129,7 @@ def test_a_risk_of_an_archived_design_that_no_page_lists_is_reported(tmp_path: P
 
 def test_a_risk_out_of_form_or_a_design_without_risks_is_reported(tmp_path: Path) -> None:
     design = "openspec/changes/c/design.md"
-    root = planted(tmp_path, design, "- [Another risk] \u2192 What.", "- [Another risk] -> What.")
+    root = planted(tmp_path, design, "- [Another risk] -> What.", "- [Another risk] \u2192 What.")
     assert risk_problems(root) == [
         f"{design}:12 gives a risk in a form the test does not read",
         f"{FEATURE} lists 'Another risk', which no change's design gives as a risk",
@@ -1266,16 +1266,26 @@ LINKS_ELSEWHERE = [
     ("`192.0.2.1`", "names 192.0.2.1, which reads as an IP address"),
     ("0123abc", "names 0123abc, which reads as a commit ID"),
     ("`0123ABCDEF`", "names 0123ABCDEF, which reads as a commit ID"),
-    ("[a skill](../vendor/a/SKILL.md)", "links to ../vendor/a/SKILL.md, a file under vendor/"),
     (
-        "[a skill](../.claude/skills/a/SKILL.md)",
-        "links to ../.claude/skills/a/SKILL.md, a file under .claude/skills/",
+        "[a skill](../vendor/superpowers/skills/a/SKILL.md)",
+        "links to ../vendor/superpowers/skills/a/SKILL.md, a file under vendor/superpowers/",
     ),
-    ("vendor/a/SKILL.md", "names vendor/a/SKILL.md, a file under vendor/"),
     (
-        "`.claude/skills/a/SKILL.md`",
-        "names .claude/skills/a/SKILL.md, a file under .claude/skills/",
+        "[a skill](../.claude/skills/openspec-a/SKILL.md)",
+        "links to ../.claude/skills/openspec-a/SKILL.md, a file under .claude/skills/openspec-a/",
     ),
+    (
+        "vendor/superpowers/skills/a/SKILL.md",
+        "names vendor/superpowers/skills/a/SKILL.md, a file under vendor/superpowers/",
+    ),
+    (
+        "`.claude/skills/openspec-a/SKILL.md`",
+        "names .claude/skills/openspec-a/SKILL.md, a file under .claude/skills/openspec-a/",
+    ),
+    # A character that the message would carry is given by its code point (T264).
+    ("[a page](a\U000e0041\u202e.md)", "links to aU+E0041U+202E.md, which is not a tracked"),
+    ("caf\u00e9/else", "names cafU+00E9/else, which is not a tracked file"),
+    ("\u0661.\u0662.\u0663.\u0664", "names U+0661.U+0662.U+0663.U+0664, which reads as an IP"),
 ]
 
 

@@ -8,9 +8,10 @@ is a `###` heading that names a principle, followed by its eight fields, each on
 order, none empty, and nothing else, and an entry under Working with agents cites
 `CLAUDE.md` in Held by (R220). The guide holds to the roadmap's readings of links and
 hidden text, apart from the inline code with a space in its fixed opening, gives no `$`
-or `~` outside inline code, and cites no file under `vendor/` or `.claude/skills/` in Held
-by (R221). Each Pattern gives its source after `Source:`; each Held by cites what holds
-the entry as the threat model's Held by does, or says after `Review:` what review checks;
+or `~` outside inline code, and cites in Held by no file that others write, as
+`scripts/conventions.py` gives them, or folder that holds one (R221). Each Pattern gives
+its source after `Source:`; each Held by cites what holds the entry as the threat model's
+Held by does, or says after `Review:` what review checks;
 each Rests on names IDs in a backlog item's forms that exist and are no closed record;
 and four named practices are each named in a Pattern (R222). Where we stand opens with
 one of four words, each held true against the tasks, the records and the backlog, and,
@@ -41,6 +42,7 @@ from pathlib import Path
 
 import pytest
 import test_backlog
+from conventions import written_by_others
 from risk_register import citations
 from test_backlog import (
     AGREED,
@@ -77,7 +79,6 @@ from test_roadmap import (
     item,
     link_problems_in,
     make_tree,
-    others_write,
     read,
     records,
     section_of,
@@ -306,9 +307,10 @@ def source_problems(entries: list[Entry]) -> list[str]:
 def held_by_problems(root: Path, entries: list[Entry]) -> list[str]:
     """Each Held by cites what holds the entry, or says what review checks, or both (R222);
     under Working with agents it cites `CLAUDE.md` (R220); it cites no file that others
-    write (R221)."""
+    write, or folder that holds one (R221)."""
     found = index(root)
     top = root.resolve()
+    others = [path for path in sorted(tracked(root)) if written_by_others(path)]
     problems = []
     for entry in entries:
         held = entry.fields.get("Held by")
@@ -328,12 +330,19 @@ def held_by_problems(root: Path, entries: list[Entry]) -> list[str]:
             )
         for path in paths:
             target = (root / path).resolve()
-            folder = top in target.parents and others_write(f"{target.relative_to(top)}/")
-            if folder:
-                problems.append(
-                    f"{entry.name} cites `{path}` in Held by, under {folder}, whose files others "
-                    "write"
-                )
+            if top not in target.parents:
+                continue
+            relative = target.relative_to(top).as_posix()
+            inside = next((each for each in others if each.startswith(f"{relative}/")), "")
+            if folder := written_by_others(relative):
+                where = f"under {folder}"
+            elif inside:
+                where = f"which holds {written_by_others(inside)}"
+            else:
+                continue
+            problems.append(
+                f"{entry.name} cites `{path}` in Held by, {where}, whose files others write"
+            )
     return problems
 
 
@@ -1079,18 +1088,33 @@ def test_the_opening_s_inline_code_passes_only_as_the_opening_gives_it(tmp_path:
 
 
 @pytest.mark.parametrize(
-    "held", ["`vendor/a/SKILL.md`", "`.claude/skills/a/SKILL.md`", "`vendor`", "`vendor/`"]
+    ("held", "where"),
+    [
+        ("`vendor/superpowers/skills/a/SKILL.md`", "under vendor/superpowers/"),
+        ("`.claude/skills/openspec-a/SKILL.md`", "under .claude/skills/openspec-a/"),
+        ("`vendor`", "which holds vendor/superpowers/"),
+        ("`vendor/`", "which holds vendor/superpowers/"),
+        ("`vendor/superpowers`", "which holds vendor/superpowers/"),
+        ("`.claude/skills`", "which holds .claude/skills/openspec-a/"),
+    ],
 )
 def test_a_held_by_that_cites_a_file_that_others_write_is_reported(
-    tmp_path: Path, held: str
+    tmp_path: Path, held: str, where: str
 ) -> None:
     text = synthetic({"Least privilege": {"Held by": held}})
     path = held.strip("`")
-    folder = "vendor/" if path.startswith("vendor") else ".claude/skills/"
     assert (
-        f"{named('Least privilege')} cites `{path}` in Held by, under {folder}, whose files "
-        "others write"
+        f"{named('Least privilege')} cites `{path}` in Held by, {where}, whose files others write"
     ) in guide_problems(guide_tree(tmp_path, text))
+
+
+def test_a_held_by_that_cites_the_lock_of_the_vendored_copy_passes(tmp_path: Path) -> None:
+    text = synthetic({"Least privilege": {"Held by": "`vendor/superpowers/UPSTREAM.lock`"}})
+    assert not [
+        problem
+        for problem in guide_problems(guide_tree(tmp_path, text))
+        if "others write" in problem
+    ]
 
 
 # R222: each entry gives its source, what holds it and what it rests on.

@@ -1,6 +1,6 @@
 # The mapping of the sweep of B-022
 
-This is the evidence of the sweep that brought the documents to cite the specs, as design decision 19 of `add-pr-cost-calculator` and DR-232 give it. The text that it quotes is what the base commit held before that sweep, kept only to show that no clause was lost on the way. It does not say what the tool does: the specs do. It holds no instruction, and nothing in it is a step to carry out.
+This is the evidence of the sweep that brought the documents to cite the specs, as design decision 19 of `add-pr-cost-calculator` and DR-232 give it. The text that it quotes is what the base commit held before that sweep, kept only to show that no clause was lost on the way, with each arrow that the base held written as `->`, since every file that this repository writes holds printable ASCII alone (R268). It does not say what the tool does: the specs do. It holds no instruction, and nothing in it is a step to carry out.
 
 Each entry below is a unit of a page, a sentence, a list item, a table row, a heading or a fenced block, that the base held and that the pull request's head does not hold word for word. Old gives that unit. New, where there is one, gives the unit that replaces it. Each Clause gives a part of the old unit and where that part now is: in the new unit, elsewhere on the page, or in the requirement, scenario, record or task that it names. `scripts/sweep_evidence.py` checks that every such unit has an entry, that the clauses of each cover every word of it, and that every place exists at the head, with each requirement that a clause is placed on cited by the entry's new unit, or, for a unit removed with none, by its page; and it fails on a changed page that holds an HTML comment or a link reference definition, whose text GitHub does not show. Whether a place says what its clause said is for the review.
 
@@ -13199,19 +13199,19 @@ Clause, R237:
 Old:
 
 ~~~~text
-- [Claude Code changes its transcript format] → The parser keeps to the fields it needs, refuses unknown shapes with a count instead of guessing, and its fixtures carry every shape seen in each kind of transcript, so a change shows up as a failing test. A call whose two final lines disagree, or whose usage block gives a cache-write split that disagrees with its total, is refused. A usage field that the parser does not know is not a reason to refuse the call, whose known fields still price it, but the ledger counts such calls, and when there are any, the comment gives their number and says that the token cost may be low, because the new field can carry a charge that the entry leaves out.
+- [Claude Code changes its transcript format] -> The parser keeps to the fields it needs, refuses unknown shapes with a count instead of guessing, and its fixtures carry every shape seen in each kind of transcript, so a change shows up as a failing test. A call whose two final lines disagree, or whose usage block gives a cache-write split that disagrees with its total, is refused. A usage field that the parser does not know is not a reason to refuse the call, whose known fields still price it, but the ledger counts such calls, and when there are any, the comment gives their number and says that the token cost may be low, because the new field can carry a charge that the entry leaves out.
 ~~~~
 
 New:
 
 ~~~~text
-- [Claude Code changes its transcript format] → The parser keeps to the fields it needs, refuses unknown shapes with a count instead of guessing, and its fixtures carry every shape seen in each kind of transcript, so a change shows up as a failing test. A call whose two final lines disagree, or whose usage block gives a cache-write split that disagrees with its total, is refused. A call with a usage field that the parser does not know is recorded and counted as R43 and R95 give it, because the new field can carry a charge that the entry leaves out.
+- [Claude Code changes its transcript format] -> The parser keeps to the fields it needs, refuses unknown shapes with a count instead of guessing, and its fixtures carry every shape seen in each kind of transcript, so a change shows up as a failing test. A call whose two final lines disagree, or whose usage block gives a cache-write split that disagrees with its total, is refused. A call with a usage field that the parser does not know is recorded and counted as R43 and R95 give it, because the new field can carry a charge that the entry leaves out.
 ~~~~
 
 Clause, the new unit:
 
 ~~~~text
-- [Claude Code changes its transcript format] → The parser keeps to the fields it needs, refuses unknown shapes with a count instead of guessing, and its fixtures carry every shape seen in each kind of transcript, so a change shows up as a failing test. A call whose two final lines disagree, or whose usage block gives a cache-write split that disagrees with its total, is refused.
+- [Claude Code changes its transcript format] -> The parser keeps to the fields it needs, refuses unknown shapes with a count instead of guessing, and its fixtures carry every shape seen in each kind of transcript, so a change shows up as a failing test. A call whose two final lines disagree, or whose usage block gives a cache-write split that disagrees with its total, is refused.
 ~~~~
 
 Clause, R43:
@@ -13237,19 +13237,19 @@ because the new field can carry a charge that the entry leaves out.
 Old:
 
 ~~~~text
-- [A call read without a stop reason gives the usage of its start, not of its end] → Its output tokens and server-side tool requests are too low. The ledger counts such calls, and when there are any, the comment gives their number and says that the token cost is a lower bound.
+- [A call read without a stop reason gives the usage of its start, not of its end] -> Its output tokens and server-side tool requests are too low. The ledger counts such calls, and when there are any, the comment gives their number and says that the token cost is a lower bound.
 ~~~~
 
 New:
 
 ~~~~text
-- [A call read without a stop reason gives the usage of its start, not of its end] → Its output tokens and server-side tool requests are too low, and such calls are counted as R42 and R95 give it.
+- [A call read without a stop reason gives the usage of its start, not of its end] -> Its output tokens and server-side tool requests are too low, and such calls are counted as R42 and R95 give it.
 ~~~~
 
 Clause, the new unit:
 
 ~~~~text
-- [A call read without a stop reason gives the usage of its start, not of its end] → Its output tokens and server-side tool requests are too low
+- [A call read without a stop reason gives the usage of its start, not of its end] -> Its output tokens and server-side tool requests are too low
 ~~~~
 
 Clause, R42:
@@ -13269,19 +13269,19 @@ and when there are any, the comment gives their number and says that the token c
 Old:
 
 ~~~~text
-- [A workflow runs a script or a local action that a pull request changes] → The comment flags changes to workflow files, to `.pr-cost.json`, to the hook file and to `.claude/settings.json` and `.claude/settings.local.json`, which can register it (DR-186), not to the files that workflows run, which can also act with the identity that posts the report comment. Those changes are in the pull request's diff for review.
+- [A workflow runs a script or a local action that a pull request changes] -> The comment flags changes to workflow files, to `.pr-cost.json`, to the hook file and to `.claude/settings.json` and `.claude/settings.local.json`, which can register it (DR-186), not to the files that workflows run, which can also act with the identity that posts the report comment. Those changes are in the pull request's diff for review.
 ~~~~
 
 New:
 
 ~~~~text
-- [A workflow runs a script or a local action that a pull request changes] → The comment flags changes as R93 gives it (DR-186), not to the files that workflows run, which can also act with the identity that posts the report comment. Those changes are in the pull request's diff for review.
+- [A workflow runs a script or a local action that a pull request changes] -> The comment flags changes as R93 gives it (DR-186), not to the files that workflows run, which can also act with the identity that posts the report comment. Those changes are in the pull request's diff for review.
 ~~~~
 
 Clause, the new unit:
 
 ~~~~text
-- [A workflow runs a script or a local action that a pull request changes] → The comment flags changes
+- [A workflow runs a script or a local action that a pull request changes] -> The comment flags changes
 ~~~~
 
 Clause, R93:
@@ -13301,19 +13301,19 @@ Clause, the new unit:
 Old:
 
 ~~~~text
-- [An adopter updates the hook and the workflow pin at different times] → Their price tables then differ. An older hook records a model that only the newer table lists as `unknown`, which the report counts in tokens and leaves out of the cost. An older report refuses a ledger line with a name its table does not list, and counts it as refused. Either way the comment shows that something was not priced, and nothing is guessed. Whenever the hook file in the merged commit is not the one at the report's commit, the comment also says that the repository's hook does not come from the report's commit, quoting nothing from the file, and the README tells adopters to update both in one pull request.
+- [An adopter updates the hook and the workflow pin at different times] -> Their price tables then differ. An older hook records a model that only the newer table lists as `unknown`, which the report counts in tokens and leaves out of the cost. An older report refuses a ledger line with a name its table does not list, and counts it as refused. Either way the comment shows that something was not priced, and nothing is guessed. Whenever the hook file in the merged commit is not the one at the report's commit, the comment also says that the repository's hook does not come from the report's commit, quoting nothing from the file, and the README tells adopters to update both in one pull request.
 ~~~~
 
 New:
 
 ~~~~text
-- [An adopter updates the hook and the workflow pin at different times] → Their price tables then differ. An older hook records a model that only the newer table lists as `unknown`, which the report counts in tokens and leaves out of the cost. An older report refuses a ledger line with a name its table does not list, and counts it as refused. Either way the comment shows that something was not priced, and nothing is guessed. The comment also names a hook file that does not come from the report's commit (R65), and the README tells adopters to update both in one pull request.
+- [An adopter updates the hook and the workflow pin at different times] -> Their price tables then differ. An older hook records a model that only the newer table lists as `unknown`, which the report counts in tokens and leaves out of the cost. An older report refuses a ledger line with a name its table does not list, and counts it as refused. Either way the comment shows that something was not priced, and nothing is guessed. The comment also names a hook file that does not come from the report's commit (R65), and the README tells adopters to update both in one pull request.
 ~~~~
 
 Clause, the new unit:
 
 ~~~~text
-- [An adopter updates the hook and the workflow pin at different times] → Their price tables then differ. An older hook records a model that only the newer table lists as `unknown`, which the report counts in tokens and leaves out of the cost. An older report refuses a ledger line with a name its table does not list, and counts it as refused. Either way the comment shows that something was not priced, and nothing is guessed.
+- [An adopter updates the hook and the workflow pin at different times] -> Their price tables then differ. An older hook records a model that only the newer table lists as `unknown`, which the report counts in tokens and leaves out of the cost. An older report refuses a ledger line with a name its table does not list, and counts it as refused. Either way the comment shows that something was not priced, and nothing is guessed.
 ~~~~
 
 Clause, R65:
@@ -13333,19 +13333,19 @@ and the README tells adopters to update both in one pull request.
 Old:
 
 ~~~~text
-- [Prices go stale, or a new model appears] → Every report names the price table's date, and an unpriced model or attribute is named rather than guessed. A model the hook's copy of the price table does not list is recorded as `unknown` until the adopter updates the hook.
+- [Prices go stale, or a new model appears] -> Every report names the price table's date, and an unpriced model or attribute is named rather than guessed. A model the hook's copy of the price table does not list is recorded as `unknown` until the adopter updates the hook.
 ~~~~
 
 New:
 
 ~~~~text
-- [Prices go stale, or a new model appears] → The report names the price table's date and never guesses a price (R14, R17, R61). A model the hook's copy of the price table does not list is recorded as `unknown` until the adopter updates the hook.
+- [Prices go stale, or a new model appears] -> The report names the price table's date and never guesses a price (R14, R17, R61). A model the hook's copy of the price table does not list is recorded as `unknown` until the adopter updates the hook.
 ~~~~
 
 Clause, the new unit:
 
 ~~~~text
-- [Prices go stale, or a new model appears] →
+- [Prices go stale, or a new model appears] ->
 ~~~~
 
 Clause, R14:
@@ -13377,19 +13377,19 @@ A model the hook's copy of the price table does not list is recorded as `unknown
 Old:
 
 ~~~~text
-- [A pull request's commits and runs use up the report's call budget, or the requests per hour that `GITHUB_TOKEN` can make in the repository] → The report keeps to its call budget, so that one report cannot use up a limit that the repository's other workflows share. When the budget runs out while it reads runs and jobs, the comment marks the CI cost as incomplete, and when it runs out before the report can tell which pull request the push merged, no comment is posted and the job summary says why.
+- [A pull request's commits and runs use up the report's call budget, or the requests per hour that `GITHUB_TOKEN` can make in the repository] -> The report keeps to its call budget, so that one report cannot use up a limit that the repository's other workflows share. When the budget runs out while it reads runs and jobs, the comment marks the CI cost as incomplete, and when it runs out before the report can tell which pull request the push merged, no comment is posted and the job summary says why.
 ~~~~
 
 New:
 
 ~~~~text
-- [A pull request's commits and runs use up the report's call budget, or the requests per hour that `GITHUB_TOKEN` can make in the repository] → The report keeps to its call budget, so that one report cannot use up a limit that the repository's other workflows share, and says what the budget left unread as R64 and R70 give it.
+- [A pull request's commits and runs use up the report's call budget, or the requests per hour that `GITHUB_TOKEN` can make in the repository] -> The report keeps to its call budget, so that one report cannot use up a limit that the repository's other workflows share, and says what the budget left unread as R64 and R70 give it.
 ~~~~
 
 Clause, the new unit:
 
 ~~~~text
-- [A pull request's commits and runs use up the report's call budget, or the requests per hour that `GITHUB_TOKEN` can make in the repository] → The report keeps to its call budget, so that one report cannot use up a limit that the repository's other workflows share
+- [A pull request's commits and runs use up the report's call budget, or the requests per hour that `GITHUB_TOKEN` can make in the repository] -> The report keeps to its call budget, so that one report cannot use up a limit that the repository's other workflows share
 ~~~~
 
 Clause, `ci-minutes`: "A pull request with more commits than the call budget allows is marked incomplete":
@@ -13409,19 +13409,19 @@ and when it runs out before the report can tell which pull request the push merg
 Old:
 
 ~~~~text
-- [A person's plugin is of another release than the report that a repository pins] → A later plugin can write a model name or a ledger format that the pinned report does not know, which the report refuses, and the comment says that some ledger files come from a later release than the report (DR-208); an earlier plugin leaves a session to a later copy that runs beside it, and records nothing in a repository whose configuration holds a key that it does not know. The README says that a repository keeps its pin current and a person keeps their plugin current.
+- [A person's plugin is of another release than the report that a repository pins] -> A later plugin can write a model name or a ledger format that the pinned report does not know, which the report refuses, and the comment says that some ledger files come from a later release than the report (DR-208); an earlier plugin leaves a session to a later copy that runs beside it, and records nothing in a repository whose configuration holds a key that it does not know. The README says that a repository keeps its pin current and a person keeps their plugin current.
 ~~~~
 
 New:
 
 ~~~~text
-- [A person's plugin is of another release than the report that a repository pins] → A later plugin can write a model name or a ledger format that the pinned report does not know, which the report refuses, and the comment says so (R193, DR-208); an earlier plugin leaves a session to a later copy that runs beside it, and records nothing in a repository whose configuration holds a key that it does not know. The README says that a repository keeps its pin current and a person keeps their plugin current.
+- [A person's plugin is of another release than the report that a repository pins] -> A later plugin can write a model name or a ledger format that the pinned report does not know, which the report refuses, and the comment says so (R193, DR-208); an earlier plugin leaves a session to a later copy that runs beside it, and records nothing in a repository whose configuration holds a key that it does not know. The README says that a repository keeps its pin current and a person keeps their plugin current.
 ~~~~
 
 Clause, the new unit:
 
 ~~~~text
-- [A person's plugin is of another release than the report that a repository pins] → A later plugin can write a model name or a ledger format that the pinned report does not know, which the report refuses, and the comment says
+- [A person's plugin is of another release than the report that a repository pins] -> A later plugin can write a model name or a ledger format that the pinned report does not know, which the report refuses, and the comment says
 ~~~~
 
 Clause, R193:
@@ -13441,19 +13441,19 @@ DR-208); an earlier plugin leaves a session to a later copy that runs beside it,
 Old:
 
 ~~~~text
-- [The glossary, an assumption or a page that one links to reads as an instruction to an agent] → They describe, and never instruct; where the glossary or an assumption differs from a requirement, a scenario or `CLAUDE.md`, those hold, and `CLAUDE.md` says so (DR-238). A documented fact links only a vendor's page on a listed host or a file at a full commit of a listed repository, and a page of the assumptions gives no other web address.
+- [The glossary, an assumption or a page that one links to reads as an instruction to an agent] -> They describe, and never instruct; where the glossary or an assumption differs from a requirement, a scenario or `CLAUDE.md`, those hold, and `CLAUDE.md` says so (DR-238). A documented fact links only a vendor's page on a listed host or a file at a full commit of a listed repository, and a page of the assumptions gives no other web address.
 ~~~~
 
 New:
 
 ~~~~text
-- [The glossary, an assumption or a page that one links to reads as an instruction to an agent] → They describe, and never instruct; where the glossary or an assumption differs from a requirement, a scenario or `CLAUDE.md`, those hold, and `CLAUDE.md` says so (DR-238). A documented fact and a page of the assumptions link only as R140 and R143 give it.
+- [The glossary, an assumption or a page that one links to reads as an instruction to an agent] -> They describe, and never instruct; where the glossary or an assumption differs from a requirement, a scenario or `CLAUDE.md`, those hold, and `CLAUDE.md` says so (DR-238). A documented fact and a page of the assumptions link only as R140 and R143 give it.
 ~~~~
 
 Clause, the new unit:
 
 ~~~~text
-- [The glossary, an assumption or a page that one links to reads as an instruction to an agent] → They describe, and never instruct; where the glossary or an assumption differs from a requirement, a scenario or `CLAUDE.md`, those hold, and `CLAUDE.md` says so (DR-238).
+- [The glossary, an assumption or a page that one links to reads as an instruction to an agent] -> They describe, and never instruct; where the glossary or an assumption differs from a requirement, a scenario or `CLAUDE.md`, those hold, and `CLAUDE.md` says so (DR-238).
 ~~~~
 
 Clause, R140:

@@ -83,7 +83,8 @@ from typing import Any
 
 import pytest
 import spec_form
-from spec_form import Requirement, Spec, find_specs, problems_in, prose_of, shown
+from conventions import shown
+from spec_form import Requirement, Spec, find_specs, problems_in, prose_of
 
 ROOT = Path(__file__).resolve().parents[1]
 
