@@ -10,7 +10,12 @@ The sync writes each vendored file with the bytes and the mode that the pinned
 commit's objects give it, whatever the person's git converts, reads its lock
 with each carriage return before a line feed taken as a line feed, and its
 check compares every path below the vendored root with that commit's, leaving
-out the lock at the root alone, by its path (R275, DR-275, DR-281).
+out the lock at the root alone, by its path, and the mode that git's index
+gives each with the mode that the commit gives it. It stops on a link in the
+copy, and on a path that git's checkout refuses on Windows or macOS, reads and
+writes no repository that a person's git variables name, and says how to write
+the copy again where a vendored file holds a carriage return that the commit's
+does not (R275, R276, DR-275, DR-281).
 
 These tests run the real script against a local upstream, never the network,
 with no git variable of the session's and no global or system configuration
@@ -80,7 +85,7 @@ def git(*args: str, cwd: Path, stdin: str | None = None) -> str:
 
 def build_world(tmp_path: Path, attributes: str | None = None) -> World:
     """An upstream with a tagged release and a later commit that no release contains, a
-    bare copy that the sync fetches from, and a repository that holds the script, with
+    bare copy that the sync fetches from, and a git repository that holds the script, with
     upstream's own attributes where given."""
     work = tmp_path / "upstream"
     work.mkdir()
@@ -110,6 +115,7 @@ def build_world(tmp_path: Path, attributes: str | None = None) -> World:
 
     repo = tmp_path / "repo"
     (repo / "scripts").mkdir(parents=True)
+    git("init", "-q", cwd=repo)
     shutil.copy(SCRIPT, repo / "scripts" / SCRIPT.name)
     (repo / "vendor" / "superpowers").mkdir(parents=True)
     return World(repo, remotes, tagged, untagged)
@@ -118,6 +124,21 @@ def build_world(tmp_path: Path, attributes: str | None = None) -> World:
 @pytest.fixture
 def world(tmp_path: Path) -> World:
     return build_world(tmp_path)
+
+
+# What the sync says of a link in the copy, and what its check says of a vendored file whose
+# mode in git's index is not the pinned commit's, and of one that holds a carriage return
+# that the pinned commit's does not, with the way back (R275, R276).
+LINK = "sync: {path} is a link, which the sync does not follow"
+MODE_DIFFERS = (
+    "sync: git's index gives {path} the mode {staged}, not the mode {given} that the pinned"
+    " commit gives it"
+)
+CARRIAGE_RETURN = "sync: {path} holds a carriage return that the pinned commit's file does not"
+WAY_BACK = (
+    "to write the pinned commit's files again, run scripts/sync-superpowers.sh, or delete"
+    " vendor/superpowers and check it out again"
+)
 
 
 def sync(
@@ -192,12 +213,25 @@ def test_a_tag_upstream_does_not_have_is_refused(world: World) -> None:
     assert "tag v9.9.9 of owner/superpowers names nothing" in done.stderr
 
 
+def test_a_missing_vendored_file_fails_the_check_and_is_named(world: World) -> None:
+    assert sync(world, world.tagged, "v1.0.0").returncode == 0
+    (world.repo / "vendor" / "superpowers" / "LICENSE").unlink()
+    done = sync(world, world.tagged, "v1.0.0", "--check")
+    assert done.returncode == 1
+    assert "DIFFERS" in done.stderr
+    assert ": LICENSE" in done.stderr
+    # The check reads no file that is not there.
+    assert "No such file" not in done.stderr
+
+
 def test_an_edited_vendored_file_fails_the_check(world: World) -> None:
     assert sync(world, world.tagged, "v1.0.0").returncode == 0
     (world.repo / "vendor" / "superpowers" / "LICENSE").write_text("edited by hand\n")
     done = sync(world, world.tagged, "v1.0.0", "--check")
     assert done.returncode == 1
     assert "DIFFERS" in done.stderr
+    # An edit that holds no carriage return is given no advice on line endings.
+    assert "carriage return" not in done.stderr
 
 
 # R275: the check compares every path below the vendored root with the pinned commit's.
@@ -323,11 +357,25 @@ def test_the_check_passes_the_pinned_copy_and_fails_one_whose_line_endings_alone
     failed = sync(world, world.tagged, "v1.0.0", "--check", environment=environment, ending=ending)
     assert failed.returncode == 1
     assert "DIFFERS" in failed.stderr
-    assert "vendor/superpowers/LICENSE" in failed.stderr
+    assert CARRIAGE_RETURN.format(path="vendor/superpowers/LICENSE") in failed.stderr
+    assert WAY_BACK in failed.stderr
 
 
 # R275: the sync writes only files, each with the mode that the pinned commit gives it, and
 # only inside the folder that it writes the copy into.
+
+
+def quoted(text: str) -> str:
+    """The text as the script's `printf %q` writes it, in the environment that the script
+    runs in."""
+    done = subprocess.run(
+        ["bash", "-c", 'printf %q "$1"', "bash", text],
+        env=isolated(),
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    return done.stdout
 
 
 def craft(
@@ -380,11 +428,11 @@ def entry(world: World, case: str) -> tuple[str, str]:
             f"040000 tree {inner}\t.",
             "gives the path skills/./a.md, which the sync does not write",
         )
-    if case in ("a folder named .git", "a folder named .GiT"):
-        name = case.rsplit(" ", 1)[1]
+    if case.startswith(FOLDER_NAMED):
+        name = case.removeprefix(FOLDER_NAMED)
         config = blob("[core]\n\tfsmonitor = a command of upstream's\n")
         inner = tree(f"100644 blob {config}\tconfig")
-        path = f"skills/{name}/config"
+        path = quoted(f"skills/{name}/config")
         return (
             f"040000 tree {inner}\t{name}",
             f"gives the path {path}, which the sync does not write",
@@ -395,20 +443,25 @@ def entry(world: World, case: str) -> tuple[str, str]:
     return f"160000 commit {world.untagged}\tsub", "gives skills/sub the mode 160000, which"
 
 
+FOLDER_NAMED = "a folder named "
+# Names that git's checkout refuses with the protections of NTFS and HFS+ on, since Windows
+# or macOS opens each as `.git`: in another case, with a dot or a space at its end, as its
+# short name, as one of its streams, and with a character that HFS+ ignores (T270).
+OPENED_AS_GIT = (".GiT", ".git.", ".git ", "git~1", ".git::$INDEX_ALLOCATION", ".g\u200cit")
 ENTRIES = (
     "a path up out of the copy",
     "a path through a dot",
-    "a folder named .git",
-    "a folder named .GiT",
+    *(f"{FOLDER_NAMED}{name}" for name in (".git", *OPENED_AS_GIT)),
     "a link",
     "a submodule",
 )
 
 
 @pytest.mark.parametrize("args", [(), ("--check",)], ids=["refresh", "check"])
+@pytest.mark.parametrize("protections", ["as git gives them", "turned off"])
 @pytest.mark.parametrize("case", ENTRIES)
 def test_the_sync_refuses_an_entry_that_is_not_a_file_inside_its_copy(
-    tmp_path: Path, world: World, case: str, args: tuple[str, ...]
+    tmp_path: Path, world: World, case: str, protections: str, args: tuple[str, ...]
 ) -> None:
     line, said = entry(world, case)
     commit = craft(world, "skills", added=(line,))
@@ -416,10 +469,32 @@ def test_the_sync_refuses_an_entry_that_is_not_a_file_inside_its_copy(
     # a path up out of it would still land inside the test's folder.
     temporary = tmp_path / "temporary" / "a" / "b"
     temporary.mkdir(parents=True)
-    done = sync(world, commit, "v2.0.0", *args, environment={"TMPDIR": str(temporary)})
+    environment = {"TMPDIR": str(temporary)}
+    if protections == "turned off":
+        # A person's own configuration can turn off the protections that git gives a
+        # checkout, which the sync turns on for itself.
+        configuration = tmp_path / "gitconfig"
+        configuration.write_bytes(b"[core]\n\tprotectNTFS = false\n\tprotectHFS = false\n")
+        environment["GIT_CONFIG_GLOBAL"] = str(configuration)
+    done = sync(world, commit, "v2.0.0", *args, environment=environment)
     assert done.returncode == 1
     assert said in done.stderr
     assert not list(tmp_path.rglob("outside"))
+    assert not list((world.repo / "vendor").rglob("config"))
+
+
+@pytest.mark.parametrize("name", [".github", ".gitkeep", "git~2"])
+def test_the_sync_writes_a_folder_whose_name_only_looks_like_git_s(world: World, name: str) -> None:
+    bare = world.remotes / "owner" / "superpowers.git"
+    note = git("hash-object", "-w", "--stdin", cwd=bare, stdin="A note.\n")
+    inner = git("mktree", cwd=bare, stdin=f"100644 blob {note}\tconfig\n")
+    commit = craft(world, "skills", added=(f"040000 tree {inner}\t{name}",))
+    synced = sync(world, commit, "v2.0.0")
+    assert synced.returncode == 0, synced.stderr
+    written = world.repo / "vendor" / "superpowers" / "skills" / name / "config"
+    assert written.read_bytes() == b"A note.\n"
+    checked = sync(world, commit, "v2.0.0", "--check")
+    assert checked.returncode == 0, checked.stderr
 
 
 def test_the_sync_refuses_a_release_that_lacks_a_vendored_path(world: World) -> None:
@@ -427,6 +502,213 @@ def test_the_sync_refuses_a_release_that_lacks_a_vendored_path(world: World) -> 
     done = sync(world, commit, "v2.0.0")
     assert done.returncode == 1
     assert f"sync: owner/superpowers@{commit} gives no hooks/session-start" in done.stderr
+
+
+def files_below(folder: Path) -> dict[str, tuple[int, bytes]]:
+    """Each file below the folder by its path, with its mode and its bytes."""
+    return {
+        path.relative_to(folder).as_posix(): (stat.S_IMODE(path.stat().st_mode), path.read_bytes())
+        for path in folder.rglob("*")
+        if path.is_file() and not path.is_symlink()
+    }
+
+
+# R275: a link in the vendored copy, or one that leads to it, stops the sync before it reads
+# or writes anything.
+
+LINKED = {
+    "a vendored folder": "vendor/superpowers/hooks",
+    "a vendored file": "vendor/superpowers/skills/a/SKILL.md",
+    "the vendored copy": "vendor/superpowers",
+    "the vendor folder": "vendor",
+}
+
+
+@pytest.mark.parametrize("args", [(), ("--check",)], ids=["refresh", "check"])
+@pytest.mark.parametrize("case", LINKED)
+def test_a_link_in_the_vendored_copy_stops_the_sync_before_it_reads_or_writes(
+    tmp_path: Path, world: World, case: str, args: tuple[str, ...]
+) -> None:
+    assert sync(world, world.tagged, "v1.0.0").returncode == 0
+    link = world.repo / LINKED[case]
+    outside = tmp_path / "outside"
+    shutil.move(link, outside)
+    link.symlink_to(outside, target_is_directory=outside.is_dir())
+    # What the link leads to differs from upstream's release, so that a refresh that wrote
+    # through it, and a check that read through it, would each show: the shortest of its
+    # files, which is never the lock.
+    if outside.is_dir():
+        outside /= min(files_below(outside), key=len)
+    outside.write_bytes(b"Not upstream's.\n")
+    before = files_below(tmp_path)
+    done = sync(world, world.tagged, "v1.0.0", *args)
+    assert done.returncode == 1
+    assert LINK.format(path=LINKED[case]) in done.stderr
+    # It stops there, before it fetches or compares anything.
+    assert "DIFFERS" not in done.stderr
+    assert link.is_symlink()
+    assert files_below(tmp_path) == before
+
+
+# R275: the sync reads and writes no repository but its own and this one, whatever git
+# variables of the person's name another.
+
+NAMINGS = (
+    "GIT_DIR",
+    "GIT_DIR and GIT_WORK_TREE",
+    "GIT_INDEX_FILE",
+    "GIT_OBJECT_DIRECTORY",
+    "GIT_COMMON_DIR",
+)
+
+
+def another_repository(tmp_path: Path) -> Path:
+    """A repository of one commit beside the world's, which no sync may read or write."""
+    other = tmp_path / "other"
+    other.mkdir()
+    git("init", "-q", cwd=other)
+    (other / "file").write_bytes(b"Another repository's.\n")
+    git("add", "--", "file", cwd=other)
+    git("commit", "-q", "-m", "another", cwd=other)
+    return other
+
+
+def naming(other: Path, case: str) -> dict[str, str]:
+    """The git variables that name the other repository, or a part of it, for the case."""
+    dot = other / ".git"
+    return {
+        "GIT_DIR": {"GIT_DIR": str(dot)},
+        "GIT_DIR and GIT_WORK_TREE": {"GIT_DIR": str(dot), "GIT_WORK_TREE": str(other)},
+        "GIT_INDEX_FILE": {"GIT_INDEX_FILE": str(dot / "index")},
+        "GIT_OBJECT_DIRECTORY": {"GIT_OBJECT_DIRECTORY": str(dot / "objects")},
+        "GIT_COMMON_DIR": {"GIT_COMMON_DIR": str(dot)},
+    }[case]
+
+
+@pytest.mark.parametrize("args", [(), ("--check",)], ids=["refresh", "check"])
+@pytest.mark.parametrize("case", NAMINGS)
+def test_the_sync_reads_and_writes_no_repository_that_a_person_s_git_variables_name(
+    tmp_path: Path, world: World, case: str, args: tuple[str, ...]
+) -> None:
+    other = another_repository(tmp_path)
+    if args:
+        assert sync(world, world.tagged, "v1.0.0").returncode == 0
+    before = files_below(other)
+    done = sync(world, world.tagged, "v1.0.0", *args, environment=naming(other, case))
+    assert done.returncode == 0, done.stderr
+    assert vendored(world) == released(world)
+    assert files_below(other) == before
+
+
+@pytest.mark.parametrize("form", ["GIT_CONFIG_COUNT", "GIT_CONFIG_PARAMETERS"])
+def test_the_sync_keeps_the_configuration_that_git_s_variables_give(
+    world: World, form: str
+) -> None:
+    # A base that names nothing, which the configuration that the variables give rewrites to
+    # the local upstream, so that the sync fetches only where it keeps them.
+    nowhere = (world.remotes.parent / "nowhere").as_uri()
+    key, value = f"url.{world.remotes.as_uri()}/.insteadOf", f"{nowhere}/"
+    given = (
+        {"GIT_CONFIG_COUNT": "1", "GIT_CONFIG_KEY_0": key, "GIT_CONFIG_VALUE_0": value}
+        if form == "GIT_CONFIG_COUNT"
+        else {"GIT_CONFIG_PARAMETERS": f"'{key}'='{value}'"}
+    )
+    unconfigured = sync(world, world.tagged, "v1.0.0", environment={"SYNC_REMOTE_BASE": nowhere})
+    assert unconfigured.returncode == 1
+    done = sync(world, world.tagged, "v1.0.0", environment={"SYNC_REMOTE_BASE": nowhere, **given})
+    assert done.returncode == 0, done.stderr
+    assert vendored(world) == released(world)
+
+
+# R275: the check compares the mode that git's index gives each vendored file with the mode
+# that the pinned commit gives it.
+
+
+@pytest.mark.parametrize(
+    ("path", "change", "staged", "given"),
+    [("hooks/run-hook.cmd", "-x", "100644", "100755"), ("LICENSE", "+x", "100755", "100644")],
+    ids=["an executable file staged as not executable", "a file staged as executable"],
+)
+def test_a_vendored_file_that_git_s_index_gives_another_mode_fails_the_check(
+    world: World, path: str, change: str, staged: str, given: str
+) -> None:
+    assert sync(world, world.tagged, "v1.0.0").returncode == 0
+    git("add", "--", "vendor/superpowers", cwd=world.repo)
+    passed = sync(world, world.tagged, "v1.0.0", "--check")
+    assert passed.returncode == 0, passed.stderr
+    git("update-index", f"--chmod={change}", "--", f"vendor/superpowers/{path}", cwd=world.repo)
+    failed = sync(world, world.tagged, "v1.0.0", "--check")
+    assert failed.returncode == 1
+    assert "DIFFERS" in failed.stderr
+    named = f"vendor/superpowers/{path}"
+    assert MODE_DIFFERS.format(path=named, staged=staged, given=given) in failed.stderr
+
+
+def test_the_check_reads_the_mode_of_a_vendored_name_that_git_could_take_as_a_pattern(
+    world: World,
+) -> None:
+    bare = world.remotes / "owner" / "superpowers.git"
+    note = git("hash-object", "-w", "--stdin", cwd=bare, stdin="A note.\n")
+    # `[X].md`, read as a pattern, names `X.md` too, which git's index lists first.
+    added = (f"100755 blob {note}\tX.md", f"100644 blob {note}\t[X].md")
+    commit = craft(world, "skills", added=added)
+    assert sync(world, commit, "v2.0.0").returncode == 0
+    git("add", "--", "vendor/superpowers", cwd=world.repo)
+    done = sync(world, commit, "v2.0.0", "--check")
+    assert done.returncode == 0, done.stderr
+
+
+def test_the_check_outside_a_git_repository_fails(world: World) -> None:
+    # The check reads git's index, so it fails where there is none rather than compare no
+    # mode.
+    assert sync(world, world.tagged, "v1.0.0").returncode == 0
+    shutil.rmtree(world.repo / ".git")
+    ceiling = {"GIT_CEILING_DIRECTORIES": str(world.repo.parent)}
+    done = sync(world, world.tagged, "v1.0.0", "--check", environment=ceiling)
+    assert done.returncode != 0
+    assert "not a git repository" in done.stderr
+
+
+# R276: the check says how to write the vendored copy again where a vendored file holds a
+# carriage return that the pinned commit's does not, as a clone made with `core.autocrlf`
+# set to `true` before the repository's attributes keeps one.
+
+
+def test_a_carriage_return_that_the_pinned_commit_gives_too_gets_no_advice(world: World) -> None:
+    bare = world.remotes / "owner" / "superpowers.git"
+    returned = git("hash-object", "-w", "--stdin", cwd=bare, stdin="A licence.\r\n")
+    commit = craft(world, "skills", added=(f"100644 blob {returned}\tLICENSE.txt",))
+    assert sync(world, commit, "v2.0.0").returncode == 0
+    licence = world.repo / "vendor" / "superpowers" / "skills" / "LICENSE.txt"
+    assert b"\r\n" in licence.read_bytes(), f"{licence.name}: the test {NO_WINDOWS_LINE_ENDINGS}"
+    licence.write_bytes(b"Edited.\r\n")
+    done = sync(world, commit, "v2.0.0", "--check")
+    assert done.returncode == 1
+    assert "DIFFERS" in done.stderr
+    assert "carriage return" not in done.stderr
+
+
+@pytest.mark.parametrize("way", ["the refresh", "a checkout"])
+def test_the_way_back_that_the_check_gives_writes_the_pinned_files_again(
+    world: World, way: str
+) -> None:
+    assert sync(world, world.tagged, "v1.0.0").returncode == 0
+    git("add", "--", "vendor/superpowers", cwd=world.repo)
+    git("commit", "-q", "-m", "vendored", cwd=world.repo)
+    root = world.repo / "vendor" / "superpowers"
+    saved_with_windows_line_endings(root, ["LICENSE", "skills/a/SKILL.md"])
+    failed = sync(world, world.tagged, "v1.0.0", "--check")
+    assert failed.returncode == 1
+    for path in ("LICENSE", "skills/a/SKILL.md"):
+        assert CARRIAGE_RETURN.format(path=f"vendor/superpowers/{path}") in failed.stderr
+    assert failed.stderr.count(WAY_BACK) == 1
+    if way == "the refresh":
+        assert sync(world, world.tagged, "v1.0.0").returncode == 0
+    else:
+        shutil.rmtree(root)
+        git("checkout", "--", "vendor/superpowers", cwd=world.repo)
+    checked = sync(world, world.tagged, "v1.0.0", "--check")
+    assert checked.returncode == 0, checked.stderr
 
 
 # R275 and DR-281: the editors' configuration gives the lock line feeds.

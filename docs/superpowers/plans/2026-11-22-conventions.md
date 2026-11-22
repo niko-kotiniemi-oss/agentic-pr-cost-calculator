@@ -21,7 +21,7 @@
 
 ## Review Focus
 
-- A clone made before the attributes, with `core.autocrlf` set to `true`, keeps a carriage return in each script that a pull leaves alone: the test of characters names each one and says to delete it and check it out again (task 1.54).
+- A clone made before the attributes, with `core.autocrlf` set to `true`, keeps a carriage return in each script that a pull leaves alone: the test of characters names each one and says to stage it, delete it, check it out again and unstage it, which keeps an edit not yet staged, and the vendor check names each vendored file that holds one and gives the way back for the copy (tasks 1.52 and 1.54).
 - A blob that git's index names but the clone lacks, as in a partial clone: the test of characters reads blobs with `GIT_NO_LAZY_FETCH=1` and fails, naming the path, rather than fetching it (task 1.48).
 - A path that holds a line feed, a tab, a quote or a tag character reaches every message through the same function that shows it by its code points, and git is always read with `-z`, so that no path is quoted or cut (tasks 1.48, 1.55).
 - Reading every tracked file twice must not slow the suite much: the test reads every blob through one `git cat-file --batch` process (task 1.48).

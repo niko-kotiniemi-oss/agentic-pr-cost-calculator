@@ -66,10 +66,11 @@ line feed as a line feed, as git stages a text file, in every file but a script,
 whose name ends in `.sh`, that starts with `#!` or that git records as executable. A
 carriage return that git's index holds, one that no line feed follows and any in a script
 still fail, and one in a script's working tree that git's index does not hold is named with
-the way back: to delete the script and check it out again, or to clone the repository again.
-CI's job `windows-line-endings` runs every check on the files that this repository writes,
-but its scripts, saved with Windows line endings, and the job `ci`, for which a merge waits,
-needs every job (R276, DR-281).
+the way back: to stage the script, delete it, check it out again and unstage it, which keeps
+an edit not yet staged, or to clone the repository again. CI's job `windows-line-endings`
+runs every check on the files that this repository writes, but its scripts, saved with
+Windows line endings, and the job `ci`, for which a merge waits, needs every job, none of
+which, and no step of which, a condition skips or lets fail (R276, DR-281).
 
 Each check is shown to fail on a git repository into which its defect is planted.
 """
@@ -84,6 +85,7 @@ import json
 import mimetypes
 import os
 import re
+import shlex
 import stat
 import subprocess
 import sys
@@ -210,8 +212,8 @@ READ_NOTHING = "the test of characters read no tracked file"
 # that git's index does not, as one in a clone made before the attributes does (R276, T267).
 CHECK_OUT_AGAIN = (
     " is a script that holds a carriage return, which bash or the system reads as part of "
-    "its line: delete it and check it out again, or clone the repository again, as "
-    "CONTRIBUTING.md says"
+    "its line: stage it, delete it, check it out again and unstage it, which keeps an edit, "
+    "or clone the repository again, as CONTRIBUTING.md says"
 )
 
 
@@ -3875,8 +3877,100 @@ def windows_job_problems(doc: Mapping[str, Any]) -> list[str]:
     ]
 
 
+# The keys that let a job or a step of CI be skipped, or fail while its job passes, so that a
+# merge, which waits for the job `ci` alone, would pass where a check did not run or failed,
+# with what each lets happen. The job `ci` runs whatever the others give, by its `if`.
+SKIPPING = {"if": "is skipped", "continue-on-error": "fails"}
+
+
+def skipping_problems(doc: Mapping[str, Any]) -> list[str]:
+    """Each job of CI, and each step of one, that a key lets be skipped or fail while a merge
+    passes, by its job, its number and the key (R276)."""
+    problems = []
+    for name, job in (doc.get("jobs") or {}).items():
+        for key, happens in SKIPPING.items():
+            if key in job and (name, key) != (MERGE_CHECK, "if"):
+                problems.append(
+                    f"the job `{name}` sets `{key}`, so a merge can pass where it {happens}"
+                )
+        for number, step in enumerate(job.get("steps") or [], 1):
+            problems.extend(
+                f"the job `{name}`, step {number}, sets `{key}`, so a merge can pass where it "
+                f"{happens}"
+                for key, happens in SKIPPING.items()
+                if key in step
+            )
+    return problems
+
+
 def ci_workflow() -> Any:
     return yaml.safe_load(read_staged(ROOT / ".github" / "workflows" / "ci.yml"))
+
+
+def gated(**changes: Any) -> dict[str, Any]:
+    """A workflow shaped as CI's, with a job that saves files and runs a check, and the job
+    `ci` that needs it, with the keys given changed in the job, its steps or the job `ci`."""
+    job: dict[str, Any] = {
+        "steps": [{"uses": "actions/checkout@0123"}, {"run": SAVE_STEP}, {"run": "pytest"}]
+    }
+    merge: dict[str, Any] = {"if": "always()", "needs": [WINDOWS_JOB], "steps": [{"run": "x"}]}
+    for where, keys in changes.items():
+        target = {"job": job, "save": job["steps"][1], "check": job["steps"][2]}.get(where)
+        (merge if target is None else target).update(keys)
+    return {"jobs": {WINDOWS_JOB: job, MERGE_CHECK: merge}}
+
+
+@pytest.mark.parametrize(
+    ("doc", "problems"),
+    [
+        (gated(), []),
+        (
+            gated(job={"if": "false"}),
+            [f"the job `{WINDOWS_JOB}` sets `if`, so a merge can pass where it is skipped"],
+        ),
+        (
+            gated(job={"continue-on-error": True}),
+            [
+                f"the job `{WINDOWS_JOB}` sets `continue-on-error`, so a merge can pass where it"
+                " fails"
+            ],
+        ),
+        (
+            gated(save={"if": "false"}),
+            [
+                f"the job `{WINDOWS_JOB}`, step 2, sets `if`, so a merge can pass where it is"
+                " skipped"
+            ],
+        ),
+        (
+            gated(check={"continue-on-error": True}),
+            [
+                f"the job `{WINDOWS_JOB}`, step 3, sets `continue-on-error`, so a merge can pass"
+                " where it fails"
+            ],
+        ),
+        (
+            gated(merge={"continue-on-error": True}),
+            ["the job `ci` sets `continue-on-error`, so a merge can pass where it fails"],
+        ),
+    ],
+    ids=[
+        "as CI gives it",
+        "a job with a condition",
+        "a job that may fail",
+        "a step with a condition",
+        "a step that may fail",
+        "the job ci that may fail",
+    ],
+)
+def test_a_job_or_a_step_that_a_merge_could_pass_without_is_named(
+    doc: dict[str, Any], problems: list[str]
+) -> None:
+    assert skipping_problems(doc) == problems
+
+
+def test_no_job_or_step_of_ci_may_be_skipped_or_fail_while_a_merge_passes() -> None:
+    assert skipping_problems(ci_workflow()) == []
 
 
 @pytest.mark.parametrize(
@@ -4126,9 +4220,10 @@ def test_a_clone_made_with_windows_line_endings_holds_what_git_s_index_holds(
     assert character_problems(clone) == []
 
 
-def test_a_clone_made_before_the_attributes_is_told_to_write_each_script_again(
-    tmp_path: Path,
-) -> None:
+def clone_made_before_the_attributes(tmp_path: Path) -> Path:
+    """A clone made with `core.autocrlf` set to `true` before the commit that adds the
+    attributes, then pulled past it, whose page and scripts still hold a carriage return
+    before each line feed while `git status` shows nothing."""
     executable = ["vendor/superpowers/hooks/run-hook.cmd"]
     source = plant(tmp_path / "source", CLONED, executable=executable)
     commit(source)
@@ -4141,15 +4236,60 @@ def test_a_clone_made_before_the_attributes_is_told_to_write_each_script_again(
     commit(source)
     git(clone, "pull", "-q", "--ff-only").check_returncode()
     assert git(clone, "status", "--porcelain").stdout == b""
+    return clone
+
+
+def way_back() -> str:
+    """The command that `CONTRIBUTING.md` gives to write a script again, with `<path>` where
+    the script's path goes (R276)."""
+    commands = [
+        line[start:end].strip("`").strip()
+        for line in (ROOT / "CONTRIBUTING.md").read_text(encoding="utf-8").splitlines()
+        for start, end in code_spans(line)[0]
+        if "<path>" in line[start:end]
+    ]
+    assert len(commands) == 1, f"CONTRIBUTING.md gives {len(commands)} commands with <path>"
+    return commands[0]
+
+
+def written_again(clone: Path, path: str) -> None:
+    """The script at the path written again in the clone, as `CONTRIBUTING.md` gives it."""
+    subprocess.run(
+        ["bash", "-c", way_back().replace("<path>", shlex.quote(path))],
+        cwd=clone,
+        env=isolated_environment(clone),
+        check=True,
+        capture_output=True,
+    )
+
+
+def test_a_clone_made_before_the_attributes_is_told_to_write_each_script_again(
+    tmp_path: Path,
+) -> None:
+    clone = clone_made_before_the_attributes(tmp_path)
     problems = character_problems(clone)
     assert [problem for problem in problems if problem.endswith(CHECK_OUT_AGAIN)] == [
         f"{path}{IN_TREE}{CHECK_OUT_AGAIN}" for path in CLONED_SCRIPTS
     ]
     assert not [problem for problem in problems if problem.startswith("docs/page.md")]
     for path in CLONED_SCRIPTS:
-        (clone / path).unlink()
-    git(clone, "checkout", "--", *CLONED_SCRIPTS).check_returncode()
+        written_again(clone, path)
     assert character_problems(clone) == []
+    assert git(clone, "status", "--porcelain").stdout == b""
+
+
+def test_the_way_back_keeps_an_edit_of_a_script_that_is_not_staged(tmp_path: Path) -> None:
+    clone = clone_made_before_the_attributes(tmp_path)
+    script = clone / "scripts" / "start.sh"
+    # An edit saved as an editor on Windows saves it, with a carriage return before each line
+    # feed, and not staged.
+    script.write_bytes(script.read_bytes() + b"echo an edit\r\n")
+    assert script.read_bytes().count(b"\r\n") == 2, f"the test {NO_WINDOWS_LINE_ENDINGS}"
+    assert f"scripts/start.sh{IN_TREE}{CHECK_OUT_AGAIN}" in character_problems(clone)
+    written_again(clone, "scripts/start.sh")
+    assert script.read_bytes() == b"echo a\necho an edit\n"
+    assert git(clone, "status", "--porcelain").stdout == b" M scripts/start.sh\n"
+    assert not [p for p in character_problems(clone) if p.startswith("scripts/start.sh")]
 
 
 # The definitions that the tests share.

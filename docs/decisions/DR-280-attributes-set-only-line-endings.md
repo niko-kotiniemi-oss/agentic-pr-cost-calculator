@@ -6,7 +6,7 @@
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** R274
-- **Threats:** T81, T256, T259, T264, T272
+- **Threats:** T81, T256, T259, T264, T272, T276
 - **Replaces:** none
 - **Closed by:** none
 
@@ -36,4 +36,4 @@ This covers the attributes that the repository sets and how the checks read them
 
 ## What reversing it would change
 
-How hard it is to reverse: reversible. The rule is part of one test, and the reading is one helper. R274 in `project-standards` would change, with its scenarios, and so would the answers of T81, T256, T259 and T272, design decision 23 and task 1.51. Nothing that adopters configure or depend on changes, so the change would not be a breaking one for adopters.
+How hard it is to reverse: reversible. The rule is part of one test, and the reading is one helper. R274 in `project-standards` would change, with its scenarios, and so would the answers of T81, T256, T259, T272 and T276, design decision 23 and task 1.51. Nothing that adopters configure or depend on changes, so the change would not be a breaking one for adopters.

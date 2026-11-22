@@ -2187,7 +2187,12 @@ The repository's attributes SHALL give every tracked file `text=auto` and `eol=l
 #### Scenario: A clone made before the attributes is told how to write its scripts again
 
 - **WHEN** a clone made with `core.autocrlf` set to `true` before the commit that adds the attributes pulls that commit, so that each file that the pull does not change keeps a carriage return before each line feed while `git status` shows nothing
-- **THEN** the test of characters, and for a vendored script the test of the files that others write, fail on each script there that holds a carriage return, name it, and say to delete it and check it out again, or to clone the repository again, as `CONTRIBUTING.md` also says
+- **THEN** the test of characters, and for a vendored script the test of the files that others write, fail on each script there that holds a carriage return, name it, and say to stage it, delete it, check it out again and unstage it, which keeps an edit not yet staged, or to clone the repository again, as `CONTRIBUTING.md` also says
+
+#### Scenario: A clone made before the attributes is told how to write the vendored copy again
+
+- **WHEN** a vendored file holds a carriage return that the pinned commit's file does not, as a clone made with `core.autocrlf` set to `true` before the commit that adds the attributes keeps one in each file that a pull does not change
+- **THEN** the vendor check fails, names each such file once and says, once, to run `scripts/sync-superpowers.sh`, or to delete `vendor/superpowers/` and check it out again, as `CONTRIBUTING.md` also says, while a vendored file that differs otherwise is named with no such advice
 
 #### Scenario: Files saved with Windows line endings pass every check
 
@@ -2208,6 +2213,11 @@ The repository's attributes SHALL give every tracked file `text=auto` and `eol=l
 
 - **WHEN** a job of `.github/workflows/ci.yml` is missing from what the job `ci` needs, which is the check that a merge waits for
 - **THEN** a test fails and names the job
+
+#### Scenario: A job or a step that CI may skip or let fail fails CI
+
+- **WHEN** a job of `.github/workflows/ci.yml` other than the job `ci` sets `if`, any job there sets `continue-on-error`, or a step of any job there sets either, so that a check could be skipped, or fail, while the job `ci` passes
+- **THEN** a test fails and names the job, the step and the key
 
 #### Scenario: A lone carriage return, or one that git's index or a script holds, still fails
 
@@ -2289,7 +2299,7 @@ Each file that others write SHALL hold, as itself or by an escape, only printabl
 
 ### Requirement: The vendored copy of Superpowers holds only what its pinned commit gives
 
-CI SHALL compare every path under `vendor/superpowers/`, whatever its name, with the files that the sync script copies from the commit that `vendor/superpowers/UPSTREAM.lock` pins, as that commit's objects hold them whatever a person's git converts, leaving out that lock alone, by its path, so that no file there passes as upstream's unless that commit gives it as it is. Tests SHALL fail otherwise.
+CI SHALL compare every path under `vendor/superpowers/`, whatever its name, with the files that the sync script copies from the commit that `vendor/superpowers/UPSTREAM.lock` pins, as that commit's objects hold them whatever a person's git converts, and the mode that git's index gives each with that commit's, leaving out that lock alone, by its path, so that no file there passes as upstream's unless that commit gives it as it is. Tests SHALL fail otherwise.
 
 #### Scenario: A vendored file that the pinned commit does not give fails CI
 
@@ -2313,8 +2323,23 @@ CI SHALL compare every path under `vendor/superpowers/`, whatever its name, with
 
 #### Scenario: The sync writes only files, and only inside its copy
 
-- **WHEN** the pinned commit gives, under a vendored path, a link, a submodule, or a file whose path runs through `.`, `..` or a folder named `.git` in any case
+- **WHEN** the pinned commit gives, under a vendored path, a link, a submodule, or a file whose path git's checkout refuses with the protections of NTFS and HFS+ on, such as one through `.` or `..`, or through a folder that git, Windows or macOS opens as `.git`, as `.git` in any case, `.git.`, `git~1` and `.git` with a character that HFS+ ignores are, whatever the person's configuration turns off
 - **THEN** the sync, with and without `--check`, stops and names it, and writes nothing outside the folder that it writes the copy into
+
+#### Scenario: A link in the vendored copy stops the sync
+
+- **WHEN** `vendor`, `vendor/superpowers/`, or a folder or file below it, is a link
+- **THEN** the sync, with and without `--check`, stops and names it before it reads or writes anything, and the link and what it leads to stay as they were
+
+#### Scenario: The sync reads and writes no repository that a person's git variables name
+
+- **WHEN** the sync runs, with and without `--check`, with a variable that names a repository, such as `GIT_DIR`, `GIT_WORK_TREE`, `GIT_INDEX_FILE`, `GIT_OBJECT_DIRECTORY` or `GIT_COMMON_DIR`, naming another repository or a part of one
+- **THEN** it reads and writes nothing there, and it still takes the configuration that `GIT_CONFIG_PARAMETERS` and `GIT_CONFIG_COUNT` give
+
+#### Scenario: A vendored file that git's index gives another mode fails CI
+
+- **WHEN** git's index gives a file below `vendor/superpowers/` another mode than the pinned commit gives it, as when its executable bit is dropped or added
+- **THEN** the vendor check fails and names the file and both modes, reading a name that git could take as a pattern as the name that it is, and the check fails where no git repository holds the copy, rather than compare no mode
 
 ### Requirement: An image, a PDF or a video is tracked only with a record that names it
 
