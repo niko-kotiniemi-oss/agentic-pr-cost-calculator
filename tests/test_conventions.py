@@ -30,12 +30,25 @@ that names the path in a code span, and the list gives no other file. The test o
 passes over a listed file only where its bytes are not UTF-8, so that a listed SVG is still
 read and the list takes no page of text out of it (R270, DR-276).
 
+Each Markdown file that this repository writes holds, outside code, no raw HTML, character
+reference, link or footnote definition, image, link title, `$`, backtick that a backslash
+escapes, run of backticks that its line leaves open, which GitHub may pair with one on a
+later line, or table row with more cells than its header; it gives a fence no more than a
+language, draws no block but Mermaid, and its Mermaid blocks hold no entity code, comment,
+raw HTML, front matter, accessible title or description, link or style. A template under
+`.github/` may hold HTML comments, and the README the `<details>` and `<summary>` elements
+without attributes that fold its sections of detail, but no backtick or run of tildes on a
+line that GitHub reads as raw HTML after either, where it opens no code. The test reads a
+page's code as `scripts/wording.py` reads it, with `reading`, so that the two tests never
+tell code in two ways, and names the file, the line and what it holds (R273, DR-279).
+
 Each check is shown to fail on a git repository into which its defect is planted.
 """
 
 from __future__ import annotations
 
 import codecs
+import html.entities
 import mimetypes
 import os
 import re
@@ -55,7 +68,7 @@ from test_decisions import AUTHOR, CODE_SPAN, records_of
 from test_decisions import record as decision_record
 from test_repository import oldest_python
 from test_roadmap import isolated_environment, session_free_environment
-from wording import MARKDOWN
+from wording import BACKTICKS, CELL_BORDER, MARKDOWN, Block, block_lines, code_spans, reading
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -157,6 +170,69 @@ UNLISTED = (
     " is an image, a PDF or a video by its extension, which only an exception that gives its"
     " object id and an accepted record lets in"
 )
+# The files under `.github/` that GitHub offers as templates, whose comments guide whoever
+# fills one in (R273).
+TEMPLATE = re.compile(
+    r"\.github/(?:pull_request_template\.md|(?:ISSUE|PULL_REQUEST|DISCUSSION)_TEMPLATE/[^/]+)\Z",
+    re.IGNORECASE,
+)
+README = "README.md"
+# The elements with which the README folds its sections of detail, without attributes (R200).
+FOLDS = ("<details>", "</details>", "<summary>", "</summary>")
+# The languages of a fenced block that GitHub draws rather than shows as code (A9), and what
+# a fence may give as its language.
+DRAWN = frozenset({"math", "geojson", "topojson", "stl"})
+LANGUAGE = re.compile(r"[A-Za-z0-9_+#.-]+")
+# Where a mark that GitHub hides or shows otherwise may start on a line read as prose: a
+# CDATA section's opening is one mark, so that the `![` in it opens no image.
+MARK = re.compile(r"<!\[CDATA\[|<|&|\$|\]:|!\[|\]\(")
+AUTOLINK = re.compile(
+    r"<(?:[A-Za-z][A-Za-z0-9+.-]{1,31}:[^\x00-\x20<>]*"
+    r"|[A-Za-z0-9.!#$%&'*+/=?^_`{|}~-]+@[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?"
+    r"(?:\.[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?)*)>"
+)
+# A link's destination that angle brackets hold, which is no raw HTML.
+ANGLE = re.compile(r"<[^<>\n]*>")
+# What the reading takes to open code, and GitHub, on a line that it reads as raw HTML, not.
+RAW_CODE = re.compile(r"`|~{3,}")
+TAG = re.compile(r"</?[A-Za-z][A-Za-z0-9-]*")
+DECLARATION = re.compile(r"<![A-Za-z]")
+REFERENCE = re.compile(r"&(?:#[0-9]{1,7}|#[Xx][0-9A-Fa-f]{1,6}|([A-Za-z][A-Za-z0-9]*));")
+ESCAPED_BACKTICK = re.compile(r"(?<!\\)(?:\\\\)*\\`")
+# A row of a table's delimiter, and what may open a row inside a quote or a list item.
+DELIMITER_CELL = re.compile(r"[ \t]*:?-+:?[ \t]*")
+CONTAINER = re.compile(r"^[ \t>]*(?:(?:[-*+]|\d{1,9}[.)])[ \t]+)*")
+# What a Mermaid block may not hold: an entity code, which it shows as the character that it
+# names, a comment or directive, and the statements that give text that the drawing does
+# not show or change how it shows what it does.
+ENTITY_CODE = re.compile(r"#[A-Za-z0-9_]+;")
+MERMAID_STATEMENT = re.compile(r"^[ \t]*(accTitle|accDescr|click|style|classDef|linkStyle)\b")
+
+COMMENT = "an HTML comment, which GitHub hides"
+HIDES = ", which GitHub hides"
+SHOWN_OTHERWISE = ", which GitHub hides or shows otherwise"
+NAMES_CHARACTER = ", which GitHub shows as the character that it names"
+DEFINITION = "]:, which starts a link or footnote definition that GitHub hides"
+IMAGE = "![, which starts an image that GitHub fetches and shows"
+TITLE = "a link with a title, which GitHub shows only under a pointer"
+DOLLAR = "$, with which GitHub starts a mathematical expression"
+BACKSLASHED = (
+    "a backtick that a backslash escapes, which GitHub shows as itself where the test would"
+    " read code"
+)
+INFO = "an opening fence that gives more than a language, which GitHub does not show"
+IN_MERMAID = " in a Mermaid block"
+MERMAID_HIDES = ", which gives text that the drawing does not show or changes how it shows it"
+ENTITY_NAMES = ", which the drawing shows as the character that it names"
+DIRECTIVE = ", which starts a comment or a directive that the drawing hides"
+NEVER_ENDS = "an HTML comment that never closes, which GitHub hides to the end"
+OPENS_NO_CODE = ", which opens no code on a line that GitHub reads as raw HTML"
+OPEN_RUN = (
+    "a run of backticks that its line leaves open, which GitHub may pair with one on a later line"
+)
+PAGES_READ_NOTHING = "the check of pages read no Markdown file that this repository writes"
+# The marks that fail wherever they stand on a line read as prose.
+PLAIN = {"$": DOLLAR, "]:": DEFINITION, "![": IMAGE}
 MEDIA_READ_NOTHING = (
     "git lists no tracked file, so the check of images, PDFs and videos read nothing"
 )
@@ -504,6 +580,15 @@ def path_problems(paths: Iterable[str]) -> list[str]:
     return problems
 
 
+def versions(
+    index: tuple[str, bytes], tree: tuple[str, bytes] | None
+) -> list[tuple[str, tuple[str, bytes]]]:
+    """The versions of a tracked path that a check reads, each with the words that tell which
+    it is: git's index's alone where the working tree holds the same or nothing, and else
+    both (R272)."""
+    return [("", index)] if tree in (None, index) else [(IN_INDEX, index), (IN_TREE, tree)]
+
+
 def character_problems(root: Path, exceptions: Iterable[Excepted] = EXCEPTIONS) -> list[str]:
     """R268, R269 and R272's reading of every path that git's index tracks, and of each file
     as git's index holds it and as the working tree holds it, where it holds one, but a listed
@@ -535,9 +620,8 @@ def character_problems(root: Path, exceptions: Iterable[Excepted] = EXCEPTIONS) 
         read += 1
         index = ("link" if entry.mode == LINK else "file", indexed)
         tree = in_working_tree(root, entry.path, folders)
-        versions = [("", index)] if tree in (None, index) else [(IN_INDEX, index), (IN_TREE, tree)]
         others, page = bool(written_by_others(entry.path)), entry.path in markdown
-        for where, (kind, data) in versions:
+        for where, (kind, data) in versions(index, tree):
             problems += version_problems(entry, where, kind, data, others, page, passed)
     if not read:
         problems.append(READ_NOTHING)
@@ -624,6 +708,310 @@ def exception_problems(root: Path, exceptions: Iterable[Excepted]) -> list[str]:
     return problems + [
         f"{shown_path(path)}{UNLISTED}" for path in held if media(path) and path not in listed
     ]
+
+
+def markup(line: str, at: int, folds: bool, autolinks: bool) -> tuple[str, str] | None:
+    """What the raw HTML that may start at this column of a line is and why it fails, or None
+    where none starts there: an autolink is none on a line read as prose, and neither is a
+    fold of the README (R273)."""
+    if autolinks and AUTOLINK.match(line, at):
+        return None
+    if folds and line.startswith(FOLDS, at):
+        return None
+    if line.startswith("<!--", at):
+        return "an HTML comment", HIDES
+    if line.startswith("<![CDATA[", at):
+        return "a CDATA section", HIDES
+    if DECLARATION.match(line, at):
+        return "a declaration", HIDES
+    if line.startswith("<?", at):
+        return "a processing instruction", HIDES
+    tag = TAG.match(line, at)
+    return (f"the HTML element {shown(tag.group())}", SHOWN_OTHERWISE) if tag else None
+
+
+def destination(line: str, at: int) -> tuple[int | None, int]:
+    """Where the destination of a link whose `](` starts at this column starts, where angle
+    brackets hold it, and where it ends: after its closing bracket, or else at the first
+    space, tab or closing parenthesis that no opening one matches, a backslash escaping the
+    character after it."""
+    start = at + 2
+    while line[start : start + 1] in (" ", "\t"):
+        start += 1
+    angle = ANGLE.match(line, start)
+    if angle:
+        return start, angle.end()
+    end, depth = start, 0
+    while end < len(line) and line[end] not in " \t":
+        if line[end] == "\\":
+            end += 1
+        elif line[end] == "(":
+            depth += 1
+        elif line[end] == ")":
+            if not depth:
+                break
+            depth -= 1
+        end += 1
+    return None, end
+
+
+def line_problems(seen: str, raw: str, folds: bool) -> list[tuple[int, str]]:
+    """Each mark that GitHub hides or shows otherwise on a line read as prose, by its column:
+    raw HTML, a character reference that GitHub knows, `$`, a link or footnote definition, an
+    image, a link that may give a title, the end of the line among what may follow its
+    destination since a title may start there, and a backtick that a backslash escapes,
+    which the reading takes to open or close code (R273)."""
+    found: list[tuple[int, str]] = []
+    angles: set[int] = set()
+    for mark in MARK.finditer(seen):
+        at, token = mark.start(), mark.group()
+        what = PLAIN.get(token, "")
+        if token[0] == "<" and at not in angles:
+            element = markup(seen, at, folds, autolinks=True)
+            what = "".join(element) if element else ""
+        elif token == "&":
+            reference = REFERENCE.match(seen, at)
+            if reference and (reference[1] is None or f"{reference[1]};" in html.entities.html5):
+                what = f"the character reference {shown(reference.group())}{NAMES_CHARACTER}"
+        elif token == "](":
+            start, end = destination(seen, at)
+            if start is not None:
+                angles.add(start)
+            if not seen[end:].lstrip(" \t").startswith(")"):
+                what = TITLE
+        if what:
+            found.append((at + 1, what))
+    found += [
+        (escape.end() - 1, BACKSLASHED)
+        for escape in ESCAPED_BACKTICK.finditer(raw)
+        if seen[escape.end() - 2] == "\\"
+    ]
+    return found
+
+
+def open_runs(line: str) -> list[int]:
+    """The column of each run of backticks that a line leaves open, outside the code spans
+    that the reading finds on it, which GitHub may pair with a run on a later line of the
+    paragraph, so that the two tell code there in two ways (R273). It reads the line once."""
+    spans = iter(code_spans(line)[0])
+    span = next(spans, None)
+    found = []
+    for run in BACKTICKS.finditer(line):
+        while span is not None and span[1] <= run.start():
+            span = next(spans, None)
+        if span is None or run.start() < span[0]:
+            found.append(run.start() + 1)
+    return found
+
+
+def cells_of(line: str) -> list[str]:
+    """The cells that GitHub reads in a table's row: the line without the markers of the
+    quotes and list items that hold it, split at each pipe that no backslash escapes, in a
+    code span too, without the empty cells before a leading pipe and after a final one."""
+    row = CONTAINER.sub("", line).strip(" \t")
+    cells = CELL_BORDER.split(row)
+    if row.startswith("|"):
+        cells = cells[1:]
+    if row.endswith("|") and not row.endswith("\\|") and cells:
+        cells = cells[:-1]
+    return cells
+
+
+def table_problems(lines: list[str], fenced: set[int]) -> list[tuple[int, str]]:
+    """Each row of a table, by its line, that holds more cells than the table's header, whose
+    cells past the header's GitHub hides (R273). A table is a line of cells and a line of
+    delimiters with as many, outside code, and its rows run up to a blank line or a fence."""
+    found: list[tuple[int, str]] = []
+    taken: set[int] = set()
+    for number in range(2, len(lines) + 1):
+        line, above = lines[number - 1], lines[number - 2]
+        if (
+            "|" not in line
+            or "-" not in line
+            or not above.strip(" \t>")
+            or {number - 1, number} & fenced
+            or {number - 1, number} & taken
+        ):
+            continue
+        delimiters, header = cells_of(line), cells_of(above)
+        if not delimiters or len(header) != len(delimiters):
+            continue
+        if not all(DELIMITER_CELL.fullmatch(cell) for cell in delimiters):
+            continue
+        row = number + 1
+        while row <= len(lines) and row not in fenced and lines[row - 1].strip(" \t>"):
+            held = len(cells_of(lines[row - 1]))
+            if held > len(header):
+                found.append(
+                    (
+                        row,
+                        f"a table row of {held} cells under a header of {len(header)}, whose"
+                        " cells past the header's GitHub hides",
+                    )
+                )
+            row += 1
+        taken.update(range(number - 1, row))
+    return found
+
+
+def mermaid_problems(lines: list[str], block: Block) -> list[tuple[int, int, str]]:
+    """What a Mermaid block holds that the drawing hides or shows otherwise, by its line and
+    column: front matter and a statement, either of which gives text that the drawing does
+    not show or changes how it shows it, an entity code, a comment or a directive, and raw
+    HTML, an autolink among it (R273)."""
+    found: list[tuple[int, int, str]] = []
+    first = next((number for number in block.held if lines[number - 1].strip(" \t")), None)
+    if first is not None and lines[first - 1].strip(" \t") == "---":
+        column = lines[first - 1].index("-") + 1
+        found.append((first, column, f"front matter{IN_MERMAID}{MERMAID_HIDES}"))
+    for number in block.held:
+        line = lines[number - 1]
+        statement = MERMAID_STATEMENT.match(line)
+        if statement:
+            found.append(
+                (number, statement.start(1) + 1, f"{statement[1]}{IN_MERMAID}{MERMAID_HIDES}")
+            )
+        found += [
+            (
+                number,
+                code.start() + 1,
+                f"the entity code {shown(code.group())}{IN_MERMAID}{ENTITY_NAMES}",
+            )
+            for code in ENTITY_CODE.finditer(line)
+        ]
+        comment = line.find("%%")
+        if comment >= 0:
+            found.append((number, comment + 1, f"%%{IN_MERMAID}{DIRECTIVE}"))
+        for opening in re.finditer("<", line):
+            element = markup(line, opening.start(), folds=False, autolinks=False)
+            if element:
+                found.append((number, opening.start() + 1, f"{element[0]}{IN_MERMAID}{element[1]}"))
+    return found
+
+
+def without_comments(text: str) -> tuple[str, tuple[int, int] | None, set[int]]:
+    """A template's text with each HTML comment outside code made spaces, its line breaks
+    kept, so that the columns after it stay as they were; where one opens that never closes,
+    by its line and column, from where GitHub hides the rest; and each line on which a
+    comment that opens a line closes, the rest of which GitHub reads as raw HTML (R273). Each
+    comment is found as the reading reads the text once the comments before it are gone,
+    since a backtick or a fence in a comment opens no code."""
+    raw: set[int] = set()
+    while True:
+        seen = "".join(reading(text)[0])
+        at = seen.find("<!--")
+        if at < 0:
+            return text, None, raw
+        start = text.rfind("\n", 0, at) + 1
+        end = text.find("-->", at + 2)
+        stop = len(text) if end < 0 else end + 3
+        text = text[:at] + re.sub(r"[^\n]", " ", text[at:stop]) + text[stop:]
+        if end < 0:
+            return text, (text.count("\n", 0, at) + 1, at - start + 1), raw
+        if at - start <= 3 and not text[start:at].strip(" "):
+            raw.add(text.count("\n", 0, end) + 1)
+
+
+def fold_lines(lines: list[str], view: list[str]) -> set[int]:
+    """The lines of the README that GitHub reads as raw HTML where the test lets its folds
+    stand: from each line that a fold opens, after at most three spaces and outside code, up
+    to the next blank line (R273)."""
+    found: set[int] = set()
+    inside = False
+    for number, (raw, seen) in enumerate(zip(lines, view, strict=True), 1):
+        indent = len(seen) - len(seen.lstrip(" "))
+        if not raw.strip(" \t"):
+            inside = False
+        elif indent <= 3 and seen.startswith(FOLDS, indent):
+            inside = True
+        if inside:
+            found.add(number)
+    return found
+
+
+def page_text_problems(path: str, text: str, where: str = "") -> list[str]:
+    """What one version of a page holds that GitHub hides or shows otherwise, by its line
+    and, for a mark on a line, its column, and where the reading of its code stopped short
+    (R273, DR-279). A template's comments are passed over, and the README's folds, but code
+    on a line that GitHub reads as raw HTML after either."""
+    name = shown_path(path)
+    found: list[tuple[int, int, str]] = []
+    raw_html: set[int] = set()
+    if TEMPLATE.match(path):
+        text, unclosed, raw_html = without_comments(text)
+        if unclosed:
+            found.append((unclosed[0], unclosed[1], NEVER_ENDS))
+    chars, stopped, blocks = reading(text)
+    lines, view = text.split("\n"), "".join(chars).split("\n")
+    if path == README:
+        raw_html = fold_lines(lines, view)
+    for number in sorted(raw_html):
+        code = RAW_CODE.search(lines[number - 1])
+        if code:
+            opens = "a backtick" if code.group() == "`" else "a run of tildes"
+            found.append((number, code.start() + 1, f"{opens}{OPENS_NO_CODE}"))
+    for block in blocks:
+        words = block.info.split()
+        if len(words) > 1 or (words and not LANGUAGE.fullmatch(words[0])):
+            found.append((block.line, 0, INFO))
+        language = words[0].casefold() if words else ""
+        if language in DRAWN:
+            found.append((block.line, 0, f"a fenced block that GitHub draws as {language}"))
+        elif language == "mermaid":
+            found += mermaid_problems(lines, block)
+    fenced = block_lines(blocks)
+    found += [(row, 0, what) for row, what in table_problems(lines, fenced)]
+    read_to = min((line for line, _ in stopped), default=len(lines) + 1)
+    found += [
+        (number, column, OPEN_RUN)
+        for number, raw in enumerate(lines[: read_to - 1], 1)
+        if number not in fenced
+        for column in open_runs(raw)
+    ]
+    for number, (seen, raw) in enumerate(zip(view, lines, strict=True), 1):
+        found += [
+            (number, column, what) for column, what in line_problems(seen, raw, path == README)
+        ]
+    problems = [
+        (line, column, f"{name}:{line}{f':{column}' if column else ''}{where} holds {what}")
+        for line, column, what in found
+    ]
+    problems += [(line, 0, f"{name}:{line}{where}: {message}") for line, message in stopped]
+    return [problem for _, _, problem in sorted(problems, key=lambda problem: problem[:2])]
+
+
+def page_problems(root: Path) -> list[str]:
+    """What each Markdown file that this repository writes holds that GitHub hides or shows
+    otherwise, as git's index holds it and as the working tree holds it, where it differs
+    (R272, R273). A version that is no file of UTF-8 text, and an object that this clone
+    lacks, it leaves to the test of characters, which names each."""
+    markdown = markdown_files(root)
+    pages = [
+        entry
+        for entry in tracked_entries(root)
+        if entry.path in markdown
+        and entry.mode in (FILE, EXECUTABLE)
+        and not written_by_others(entry.path)
+    ]
+    contents = blobs(root, (entry.oid for entry in pages))
+    problems: list[str] = []
+    folders: dict[str, str] = {}
+    read = 0
+    for entry in pages:
+        indexed = contents.get(entry.oid)
+        if indexed is None:
+            continue
+        tree = in_working_tree(root, entry.path, folders)
+        for where, (kind, data) in versions(("file", indexed), tree):
+            if kind != "file":
+                continue
+            try:
+                text = data.decode("utf-8")
+            except UnicodeDecodeError:
+                continue
+            read += 1
+            problems += page_text_problems(entry.path, text, where)
+    return problems if read else [PAGES_READ_NOTHING]
 
 
 def plant(
@@ -1361,6 +1749,424 @@ def test_a_check_of_images_that_reads_no_tracked_path_fails(tmp_path: Path) -> N
     assert exception_problems(plant(tmp_path, {}), ()) == [MEDIA_READ_NOTHING]
 
 
+# R273: the pages that this repository writes hold no text that GitHub hides.
+
+
+def page(body: str) -> str:
+    """A page whose third line starts this body."""
+    return f"# A page\n\n{body}\n"
+
+
+# Each mark of the first scenario, by the name of the page that plants it on its third line,
+# with the text at whose start the problem is named and what the problem says it holds.
+OUTSIDE_CODE = {
+    "comment": ("A <!-- hidden --> word.", "<!--", COMMENT),
+    "element": ("A <span>word.", "<span", f"the HTML element <span{SHOWN_OTHERWISE}"),
+    "closing-element": ("A word.</div>", "</div", f"the HTML element </div{SHOWN_OTHERWISE}"),
+    "fold-elsewhere": ("<details>", "<details", f"the HTML element <details{SHOWN_OTHERWISE}"),
+    "declaration": ("<!DOCTYPE html>", "<!", f"a declaration{HIDES}"),
+    "cdata": ("A <![CDATA[ hidden ]]> word.", "<![", f"a CDATA section{HIDES}"),
+    "instruction": ("A <?php echo 1; ?> word.", "<?", f"a processing instruction{HIDES}"),
+    "hexadecimal-reference": (
+        "A &#x202E; word.",
+        "&#x",
+        f"the character reference &#x202E;{NAMES_CHARACTER}",
+    ),
+    "decimal-reference": (
+        "A &#8238; word.",
+        "&#",
+        f"the character reference &#8238;{NAMES_CHARACTER}",
+    ),
+    "named-reference": ("A&nbsp;word.", "&", f"the character reference &nbsp;{NAMES_CHARACTER}"),
+    "link-definition": ("[a]: https://example.com", "]:", DEFINITION),
+    "footnote-definition": ("[^1]: A note.", "]:", DEFINITION),
+    "image": ("An ![image](a.png) here.", "![", IMAGE),
+    "double-quoted-title": ('A [link](a.md "A title") here.', "](", TITLE),
+    "single-quoted-title": ("A [link](a.md 'A title') here.", "](", TITLE),
+    "parenthesised-title": ("A [link](a.md (A title)) here.", "](", TITLE),
+    "title-after-brackets": ('A [link](<a.md> "A title") here.', "](", TITLE),
+    "target-cut-by-the-line": ("A [link](a.md", "](", TITLE),
+    "dollar": ("It costs $5.", "$", DOLLAR),
+    "escaped-backtick": ("A \\`<!-- hidden -->\\` word.", "\\", BACKSLASHED),
+}
+
+
+@pytest.fixture(scope="module")
+def planted_marks(tmp_path_factory: pytest.TempPathFactory) -> list[str]:
+    """What the check of pages finds in a repository that plants each mark in a page."""
+    files = {f"docs/{name}.md": page(line) for name, (line, _, _) in OUTSIDE_CODE.items()}
+    return page_problems(plant(tmp_path_factory.mktemp("marks"), files))
+
+
+@pytest.mark.parametrize("name", OUTSIDE_CODE)
+def test_text_that_github_hides_in_a_page_fails(planted_marks: list[str], name: str) -> None:
+    line, start, what = OUTSIDE_CODE[name]
+    assert f"docs/{name}.md:3:{line.index(start) + 1} holds {what}" in planted_marks
+
+
+def test_each_planted_mark_is_named_once_and_nothing_else_is(planted_marks: list[str]) -> None:
+    assert len(planted_marks) == len(OUTSIDE_CODE)
+
+
+def test_a_run_of_backticks_that_its_line_leaves_open_fails(tmp_path: Path) -> None:
+    body = "A `run that a later line closes,\nand then` <!-- x --> `code`.\n\n```\na ` b\n```"
+    root = plant(tmp_path, {"docs/a.md": page(body)})
+    assert page_problems(root) == [
+        f"docs/a.md:3:3 holds {OPEN_RUN}",
+        f"docs/a.md:4:27 holds {OPEN_RUN}",
+    ]
+
+
+def test_a_table_row_with_more_cells_than_its_header_fails(tmp_path: Path) -> None:
+    table = "| A | B |\n|---|:-:|\n| 1 | 2 |\n| 1 | 2 | hidden |\n3 | 4 | hidden\n"
+    root = plant(tmp_path, {"docs/table.md": page(table)})
+    row = "a table row of 3 cells under a header of 2, whose cells past the header's GitHub hides"
+    assert page_problems(root) == [f"docs/table.md:6 holds {row}", f"docs/table.md:7 holds {row}"]
+
+
+@pytest.mark.parametrize(
+    "table",
+    [
+        "| A | B |\n|---|---|\n| 1 | 2 |\n| 1 |\n| 1 \\| 2 | 3 |\n",
+        "A | B\n--|--\n1 | 2\n",
+        "> | A |\n> |---|\n> | 1 |\n",
+        "| A |\n\n| 1 | 2 |\n",
+        "| A | B |\n|---|---|\n```\n| 1 | 2 | 3 |\n```\n",
+    ],
+)
+def test_a_table_whose_rows_hold_no_more_cells_than_its_header_passes(
+    tmp_path: Path, table: str
+) -> None:
+    assert page_problems(plant(tmp_path, {"docs/table.md": page(table)})) == []
+
+
+def test_a_table_row_in_a_quote_is_read_as_github_reads_it(tmp_path: Path) -> None:
+    table = "> | A |\n> |---|\n> | 1 | hidden |\n"
+    root = plant(tmp_path, {"docs/table.md": page(table)})
+    assert page_problems(root) == [
+        "docs/table.md:5 holds a table row of 2 cells under a header of 1, whose cells past the"
+        " header's GitHub hides"
+    ]
+
+
+DRAWN_BLOCKS = [
+    ("```math\nx^2\n```", "docs/a.md:3 holds a fenced block that GitHub draws as math"),
+    ("~~~ MATH\nx^2\n~~~", "docs/a.md:3 holds a fenced block that GitHub draws as math"),
+    ("```geojson\n{}\n```", "docs/a.md:3 holds a fenced block that GitHub draws as geojson"),
+    ("```topojson\n{}\n```", "docs/a.md:3 holds a fenced block that GitHub draws as topojson"),
+    ("```stl\nsolid a\n```", "docs/a.md:3 holds a fenced block that GitHub draws as stl"),
+    ('```python title="hidden"\nx = 1\n```', f"docs/a.md:3 holds {INFO}"),
+    ("```python<!--hidden-->\nx = 1\n```", f"docs/a.md:3 holds {INFO}"),
+    (
+        "```mermaid\nflowchart LR\n  A[#8238;] --> B\n```",
+        f"docs/a.md:5:5 holds the entity code #8238;{IN_MERMAID}, which the drawing shows as the"
+        " character that it names",
+    ),
+    (
+        "```mermaid\nflowchart LR\n  A[#quot;] --> B\n```",
+        f"docs/a.md:5:5 holds the entity code #quot;{IN_MERMAID}, which the drawing shows as the"
+        " character that it names",
+    ),
+    (
+        "```mermaid\nflowchart LR\n  %% hidden\n  A --> B\n```",
+        f"docs/a.md:5:3 holds %%{IN_MERMAID}, which starts a comment or a directive that the"
+        " drawing hides",
+    ),
+    (
+        "```mermaid\n%%{init: {}}%%\nflowchart LR\n```",
+        f"docs/a.md:4:1 holds %%{IN_MERMAID}, which starts a comment or a directive that the"
+        " drawing hides",
+    ),
+    (
+        "```mermaid\nflowchart LR\n  A[<span>x] --> B\n```",
+        f"docs/a.md:5:5 holds the HTML element <span{IN_MERMAID}{SHOWN_OTHERWISE}",
+    ),
+    (
+        "```mermaid\nflowchart LR\n  A[<https://example.com>] --> B\n```",
+        f"docs/a.md:5:5 holds the HTML element <https{IN_MERMAID}{SHOWN_OTHERWISE}",
+    ),
+    (
+        "```mermaid\nflowchart LR\n  A[<!-- x -->] --> B\n```",
+        f"docs/a.md:5:5 holds {COMMENT.replace(', which', IN_MERMAID + ', which')}",
+    ),
+    (
+        "```mermaid\n---\nconfig:\n  theme: dark\n---\nflowchart LR\n```",
+        f"docs/a.md:4:1 holds front matter{IN_MERMAID}{MERMAID_HIDES}",
+    ),
+    *(
+        (
+            f"```mermaid\nflowchart LR\n  {statement}\n  A --> B\n```",
+            f"docs/a.md:5:3 holds {statement.split()[0].rstrip(':')}{IN_MERMAID}{MERMAID_HIDES}",
+        )
+        for statement in (
+            "accTitle: hidden",
+            "accDescr: hidden",
+            'click A "https://example.com" "hidden"',
+            "style A color:#fff",
+            "classDef hidden display:none",
+            "linkStyle 0 stroke:#fff",
+        )
+    ),
+]
+
+
+@pytest.mark.parametrize(("block", "problem"), DRAWN_BLOCKS)
+def test_a_drawn_block_that_can_hide_text_fails(tmp_path: Path, block: str, problem: str) -> None:
+    assert page_problems(plant(tmp_path, {"docs/a.md": page(block)})) == [problem]
+
+
+def test_a_mermaid_block_in_plain_text_passes(tmp_path: Path) -> None:
+    block = "```mermaid\nflowchart LR\n  A[The tool, in #1 place] -->|reads| B[A file]\n```"
+    assert page_problems(plant(tmp_path, {"docs/a.md": page(block)})) == []
+
+
+IN_CODE = [
+    "Inline `<!-- x -->`, `<span>`, `&#x202E;`, `[a]: b`, `![a](b)`, `$5` and `a\\`.",
+    "Inline ``a ` <!-- x --> b``.",
+    "```\n<!-- x -->\n<span>&#x202E; $5\n[a]: b\n```",
+    "~~~text\n<!-- x -->\n| A |\n|---|\n| 1 | 2 |\n~~~",
+    "- ```sh\n  echo '<!-- x -->'\n  ```",
+    "An autolink, <https://example.com/a?b=1>, and another, <someone@example.com>.",
+    "a < b, 1<2, <-, <= and <3 show as written, as do R&D, &c and &NotAnEntity;.",
+    "A [link](a.md), [another](<a b.md>) and [a third](a_(b).md) give no title.",
+    "An escaped backslash before code, \\\\`code`, reads as GitHub reads it.",
+]
+
+
+@pytest.mark.parametrize("body", IN_CODE)
+def test_those_marks_in_code_or_that_github_shows_as_written_pass(
+    tmp_path: Path, body: str
+) -> None:
+    assert page_problems(plant(tmp_path, {"docs/a.md": page(body)})) == []
+
+
+TEMPLATES = (
+    ".github/pull_request_template.md",
+    ".github/PULL_REQUEST_TEMPLATE.md",
+    ".github/PULL_REQUEST_TEMPLATE/change.md",
+    ".github/ISSUE_TEMPLATE/feature_request.md",
+    ".github/DISCUSSION_TEMPLATE/idea.md",
+)
+
+
+@pytest.mark.parametrize("path", TEMPLATES)
+def test_a_template_s_comment_passes(tmp_path: Path, path: str) -> None:
+    text = "## Before and after\n\n<!-- What a reader sees now. -->\n\n<!--\nTwo lines.\n-->\n"
+    assert page_problems(plant(tmp_path, {path: text})) == []
+
+
+@pytest.mark.parametrize(
+    ("path", "text", "problem"),
+    [
+        (
+            ".github/pull_request_template.md",
+            "<!--\n```\n-->\n<span>hidden\n",
+            f".github/pull_request_template.md:4:1 holds the HTML element <span{SHOWN_OTHERWISE}",
+        ),
+        (
+            ".github/pull_request_template.md",
+            "<!-- A comment. --> <span>hidden\n",
+            f".github/pull_request_template.md:1:21 holds the HTML element <span{SHOWN_OTHERWISE}",
+        ),
+        (
+            ".github/pull_request_template.md",
+            "Text.\n\n<!-- A comment that never closes.\n",
+            f".github/pull_request_template.md:3:1 holds {NEVER_ENDS}",
+        ),
+        (
+            ".github/pull_request_template.md",
+            "A &#x202E; word.\n",
+            ".github/pull_request_template.md:1:3 holds the character reference &#x202E;"
+            f"{NAMES_CHARACTER}",
+        ),
+        (
+            ".github/CONTRIBUTING.md",
+            "<!-- hidden -->\n",
+            f".github/CONTRIBUTING.md:1:1 holds {COMMENT}",
+        ),
+        (
+            "docs/pull_request_template.md",
+            "<!-- x -->\n",
+            f"docs/pull_request_template.md:1:1 holds {COMMENT}",
+        ),
+    ],
+)
+def test_a_template_holds_only_comments_and_no_other_page_holds_one(
+    tmp_path: Path, path: str, text: str, problem: str
+) -> None:
+    assert page_problems(plant(tmp_path, {path: text})) == [problem]
+
+
+FOLDED = (
+    "## Adopt the tool\n\n<details>\n<summary>Adopt the tool</summary>\n\nText.\n\n</details>\n"
+)
+
+
+def test_the_readme_s_folds_pass(tmp_path: Path) -> None:
+    assert page_problems(plant(tmp_path, {"README.md": FOLDED})) == []
+
+
+@pytest.mark.parametrize(
+    ("path", "text", "problems"),
+    [
+        (
+            "docs/page.md",
+            FOLDED,
+            [(3, 1, "<details"), (4, 1, "<summary"), (4, 24, "</summary"), (8, 1, "</details")],
+        ),
+        (
+            "docs/README.md",
+            FOLDED,
+            [(3, 1, "<details"), (4, 1, "<summary"), (4, 24, "</summary"), (8, 1, "</details")],
+        ),
+        ("README.md", FOLDED.replace("<details>", "<details open>"), [(3, 1, "<details")]),
+        ("README.md", FOLDED.replace("<summary>", '<summary class="a">'), [(4, 1, "<summary")]),
+        ("README.md", FOLDED.replace("<details>", "<DETAILS>"), [(3, 1, "<DETAILS")]),
+    ],
+)
+def test_a_fold_with_an_attribute_or_in_another_page_fails(
+    tmp_path: Path, path: str, text: str, problems: list[tuple[int, int, str]]
+) -> None:
+    assert page_problems(plant(tmp_path, {path: text})) == [
+        f"{path}:{line}:{column} holds the HTML element {tag}{SHOWN_OTHERWISE}"
+        for line, column, tag in problems
+    ]
+
+
+# A line that GitHub reads as raw HTML, from a fold of the README up to a blank line or after
+# a template's comment on the line where it closes, where a backtick or a run of tildes opens
+# no code, by the page that plants it, its text and what the test says.
+RAW_HTML_LINES = [
+    (
+        "README.md",
+        "<details>\n<summary>`<!-- x -->`</summary>\n\nText.\n\n</details>\n",
+        f"README.md:2:10 holds a backtick{OPENS_NO_CODE}",
+    ),
+    (
+        "README.md",
+        "<details>\n```\n\n<!-- x -->\n```\n",
+        f"README.md:2:1 holds a backtick{OPENS_NO_CODE}",
+    ),
+    (
+        "README.md",
+        "<details>\n<summary>A</summary>\n~~~\n\n<!-- x -->\n~~~\n",
+        f"README.md:3:1 holds a run of tildes{OPENS_NO_CODE}",
+    ),
+    (
+        ".github/pull_request_template.md",
+        "<!-- A comment. --> `&#x202E;`\n",
+        f".github/pull_request_template.md:1:21 holds a backtick{OPENS_NO_CODE}",
+    ),
+]
+
+
+@pytest.mark.parametrize(("path", "text", "problem"), RAW_HTML_LINES)
+def test_code_on_a_line_that_github_reads_as_raw_html_fails(
+    tmp_path: Path, path: str, text: str, problem: str
+) -> None:
+    assert page_problems(plant(tmp_path, {path: text})) == [problem]
+
+
+@pytest.mark.parametrize(
+    ("path", "text"),
+    [
+        (".github/pull_request_template.md", "Fill in `this` <!-- A comment. --> and `that`.\n"),
+        ("README.md", FOLDED.replace("Text.", "Text and `code`.")),
+        ("README.md", "```\n<details>\n`x`\n```\n"),
+    ],
+)
+def test_code_after_a_comment_within_a_line_after_a_fold_s_blank_line_or_in_code_passes(
+    tmp_path: Path, path: str, text: str
+) -> None:
+    assert page_problems(plant(tmp_path, {path: text})) == []
+
+
+def test_a_page_that_others_write_or_a_file_that_is_no_page_is_not_read(tmp_path: Path) -> None:
+    files = {
+        "vendor/superpowers/skills/a/SKILL.md": "<!-- x -->\n",
+        ".claude/skills/openspec-a/SKILL.md": "<!-- x -->\n",
+        "docs/notes.txt": "<!-- x -->\n",
+        "docs/page.md": "Text.\n",
+    }
+    assert page_problems(plant(tmp_path, files)) == []
+
+
+@pytest.mark.parametrize("path", ["docs/page.markdown", "docs/page.MD", "docs/page.mdx"])
+def test_every_file_that_github_shows_as_markdown_is_read(tmp_path: Path, path: str) -> None:
+    assert page_problems(plant(tmp_path, {path: "<!-- x -->\n"})) == [f"{path}:1:1 holds {COMMENT}"]
+
+
+def test_a_mark_that_only_git_s_index_or_only_the_working_tree_holds_fails(tmp_path: Path) -> None:
+    root = plant(tmp_path, {"docs/a.md": "A <!-- x --> word.\n", "docs/b.md": "A word.\n"})
+    (root / "docs/a.md").write_text("A word.\n", encoding="utf-8")
+    (root / "docs/b.md").write_text("A $5 word.\n", encoding="utf-8")
+    assert page_problems(root) == [
+        f"docs/a.md:1:3{IN_INDEX} holds {COMMENT}",
+        f"docs/b.md:1:3{IN_TREE} holds {DOLLAR}",
+    ]
+
+
+@pytest.mark.parametrize(
+    ("body", "problem"),
+    [
+        (
+            "```\ncode\n",
+            "docs/a.md:3: a fenced code block opens here and never closes, so the lines after it"
+            " were not read",
+        ),
+        (
+            "Text.\n\n  ```\n code\n  ```\n",
+            "docs/a.md:6: GitHub reads this line in the fence that opens on line 5 or after it",
+        ),
+    ],
+)
+def test_a_page_whose_code_the_test_cannot_tell_fails(
+    tmp_path: Path, body: str, problem: str
+) -> None:
+    problems = page_problems(plant(tmp_path, {"docs/a.md": page(body)}))
+    assert [found[: len(problem)] for found in problems] == [problem]
+
+
+def test_a_version_that_is_no_file_of_utf_8_text_is_left_to_the_test_of_characters(
+    tmp_path: Path,
+) -> None:
+    root = plant(tmp_path, {"docs/a.md": b"\xff<!-- x -->\n", "docs/b.md": "A <!-- x --> word.\n"})
+    (root / "docs/b.md").unlink()
+    (root / "docs/b.md").symlink_to("a.md")
+    git(
+        root, "update-index", "--add", "--cacheinfo", f"{FILE},{'1' * 40},docs/gone.md"
+    ).check_returncode()
+    assert page_problems(root) == [f"docs/b.md:1:3{IN_INDEX} holds {COMMENT}"]
+    assert character_problems(root) == [
+        "docs/a.md is not UTF-8, so the test cannot read it as text",
+        "docs/gone.md names an object that this clone lacks, as a partial clone does, which the"
+        " test does not fetch",
+    ]
+
+
+def test_a_check_of_pages_that_reads_no_page_fails(tmp_path: Path) -> None:
+    root = plant(tmp_path, {"docs/notes.txt": "Text.\n", "vendor/superpowers/a.md": "Text.\n"})
+    assert page_problems(root) == [PAGES_READ_NOTHING]
+
+
+@pytest.mark.parametrize(
+    ("text", "blocks", "stopped"),
+    [
+        ("```py\na\n\n```\nb\n", [Block(1, "py", (2, 3), 4)], []),
+        ("~~~ text more\na\n", [Block(1, "text more", (2, 3), None)], [1]),
+        ("- ```\n  a\nb\n```\n", [Block(1, "", (2,), None), Block(4, "", (5,), None)], [4]),
+        ("Text.\n\n  ```\n code\n", [Block(3, "", (), None)], [4]),
+        ("No code.\n", [], []),
+    ],
+)
+def test_the_reading_gives_each_fenced_block_s_lines_and_info_string(
+    text: str, blocks: list[Block], stopped: list[int]
+) -> None:
+    _, stops, found = reading(text)
+    assert found == blocks
+    assert [line for line, _ in stops] == stopped
+
+
 # The definitions that the tests share.
 
 
@@ -1410,11 +2216,15 @@ def test_text_is_shown_with_each_character_beyond_printable_ascii_by_its_code_po
 
 PLANTED_TEST = """from pathlib import Path
 
-from test_conventions import character_problems
+from test_conventions import character_problems, page_problems
 
 
 def test_the_planted_tree():
     assert not character_problems(Path({root!r}))
+
+
+def test_the_planted_pages():
+    assert not page_problems(Path({root!r}))
 """
 
 
@@ -1425,7 +2235,7 @@ def test_everything_that_a_failing_run_of_the_test_of_characters_prints_is_print
         "line\nfeed.md": "Printable.\n",
         "carriage\rreturn.md": "Printable.\n",
         "escape\x1b[2Jcharacter.md": "Printable.\n",
-        "tag\U000e0069\U000e0067.md": "Printable.\n",
+        "tag\U000e0069\U000e0067.md": "A <!-- x --> word.\n",
         "selector\ufe0f.md": "Printable.\n",
         "page.md": "ab\u202ecd\x07\ue000\u0378\n",
         "vendor/superpowers/a.md": "\U000e0041\ufe0f\n",
@@ -1446,6 +2256,7 @@ def test_everything_that_a_failing_run_of_the_test_of_characters_prints_is_print
     assert done.returncode == 1, printed.decode("ascii", "backslashreplace")
     assert b"U+202E RIGHT-TO-LEFT OVERRIDE" in printed
     assert b"U+E0069" in printed and b"U+000A" in printed and b"U+001B" in printed
+    assert b"tagU+E0069U+E0067.md:1:3 holds an HTML comment" in printed
     beyond = sorted({byte for byte in printed if not 0x20 <= byte <= 0x7E and byte != 0x0A})
     assert not beyond, f"the run printed the bytes {beyond}"
 
@@ -1459,3 +2270,7 @@ def test_every_tracked_file_holds_only_the_characters_that_its_writer_may_use() 
 
 def test_every_image_a_pdf_or_a_video_is_tracked_only_with_its_record() -> None:
     assert exception_problems(ROOT, EXCEPTIONS) == []
+
+
+def test_every_page_that_this_repository_writes_holds_only_text_that_github_shows() -> None:
+    assert page_problems(ROOT) == []

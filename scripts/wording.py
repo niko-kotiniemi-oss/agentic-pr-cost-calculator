@@ -6,8 +6,9 @@ its base, so that the test and the script never read a page in two ways.
 `tests/test_decisions.py` finds the specs, their titles, the accepted records and their
 quotations with the same patterns, so that the two tests never tell a quoted title in
 two ways, and `scripts/spec_form.py` finds the code spans of a spec's line as this finds
-those of a page's line. Like the tool, this runs on Python 3.11 and later with the standard library
-alone.
+those of a page's line. `tests/test_conventions.py` reads a page's code with `reading`, so that
+the test of the pages that this repository writes and the test of words never tell code in two
+ways. Like the tool, this runs on Python 3.11 and later with the standard library alone.
 """
 
 from __future__ import annotations
@@ -403,13 +404,42 @@ def fence_line(fence: Fence, line: str) -> str:
     return "text"
 
 
-def prose(path: str, text: str) -> tuple[list[str], list[tuple[int, str]]]:
-    """A file's characters with each that is not prose left unread, and where the reading
-    stopped short: a fence that never closes, or a line that the test cannot place, by its
-    line. A blank line is one of spaces and tabs alone."""
+class Block(NamedTuple):
+    """A fenced block as the reading finds it: the line that opens it, its info string, the
+    lines that it holds, and the line that closes it, where one does, each by its number."""
+
+    line: int
+    info: str
+    held: tuple[int, ...]
+    closing: int | None
+
+
+NEVER_CLOSES = (
+    "a fenced code block opens here and never closes, so the lines after it were not read"
+)
+
+
+def block_lines(blocks: Iterable[Block]) -> set[int]:
+    """Every line of these fenced blocks, their fences among them, by its number."""
+    return {
+        number
+        for block in blocks
+        for number in (block.line, *block.held, block.closing)
+        if number is not None
+    }
+
+
+def reading(text: str) -> tuple[list[str], list[tuple[int, str]], list[Block]]:
+    """A file's characters with each that is not prose left unread, where the reading
+    stopped short, by its line: a fence that never closes, or a line that the test cannot
+    place; and each fenced block that it read. A blank line is one of spaces and tabs
+    alone. `prose` reads a page with it, and so does the test of the pages that this
+    repository writes, so that the two never tell code in two ways."""
     chars = list(text)
+    blocks: list[Block] = []
     fence: Fence | None = None
-    released = False
+    info = ""
+    held: list[int] = []
     start = 0
     for number, line in enumerate(text.split("\n"), 1):
         end = start + len(line)
@@ -417,15 +447,21 @@ def prose(path: str, text: str) -> tuple[list[str], list[tuple[int, str]]]:
             kind = fence_line(fence, line) if line.strip(" \t") else "text"
             if kind == "unsure":
                 hide(chars, start, len(text))
-                return chars, [(number, UNSURE.format(fence.line))]
+                blocks.append(Block(fence.line, info, tuple(held), None))
+                return chars, [(number, UNSURE.format(fence.line))], blocks
+            if kind == "close":
+                blocks.append(Block(fence.line, info, tuple(held), number))
             if kind != "end":
                 hide(chars, start, end)
                 if kind == "close":
                     fence = None
+                else:
+                    held.append(number)
                 start = end + 1
                 continue
             # The line ends the list item that holds the fence, and the fence with it, so
             # it is read as any other line.
+            blocks.append(Block(fence.line, info, tuple(held), None))
             fence = None
         opened = OPEN_FENCE.match(line)
         if opened and not (opened[1][0] == "`" and "`" in opened[2]):
@@ -436,23 +472,41 @@ def prose(path: str, text: str) -> tuple[list[str], list[tuple[int, str]]]:
                 len(line[: opened.start(1)].expandtabs(4)),
                 bool(line[: opened.start(1)].strip(" \t")),
             )
+            info, held = opened[2].strip(" \t"), []
             hide(chars, start, end)
         else:
-            if path == CHANGELOG and SECTION_HEADING.match(line):
+            hide_code_spans(chars, start, line)
+        start = end + 1
+    if fence is None:
+        return chars, [], blocks
+    blocks.append(Block(fence.line, info, tuple(held), None))
+    return chars, [(fence.line, NEVER_CLOSES)], blocks
+
+
+def hide_released(chars: list[str], text: str, blocks: list[Block]) -> None:
+    """Leave unread each line of the changelog's released versions outside its fenced
+    blocks, from a version's heading up to the next heading of one or two `#`."""
+    fenced = block_lines(blocks)
+    released = False
+    start = 0
+    for number, line in enumerate(text.split("\n"), 1):
+        end = start + len(line)
+        if number not in fenced:
+            if SECTION_HEADING.match(line):
                 released = bool(VERSION_HEADING.match(line))
             if released:
                 hide(chars, start, end)
-            else:
-                hide_code_spans(chars, start, line)
         start = end + 1
-    if fence is None:
-        return chars, []
-    return chars, [
-        (
-            fence.line,
-            "a fenced code block opens here and never closes, so the lines after it were not read",
-        )
-    ]
+
+
+def prose(path: str, text: str) -> tuple[list[str], list[tuple[int, str]]]:
+    """A file's characters with each that is not prose left unread, as `reading` leaves
+    them, and where the reading stopped short. In the changelog, the sections of its
+    released versions are not read either."""
+    chars, stopped, blocks = reading(text)
+    if path == CHANGELOG:
+        hide_released(chars, text, blocks)
+    return chars, stopped
 
 
 def line_starts(text: str) -> list[int]:

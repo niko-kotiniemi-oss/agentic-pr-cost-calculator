@@ -205,7 +205,7 @@ sequenceDiagram
   R->>GH: List pull requests associated with each commit the push adds
   alt the commits belong to exactly one pull request
     R->>R: Read .pr-cost.json before and after; if both leave the tool off, say why in the job summary and stop
-    R->>R: Fetch the default branch's history and refs/pull/<n>/head
+    R->>R: Fetch the default branch's history and the pull request's head, refs/pull/N/head
     R->>R: Read the ledger files the merge adds, as git blobs, within the size bound, holding each file to the version of the ledger format that its first line states
     R->>R: Read the call ids of the first-parent history's earlier ledger files, by the versions they state, so no call counts twice
     R->>R: Compare the hook file at the merged commit with the one at its own commit
