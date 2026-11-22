@@ -76,13 +76,16 @@ from __future__ import annotations
 import os
 import posixpath
 import re
+import shutil
 import subprocess
+import tempfile
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
 from datetime import UTC, date, datetime
 from pathlib import Path
 
 import pytest
+from conventions import shown, shown_path
 from test_context_files import CONTEXT_FILES
 from test_roadmap import GIT_ENVIRONMENT, isolated_environment
 from wording import ACCEPTED, DEFAULT_BRANCH, QUOTATION, SPEC_FILE, SPEC_TITLE
@@ -1144,22 +1147,91 @@ def mode_problems(root: Path) -> list[str]:
     return problems
 
 
-def attribute_problems(root: Path, paths: list[str]) -> list[str]:
-    """The attributes that would change how these files' diffs show. Only the repository's
-    attributes count, not a contributor's own file of them.
+# The machine's own attributes file, which git would read besides the repository's own and
+# which no check of them reads. The check's own git folder names no remote, so git fetches
+# nothing that a partial clone lacks even without `GIT_NO_LAZY_FETCH`.
+ATTRIBUTE_ENVIRONMENT = {"GIT_ATTR_NOSYSTEM": "1"}
+# An attribute that a path has, as its path, its name and its value.
+Attribute = tuple[str, str, str]
+
+
+def repository_attributes(
+    root: Path, paths: Iterable[str]
+) -> tuple[list[Attribute], list[Attribute]]:
+    """Each attribute that the repository's attributes give these paths, as git's index
+    holds them and as the working tree holds them. Both are read in a git folder of the
+    check's own, which reads the clone's objects and a copy of its index and holds no
+    `info/attributes`, with no global or system attributes file, since `git check-attr`
+    reads a clone's `.git/info/attributes` even with `--cached` (R134, R274, DR-280).
 
     Raises LookupError when git cannot read them.
     """
     done = git(
-        root, "-c", f"core.attributesFile={os.devnull}", "check-attr", "-a", "-z", "--", *paths
+        root,
+        "rev-parse",
+        "--path-format=absolute",
+        "--git-path",
+        "index",
+        "--git-path",
+        "objects",
+        "--show-object-format",
     )
     if done.returncode != 0:
-        raise LookupError(f"git check-attr failed: {done.stderr.decode().strip()}")
-    fields = done.stdout.decode("utf-8").split("\0")[:-1]
+        raise LookupError(f"git rev-parse failed: {done.stderr.decode().strip()}")
+    index, objects, form = done.stdout.decode("utf-8", "surrogateescape").split("\n")[:3]
+    asked = "".join(f"{path}\0" for path in paths).encode("utf-8", "surrogateescape")
+    readings: list[list[Attribute]] = []
+    with tempfile.TemporaryDirectory() as folder:
+        made = git(Path(folder), "init", "-q", "--template=", f"--object-format={form}", folder)
+        if made.returncode != 0:
+            raise LookupError(f"git init failed: {made.stderr.decode().strip()}")
+        own = Path(folder) / ".git"
+        (own / "objects" / "info").mkdir(parents=True, exist_ok=True)
+        (own / "objects" / "info" / "alternates").write_text(f"{objects}\n", encoding="utf-8")
+        if Path(index).is_file():
+            shutil.copyfile(index, own / "index")
+        for cached in (["--cached"], []):
+            read = subprocess.run(
+                [
+                    "git",
+                    f"--git-dir={own}",
+                    f"--work-tree={root}",
+                    "-c",
+                    f"core.attributesFile={os.devnull}",
+                    "check-attr",
+                    *cached,
+                    "-a",
+                    "-z",
+                    "--stdin",
+                ],
+                cwd=root,
+                input=asked,
+                capture_output=True,
+                check=False,
+                env={**isolated_environment(root), **ATTRIBUTE_ENVIRONMENT},
+            )
+            if read.returncode != 0:
+                raise LookupError(f"git check-attr failed: {read.stderr.decode().strip()}")
+            fields = read.stdout.decode("utf-8", "surrogateescape").split("\0")[:-1]
+            readings.append(list(zip(fields[0::3], fields[1::3], fields[2::3], strict=True)))
+    return readings[0], readings[1]
+
+
+def attribute_problems(root: Path, paths: list[str]) -> list[str]:
+    """The attributes that would change how these files' diffs show, as git's index holds
+    the repository's attributes and as the working tree holds them. Only the repository's
+    attributes count, not a person's own (R134).
+
+    Raises LookupError when git cannot read them.
+    """
+    index, tree = repository_attributes(root, paths)
     return sorted(
-        f"{path} has {name}: {value}, which changes how its diff shows"
-        for path, name, value in zip(fields[0::3], fields[1::3], fields[2::3], strict=True)
-        if name in DIFF_ATTRIBUTES
+        {
+            f"{shown_path(path)} has {shown(name)}: {shown(value)}, which changes how its diff"
+            " shows"
+            for path, name, value in (*index, *tree)
+            if name in DIFF_ATTRIBUTES
+        }
     )
 
 
@@ -2780,7 +2852,7 @@ def test_an_attribute_that_changes_how_a_record_s_diff_shows_is_reported(tmp_pat
     ]
     outside = tmp_path.parent / f"{tmp_path.name}-outside"
     outside.mkdir()
-    with pytest.raises(LookupError, match="git check-attr failed: fatal: not a git repository"):
+    with pytest.raises(LookupError, match="git rev-parse failed: fatal: not a git repository"):
         attribute_problems(outside, paths)
 
 

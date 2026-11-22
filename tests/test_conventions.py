@@ -42,6 +42,12 @@ line that GitHub reads as raw HTML after either, where it opens no code. The tes
 page's code as `scripts/wording.py` reads it, with `reading`, so that the two tests never
 tell code in two ways, and names the file, the line and what it holds (R273, DR-279).
 
+The repository's attributes give a tracked file no attribute but `text` and `eol`, read as
+git's index holds them and as the working tree holds them, in a git folder of the check's
+own, with no person's own attributes, so that a clone's `.git/info/attributes` or a global
+attributes file is not read as the repository's, and an attributes file that a checkout
+re-encodes still fails (R274, DR-280).
+
 Each check is shown to fail on a git repository into which its defect is planted.
 """
 
@@ -64,8 +70,9 @@ from typing import NamedTuple
 import pytest
 import yaml
 from conventions import named, shown, shown_path, written_by_others
-from test_decisions import AUTHOR, CODE_SPAN, records_of
+from test_decisions import AUTHOR, CODE_SPAN, attribute_problems, records_of, repository_attributes
 from test_decisions import record as decision_record
+from test_guide import reviewed
 from test_repository import oldest_python
 from test_roadmap import isolated_environment, session_free_environment
 from wording import BACKTICKS, CELL_BORDER, MARKDOWN, Block, block_lines, code_spans, reading
@@ -233,6 +240,10 @@ OPEN_RUN = (
 PAGES_READ_NOTHING = "the check of pages read no Markdown file that this repository writes"
 # The marks that fail wherever they stand on a line read as prose.
 PLAIN = {"$": DOLLAR, "]:": DEFINITION, "![": IMAGE}
+# The attributes that set line endings, the only ones that the repository may give (R274).
+LINE_ENDINGS = frozenset({"text", "eol"})
+OTHER_ATTRIBUTE = ", an attribute other than text and eol"
+ATTRIBUTES_READ_NOTHING = "git lists no tracked file, so the test of attributes read nothing"
 MEDIA_READ_NOTHING = (
     "git lists no tracked file, so the check of images, PDFs and videos read nothing"
 )
@@ -1014,6 +1025,27 @@ def page_problems(root: Path) -> list[str]:
     return problems if read else [PAGES_READ_NOTHING]
 
 
+def other_attribute_problems(root: Path) -> list[str]:
+    """Each attribute other than `text` and `eol` that the repository's attributes give a
+    tracked file, as git's index holds them and as the working tree holds them, read in a
+    git folder of the test's own with no person's own attributes, by the file, the attribute
+    and its value, and by which of the two gives it where only one does (R274, DR-280)."""
+    paths = [entry.path for entry in tracked_entries(root)]
+    if not paths:
+        return [ATTRIBUTES_READ_NOTHING]
+    index, tree = repository_attributes(root, paths)
+    held = {IN_INDEX: set(index), IN_TREE: set(tree)}
+    both = held[IN_INDEX] & held[IN_TREE]
+    found = [(attribute, "") for attribute in both] + [
+        (attribute, where) for where, given in held.items() for attribute in given - both
+    ]
+    return [
+        f"{shown_path(path)}{where} has {shown(name)}: {shown(value)}{OTHER_ATTRIBUTE}"
+        for (path, name, value), where in sorted(found)
+        if name not in LINE_ENDINGS
+    ]
+
+
 def plant(
     root: Path,
     files: Mapping[str, str | bytes],
@@ -1040,6 +1072,21 @@ def plant(
 
 def commit(root: Path) -> None:
     git(root, "commit", "-q", "-m", "Plant", extra=AUTHOR).check_returncode()
+
+
+def give(root: Path, attributes: str, index: str | None = None) -> Path:
+    """The repository at root with this attributes file in its working tree, and in git's
+    index the same or the other text given, staged by its object id, so that git applies
+    none of it while it stages."""
+    (root / ".gitattributes").write_bytes(attributes.encode("utf-8"))
+    staged = (attributes if index is None else index).encode("utf-8")
+    done = git(root, "hash-object", "-w", "--stdin", stdin=staged)
+    done.check_returncode()
+    oid = done.stdout.decode("ascii").strip()
+    git(
+        root, "update-index", "--add", "--cacheinfo", f"{FILE},{oid},.gitattributes"
+    ).check_returncode()
+    return root
 
 
 # R268: the files that this repository writes hold only printable ASCII and line feeds.
@@ -1339,8 +1386,10 @@ def test_an_object_that_the_clone_lacks_fails(tmp_path: Path) -> None:
     ]
 
 
-def test_a_partial_clone_s_missing_object_is_named_and_not_fetched(tmp_path: Path) -> None:
-    source = plant(tmp_path / "source", {"page.md": "Printable.\n"})
+def partial_clone(tmp_path: Path, files: Mapping[str, str]) -> Path:
+    """A partial clone of a commit of these files whose index names each of them while the
+    clone holds none of their objects, which git would fetch from the source."""
+    source = plant(tmp_path / "source", files)
     commit(source)
     git(source, "config", "uploadpack.allowFilter", "true").check_returncode()
     clone = tmp_path / "clone"
@@ -1351,18 +1400,24 @@ def test_a_partial_clone_s_missing_object_is_named_and_not_fetched(tmp_path: Pat
         env=isolated_environment(clone),
     )
     git(clone, "read-tree", "HEAD").check_returncode()
+    return clone
+
+
+def present(clone: Path, oid: str) -> bool:
+    """Whether the clone holds the object, asked without fetching it."""
+    return git(clone, "cat-file", "-e", oid, extra={"GIT_NO_LAZY_FETCH": "1"}).returncode == 0
+
+
+def test_a_partial_clone_s_missing_object_is_named_and_not_fetched(tmp_path: Path) -> None:
+    clone = partial_clone(tmp_path, {"page.md": "Printable.\n"})
     (oid,) = [entry.oid for entry in tracked_entries(clone)]
-
-    def present() -> bool:
-        return git(clone, "cat-file", "-e", oid, extra={"GIT_NO_LAZY_FETCH": "1"}).returncode == 0
-
-    assert not present()
+    assert not present(clone, oid)
     assert character_problems(clone) == [
         "page.md names an object that this clone lacks, as a partial clone does, which the test "
         "does not fetch",
         READ_NOTHING,
     ]
-    assert not present()
+    assert not present(clone, oid)
 
 
 def test_a_link_whose_path_is_beyond_printable_ascii_fails(tmp_path: Path) -> None:
@@ -2167,6 +2222,137 @@ def test_the_reading_gives_each_fenced_block_s_lines_and_info_string(
     assert [line for line, _ in stops] == stopped
 
 
+# R274: the repository's attributes set nothing but line endings.
+
+NAMED_ATTRIBUTES = (
+    "working-tree-encoding",
+    "filter",
+    "ident",
+    "export-subst",
+    "export-ignore",
+    "binary",
+    "diff",
+    "linguist-generated",
+)
+# How an attributes file gives an attribute in each state, and how git shows its value.
+STATES = {"set": ("{}", "set"), "unset": ("-{}", "unset"), "valued": ("{}=a-value", "a-value")}
+
+
+@pytest.mark.parametrize("state", STATES)
+@pytest.mark.parametrize("name", NAMED_ATTRIBUTES)
+def test_an_attribute_other_than_text_and_eol_fails(tmp_path: Path, name: str, state: str) -> None:
+    written, value = STATES[state]
+    attributes = f"docs/*.md {written.format(name)}\n"
+    root = plant(tmp_path, {"docs/page.md": "Text.\n"})
+    if (name, state) == ("working-tree-encoding", "set"):
+        # Git dies on writing its index while an attributes file that it reads sets this
+        # attribute with no value, so this one state reaches only the working tree.
+        (root / ".gitattributes").write_bytes(attributes.encode("utf-8"))
+        where = IN_TREE
+    else:
+        give(root, attributes)
+        where = ""
+    problems = other_attribute_problems(root)
+    assert f"docs/page.md{where} has {name}: {value}{OTHER_ATTRIBUTE}" in problems
+    assert all(problem.startswith("docs/page.md") for problem in problems)
+
+
+def test_line_endings_alone_pass(tmp_path: Path) -> None:
+    files: dict[str, str | bytes] = {
+        "docs/page.md": "Text.\n",
+        "start.sh": "#!/bin/sh\n",
+        "a.png": PNG,
+    }
+    root = give(plant(tmp_path, files), "* text=auto eol=lf\n*.sh text eol=lf\n*.png -text\n")
+    assert other_attribute_problems(root) == []
+
+
+def test_an_attribute_that_only_git_s_index_or_only_the_working_tree_gives_fails(
+    tmp_path: Path,
+) -> None:
+    root = plant(tmp_path, {"docs/a.md": "Text.\n", "docs/b.md": "Text.\n"})
+    give(root, "docs/b.md ident\n", index="docs/a.md ident\n")
+    assert other_attribute_problems(root) == [
+        f"docs/a.md{IN_INDEX} has ident: set{OTHER_ATTRIBUTE}",
+        f"docs/b.md{IN_TREE} has ident: set{OTHER_ATTRIBUTE}",
+    ]
+
+
+# An attributes file that gives itself an encoding in which a checkout rewrites each `=` and
+# `*`, so that git cannot read the lines of the copy that a fresh clone writes.
+REENCODED = ".gitattributes working-tree-encoding=UTF-7\n*.md diff=x linguist-generated\n"
+REENCODED_FILES = ("docs/decisions/DR-001-a-choice.md", "docs/patterns.md", "docs/threat-model.md")
+
+
+def test_an_attributes_file_that_a_checkout_re_encodes_is_read_as_git_holds_it(
+    tmp_path: Path,
+) -> None:
+    source = plant(tmp_path / "source", dict.fromkeys(REENCODED_FILES, "Text.\n"))
+    commit(give(source, REENCODED))
+    clone = tmp_path / "clone"
+    subprocess.run(
+        ["git", "clone", "-q", str(source), str(clone)],
+        check=True,
+        capture_output=True,
+        env=isolated_environment(clone),
+    )
+    assert b"+AD0-" in (clone / ".gitattributes").read_bytes(), "no checkout re-encoded it"
+    hidden = ("diff: x", "linguist-generated: set")
+    assert other_attribute_problems(clone) == [
+        f".gitattributes{IN_INDEX} has working-tree-encoding: UTF-7{OTHER_ATTRIBUTE}",
+        *(
+            f"{path}{IN_INDEX} has {each}{OTHER_ATTRIBUTE}"
+            for path in REENCODED_FILES
+            for each in hidden
+        ),
+    ]
+    for path, paths in (
+        ("docs/decisions/DR-001-a-choice.md", ["docs/decisions/DR-001-a-choice.md"]),
+        ("docs/threat-model.md", ["docs/threat-model.md"]),
+        ("docs/patterns.md", reviewed(clone)),
+    ):
+        found = attribute_problems(clone, paths)
+        for each in hidden:
+            assert f"{path} has {each}, which changes how its diff shows" in found
+
+
+def test_a_person_s_own_attributes_are_not_read_as_the_repository_s(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    root = plant(tmp_path / "repository", {"docs/page.md": "Text.\n"})
+    (root / ".git" / "info").mkdir(exist_ok=True)
+    (root / ".git" / "info" / "attributes").write_text("* ident -diff\n", encoding="utf-8")
+    home = tmp_path / "home"
+    (home / "git").mkdir(parents=True)
+    (home / "git" / "attributes").write_text(
+        "* export-subst linguist-generated\n", encoding="utf-8"
+    )
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(home))
+    plain = git(root, "check-attr", "-a", "--", "docs/page.md").stdout.decode("utf-8")
+    assert "ident: set" in plain and "export-subst: set" in plain, "git reads neither file"
+    assert other_attribute_problems(root) == []
+    assert attribute_problems(root, ["docs/page.md"]) == []
+
+
+def test_a_partial_clone_s_missing_attributes_file_is_not_fetched(tmp_path: Path) -> None:
+    files = {".gitattributes": "docs/*.md diff=x\n", "docs/page.md": "Text.\n"}
+    clone = partial_clone(tmp_path, files)
+    (oid,) = [entry.oid for entry in tracked_entries(clone) if entry.path == ".gitattributes"]
+    assert not present(clone, oid)
+    other_attribute_problems(clone)
+    attribute_problems(clone, ["docs/page.md"])
+    assert not present(clone, oid)
+    assert (
+        ".gitattributes names an object that this clone lacks, as a partial clone does, which "
+        "the test does not fetch"
+    ) in character_problems(clone)
+
+
+def test_a_check_of_attributes_that_reads_no_tracked_file_fails(tmp_path: Path) -> None:
+    git(tmp_path, "init", "-q").check_returncode()
+    assert other_attribute_problems(tmp_path) == [ATTRIBUTES_READ_NOTHING]
+
+
 # The definitions that the tests share.
 
 
@@ -2216,7 +2402,7 @@ def test_text_is_shown_with_each_character_beyond_printable_ascii_by_its_code_po
 
 PLANTED_TEST = """from pathlib import Path
 
-from test_conventions import character_problems, page_problems
+from test_conventions import character_problems, other_attribute_problems, page_problems
 
 
 def test_the_planted_tree():
@@ -2225,6 +2411,10 @@ def test_the_planted_tree():
 
 def test_the_planted_pages():
     assert not page_problems(Path({root!r}))
+
+
+def test_the_planted_attributes():
+    assert not other_attribute_problems(Path({root!r}))
 """
 
 
@@ -2239,6 +2429,7 @@ def test_everything_that_a_failing_run_of_the_test_of_characters_prints_is_print
         "selector\ufe0f.md": "Printable.\n",
         "page.md": "ab\u202ecd\x07\ue000\u0378\n",
         "vendor/superpowers/a.md": "\U000e0041\ufe0f\n",
+        ".gitattributes": "tag\U000e0069\U000e0067.md answer=\U000e0041\x1b\n",
     }
     planted = plant(tmp_path / "planted", files, links={"link.md": "to\u202e\U000e0041\n\x1b.md"})
     test = tmp_path / "test_planted.py"
@@ -2257,6 +2448,7 @@ def test_everything_that_a_failing_run_of_the_test_of_characters_prints_is_print
     assert b"U+202E RIGHT-TO-LEFT OVERRIDE" in printed
     assert b"U+E0069" in printed and b"U+000A" in printed and b"U+001B" in printed
     assert b"tagU+E0069U+E0067.md:1:3 holds an HTML comment" in printed
+    assert b"tagU+E0069U+E0067.md has answer: U+E0041U+001B, an attribute other than" in printed
     beyond = sorted({byte for byte in printed if not 0x20 <= byte <= 0x7E and byte != 0x0A})
     assert not beyond, f"the run printed the bytes {beyond}"
 
@@ -2274,3 +2466,7 @@ def test_every_image_a_pdf_or_a_video_is_tracked_only_with_its_record() -> None:
 
 def test_every_page_that_this_repository_writes_holds_only_text_that_github_shows() -> None:
     assert page_problems(ROOT) == []
+
+
+def test_the_repository_s_attributes_set_nothing_but_line_endings() -> None:
+    assert other_attribute_problems(ROOT) == []
