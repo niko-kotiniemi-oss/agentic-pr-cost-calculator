@@ -58,6 +58,19 @@ no folder, setting or ignore file leaves one out; each problem names the file, t
 the rule, and a run that fails, warns or contradicts its exit status passes nothing (R271,
 DR-277).
 
+The repository's attributes give every tracked file `text=auto` and `eol=lf`, read as the
+test of attributes reads them, so that a checkout writes line feeds whatever `core.autocrlf`
+says. Each check here that reads a file's bytes from the working tree takes them through
+`staged_bytes` of `scripts/conventions.py`, which reads each carriage return right before a
+line feed as a line feed, as git stages a text file, in every file but a script, a file
+whose name ends in `.sh`, that starts with `#!` or that git records as executable. A
+carriage return that git's index holds, one that no line feed follows and any in a script
+still fail, and one in a script's working tree that git's index does not hold is named with
+the way back: to delete the script and check it out again, or to clone the repository again.
+CI's job `windows-line-endings` runs every check on the files that this repository writes,
+but its scripts, saved with Windows line endings, and the job `ci`, for which a merge waits,
+needs every job (R276, DR-281).
+
 Each check is shown to fail on a git repository into which its defect is planted.
 """
 
@@ -80,14 +93,30 @@ from collections.abc import Iterable, Iterator, Mapping
 from pathlib import Path, PurePosixPath
 from typing import Any, NamedTuple
 
+import conventions
 import pytest
+import windows_line_endings
 import yaml
-from conventions import named, shown, shown_path, written_by_others
+from conventions import (
+    NO_WINDOWS_LINE_ENDINGS,
+    is_script,
+    named,
+    read_staged,
+    recorded_executable,
+    shown,
+    shown_path,
+    staged_bytes,
+    written_by_others,
+)
 from test_decisions import AUTHOR, CODE_SPAN, attribute_problems, records_of, repository_attributes
 from test_decisions import record as decision_record
 from test_guide import reviewed
 from test_repository import oldest_python, pyproject
-from test_roadmap import isolated_environment, session_free_environment
+from test_roadmap import (
+    isolated_environment,
+    saved_with_windows_line_endings,
+    session_free_environment,
+)
 from wording import BACKTICKS, CELL_BORDER, MARKDOWN, Block, block_lines, code_spans, reading
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -158,6 +187,13 @@ NOT_ASCII = ", which is not printable ASCII"
 NOT_LISTED = ", which the list does not give; the owner decides whether it does"
 MARKDOWN_ALONE = ", which the list gives for Markdown alone"
 READ_NOTHING = "the test of characters read no tracked file"
+# What the test of characters says of a script whose working tree holds a carriage return
+# that git's index does not, as one in a clone made before the attributes does (R276, T267).
+CHECK_OUT_AGAIN = (
+    " is a script that holds a carriage return, which bash or the system reads as part of "
+    "its line: delete it and check it out again, or clone the repository again, as "
+    "CONTRIBUTING.md says"
+)
 
 
 class Excepted(NamedTuple):
@@ -257,6 +293,11 @@ PLAIN = {"$": DOLLAR, "]:": DEFINITION, "![": IMAGE}
 LINE_ENDINGS = frozenset({"text", "eol"})
 OTHER_ATTRIBUTE = ", an attribute other than text and eol"
 ATTRIBUTES_READ_NOTHING = "git lists no tracked file, so the test of attributes read nothing"
+# The line endings that the repository's attributes give every tracked file, so that a
+# checkout writes line feeds whatever `core.autocrlf` says (R276).
+LINE_FEEDS = {"text": "auto", "eol": "lf"}
+NOT_LINE_FEEDS = ", not text=auto and eol=lf, with which a checkout writes line feeds"
+LINE_FEEDS_READ_NOTHING = "git lists no tracked file, so the test of line endings read nothing"
 MEDIA_READ_NOTHING = (
     "git lists no tracked file, so the check of images, PDFs and videos read nothing"
 )
@@ -621,11 +662,14 @@ def path_problems(paths: Iterable[str]) -> list[str]:
 
 
 def versions(
-    index: tuple[str, bytes], tree: tuple[str, bytes] | None
+    entry: Entry, index: tuple[str, bytes], tree: tuple[str, bytes] | None
 ) -> list[tuple[str, tuple[str, bytes]]]:
     """The versions of a tracked path that a check reads, each with the words that tell which
-    it is: git's index's alone where the working tree holds the same or nothing, and else
-    both (R272)."""
+    it is: git's index's alone where the working tree holds the same, or the same once read
+    as git stages it, or nothing, and else both, a file of the working tree as `staged_bytes`
+    reads it (R272, R276)."""
+    if tree is not None and tree != index and tree[0] == "file":
+        tree = ("file", staged_bytes(entry.path, tree[1], entry.mode == EXECUTABLE))
     return [("", index)] if tree in (None, index) else [(IN_INDEX, index), (IN_TREE, tree)]
 
 
@@ -661,8 +705,16 @@ def character_problems(root: Path, exceptions: Iterable[Excepted] = EXCEPTIONS) 
         index = ("link" if entry.mode == LINK else "file", indexed)
         tree = in_working_tree(root, entry.path, folders)
         others, page = bool(written_by_others(entry.path)), entry.path in markdown
-        for where, (kind, data) in versions(index, tree):
+        for where, (kind, data) in versions(entry, index, tree):
             problems += version_problems(entry, where, kind, data, others, page, passed)
+        if (
+            tree is not None
+            and tree[0] == "file"
+            and b"\r" in tree[1]
+            and b"\r" not in indexed
+            and is_script(entry.path, tree[1], entry.mode == EXECUTABLE)
+        ):
+            problems.append(f"{name}{IN_TREE}{CHECK_OUT_AGAIN}")
     if not read:
         problems.append(READ_NOTHING)
     return problems
@@ -1042,7 +1094,7 @@ def page_problems(root: Path) -> list[str]:
         if indexed is None:
             continue
         tree = in_working_tree(root, entry.path, folders)
-        for where, (kind, data) in versions(("file", indexed), tree):
+        for where, (kind, data) in versions(entry, ("file", indexed), tree):
             if kind != "file":
                 continue
             try:
@@ -1073,6 +1125,41 @@ def other_attribute_problems(root: Path) -> list[str]:
         for (path, name, value), where in sorted(found)
         if name not in LINE_ENDINGS
     ]
+
+
+def line_ending_problems(root: Path) -> list[str]:
+    """Each tracked file to which the repository's attributes do not give both `text=auto`
+    and `eol=lf`, as git's index holds them and as the working tree holds them, read as the
+    test of attributes reads them, with no person's own attributes, by the file and what
+    its attributes give (R276, DR-281)."""
+    paths = [entry.path for entry in tracked_entries(root)]
+    if not paths:
+        return [LINE_FEEDS_READ_NOTHING]
+    readings = []
+    for attributes in repository_attributes(root, paths):
+        given: dict[str, dict[str, str]] = {path: {} for path in paths}
+        for path, name, value in attributes:
+            if name in LINE_FEEDS:
+                given[path][name] = value
+        readings.append(given)
+    index, tree = readings
+    problems = []
+    for path in paths:
+        held = (
+            [("", index[path])]
+            if index[path] == tree[path]
+            else [
+                (IN_INDEX, index[path]),
+                (IN_TREE, tree[path]),
+            ]
+        )
+        problems += [
+            f"{shown_path(path)}{where} has text: {shown(given.get('text', 'unspecified'))} and "
+            f"eol: {shown(given.get('eol', 'unspecified'))}{NOT_LINE_FEEDS}"
+            for where, given in held
+            if given != LINE_FEEDS
+        ]
+    return problems
 
 
 def ruff(root: Path, *args: str) -> subprocess.CompletedProcess[bytes]:
@@ -1164,7 +1251,8 @@ def python_files(root: Path) -> list[str]:
             continue
         held = in_working_tree(root, entry.path, folders)
         if held is not None and held[0] == "file":
-            first = held[1].split(b"\n", 1)[0].decode("utf-8", "surrogateescape")
+            text = staged_bytes(entry.path, held[1], entry.mode == EXECUTABLE)
+            first = text.split(b"\n", 1)[0].decode("utf-8", "surrogateescape")
             if read_as_python(entry.path, first):
                 found.append(entry.path)
     return found
@@ -2822,6 +2910,486 @@ def test_a_finding_names_the_file_by_its_tracked_path_in_printable_ascii() -> No
     ]
 
 
+# R276: a checkout writes line feeds whatever `core.autocrlf` says, and the checks read Windows
+# line endings as git stages them.
+
+RETURN = "\r"
+# A file of each kind that this repository writes and that others write.
+SAVED = {
+    "docs/page.md": "# A page\n\nText.\n",
+    "scripts/tool.py": "import os\n",
+    ".github/workflows/check.yml": "on: push\n",
+    "vendor/superpowers/skills/a/SKILL.md": "Text.\n",
+    ".claude/skills/openspec-a/SKILL.md": "Text.\n",
+}
+
+
+def test_a_file_saved_with_windows_line_endings_is_read_as_git_stages_it(tmp_path: Path) -> None:
+    root = plant(tmp_path, SAVED)
+    saved_with_windows_line_endings(root, SAVED)
+    assert character_problems(root) == []
+    assert page_problems(root) == []
+    assert python_files(root) == ["scripts/tool.py"]
+
+
+@pytest.mark.parametrize("held", ["ab\r\ncd\n", "ab\rcd\n"])
+def test_a_carriage_return_that_git_s_index_holds_fails(tmp_path: Path, held: str) -> None:
+    root = plant(tmp_path, {"docs/page.md": f"The first line.\n{held}"})
+    without = f"The first line.\n{held.replace(RETURN, '')}"
+    (root / "docs" / "page.md").write_bytes(without.encode("ascii"))
+    assert character_problems(root) == [
+        f"docs/page.md:2:3{IN_INDEX} holds {named(RETURN)}{NOT_ASCII}"
+    ]
+
+
+@pytest.mark.parametrize("held", ["ab\rcd\n", "ab\r", "ab\r\r\n"])
+def test_a_carriage_return_that_no_line_feed_follows_in_the_working_tree_fails(
+    tmp_path: Path, held: str
+) -> None:
+    root = plant(tmp_path, {"docs/page.md": "The first line.\nabcd\n"})
+    (root / "docs" / "page.md").write_bytes(f"The first line.\n{held}".encode("ascii"))
+    assert character_problems(root) == [
+        f"docs/page.md:2:3{IN_TREE} holds {named(RETURN)}{NOT_ASCII}"
+    ]
+
+
+# A script of each kind, by what makes it one, with its text and whether git records it as
+# executable.
+SCRIPTS = {
+    "scripts/start.sh": ("echo a\necho b\n", False),
+    "scripts/tool": ("#!/bin/sh\necho a\n", False),
+    "hooks/run-hook.cmd": (": x\necho a\n", True),
+    "vendor/superpowers/hooks/run-hook.cmd": (": x\necho a\n", True),
+    "vendor/superpowers/hooks/session-start": ("#!/usr/bin/env bash\necho a\n", True),
+}
+
+
+@pytest.mark.parametrize("path", SCRIPTS)
+def test_a_carriage_return_before_a_line_feed_in_a_script_fails_and_says_how_to_write_it_again(
+    tmp_path: Path, path: str
+) -> None:
+    text, executable = SCRIPTS[path]
+    root = plant(tmp_path, {path: text}, executable=[path] if executable else [])
+    saved_with_windows_line_endings(root, [path])
+    reason = NOT_LISTED if written_by_others(path) else NOT_ASCII
+    assert character_problems(root) == [
+        *(
+            f"{path}:{number}:{len(line) + 1}{IN_TREE} holds {named(RETURN)}{reason}"
+            for number, line in enumerate(text.split("\n")[:-1], 1)
+        ),
+        f"{path}{IN_TREE}{CHECK_OUT_AGAIN}",
+    ]
+
+
+def test_a_script_whose_carriage_return_git_s_index_holds_is_not_told_to_be_checked_out_again(
+    tmp_path: Path,
+) -> None:
+    root = plant(tmp_path, {"scripts/start.sh": "echo a\r\n"})
+    held = f"holds {named(RETURN)}{NOT_ASCII}"
+    assert character_problems(root) == [f"scripts/start.sh:1:7 {held}"]
+    (root / "scripts" / "start.sh").write_bytes(b"echo b\r\n")
+    assert character_problems(root) == [
+        f"scripts/start.sh:1:7{IN_INDEX} {held}",
+        f"scripts/start.sh:1:7{IN_TREE} {held}",
+    ]
+
+
+def test_line_feeds_given_to_every_file_pass(tmp_path: Path) -> None:
+    files: dict[str, str | bytes] = {"docs/page.md": "Text.\n", "start.sh": "echo\n", "a.png": PNG}
+    root = give(plant(tmp_path, files), "* text=auto eol=lf\n")
+    assert line_ending_problems(root) == []
+
+
+@pytest.mark.parametrize(
+    ("attributes", "given"),
+    [
+        ("", "text: unspecified and eol: unspecified"),
+        ("* text=auto eol=lf\n*.md text\n", "text: set and eol: lf"),
+        ("* text=auto eol=lf\n*.md -text\n", "text: unset and eol: lf"),
+        ("* text=auto eol=lf\n*.md eol=crlf\n", "text: auto and eol: crlf"),
+        ("* text=auto\n", "text: auto and eol: unspecified"),
+        ("* eol=lf\n", "text: unspecified and eol: lf"),
+    ],
+)
+def test_attributes_that_give_a_file_other_line_endings_fail_and_name_what_they_give(
+    tmp_path: Path, attributes: str, given: str
+) -> None:
+    root = give(plant(tmp_path, {"docs/page.md": "Text.\n"}), attributes)
+    problems = line_ending_problems(root)
+    assert f"docs/page.md has {given}{NOT_LINE_FEEDS}" in problems
+    assert all(problem.startswith((".gitattributes ", "docs/page.md ")) for problem in problems)
+
+
+def test_a_folder_s_own_attributes_that_give_other_line_endings_fail(tmp_path: Path) -> None:
+    files = {".gitattributes": "* text=auto eol=lf\n", "docs/.gitattributes": "* -text\n"}
+    root = plant(tmp_path, {**files, "docs/page.md": "Text.\n", "README.md": "Text.\n"})
+    assert line_ending_problems(root) == [
+        f"docs/.gitattributes has text: unset and eol: lf{NOT_LINE_FEEDS}",
+        f"docs/page.md has text: unset and eol: lf{NOT_LINE_FEEDS}",
+    ]
+
+
+def test_line_endings_that_only_git_s_index_or_only_the_working_tree_gives_fail(
+    tmp_path: Path,
+) -> None:
+    root = plant(tmp_path, {"docs/page.md": "Text.\n"})
+    give(root, "* text=auto eol=lf\n", index="* text=auto\n")
+    assert line_ending_problems(root) == [
+        f".gitattributes{IN_INDEX} has text: auto and eol: unspecified{NOT_LINE_FEEDS}",
+        f"docs/page.md{IN_INDEX} has text: auto and eol: unspecified{NOT_LINE_FEEDS}",
+    ]
+    give(root, "* text=auto\n", index="* text=auto eol=lf\n")
+    assert line_ending_problems(root) == [
+        f".gitattributes{IN_TREE} has text: auto and eol: unspecified{NOT_LINE_FEEDS}",
+        f"docs/page.md{IN_TREE} has text: auto and eol: unspecified{NOT_LINE_FEEDS}",
+    ]
+
+
+def test_a_person_s_own_line_endings_are_not_read_as_the_repository_s(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    root = give(plant(tmp_path / "repository", {"docs/page.md": "Text.\n"}), "* text=auto eol=lf\n")
+    (root / ".git" / "info").mkdir(exist_ok=True)
+    (root / ".git" / "info" / "attributes").write_text("* eol=crlf\n", encoding="utf-8")
+    home = tmp_path / "home"
+    (home / "git").mkdir(parents=True)
+    (home / "git" / "attributes").write_text("* -text eol=crlf\n", encoding="utf-8")
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(home))
+    plain = git(root, "check-attr", "-a", "--", "docs/page.md").stdout.decode("utf-8")
+    assert "eol: crlf" in plain, "git reads no person's own attributes"
+    assert line_ending_problems(root) == []
+
+
+def test_a_test_of_line_endings_that_reads_no_tracked_file_fails(tmp_path: Path) -> None:
+    git(tmp_path, "init", "-q").check_returncode()
+    assert line_ending_problems(tmp_path) == [LINE_FEEDS_READ_NOTHING]
+
+
+# The job of CI for which a merge waits, the job that runs every check of CI on the files
+# saved with Windows line endings, the step with which it saves them, and the checks that it
+# runs after it.
+MERGE_CHECK = "ci"
+WINDOWS_JOB = "windows-line-endings"
+SAVE_STEP = "python scripts/windows_line_endings.py"
+CHECKS = (
+    "ruff check .",
+    "ruff format --check .",
+    "mypy",
+    "pytest",
+    "scripts/verify-openspec.sh",
+    "scripts/sync-superpowers.sh --check",
+)
+
+
+def unneeded_job_problems(doc: Mapping[str, Any]) -> list[str]:
+    """Each job of CI that the job `ci` does not need, by its name, so that a merge, which
+    waits for `ci` alone, does not wait for it (R276)."""
+    jobs = doc.get("jobs") or {}
+    if MERGE_CHECK not in jobs:
+        return [f"CI has no job `{MERGE_CHECK}`, for which a merge waits"]
+    needs = jobs[MERGE_CHECK].get("needs") or []
+    needed = {needs} if isinstance(needs, str) else set(needs)
+    return [
+        f"the job `{MERGE_CHECK}` does not need the job `{name}`, so a merge does not wait for it"
+        for name in jobs
+        if name != MERGE_CHECK and name not in needed
+    ]
+
+
+def windows_job_problems(doc: Mapping[str, Any]) -> list[str]:
+    """What keeps CI from running each of its checks on the files that this repository
+    writes, but its scripts, saved with Windows line endings (R276)."""
+    job = (doc.get("jobs") or {}).get(WINDOWS_JOB)
+    if job is None:
+        return [f"CI has no job `{WINDOWS_JOB}`"]
+    runs = [step.get("run") for step in job.get("steps") or []]
+    if SAVE_STEP not in runs:
+        return [f"the job `{WINDOWS_JOB}` saves no file with Windows line endings"]
+    after = runs[runs.index(SAVE_STEP) + 1 :]
+    return [
+        f"the job `{WINDOWS_JOB}` does not run `{check}` after it saves the files"
+        for check in CHECKS
+        if check not in after
+    ]
+
+
+def ci_workflow() -> Any:
+    return yaml.safe_load(read_staged(ROOT / ".github" / "workflows" / "ci.yml"))
+
+
+@pytest.mark.parametrize(
+    ("needs", "problems"),
+    [
+        (["python", "vendor"], []),
+        (
+            ["python"],
+            ["the job `ci` does not need the job `vendor`, so a merge does not wait for it"],
+        ),
+        (
+            "python",
+            ["the job `ci` does not need the job `vendor`, so a merge does not wait for it"],
+        ),
+        (
+            None,
+            [
+                "the job `ci` does not need the job `python`, so a merge does not wait for it",
+                "the job `ci` does not need the job `vendor`, so a merge does not wait for it",
+            ],
+        ),
+    ],
+)
+def test_a_job_that_the_job_ci_does_not_need_is_named(
+    needs: list[str] | str | None, problems: list[str]
+) -> None:
+    jobs: dict[str, Any] = {
+        "python": {},
+        "vendor": {},
+        "ci": {} if needs is None else {"needs": needs},
+    }
+    assert unneeded_job_problems({"jobs": jobs}) == problems
+    assert unneeded_job_problems({"jobs": {"python": {}}}) == [
+        "CI has no job `ci`, for which a merge waits"
+    ]
+
+
+def test_a_job_of_windows_line_endings_that_leaves_out_a_check_is_named() -> None:
+    def steps(*runs: str) -> dict[str, Any]:
+        return {
+            "jobs": {
+                WINDOWS_JOB: {
+                    "steps": [{"uses": "actions/checkout@0123"}] + [{"run": run} for run in runs]
+                }
+            }
+        }
+
+    assert windows_job_problems(steps(SAVE_STEP, *CHECKS)) == []
+    assert windows_job_problems({"jobs": {}}) == [f"CI has no job `{WINDOWS_JOB}`"]
+    assert windows_job_problems(steps(*CHECKS)) == [
+        f"the job `{WINDOWS_JOB}` saves no file with Windows line endings"
+    ]
+    assert windows_job_problems(steps("mypy", SAVE_STEP, *CHECKS[:2], *CHECKS[4:])) == [
+        f"the job `{WINDOWS_JOB}` does not run `mypy` after it saves the files",
+        f"the job `{WINDOWS_JOB}` does not run `pytest` after it saves the files",
+    ]
+
+
+def test_every_job_of_ci_is_one_that_a_merge_waits_for() -> None:
+    assert unneeded_job_problems(ci_workflow()) == []
+
+
+def test_ci_runs_every_check_on_the_files_saved_with_windows_line_endings() -> None:
+    assert windows_job_problems(ci_workflow()) == []
+
+
+# What the job of Windows line endings saves, and what it leaves as it is: each file that
+# this repository writes but its scripts, and not the files that others write, a script of
+# each kind, a link, or a file with no line feed.
+JOB_FILES = {
+    "docs/page.md": "# A page\n\nText.\n",
+    "docs/saved.md": "Saved.\nNot yet.\n",
+    "scripts/tool.py": "import os\n",
+    "vendor/superpowers/UPSTREAM.lock": "sha=0123\n",
+    "scripts/start.sh": "echo a\n",
+    "scripts/run": "#!/bin/sh\necho a\n",
+    "hooks/run-hook.cmd": ": x\necho a\n",
+    "vendor/superpowers/skills/a/SKILL.md": "Text.\n",
+    ".claude/skills/openspec-a/SKILL.md": "Text.\n",
+    "openspec/specs/.gitkeep": "",
+}
+SAVED_BY_THE_JOB = (
+    "docs/page.md",
+    "docs/saved.md",
+    "scripts/tool.py",
+    "vendor/superpowers/UPSTREAM.lock",
+)
+WINDOWS_SCRIPT = ROOT / "scripts" / "windows_line_endings.py"
+
+
+def run_the_job(
+    root: Path, session: Mapping[str, str] | None = None
+) -> subprocess.CompletedProcess[str]:
+    """The job's script run on the repository at root, in an environment with no git
+    variable of the session's but those given."""
+    return subprocess.run(
+        [sys.executable, str(WINDOWS_SCRIPT), str(root)],
+        capture_output=True,
+        text=True,
+        check=False,
+        env={**isolated_environment(root), **(session or {})},
+    )
+
+
+def test_the_job_saves_each_file_that_this_repository_writes_but_its_scripts(
+    tmp_path: Path,
+) -> None:
+    root = plant(
+        tmp_path, JOB_FILES, links={"docs/link.md": "page.md"}, executable=["hooks/run-hook.cmd"]
+    )
+    commit(root)
+    # A line that an editor already saved with Windows line endings is not saved again.
+    (root / "docs" / "saved.md").write_bytes(b"Saved.\r\nNot yet.\n")
+    staged = git(root, "ls-files", "--stage", "-z").stdout
+    done = run_the_job(root)
+    assert done.returncode == 0, done.stderr
+    assert "saved 4 files" in done.stdout
+    for path, text in JOB_FILES.items():
+        expected = text.replace("\n", "\r\n") if path in SAVED_BY_THE_JOB else text
+        assert (root / path).read_bytes() == expected.encode("ascii"), path
+    assert os.readlink(root / "docs" / "link.md") == "page.md"
+    assert git(root, "ls-files", "--stage", "-z").stdout == staged
+    assert git(root, "diff", "--cached", "--quiet").returncode == 0
+
+
+def test_the_job_fails_where_it_saves_nothing(tmp_path: Path) -> None:
+    unsaved = {path: text for path, text in JOB_FILES.items() if path not in SAVED_BY_THE_JOB}
+    root = plant(tmp_path, unsaved, executable=["hooks/run-hook.cmd"])
+    done = run_the_job(root)
+    assert (done.returncode, done.stdout) == (1, "")
+    assert NO_WINDOWS_LINE_ENDINGS in done.stderr
+
+
+def test_the_job_fails_where_a_file_that_it_saved_holds_no_windows_line_endings(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    root = plant(tmp_path, {"docs/page.md": "Text.\n", "docs/other.md": "Text.\n"})
+    monkeypatch.setattr(
+        windows_line_endings, "save", lambda root: ["docs/page.md", "docs/other.md"]
+    )
+    (root / "docs" / "other.md").write_bytes(b"Text.\r\n")
+    assert windows_line_endings.main([str(WINDOWS_SCRIPT), str(root)]) == 1
+    assert capsys.readouterr().err == (
+        f"windows-line-endings: {NO_WINDOWS_LINE_ENDINGS} in docs/page.md\n"
+    )
+
+
+@pytest.mark.parametrize("where", ["a folder that no repository holds", "no folder"])
+def test_the_job_that_cannot_list_the_tracked_files_says_so(tmp_path: Path, where: str) -> None:
+    done = run_the_job(tmp_path if where == "a folder that no repository holds" else tmp_path / "x")
+    assert (done.returncode, done.stdout) == (2, "")
+    assert done.stderr.startswith("windows-line-endings: git ls-files failed: ")
+    assert done.stderr.count("\n") == 1
+
+
+def test_the_job_lists_the_files_of_the_repository_that_it_is_given(tmp_path: Path) -> None:
+    root = plant(tmp_path / "repository", {"docs/page.md": "Text.\n"})
+    # An index file of the session's is not the repository's.
+    done = run_the_job(root, {"GIT_INDEX_FILE": str(tmp_path / "another-index")})
+    assert done.returncode == 0, done.stderr
+    assert (root / "docs" / "page.md").read_bytes() == b"Text.\r\n"
+
+
+def test_the_job_writes_through_no_link_and_over_no_link_that_git_s_index_holds(
+    tmp_path: Path,
+) -> None:
+    outside = tmp_path / "outside.md"
+    outside.write_bytes(b"Outside.\n")
+    files = {"docs/page.md": "Text.\n", "docs/held.md": "Held.\n"}
+    root = plant(tmp_path / "repository", files, links={"docs/link.md": "page.md"})
+    commit(root)
+    # A file that git's index holds and the working tree holds as a link, here to a file
+    # outside the repository, and a link that git's index holds and the working tree holds as
+    # a file of its target's path, as a checkout writes it where `core.symlinks` is `false`.
+    (root / "docs" / "held.md").unlink()
+    (root / "docs" / "held.md").symlink_to(outside)
+    (root / "docs" / "link.md").unlink()
+    (root / "docs" / "link.md").write_bytes(b"page.md\nmore\n")
+    done = run_the_job(root)
+    assert done.returncode == 0, done.stderr
+    assert outside.read_bytes() == b"Outside.\n"
+    assert (root / "docs" / "link.md").read_bytes() == b"page.md\nmore\n"
+    assert (root / "docs" / "page.md").read_bytes() == b"Text.\r\n"
+
+
+# A file of each kind that a clone writes: a page, a script by each of its marks, and a file
+# with no line feed.
+CLONED = {
+    "docs/page.md": "# A page\n\nText.\n",
+    "scripts/start.sh": "echo a\n",
+    "scripts/tool": "#!/bin/sh\necho a\n",
+    "vendor/superpowers/hooks/run-hook.cmd": ": x\necho a\n",
+    "openspec/specs/.gitkeep": "",
+}
+CLONED_SCRIPTS = ("scripts/start.sh", "scripts/tool", "vendor/superpowers/hooks/run-hook.cmd")
+
+
+def attributes_line() -> bytes:
+    """The repository's own attributes file, as git would stage it, or nothing."""
+    attributes = ROOT / ".gitattributes"
+    return read_staged(attributes) if attributes.is_file() else b""
+
+
+def cloned(source: Path, clone: Path, environment: Mapping[str, str], *options: str) -> Path:
+    subprocess.run(
+        ["git", "clone", "-q", *options, str(source), str(clone)],
+        check=True,
+        capture_output=True,
+        env={**isolated_environment(clone), **environment},
+    )
+    return clone
+
+
+def held_as_git_s_index_holds(clone: Path) -> dict[str, bytes]:
+    """Each tracked file of a clone whose working tree differs from git's index, by its path,
+    with what its working tree holds."""
+    entries = tracked_entries(clone)
+    contents = blobs(clone, (entry.oid for entry in entries))
+    return {
+        entry.path: (clone / entry.path).read_bytes()
+        for entry in entries
+        if (clone / entry.path).read_bytes() != contents[entry.oid]
+    }
+
+
+@pytest.mark.parametrize("where", ["the clone's own configuration", "the global configuration"])
+def test_a_clone_made_with_windows_line_endings_holds_what_git_s_index_holds(
+    tmp_path: Path, where: str
+) -> None:
+    options: tuple[str, ...] = ("-c", "core.autocrlf=true")
+    environment: dict[str, str] = {}
+    if where == "the global configuration":
+        configuration = tmp_path / "gitconfig"
+        configuration.write_bytes(b"[core]\n\tautocrlf = true\n")
+        environment, options = {"GIT_CONFIG_GLOBAL": str(configuration)}, ()
+    executable = ["vendor/superpowers/hooks/run-hook.cmd"]
+    unattributed = plant(tmp_path / "unattributed", CLONED, executable=executable)
+    commit(unattributed)
+    without = cloned(unattributed, tmp_path / "without", environment, *options)
+    differing = held_as_git_s_index_holds(without)
+    assert b"\r\n" in differing.get("docs/page.md", b""), f"the test {NO_WINDOWS_LINE_ENDINGS}"
+    files: dict[str, str | bytes] = {**CLONED, ".gitattributes": attributes_line()}
+    source = plant(tmp_path / "source", files, executable=executable)
+    commit(source)
+    clone = cloned(source, tmp_path / "clone", environment, *options)
+    assert held_as_git_s_index_holds(clone) == {}
+    assert character_problems(clone) == []
+
+
+def test_a_clone_made_before_the_attributes_is_told_to_write_each_script_again(
+    tmp_path: Path,
+) -> None:
+    executable = ["vendor/superpowers/hooks/run-hook.cmd"]
+    source = plant(tmp_path / "source", CLONED, executable=executable)
+    commit(source)
+    clone = cloned(source, tmp_path / "clone", {}, "-c", "core.autocrlf=true")
+    for path in ("docs/page.md", *CLONED_SCRIPTS):
+        held = (clone / path).read_bytes()
+        assert b"\r\n" in held, f"{path}: the test {NO_WINDOWS_LINE_ENDINGS}"
+    (source / ".gitattributes").write_bytes(attributes_line())
+    git(source, "add", ".gitattributes").check_returncode()
+    commit(source)
+    git(clone, "pull", "-q", "--ff-only").check_returncode()
+    assert git(clone, "status", "--porcelain").stdout == b""
+    problems = character_problems(clone)
+    assert [problem for problem in problems if problem.endswith(CHECK_OUT_AGAIN)] == [
+        f"{path}{IN_TREE}{CHECK_OUT_AGAIN}" for path in CLONED_SCRIPTS
+    ]
+    assert not [problem for problem in problems if problem.startswith("docs/page.md")]
+    for path in CLONED_SCRIPTS:
+        (clone / path).unlink()
+    git(clone, "checkout", "--", *CLONED_SCRIPTS).check_returncode()
+    assert character_problems(clone) == []
+
+
 # The definitions that the tests share.
 
 
@@ -2867,11 +3435,111 @@ def test_text_is_shown_with_each_character_beyond_printable_ascii_by_its_code_po
     assert shown("a b\t\u2014~") == "a bU+0009U+2014~"
 
 
+@pytest.mark.parametrize(
+    ("data", "staged"),
+    [
+        (b"One.\r\nTwo.\r\n", b"One.\nTwo.\n"),
+        (b"One.\r\r\n", b"One.\r\n"),
+        (b"One.\rTwo.\n", b"One.\rTwo.\n"),
+        (b"One.\r", b"One.\r"),
+        (b"\r\n\r\n", b"\n\n"),
+        (b"One.\n", b"One.\n"),
+        (b"", b""),
+    ],
+)
+def test_a_file_but_a_script_is_read_with_each_return_before_a_line_feed_as_a_line_feed(
+    data: bytes, staged: bytes
+) -> None:
+    assert not is_script("docs/page.md", data, False)
+    assert staged_bytes("docs/page.md", data, False) == staged
+
+
+@pytest.mark.parametrize(
+    ("path", "data", "executable"),
+    [
+        ("scripts/sync.sh", b"set -eu\r\n", False),
+        ("tools/run", b"#!/bin/sh\r\necho\r\n", False),
+        ("hooks/run-hook.cmd", b": << 'CMDBLOCK'\r\n", True),
+    ],
+)
+def test_a_script_is_read_with_every_carriage_return_that_it_holds(
+    path: str, data: bytes, executable: bool
+) -> None:
+    assert is_script(path, data, executable)
+    assert staged_bytes(path, data, executable) == data
+
+
+@pytest.mark.parametrize(
+    ("path", "data"),
+    [
+        ("docs/sh", b"Text.\r\n"),
+        ("docs/page.sh.md", b"Text.\r\n"),
+        ("docs/page.md", b" #!/bin/sh\r\n"),
+        ("docs/page.md", b"Text.\r\n#!/bin/sh\r\n"),
+    ],
+)
+def test_a_file_that_only_looks_like_a_script_is_none(path: str, data: bytes) -> None:
+    assert not is_script(path, data, False)
+    assert b"\r" not in staged_bytes(path, data, False)
+
+
+def test_whether_a_file_is_executable_is_asked_of_git_s_index(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    files = {"hooks/run-hook.cmd": ": x\r\n", "hooks/other.cmd": ": x\r\n"}
+    root = plant(tmp_path / "repository", files, executable=["hooks/run-hook.cmd"])
+    # The working tree's bits are not what git records, as on Windows, which has none.
+    (root / "hooks" / "run-hook.cmd").chmod(0o644)
+    (root / "hooks" / "other.cmd").chmod(0o755)
+    # An index file of the session's is not the repository's.
+    monkeypatch.setenv("GIT_INDEX_FILE", str(tmp_path / "another-index"))
+    assert recorded_executable(root / "hooks" / "run-hook.cmd")
+    assert not recorded_executable(root / "hooks" / "other.cmd")
+    assert read_staged(root / "hooks" / "run-hook.cmd") == b": x\r\n"
+    assert read_staged(root / "hooks" / "other.cmd") == b": x\n"
+
+
+def test_a_file_that_git_does_not_track_is_not_executable_to_git(tmp_path: Path) -> None:
+    root = plant(tmp_path / "repository", {"docs/page.md": "Text.\n"})
+    untracked = root / "run.cmd"
+    outside = tmp_path / "outside" / "run.cmd"
+    outside.parent.mkdir()
+    for path in (untracked, outside):
+        path.write_bytes(b": x\r\n")
+        path.chmod(0o755)
+        assert not recorded_executable(path)
+        assert read_staged(path) == b": x\n"
+
+
+def test_a_repository_that_git_cannot_read_is_named(tmp_path: Path) -> None:
+    (tmp_path / ".git").write_text("gitdir: missing\n", encoding="utf-8")
+    (tmp_path / "run.cmd").write_bytes(b": x\r\n")
+    with pytest.raises(OSError, match="git ls-files failed in "):
+        read_staged(tmp_path / "run.cmd")
+
+
+def test_git_is_asked_whether_a_file_is_executable_only_where_it_holds_windows_line_endings(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    root = plant(tmp_path, {"docs/page.md": "One.\rTwo.\n"})
+
+    def asked(file: Path) -> bool:
+        raise AssertionError(f"git was asked about {file}")
+
+    monkeypatch.setattr(conventions, "recorded_executable", asked)
+    assert read_staged(root / "docs" / "page.md") == b"One.\rTwo.\n"
+
+
 # R272: everything that the test prints is printable ASCII.
 
 PLANTED_TEST = """from pathlib import Path
 
-from test_conventions import character_problems, other_attribute_problems, page_problems
+from test_conventions import (
+    character_problems,
+    line_ending_problems,
+    other_attribute_problems,
+    page_problems,
+)
 
 
 def test_the_planted_tree():
@@ -2884,6 +3552,10 @@ def test_the_planted_pages():
 
 def test_the_planted_attributes():
     assert not other_attribute_problems(Path({root!r}))
+
+
+def test_the_planted_line_endings():
+    assert not line_ending_problems(Path({root!r}))
 """
 
 
@@ -2898,7 +3570,7 @@ def test_everything_that_a_failing_run_of_the_test_of_characters_prints_is_print
         "selector\ufe0f.md": "Printable.\n",
         "page.md": "ab\u202ecd\x07\ue000\u0378\n",
         "vendor/superpowers/a.md": "\U000e0041\ufe0f\n",
-        ".gitattributes": "tag\U000e0069\U000e0067.md answer=\U000e0041\x1b\n",
+        ".gitattributes": "tag\U000e0069\U000e0067.md answer=\U000e0041\x1b eol=\U000e0041\x1b\n",
     }
     planted = plant(tmp_path / "planted", files, links={"link.md": "to\u202e\U000e0041\n\x1b.md"})
     test = tmp_path / "test_planted.py"
@@ -2918,6 +3590,7 @@ def test_everything_that_a_failing_run_of_the_test_of_characters_prints_is_print
     assert b"U+E0069" in printed and b"U+000A" in printed and b"U+001B" in printed
     assert b"tagU+E0069U+E0067.md:1:3 holds an HTML comment" in printed
     assert b"tagU+E0069U+E0067.md has answer: U+E0041U+001B, an attribute other than" in printed
+    assert b"tagU+E0069U+E0067.md has text: unspecified and eol: U+E0041U+001B, not" in printed
     beyond = sorted({byte for byte in printed if not 0x20 <= byte <= 0x7E and byte != 0x0A})
     assert not beyond, f"the run printed the bytes {beyond}"
 
@@ -2939,6 +3612,10 @@ def test_every_page_that_this_repository_writes_holds_only_text_that_github_show
 
 def test_the_repository_s_attributes_set_nothing_but_line_endings() -> None:
     assert other_attribute_problems(ROOT) == []
+
+
+def test_the_repository_s_attributes_give_every_tracked_file_line_feeds() -> None:
+    assert line_ending_problems(ROOT) == []
 
 
 def test_the_repository_s_ruff_settings_select_every_naming_rule_and_ignore_none() -> None:

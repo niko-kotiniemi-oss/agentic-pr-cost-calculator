@@ -27,7 +27,8 @@ from dataclasses import dataclass
 from pathlib import Path
 
 import pytest
-from test_roadmap import GIT_ENVIRONMENT, session_free_environment
+from conventions import NO_WINDOWS_LINE_ENDINGS
+from test_roadmap import GIT_ENVIRONMENT, saved_with_windows_line_endings, session_free_environment
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = ROOT / "scripts" / "sync-superpowers.sh"
@@ -133,6 +134,8 @@ def sync(
     lock = world.repo / "vendor" / "superpowers" / "UPSTREAM.lock"
     lines = (f"repo=owner/superpowers{ending}sha={sha}{ending}tag={tag}{ending}{extra}").encode()
     lock.write_bytes(lines)
+    if "\r\n" in ending:
+        assert b"\r\n" in lock.read_bytes(), f"{lock.name}: the test {NO_WINDOWS_LINE_ENDINGS}"
     return subprocess.run(
         ["bash", str(world.repo / "scripts" / SCRIPT.name), *args],
         env={**isolated(), "SYNC_REMOTE_BASE": world.remotes.as_uri(), **(environment or {})},
@@ -316,7 +319,7 @@ def test_the_check_passes_the_pinned_copy_and_fails_one_whose_line_endings_alone
         (root / path).chmod(mode)
     passed = sync(world, world.tagged, "v1.0.0", "--check", environment=environment, ending=ending)
     assert passed.returncode == 0, passed.stderr
-    (root / "LICENSE").write_bytes(given["LICENSE"][1].replace(b"\n", b"\r\n"))
+    saved_with_windows_line_endings(root, ["LICENSE"])
     failed = sync(world, world.tagged, "v1.0.0", "--check", environment=environment, ending=ending)
     assert failed.returncode == 1
     assert "DIFFERS" in failed.stderr

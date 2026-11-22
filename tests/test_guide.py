@@ -81,10 +81,12 @@ from test_roadmap import (
     make_tree,
     read,
     records,
+    saved_with_windows_line_endings,
     section_of,
     sections,
     tasks,
     tracked,
+    with_line_feeds,
 )
 from test_threat_model import citation_problems, index
 
@@ -818,6 +820,12 @@ def named(heading: str, text: str = GUIDE_TEXT) -> str:
 
 def test_a_complete_guide_has_no_problem(tmp_path: Path) -> None:
     assert guide_problems(guide_tree(tmp_path)) == []
+
+
+def test_a_guide_saved_with_windows_line_endings_has_no_problem(tmp_path: Path) -> None:
+    root = guide_tree(tmp_path)
+    saved_with_windows_line_endings(root, with_line_feeds({**TREE, **FILES, GUIDE: GUIDE_TEXT}))
+    assert guide_problems(root) == []
 
 
 # R219: the guide's links, its opening and its concerns.

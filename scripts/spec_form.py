@@ -20,7 +20,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, NamedTuple, TypeVar
 
-from conventions import shown
+from conventions import read_staged, shown
 from wording import code_spans
 
 OPENSPEC = "openspec"
@@ -568,7 +568,7 @@ def requirement_of(block: Block) -> Requirement:
 def read_spec(root: Path, spec: Spec) -> tuple[list[Requirement], list[str]]:
     """The spec's requirements as OpenSpec reads them, in the order that it shows them,
     and the spec's problems, each naming its line."""
-    text, problems = plain_text((root / spec.path).read_bytes())
+    text, problems = plain_text(read_staged(root / spec.path))
     if text is None:
         requirements: list[Requirement] = []
     else:

@@ -53,7 +53,11 @@ from risk_register import (
 )
 from test_backlog import AGREED, Item, backlog_items, items_in
 from test_decisions import DECIDER, Record, attribute_problems, base_commits, git, records_of
-from test_roadmap import hidden_text_problems_in, link_problems_in
+from test_roadmap import (
+    hidden_text_problems_in,
+    link_problems_in,
+    saved_with_windows_line_endings,
+)
 
 ROOT = Path(__file__).resolve().parents[1]
 THREAT_MODEL = ROOT / "docs" / "threat-model.md"
@@ -886,6 +890,15 @@ def test_a_high_or_critical_risk_answered_further_or_accepted_passes(
 ) -> None:
     base = further_repository(tmp_path)
     assert further_problems(high_threat(extra, rated), tmp_path, [base]) == []
+
+
+def test_a_further_answer_whose_item_and_record_are_saved_with_windows_line_endings_passes(
+    tmp_path: Path,
+) -> None:
+    base = further_repository(tmp_path)
+    saved_with_windows_line_endings(tmp_path, [ITEM_PATH, "docs/decisions/DR-002-an-acceptance.md"])
+    for extra in ("- **Further answer:** B-007\n", "- **Acceptance:** DR-002, as the owner said\n"):
+        assert further_problems(high_threat(extra), tmp_path, [base]) == []
 
 
 @pytest.mark.parametrize(

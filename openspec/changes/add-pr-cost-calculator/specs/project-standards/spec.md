@@ -2118,7 +2118,7 @@ The repository's attributes SHALL give a tracked file no attribute but `text` an
 
 ### Requirement: A checkout writes line feeds whatever `core.autocrlf` says, and the checks read Windows line endings as git stages them
 
-The repository's attributes SHALL give every tracked file `text=auto` and `eol=lf`, so that a checkout on any system writes line feeds whatever `core.autocrlf` says, and each check that reads a file of this repository but a script from the working tree SHALL take each carriage return right before a line feed as a line feed, as git does when it stages a text file, so that a file saved with Windows line endings passes as git will commit it. Tests SHALL fail otherwise.
+The repository's attributes SHALL give every tracked file `text=auto` and `eol=lf`, so that a checkout writes line feeds whatever `core.autocrlf` says, and each check that reads a file of this repository but a script from the working tree, except the vendor check's comparison, SHALL take each carriage return right before a line feed as a line feed, as git does when it stages a text file, so that a file saved with Windows line endings passes as git will commit it. Tests SHALL fail otherwise.
 
 #### Scenario: A clone made with Windows line endings holds what git's index holds
 

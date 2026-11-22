@@ -47,6 +47,10 @@ which an HTML comment or tag opens, no line that opens with `$$`, and no carriag
 that no line feed follows, so that the checks that wait on a tick, or refuse one, read
 the tasks that GitHub shows (R232, T184).
 
+Each page is read as git will stage it, through `read_staged` of `scripts/conventions.py`,
+so that a page saved with Windows line endings passes, while a carriage return that no
+line feed follows still shows (R276).
+
 Each check is shown to fail on a synthetic tree, a git repository so that its
 tracked files can be read, into which the defect is planted. The tree holds backlog
 items and a roadmap that lists them, so that `tests/test_backlog.py` plants its
@@ -59,11 +63,12 @@ import os
 import posixpath
 import re
 import subprocess
+from collections.abc import Iterable, Mapping
 from pathlib import Path
 from urllib.parse import unquote
 
 import pytest
-from conventions import shown_path, written_by_others
+from conventions import NO_WINDOWS_LINE_ENDINGS, read_staged, shown_path, written_by_others
 from spec_form import find_specs
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -188,6 +193,21 @@ def isolated_environment(root: Path) -> dict[str, str]:
     }
 
 
+def saved_with_windows_line_endings(root: Path, paths: Iterable[str]) -> None:
+    """Each file at these paths, in the working tree alone, with a carriage return before
+    each line feed, as an editor on Windows can save it, once the test has checked that it
+    holds one, so that a test of Windows line endings that meets none fails (R276)."""
+    for path in paths:
+        file = root / path
+        file.write_bytes(file.read_bytes().replace(b"\n", b"\r\n"))
+        assert b"\r\n" in file.read_bytes(), f"{path}: the test {NO_WINDOWS_LINE_ENDINGS}"
+
+
+def with_line_feeds(files: Mapping[str, str | None]) -> list[str]:
+    """The paths of the files that hold a line feed, which Windows line endings change."""
+    return [path for path, text in files.items() if text and "\n" in text]
+
+
 def tracked(root: Path) -> set[str]:
     done = subprocess.run(
         ["git", "ls-files", "-z"],
@@ -200,8 +220,9 @@ def tracked(root: Path) -> set[str]:
 
 
 def read(path: Path) -> str:
-    """A file's text with its line endings as written, so that a carriage return shows."""
-    return path.read_bytes().decode("utf-8") if path.is_file() else ""
+    """A file's text as git will stage it, each carriage return right before a line feed
+    read as a line feed but in a script, so that any other carriage return shows (R276)."""
+    return read_staged(path).decode("utf-8") if path.is_file() else ""
 
 
 def unfenced(text: str) -> list[tuple[int, str]]:
@@ -1049,6 +1070,8 @@ def test_text_that_github_does_not_show_at_the_top_of_a_task_list_is_reported(
     tmp_path: Path, opening: str, problems: list[str]
 ) -> None:
     root = make_tree(tmp_path, {TASKS: opening + TREE[TASKS]})
+    if "\r\n" in opening:
+        assert b"\r\n" in (root / TASKS).read_bytes(), f"the test {NO_WINDOWS_LINE_ENDINGS}"
     assert task_list_problems(root) == [f"{TASKS}:1 {problem}" for problem in problems]
 
 
@@ -1083,8 +1106,15 @@ def test_a_less_than_sign_in_inline_code_or_before_no_tag_passes(tmp_path: Path,
 
 
 def test_a_task_list_with_a_carriage_return_before_each_line_feed_passes(tmp_path: Path) -> None:
-    root = make_tree(tmp_path, {TASKS: (TREE[TASKS] + "Notes.\n---\n").replace("\n", "\r\n")})
+    root = make_tree(tmp_path, {TASKS: TREE[TASKS] + "Notes.\n---\n"})
+    saved_with_windows_line_endings(root, [TASKS])
     assert task_list_problems(root) == []
+
+
+def test_a_tree_saved_with_windows_line_endings_has_no_problem(tmp_path: Path) -> None:
+    root = make_tree(tmp_path)
+    saved_with_windows_line_endings(root, with_line_feeds(dict(TREE)))
+    assert roadmap_problems(root) == []
 
 
 @pytest.mark.parametrize(

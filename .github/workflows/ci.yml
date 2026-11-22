@@ -74,11 +74,41 @@ jobs:
           persist-credentials: false
       - run: scripts/sync-superpowers.sh --check
 
+  # Every check above, on this repository's own files, but its scripts, saved
+  # with a carriage return before each line feed and left unstaged, as an
+  # editor on Windows can save them, so that a check which reads a file of the
+  # working tree otherwise than git stages it fails here. The step that saves
+  # them fails where it saved none (R276).
+  windows-line-endings:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7
+        with:
+          python-version-file: .python-version
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
+        with:
+          node-version-file: .node-version
+      - run: python -m pip install -r requirements-dev.txt
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: python scripts/windows_line_endings.py
+      - run: ruff check .
+      - run: ruff format --check .
+      - run: mypy
+      - run: pytest
+        env:
+          BASE_COMMIT: ${{ github.event.pull_request.base.sha || github.event.before }}
+      - run: scripts/verify-openspec.sh
+      - run: scripts/sync-superpowers.sh --check
+
   # The one check a ruleset needs to require: it passes only when every job
   # above passed.
   ci:
     if: always()
-    needs: [python, openspec, vendor]
+    needs: [python, openspec, vendor, windows-line-endings]
     runs-on: ubuntu-latest
     steps:
       - run: |
