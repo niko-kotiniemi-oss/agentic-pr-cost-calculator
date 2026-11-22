@@ -1383,6 +1383,14 @@ def test_what_only_looks_like_a_host_an_address_or_a_commit_id_passes(
     assert link_problems(planted(tmp_path, ITEM, "Why it matters.", new)) == []
 
 
+def test_the_vendored_copy_s_lock_may_be_linked_and_named(tmp_path: Path) -> None:
+    """The lock at the vendored copy's root is a file that this repository writes (T160)."""
+    new = "[the lock](../vendor/superpowers/UPSTREAM.lock) and vendor/superpowers/UPSTREAM.lock."
+    assert link_problems(planted(tmp_path, ROADMAP, "None yet.", new)) == []
+    new = new.replace("](../", "](../../")
+    assert link_problems(planted(tmp_path, ITEM, "Why it matters.", new)) == []
+
+
 @pytest.mark.parametrize("name", sorted(NOT_HOSTS))
 def test_a_name_listed_as_no_host_passes_until_it_is_taken_off_the_list(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, name: str

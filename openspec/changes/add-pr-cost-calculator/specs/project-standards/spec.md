@@ -57,7 +57,7 @@ The hook SHALL open no network connection. The report SHALL connect only to GitH
 
 ### Requirement: Every threat is rated for impact and likelihood
 
-Every threat in the threat model SHALL carry an impact and a likelihood, each from 1 to 3 with the level's name, and a risk that is their product, and the risk matrix SHALL place each threat in the one cell its ratings name. The threat model SHALL be revisited by a review independent of the design's author before a change's design is approved, and by a review of what was built before its pull request merges.
+Every threat in the threat model SHALL carry an impact and a likelihood, each from 1 to 3 with the level's name, and a risk that is their product, and the risk matrix SHALL place each threat in the one cell its ratings name, and the list below it SHALL name each threat whose risk is 6 or more, with that risk. The threat model SHALL be revisited by a review independent of the design's author before a change's design is approved, and by a review of what was built before its pull request merges.
 
 #### Scenario: A threat without both ratings fails CI
 
@@ -68,6 +68,11 @@ Every threat in the threat model SHALL carry an impact and a likelihood, each fr
 
 - **WHEN** the risk matrix leaves a threat out, places it twice or in another cell than its ratings name, or names a threat that does not exist
 - **THEN** a test fails and names the threat
+
+#### Scenario: A threat with a risk of 6 or more that the list leaves out fails CI
+
+- **WHEN** the list below the risk matrix leaves out a threat whose risk is 6 or more, names one twice, names a threat whose risk is lower or that does not exist, gives a threat another risk or title than its ratings and its heading give, or lists the threats out of the order of their numbers
+- **THEN** a test fails and names the threat, or says that the list is out of order
 
 ### Requirement: Pull request text carries no private reference
 

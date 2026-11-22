@@ -2259,9 +2259,9 @@ The trust boundaries:
 - **Raw likelihood:** 3 (likely)
 - **Raw risk:** 6
 - **What could happen:** the plugin's command and the hook file's registered command run the capture step only when its SHA-256 is the one that they carry, and otherwise run none of it and exit with success, so that capture stops with no store, no ledger file and no flag. Claude Code clones a marketplace that a person adds from its command line with the person's own git and its configuration (A72), and git writes Windows line endings on checkout where the person's git has `core.autocrlf` set to `true`, or where an attribute gives a file `eol=crlf`, or `text=auto` where git's own line ending is CRLF; a contributor's clone of an adopting repository does the same to the copied hook file. An attribute such as `working-tree-encoding` that a merged pull request gives the plugin's files changes what every checkout writes, while their blobs and their diff stay as they were. A zip built from a checkout on a Windows runner would meet the same conversion.
-- **Answer:** both commands take each CRLF in the step as LF before they compare its SHA-256, so that a checkout that changes only its line endings runs the step, while a change to any other byte, a lone carriage return among them, runs none of it (R88, R179). This repository's attributes give every file `text=auto` and `eol=lf`, so that a clone of its marketplace holds the step with line feeds whatever `core.autocrlf` says, while a person's own attributes, such as a `.git/info/attributes` that gives `eol=crlf`, and a clone of the marketplace made before that line, which keeps its line endings in each file that no later checkout writes, leave the commands' reading to answer (R276, DR-281). Since the line makes a clone with `core.autocrlf` set to `true` write line feeds, the trials of the commands and of the zip use such a `.git/info/attributes`, and each test that plants Windows line endings fails where it meets none (R276). The zip is built from the tag's files as git's objects hold them, never from a checkout (R183). CI fails on an attribute that would change the checkout of the hook file or of the plugin's files (R134).
+- **Answer:** both commands take each CRLF in the step as LF before they compare its SHA-256, so that a checkout that changes only its line endings runs the step, while a change to any other byte, a lone carriage return among them, runs none of it (R88, R179). This repository's attributes give every file `text=auto` and `eol=lf`, so that a clone of its marketplace holds the step with line feeds whatever `core.autocrlf` says, while a person's own attributes, such as a `.git/info/attributes` that gives `eol=crlf`, and a clone of the marketplace made before that line, which keeps its line endings in each file that no later checkout writes, leave the commands' reading to answer (R276, DR-281). Since the line makes a clone with `core.autocrlf` set to `true` write line feeds, the trials of the commands and of the zip use such a `.git/info/attributes`, and each test that plants Windows line endings fails where it meets none (R276). The zip is built from the tag's files as git's objects hold them, never from a checkout (R183). CI fails on an attribute other than `text` and `eol` that the repository's attributes give any tracked file, the hook file and the plugin's files among them (R274), and on an attribute that would change the checkout of the hook file or of the plugin's files (R134).
 - **Residual:** a person's own git configuration that changes a checkout in another way than its line endings, such as a filter that their own attributes file gives those paths, which no check here reads, still stops their capture without a flag.
-- **Held by:** `usage-capture`: "A hook file checked out with Windows line endings still runs"; `usage-capture`: "The plugin runs its step from a checkout with Windows line endings"; `releases-and-compatibility`: "The plugin's zip is the same on every build"; `project-standards`: "An attribute that changes the plugin's checkout fails CI"; `project-standards`: "A clone made with Windows line endings holds what git's index holds"; `project-standards`: "A test of Windows line endings that meets none fails"; DR-211; DR-281; `add-pr-cost-calculator` task 1.54; `add-pr-cost-calculator` task 2.3; `add-pr-cost-calculator` task 2.6; `add-pr-cost-calculator` task 6.6; `add-pr-cost-calculator` task 6.9
+- **Held by:** `usage-capture`: "A hook file checked out with Windows line endings still runs"; `usage-capture`: "The plugin runs its step from a checkout with Windows line endings"; `releases-and-compatibility`: "The plugin's zip is the same on every build"; `project-standards`: "An attribute that changes the plugin's checkout fails CI"; `project-standards`: "An attribute other than `text` and `eol` fails CI"; `project-standards`: "A clone made with Windows line endings holds what git's index holds"; `project-standards`: "A test of Windows line endings that meets none fails"; DR-211; DR-281; `add-pr-cost-calculator` task 1.54; `add-pr-cost-calculator` task 2.3; `add-pr-cost-calculator` task 2.6; `add-pr-cost-calculator` task 6.6; `add-pr-cost-calculator` task 6.9
 - **Assumptions:** A72
 
 ## Boundary 2, continued: found at the security review of the plugin for cloud threads
@@ -2534,7 +2534,7 @@ The trust boundaries:
 - **Raw likelihood:** 2 (possible)
 - **Raw risk:** 6
 - **What could happen:** a pull request adds to the roadmap or a backlog item a link whose text names a file or an issue here while its target is another site, or a relative path that climbs out of the repository, which GitHub resolves against the page's address to any page on GitHub, such as another repository's file, a fork's commit shown under this repository's address or a new issue's form. An agent that follows it reads text written as instructions, which could steer it with the session's credentials, as the owner's account (T64, T95).
-- **Answer:** every link, image, autolink, web address, host and `owner/repo` in the roadmap, in every file in `docs/backlog/`, in the guide and in each feature page's section on known limitations and the roadmap, prose and code alike, names a heading of its own page or a tracked file that this repository writes, not one under `vendor/superpowers/` or `.claude/skills/openspec-*/`, whose files others write and whose skills give orders, by a relative path that, resolved from the page's folder, stays inside it, each link read from its `](` whatever its text holds; they give no `@`, no commit ID, which GitHub serves for a fork's commit under this repository's address, and no fenced or indented code, and name issues and pull requests by number alone, so that the guide names a source with no web address and no host, read also where emphasis marks split it or it is four numbers joined by dots; the guide's Held by cites no file that others write, or folder that holds one; and a test fails otherwise (R209, R221). The risk register, which adopters read to judge the tool and whose titles any pull request can write, is held to the same rule: its script refuses a title that holds a mark that hides text, and the page's own test, which reads it with the roadmap's, fails on a link, a web address or an `@` that a title brings (R246).
+- **Answer:** every link, image, autolink, web address, host and `owner/repo` in the roadmap, in every file in `docs/backlog/`, in the guide and in each feature page's section on known limitations and the roadmap, prose and code alike, names a heading of its own page or a tracked file that this repository writes, not one under `vendor/superpowers/` but the lock at its root, or under `.claude/skills/openspec-*/`, whose files others write and whose skills give orders, by a relative path that, resolved from the page's folder, stays inside it, each link read from its `](` whatever its text holds; they give no `@`, no commit ID, which GitHub serves for a fork's commit under this repository's address, and no fenced or indented code, and name issues and pull requests by number alone, so that the guide names a source with no web address and no host, read also where emphasis marks split it or it is four numbers joined by dots; the guide's Held by cites no file that others write, or folder that holds one; and a test fails otherwise (R209, R221). The risk register, which adopters read to judge the tool and whose titles any pull request can write, is held to the same rule: its script refuses a title that holds a mark that hides text, and the page's own test, which reads it with the roadmap's, fails on a link, a web address or an `@` that a title brings (R246).
 - **Residual:** a tracked file of this repository that someone else wrote, which reached it through the owner's review (A15).
 - **Held by:** `project-standards`: "A link elsewhere fails a test"; `project-standards`: "A link elsewhere in the guide fails a test"; DR-227; DR-228; DR-231; `add-pr-cost-calculator` task 1.26; `add-pr-cost-calculator` task 1.27; `add-pr-cost-calculator` task 1.28; `project-standards`: "Text that GitHub hides in the register fails a test"; `project-standards`: "A title that the rule forbids stops the script"
 - **Assumptions:** A15
@@ -4154,7 +4154,7 @@ The trust boundaries:
 - **Held by:** `project-standards`: "Everything that the test of characters prints is printable ASCII"; `project-standards`: "Everything that the tests of attributes print is printable ASCII"; `project-standards`: "What a command of CI prints is written in printable ASCII"; `project-standards`: "A step whose output does not go through the filter fails CI"; DR-274; DR-280; `add-pr-cost-calculator` task 1.48; `add-pr-cost-calculator` task 1.51; `add-pr-cost-calculator` task 1.55; `add-pr-cost-calculator` task 1.56
 - **Assumptions:** A15, A16
 
-### T265. A key in a skill's front matter or in OpenSpec's configuration widens what a session does, and no check lists the keys
+### T265. A key in a skill's front matter, in OpenSpec's configuration or in the vendored plugin's manifest widens what a session does, and no check lists the keys
 
 - **Kind:** elevation of privilege, tampering
 - **Impact:** 3 (high)
@@ -4163,7 +4163,7 @@ The trust boundaries:
 - **Raw impact:** 3 (high)
 - **Raw likelihood:** 2 (possible)
 - **Raw risk:** 6
-- **What could happen:** a skill's front matter can give keys that act on a session, such as `allowed-tools`, which names the tools that a skill may use, and OpenSpec's generated skills tell the agent to apply the `context` and the `rules` that `openspec/config.yaml` gives. An update of Superpowers or OpenSpec that adds such a key to a skill passes the comparison with its source and the test of characters, and a pull request that adds a `context` to the configuration steers every OpenSpec workflow from a file that `CLAUDE.md` counts among those that describe. On 2026-11-21 the 22 skills gave only `name`, `description`, `allowed-tools`, `license`, `compatibility` and `metadata`, and `allowed-tools` was `Bash(openspec:*)` wherever it was given.
+- **What could happen:** a skill's front matter can give keys that act on a session, such as `allowed-tools`, which names the tools that a skill may use. OpenSpec's generated skills tell the agent to apply the `context` and the `rules` that `openspec/config.yaml` gives, and the guidance that its `operations` gives for applying or archiving a change, which OpenSpec passes on as `operationGuidance`, and for a `references` entry with a `remote` OpenSpec gives the agent a command that clones that repository and registers the clone as an OpenSpec store. The vendored plugin's manifest, `vendor/superpowers/.claude-plugin/plugin.json`, can give keys with which a session runs more, such as `hooks`, `commands`, `agents`, `skills` and `mcpServers`, among the fields that the installed Claude Code reads from a plugin's manifest. An update of Superpowers or OpenSpec that adds such a key to a skill or to the manifest passes the comparison with its source and the test of characters, and a pull request that adds a `context`, an `operations` or a `references` to the configuration steers OpenSpec's workflows from a file that `CLAUDE.md` counts among those that describe. On 2026-11-21 the 22 skills gave only `name`, `description`, `allowed-tools`, `license`, `compatibility` and `metadata`, and `allowed-tools` was `Bash(openspec:*)` wherever it was given; on 2026-11-22 the manifest gave only `author`, `description`, `homepage`, `keywords`, `license`, `name`, `repository` and `version`, and the configuration only `schema`.
 - **Answer:** the pin of each tool, the comparison with its source and the owner's review of each update's diff, in which a new key shows as a line of its own (T35), and the owner's review of each change to `openspec/config.yaml`; a test that lists the keys is left to a later change (B-026).
 - **Residual:** a key that an update adds, and a change to the configuration, are read only in the owner's review until such a test exists.
 - **Held by:** `scripts/sync-superpowers.sh`; `scripts/verify-openspec.sh`; DR-041; DR-042
@@ -4269,9 +4269,9 @@ The trust boundaries:
 - **Impact:** 1 (low)
 - **Likelihood:** 1 (unlikely)
 - **Risk:** 1
-- **Raw impact:** 1 (low)
-- **Raw likelihood:** 1 (unlikely)
-- **Raw risk:** 1
+- **Raw impact:** 2 (medium)
+- **Raw likelihood:** 2 (possible)
+- **Raw risk:** 4
 - **What could happen:** the tests of attributes read the repository's attributes in a git folder of their own, with a copy of the clone's index, and copied the index's file alone. A clone that keeps its index split, as `core.splitIndex` or `git update-index --split-index` makes it, keeps part of it in a shared file beside it, so that, as the threat review against what was built found, each of the four tests of the real tree's attributes stopped there with an error that named the shared file, while CI's checkout, which keeps no split index, passed.
 - **Answer:** the tests copy each shared part of the index with it, and so read a split index as git does (R274, DR-280).
 - **Residual:** a way of keeping the index that git adds later, which the copy does not take, would stop the tests the same way, with an error that names what is missing.
@@ -4283,9 +4283,9 @@ The trust boundaries:
 - **Impact:** 1 (low)
 - **Likelihood:** 1 (unlikely)
 - **Risk:** 1
-- **Raw impact:** 1 (low)
-- **Raw likelihood:** 1 (unlikely)
-- **Raw risk:** 1
+- **Raw impact:** 2 (medium)
+- **Raw likelihood:** 2 (possible)
+- **Raw risk:** 4
 - **What could happen:** `scripts/sync-superpowers.sh` ran its git commands in the person's environment, and a variable that names a repository, such as a `GIT_DIR` that a person or a tool exports, has git work there rather than in the folder that a command names. As the threat review against what was built found, with `GIT_DIR` naming another clone, the check still gave the right result while it fetched the pinned commit's objects into that clone and wrote its `FETCH_HEAD` and its `shallow` file; with `GIT_OBJECT_DIRECTORY` naming that clone's objects, the sync wrote them there, and with `GIT_COMMON_DIR`, it stopped with an error.
 - **Answer:** before it runs git, the sync drops each variable that git lists as one that names a repository, but the two that carry the person's configuration, as git does when it works in another repository, so that it reads and writes only a repository of its own and this one, and still takes the configuration that `GIT_CONFIG_PARAMETERS` and `GIT_CONFIG_COUNT` give (R275, DR-281).
 - **Residual:** what the kept configuration gives, such as a rewrite of upstream's address, still reaches the sync, as the person's global configuration does, and the fetch names the lock's full commit id, which git verifies.
@@ -4298,8 +4298,8 @@ The trust boundaries:
 - **Likelihood:** 1 (unlikely)
 - **Risk:** 1
 - **Raw impact:** 2 (medium)
-- **Raw likelihood:** 1 (unlikely)
-- **Raw risk:** 2
+- **Raw likelihood:** 2 (possible)
+- **Raw risk:** 4
 - **What could happen:** the refresh deletes each vendored path and writes the pinned commit's files again, and `rm`, `mkdir`, the shell's `>` and `chmod` each follow a link that the copy already holds. As the threat review against what was built found, with `vendor/superpowers/hooks` a link to a folder outside the copy, the refresh exited 0 after it deleted the files there that bear the vendored names and wrote upstream's hooks there, executable, while the link stayed, and the check's `diff -r` follows links too, so a link whose target holds the pinned bytes passed it. The test of the context files fails on a tracked link (R252), so such a link is one that the person's own clone holds.
 - **Answer:** the sync, with and without `--check`, stops on a link at `vendor`, at `vendor/superpowers/` or below it, and names it, before it reads or writes anything (R275, DR-281).
 - **Residual:** a link made while the sync runs is not seen.
@@ -4312,8 +4312,8 @@ The trust boundaries:
 - **Likelihood:** 1 (unlikely)
 - **Risk:** 1
 - **Raw impact:** 2 (medium)
-- **Raw likelihood:** 1 (unlikely)
-- **Raw risk:** 2
+- **Raw likelihood:** 2 (possible)
+- **Raw risk:** 4
 - **What could happen:** the test of characters names each script whose working tree holds a carriage return with the way back that `CONTRIBUTING.md` gives too (T267), and that way back was to delete the script and check it out again. A script that a person has edited, and an editor saved with Windows line endings, is named so too, and, as the threat review against what was built found, following that advice left none of the edit and a clean `git status`.
 - **Answer:** the way back is to stage the script, delete it, check it out again and unstage it, which writes it with line feeds alone and keeps an edit not yet staged, or to clone the repository again, as the test and `CONTRIBUTING.md` give it, and a test runs the command that `CONTRIBUTING.md` gives on a script so edited (R276, DR-281).
 - **Residual:** staging and unstaging a script takes back the part of an edit that the person had staged apart from the rest, which stays in the working tree.
@@ -4325,9 +4325,9 @@ The trust boundaries:
 - **Impact:** 1 (low)
 - **Likelihood:** 1 (unlikely)
 - **Risk:** 1
-- **Raw impact:** 1 (low)
-- **Raw likelihood:** 1 (unlikely)
-- **Raw risk:** 1
+- **Raw impact:** 2 (medium)
+- **Raw likelihood:** 2 (possible)
+- **Raw risk:** 4
 - **What could happen:** the sync copies whatever the pinned commit gives under `skills/`, so a release of upstream that holds an attributes file there, such as `skills/.gitattributes` with the line `*.sh text eol=lf`, lands in the vendored copy, and git then reads it for the vendored files. As the threat review against what was built found, the test of line endings then fails on each vendored script that the line names, though the line gives line feeds too, and since no edit of the vendored copy may answer it, the update waits.
 - **Answer:** the failure names each vendored file and what its attributes give, so the update's pull request shows the attributes file, and whether the test lets such a line pass or the sync leaves such a file out is the owner's decision then, while any attribute other than `text` and `eol` fails the test of attributes too (R274, R276, DR-280, DR-281).
 - **Residual:** the update waits for that decision, as an update that brings a character that the list does not give waits (T255).
@@ -4359,6 +4359,7 @@ The threats with a risk of 6 or more:
 - **T128** (risk 6): Calls made from a folder that holds the repository are left out, so a thread's figure is far too low
 - **T132** (risk 6): A change to the marketplace reaches sessions with nothing to accept
 - **T137** (risk 6): One pull request changes the marketplace together with the check, the build or the workflow that compares it
+- **T232** (risk 6): Another repository's context files, loaded in the same session, steer work here
 
 ## Assumptions
 
