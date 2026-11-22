@@ -24,12 +24,19 @@ names the file, the line and the column, a character by its code point and its n
 by itself, and a path with each other character by its code point, so that everything that
 the test prints is printable ASCII (T264).
 
+A file whose extension, in any case, is that of an image, a PDF or a video is tracked only
+where `EXCEPTIONS` gives its path, the object id that git holds for it and an accepted record
+that names the path in a code span, and the list gives no other file. The test of characters
+passes over a listed file only where its bytes are not UTF-8, so that a listed SVG is still
+read and the list takes no page of text out of it (R270, DR-276).
+
 Each check is shown to fail on a git repository into which its defect is planted.
 """
 
 from __future__ import annotations
 
 import codecs
+import mimetypes
 import os
 import re
 import stat
@@ -44,7 +51,8 @@ from typing import NamedTuple
 import pytest
 import yaml
 from conventions import named, shown, shown_path, written_by_others
-from test_decisions import AUTHOR
+from test_decisions import AUTHOR, CODE_SPAN, records_of
+from test_decisions import record as decision_record
 from test_repository import oldest_python
 from test_roadmap import isolated_environment, session_free_environment
 from wording import MARKDOWN
@@ -117,6 +125,41 @@ NOT_ASCII = ", which is not printable ASCII"
 NOT_LISTED = ", which the list does not give; the owner decides whether it does"
 MARKDOWN_ALONE = ", which the list gives for Markdown alone"
 READ_NOTHING = "the test of characters read no tracked file"
+
+
+class Excepted(NamedTuple):
+    """A file that the list of exceptions lets in: its path, the object id that git holds
+    for it, and the accepted record whose text names that path in a code span."""
+
+    path: str
+    oid: str
+    record: str
+
+
+# The images, PDFs and videos that the repository tracks, each with its record (R270,
+# DR-276): none so far.
+EXCEPTIONS: tuple[Excepted, ...] = ()
+# The extensions of an image, a PDF or a video: each that Python's own table of types gives
+# one of them, which a test holds for the running release, and those of common formats that
+# the table leaves out.
+MEDIA = frozenset(
+    (
+        "ai apng avif bmp cur dib dng emf eps exr fits g3 gif heic heif icns ico ief jfif jp2 "
+        "jpe jpeg jpf jpg jpm jpx jxl pbm pct pgm pic pict pjp pjpeg png pnm ppm psd ras rgb "
+        "svg svgz t38 tfx tga tif tiff webp wmf xbm xcf xpm xwd "
+        "pdf "
+        "3g2 3gp asf avi f4v flv m1v m2ts m2v m4v mk3d mkv mov movie mp4 mpa mpe mpeg mpg mts "
+        "mxf ogv qt vob webm wmv"
+    ).split()
+)
+OBJECT_ID = re.compile(r"[0-9a-f]{40}|[0-9a-f]{64}")
+UNLISTED = (
+    " is an image, a PDF or a video by its extension, which only an exception that gives its"
+    " object id and an accepted record lets in"
+)
+MEDIA_READ_NOTHING = (
+    "git lists no tracked file, so the check of images, PDFs and videos read nothing"
+)
 
 
 class Entry(NamedTuple):
@@ -399,10 +442,17 @@ def link_problems(path: str, target: bytes, where: str) -> list[str]:
 
 
 def version_problems(
-    entry: Entry, where: str, kind: str, data: bytes, others: bool, markdown: bool
+    entry: Entry,
+    where: str,
+    kind: str,
+    data: bytes,
+    others: bool,
+    markdown: bool,
+    passed: set[str],
 ) -> list[str]:
     """What one version of a tracked path, git's index's or the working tree's, holds that
-    its writer may not use."""
+    its writer may not use, unless it is a listed image, PDF or video whose bytes are not
+    UTF-8."""
     name = shown_path(entry.path)
     if kind == "link":
         return link_problems(entry.path, data, where)
@@ -413,6 +463,8 @@ def version_problems(
     try:
         text = data.decode("utf-8")
     except UnicodeDecodeError:
+        if entry.path in passed:
+            return []
         return [f"{name}{where} is not UTF-8, so the test cannot read it as text"]
     return text_problems(entry.path, text, where, others, markdown)
 
@@ -452,13 +504,15 @@ def path_problems(paths: Iterable[str]) -> list[str]:
     return problems
 
 
-def character_problems(root: Path) -> list[str]:
+def character_problems(root: Path, exceptions: Iterable[Excepted] = EXCEPTIONS) -> list[str]:
     """R268, R269 and R272's reading of every path that git's index tracks, and of each file
-    as git's index holds it and as the working tree holds it, where it holds one."""
+    as git's index holds it and as the working tree holds it, where it holds one, but a listed
+    image, PDF or video whose bytes are not UTF-8 (R270)."""
     entries = tracked_entries(root)
     if not entries:
         return [f"git lists no tracked file, so {READ_NOTHING}"]
     markdown = markdown_files(root)
+    passed = {excepted.path for excepted in exceptions if media(excepted.path)}
     contents = blobs(root, (entry.oid for entry in entries if entry.mode != GITLINK))
     problems = path_problems(entry.path for entry in entries)
     folders: dict[str, str] = {}
@@ -484,7 +538,7 @@ def character_problems(root: Path) -> list[str]:
         versions = [("", index)] if tree in (None, index) else [(IN_INDEX, index), (IN_TREE, tree)]
         others, page = bool(written_by_others(entry.path)), entry.path in markdown
         for where, (kind, data) in versions:
-            problems += version_problems(entry, where, kind, data, others, page)
+            problems += version_problems(entry, where, kind, data, others, page, passed)
     if not read:
         problems.append(READ_NOTHING)
     return problems
@@ -519,6 +573,57 @@ def list_problems(visible: Iterable[Visible], oldest: bool) -> list[str]:
         if unicodedata.name(character, "") != entry.name:
             problems.append(f"the list gives {label}, which Unicode names {named(character)}")
     return problems
+
+
+def media(path: str) -> bool:
+    """Whether a path's extension, in any case, is that of an image, a PDF or a video."""
+    name = path.rpartition("/")[2]
+    return "." in name and name.rpartition(".")[2].lower() in MEDIA
+
+
+def exception_problems(root: Path, exceptions: Iterable[Excepted]) -> list[str]:
+    """Each tracked image, PDF or video that the list of exceptions does not give, and each
+    entry of the list that gives a path that git does not track, a file that is not an image,
+    a PDF or a video by its extension, no object id or another than git holds, or a record
+    that does not exist, is not accepted or names the path in none of its code spans (R270,
+    DR-276)."""
+    held = {entry.path: entry for entry in tracked_entries(root)}
+    if not held:
+        return [MEDIA_READ_NOTHING]
+    folder = root / "docs" / "decisions"
+    records = records_of(folder)[0] if folder.is_dir() else {}
+    problems, listed = [], set()
+    for excepted in exceptions:
+        listed.add(excepted.path)
+        path = shown_path(excepted.path)
+        entry = held.get(excepted.path)
+        if entry is None:
+            problems.append(f"the exception for {path} gives a path that git does not track")
+        if not media(excepted.path):
+            problems.append(
+                f"the exception for {path} gives a file that is not an image, a PDF or a video"
+                " by its extension"
+            )
+        if not OBJECT_ID.fullmatch(excepted.oid):
+            problems.append(f"the exception for {path} gives no object id")
+        elif entry is not None and entry.oid != excepted.oid:
+            problems.append(
+                f"{path} is held by git as {entry.oid}, and the exception for {path} gives"
+                f" {excepted.oid}"
+            )
+        cited = f"the exception for {path} cites {shown(excepted.record)}"
+        found = records.get(excepted.record)
+        if found is None:
+            problems.append(f"{cited}, which is no record")
+        elif found.fields.get("Status") != "accepted":
+            problems.append(
+                f"{cited}, which is {shown(found.fields.get('Status', ''))}, not accepted"
+            )
+        elif excepted.path not in {span.group(2) for span in CODE_SPAN.finditer(found.text)}:
+            problems.append(f"{cited}, which names {path} in no code span")
+    return problems + [
+        f"{shown_path(path)}{UNLISTED}" for path in held if media(path) and path not in listed
+    ]
 
 
 def plant(
@@ -1038,6 +1143,224 @@ def test_the_list_gives_only_punctuation_and_symbols_that_show_under_their_names
     assert list_problems(VISIBLE, oldest) == []
 
 
+# R270: an image, a PDF or a video is tracked only with a record that names it.
+
+# The bytes with which a PNG file opens, which are not UTF-8.
+PNG = b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR"
+RECORD = "docs/decisions/DR-001-an-image-that-a-page-shows.md"
+MEDIA_PATHS = list(
+    dict.fromkeys(
+        f"docs/a.{form}"
+        for extension in sorted(MEDIA)
+        for form in (extension, extension.upper(), extension.capitalize())
+    )
+)
+NOT_MEDIA_PATHS = [
+    "docs/a.png.md",
+    "docs/a.pngs",
+    "docs/svg",
+    "docs/png/a.md",
+    "docs/v1.png/notes",
+    "tools/a.ts",
+    "tools/a.dot",
+]
+
+
+def listing(
+    root: Path,
+    files: Mapping[str, str | bytes],
+    sentence: str = "The page shows `docs/diagram.png`.",
+    status: str = "accepted",
+) -> Path:
+    """A repository that holds these files and an accepted record, DR-001, that says this
+    sentence, or a record of another status."""
+    text = decision_record(
+        1,
+        title="An image that a page shows",
+        status=status,
+        closed_by="DR-002" if status == "closed" else "none",
+    ).replace("Something made a choice necessary.", sentence)
+    return plant(root, {**files, RECORD: text})
+
+
+def held_id(root: Path, path: str) -> str:
+    """The object id that git's index holds for a path."""
+    done = git(root, "rev-parse", f":{path}")
+    done.check_returncode()
+    return done.stdout.decode("ascii").strip()
+
+
+@pytest.fixture(scope="module")
+def planted_media(tmp_path_factory: pytest.TempPathFactory) -> list[str]:
+    """What the check of images, PDFs and videos finds in a repository that holds a file by
+    each of their extensions, in three cases, and files whose extensions are not theirs."""
+    files = {path: "Planted.\n" for path in MEDIA_PATHS + NOT_MEDIA_PATHS}
+    return exception_problems(plant(tmp_path_factory.mktemp("media"), files), ())
+
+
+@pytest.mark.parametrize("path", MEDIA_PATHS)
+def test_an_image_a_pdf_or_a_video_that_the_list_does_not_give_fails(
+    planted_media: list[str], path: str
+) -> None:
+    assert f"{path}{UNLISTED}" in planted_media
+
+
+def test_only_the_files_with_the_extension_of_an_image_a_pdf_or_a_video_are_named(
+    planted_media: list[str],
+) -> None:
+    assert sorted(planted_media) == sorted(f"{path}{UNLISTED}" for path in MEDIA_PATHS)
+
+
+def test_the_extensions_hold_each_that_python_gives_an_image_a_pdf_or_a_video() -> None:
+    table = mimetypes.MimeTypes()
+    known = {
+        extension.lstrip(".")
+        for strict in (True, False)
+        for extension, kind in table.types_map[strict].items()
+        if kind.startswith(("image/", "video/")) or kind == "application/pdf"
+    }
+    assert known
+    assert sorted(known - MEDIA) == []
+
+
+@pytest.mark.parametrize("path", ["docs/diagram.png", "docs/DIAGRAM.PDF", "docs/clip.Mp4"])
+def test_a_file_that_the_list_gives_with_its_object_id_and_record_passes(
+    tmp_path: Path, path: str
+) -> None:
+    root = listing(tmp_path, {path: PNG}, sentence=f"The page shows `{path}`.")
+    exceptions = [Excepted(path, held_id(root, path), "DR-001")]
+    assert exception_problems(root, exceptions) == []
+    assert character_problems(root, exceptions) == []
+
+
+def test_the_test_of_characters_passes_over_only_a_listed_file_that_is_not_utf_8(
+    tmp_path: Path,
+) -> None:
+    root = listing(tmp_path, {"docs/diagram.png": PNG, "docs/other.png": PNG})
+    exceptions = [Excepted("docs/diagram.png", held_id(root, "docs/diagram.png"), "DR-001")]
+    assert character_problems(root, exceptions) == [
+        "docs/other.png is not UTF-8, so the test cannot read it as text"
+    ]
+
+
+def test_a_listed_svg_is_still_read_by_the_test_of_characters(tmp_path: Path) -> None:
+    svg = "<svg><text>a\u202eb</text></svg>\n"
+    sentence = "The page shows `docs/diagram.svg`."
+    root = listing(tmp_path, {"docs/diagram.svg": svg}, sentence=sentence)
+    exceptions = [Excepted("docs/diagram.svg", held_id(root, "docs/diagram.svg"), "DR-001")]
+    assert exception_problems(root, exceptions) == []
+    assert character_problems(root, exceptions) == [
+        f"docs/diagram.svg:1:13 holds U+202E RIGHT-TO-LEFT OVERRIDE{NOT_ASCII}"
+    ]
+
+
+def test_a_listed_file_whose_bytes_changed_fails_and_names_the_file_and_the_entry(
+    tmp_path: Path,
+) -> None:
+    root = listing(tmp_path, {"docs/diagram.png": PNG})
+    before = held_id(root, "docs/diagram.png")
+    (root / "docs/diagram.png").write_bytes(PNG + b"\x00")
+    git(root, "add", "docs/diagram.png").check_returncode()
+    after = held_id(root, "docs/diagram.png")
+    assert exception_problems(root, [Excepted("docs/diagram.png", before, "DR-001")]) == [
+        f"docs/diagram.png is held by git as {after}, and the exception for docs/diagram.png"
+        f" gives {before}"
+    ]
+
+
+class Listing(NamedTuple):
+    """An exception and the repository that it is read in: an image that git tracks, listed
+    with the object id that git holds for it and an accepted record that names its path in a
+    code span, unless a case changes one of them."""
+
+    files: Mapping[str, str | bytes] = {"docs/diagram.png": PNG}
+    path: str = "docs/diagram.png"
+    oid: str = "the object id that git holds"
+    record: str = "DR-001"
+    sentence: str = "The page shows `docs/diagram.png`."
+    status: str = "accepted"
+
+
+@pytest.mark.parametrize(
+    ("case", "problem"),
+    [
+        (
+            Listing(
+                files={},
+                path="docs/missing.png",
+                oid="0" * 40,
+                sentence="The page shows `docs/missing.png`.",
+            ),
+            "the exception for docs/missing.png gives a path that git does not track",
+        ),
+        (
+            Listing(
+                files={"docs/notes.txt": "Notes.\n"},
+                path="docs/notes.txt",
+                sentence="The page shows `docs/notes.txt`.",
+            ),
+            "the exception for docs/notes.txt gives a file that is not an image, a PDF or a"
+            " video by its extension",
+        ),
+        (
+            Listing(
+                files={"docs/notes.txt": PNG},
+                path="docs/notes.txt",
+                sentence="The page shows `docs/notes.txt`.",
+            ),
+            "the exception for docs/notes.txt gives a file that is not an image, a PDF or a"
+            " video by its extension",
+        ),
+        (Listing(oid=""), "the exception for docs/diagram.png gives no object id"),
+        (Listing(oid="abc1234"), "the exception for docs/diagram.png gives no object id"),
+        (
+            Listing(record="DR-002"),
+            "the exception for docs/diagram.png cites DR-002, which is no record",
+        ),
+        (
+            Listing(status="closed"),
+            "the exception for docs/diagram.png cites DR-001, which is closed, not accepted",
+        ),
+        (
+            Listing(sentence="The page shows docs/diagram.png."),
+            "the exception for docs/diagram.png cites DR-001, which names docs/diagram.png in"
+            " no code span",
+        ),
+        (
+            Listing(sentence="The page shows `docs/diagram.png.bak` and `docs/`."),
+            "the exception for docs/diagram.png cites DR-001, which names docs/diagram.png in"
+            " no code span",
+        ),
+    ],
+)
+def test_an_exception_out_of_its_form_fails_and_names_the_entry(
+    tmp_path: Path, case: Listing, problem: str
+) -> None:
+    root = listing(tmp_path, case.files, sentence=case.sentence, status=case.status)
+    oid = held_id(root, case.path) if case.oid == Listing().oid else case.oid
+    assert exception_problems(root, [Excepted(case.path, oid, case.record)]) == [problem]
+
+
+def test_an_exception_in_its_form_passes(tmp_path: Path) -> None:
+    case = Listing()
+    root = listing(tmp_path, case.files, sentence=case.sentence, status=case.status)
+    assert exception_problems(root, [Excepted(case.path, held_id(root, case.path), "DR-001")]) == []
+
+
+def test_a_listed_file_of_text_that_is_not_utf_8_is_still_refused_by_the_test_of_characters(
+    tmp_path: Path,
+) -> None:
+    root = listing(tmp_path, {"docs/notes.txt": PNG}, sentence="It names `docs/notes.txt`.")
+    exceptions = [Excepted("docs/notes.txt", held_id(root, "docs/notes.txt"), "DR-001")]
+    assert character_problems(root, exceptions) == [
+        "docs/notes.txt is not UTF-8, so the test cannot read it as text"
+    ]
+
+
+def test_a_check_of_images_that_reads_no_tracked_path_fails(tmp_path: Path) -> None:
+    assert exception_problems(plant(tmp_path, {}), ()) == [MEDIA_READ_NOTHING]
+
+
 # The definitions that the tests share.
 
 
@@ -1132,3 +1455,7 @@ def test_everything_that_a_failing_run_of_the_test_of_characters_prints_is_print
 
 def test_every_tracked_file_holds_only_the_characters_that_its_writer_may_use() -> None:
     assert character_problems(ROOT) == []
+
+
+def test_every_image_a_pdf_or_a_video_is_tracked_only_with_its_record() -> None:
+    assert exception_problems(ROOT, EXCEPTIONS) == []
