@@ -247,8 +247,16 @@ AUTOLINK = re.compile(
     r"|[A-Za-z0-9.!#$%&'*+/=?^_`{|}~-]+@[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?"
     r"(?:\.[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?)*)>"
 )
-# A link's destination that angle brackets hold, which is no raw HTML.
+# A link's destination that angle brackets hold, which is no raw HTML, and the text before a
+# link's `](` where the link has none: an opening bracket that no backslash escapes, and
+# nothing but spaces and tabs after it.
 ANGLE = re.compile(r"<[^<>\n]*>")
+EMPTY_TEXT = re.compile(r"(?:^|[^\\])(?:\\\\)*\[[ \t]*\Z")
+# The extensions with which GitHub's markup library renders a markup other than Markdown, as
+# its README listed them on 2026-11-22 (R273).
+OTHER_MARKUPS = re.compile(
+    r"\.(?:textile|rdoc|org|creole|mediawiki|wiki|rst|asciidoc|adoc|asc|pod)\Z", re.IGNORECASE
+)
 # What the reading takes to open code, and GitHub, on a line that it reads as raw HTML, not.
 RAW_CODE = re.compile(r"`|~{3,}")
 TAG = re.compile(r"</?[A-Za-z][A-Za-z0-9-]*")
@@ -257,7 +265,7 @@ REFERENCE = re.compile(r"&(?:#[0-9]{1,7}|#[Xx][0-9A-Fa-f]{1,6}|([A-Za-z][A-Za-z0
 ESCAPED_BACKTICK = re.compile(r"(?<!\\)(?:\\\\)*\\`")
 # A row of a table's delimiter, and what may open a row inside a quote or a list item.
 DELIMITER_CELL = re.compile(r"[ \t]*:?-+:?[ \t]*")
-CONTAINER = re.compile(r"^[ \t>]*(?:(?:[-*+]|\d{1,9}[.)])[ \t]+)*")
+CONTAINER = re.compile(r"^(?:[ \t>]|(?:[-*+]|\d{1,9}[.)])[ \t])*")
 # What a Mermaid block may not hold: an entity code, which it shows as the character that it
 # names, a comment or directive, and the statements that give text that the drawing does
 # not show or change how it shows what it does.
@@ -271,6 +279,11 @@ NAMES_CHARACTER = ", which GitHub shows as the character that it names"
 DEFINITION = "]:, which starts a link or footnote definition that GitHub hides"
 IMAGE = "![, which starts an image that GitHub fetches and shows"
 TITLE = "a link with a title, which GitHub shows only under a pointer"
+NO_TEXT = "a link without text, which GitHub shows as nothing"
+OTHER_MARKUP = (
+    " is a page in a markup other than Markdown, which GitHub renders and the test of pages"
+    " does not read"
+)
 DOLLAR = "$, with which GitHub starts a mathematical expression"
 BACKSLASHED = (
     "a backtick that a backslash escapes, which GitHub shows as itself where the test would"
@@ -681,8 +694,10 @@ def windows_problems(path: str) -> list[str]:
 
 def path_problems(paths: Iterable[str]) -> list[str]:
     """Each tracked path that holds a character other than printable ASCII but the space,
-    and each two paths, or a path and a folder that holds another, that differ only in the
-    case of their letters, which a file system that ignores case holds as one (R268, T258)."""
+    and each two paths, a path and a folder that holds another, or two folders, that differ
+    only in the case of their letters, which a file system that ignores case holds as one, a
+    folder named where its own name differs and not again in each folder that it holds
+    (R268, T258)."""
     unique = sorted(set(paths))
     problems = [
         f"the path {shown_path(path)} holds a character other than printable ASCII but the space"
@@ -713,6 +728,12 @@ def path_problems(paths: Iterable[str]) -> list[str]:
                     f"holds {shown_path(inside)}, differ only in case, which a file system "
                     "that ignores case cannot hold both of"
                 )
+    for spellings in folders.values():
+        if len({folder.rpartition("/")[2] for folder in spellings}) > 1:
+            problems.append(
+                f"the folders {' and '.join(map(shown_path, sorted(spellings)))} differ only in "
+                "case, which a file system that ignores case holds as one folder"
+            )
     return problems
 
 
@@ -906,8 +927,9 @@ def line_problems(seen: str, raw: str, folds: bool) -> list[tuple[int, str]]:
     """Each mark that GitHub hides or shows otherwise on a line read as prose, by its column:
     raw HTML, a character reference that GitHub knows, `$`, a link or footnote definition, an
     image, a link that may give a title, the end of the line among what may follow its
-    destination since a title may start there, and a backtick that a backslash escapes,
-    which the reading takes to open or close code (R273)."""
+    destination since a title may start there, a link without text, other than an image's,
+    which is named as an image, and a backtick that a backslash escapes, which the reading
+    takes to open or close code (R273)."""
     found: list[tuple[int, str]] = []
     angles: set[int] = set()
     for mark in MARK.finditer(seen):
@@ -926,6 +948,8 @@ def line_problems(seen: str, raw: str, folds: bool) -> list[tuple[int, str]]:
                 angles.add(start)
             if not seen[end:].lstrip(" \t").startswith(")"):
                 what = TITLE
+            elif EMPTY_TEXT.search(seen[:at]) and not seen[:at].rstrip(" \t").endswith("!["):
+                what = NO_TEXT
         if what:
             found.append((at + 1, what))
     found += [
@@ -1040,9 +1064,10 @@ def without_comments(text: str) -> tuple[str, tuple[int, int] | None, set[int]]:
     """A template's text with each HTML comment outside code made spaces, its line breaks
     kept, so that the columns after it stay as they were; where one opens that never closes,
     by its line and column, from where GitHub hides the rest; and each line on which a
-    comment that opens a line closes, the rest of which GitHub reads as raw HTML (R273). Each
-    comment is found as the reading reads the text once the comments before it are gone,
-    since a backtick or a fence in a comment opens no code."""
+    comment that opens a line, or the text of a quote or a list item, closes, the rest of
+    which GitHub reads as raw HTML (R273). Each comment is found as the reading reads the
+    text once the comments before it are gone, since a backtick or a fence in a comment
+    opens no code."""
     raw: set[int] = set()
     while True:
         seen = "".join(reading(text)[0])
@@ -1055,21 +1080,21 @@ def without_comments(text: str) -> tuple[str, tuple[int, int] | None, set[int]]:
         text = text[:at] + re.sub(r"[^\n]", " ", text[at:stop]) + text[stop:]
         if end < 0:
             return text, (text.count("\n", 0, at) + 1, at - start + 1), raw
-        if at - start <= 3 and not text[start:at].strip(" "):
+        if not CONTAINER.sub("", text[start:at], count=1):
             raw.add(text.count("\n", 0, end) + 1)
 
 
 def fold_lines(lines: list[str], view: list[str]) -> set[int]:
     """The lines of the README that GitHub reads as raw HTML where the test lets its folds
-    stand: from each line that a fold opens, after at most three spaces and outside code, up
-    to the next blank line (R273)."""
+    stand: from each line, or the text of each quote or list item, that a fold opens outside
+    code, up to the next line that is blank but for the marks of quotes and list items, a
+    reading that may take more lines than GitHub does, and never fewer (R273)."""
     found: set[int] = set()
     inside = False
     for number, (raw, seen) in enumerate(zip(lines, view, strict=True), 1):
-        indent = len(seen) - len(seen.lstrip(" "))
-        if not raw.strip(" \t"):
+        if not CONTAINER.sub("", raw, count=1).strip(" \t"):
             inside = False
-        elif indent <= 3 and seen.startswith(FOLDS, indent):
+        elif CONTAINER.sub("", seen, count=1).startswith(FOLDS):
             inside = True
         if inside:
             found.add(number)
@@ -1128,18 +1153,23 @@ def page_text_problems(path: str, text: str, where: str = "") -> list[str]:
 
 
 def page_problems(root: Path) -> list[str]:
-    """What each Markdown file that this repository writes holds that GitHub hides or shows
-    otherwise, as git's index holds it and as the working tree holds it, where it differs
-    (R272, R273). A version that is no file of UTF-8 text, and an object that this clone
-    lacks, it leaves to the test of characters, which names each."""
+    """Each page that this repository writes in a markup other than Markdown, and what each
+    Markdown file that it writes holds that GitHub hides or shows otherwise, as git's index
+    holds it and as the working tree holds it, where it differs (R272, R273). A version that
+    is no file of UTF-8 text, and an object that this clone lacks, it leaves to the test of
+    characters, which names each."""
     markdown = markdown_files(root)
-    pages = [
+    entries = [
         entry
         for entry in tracked_entries(root)
-        if entry.path in markdown
-        and entry.mode in (FILE, EXECUTABLE)
-        and not written_by_others(entry.path)
+        if entry.mode in (FILE, EXECUTABLE) and not written_by_others(entry.path)
     ]
+    others = [
+        f"{shown_path(entry.path)}{OTHER_MARKUP}"
+        for entry in entries
+        if OTHER_MARKUPS.search(entry.path)
+    ]
+    pages = [entry for entry in entries if entry.path in markdown]
     contents = blobs(root, (entry.oid for entry in pages))
     problems: list[str] = []
     folders: dict[str, str] = {}
@@ -1158,7 +1188,7 @@ def page_problems(root: Path) -> list[str]:
                 continue
             read += 1
             problems += page_text_problems(entry.path, text, where)
-    return problems if read else [PAGES_READ_NOTHING]
+    return others + (problems if read else [PAGES_READ_NOTHING])
 
 
 def other_attribute_problems(root: Path) -> list[str]:
@@ -1802,6 +1832,24 @@ def test_a_file_and_a_folder_that_differ_only_in_case_fail(tmp_path: Path) -> No
     ]
 
 
+def test_two_folders_that_differ_only_in_case_fail_once_where_their_names_differ(
+    tmp_path: Path,
+) -> None:
+    files = {
+        "vendor/Superpowers/hooks/hooks.json": "{}\n",
+        "vendor/superpowers/hooks/run-hook.cmd": "Printable.\n",
+    }
+    assert character_problems(plant(tmp_path, files)) == [
+        "the folders vendor/Superpowers and vendor/superpowers differ only in case, which a file "
+        "system that ignores case holds as one folder"
+    ]
+
+
+def test_folders_that_differ_in_more_than_case_pass(tmp_path: Path) -> None:
+    files = {"docs/Plan/a.md": "A.\n", "docs/plans/b.md": "B.\n", "docs/plans/c/d.md": "D.\n"}
+    assert character_problems(plant(tmp_path, files)) == []
+
+
 # R277: every tracked path is one that Windows can write.
 
 # The names that Windows keeps for devices, as the scenario names them, written out here so
@@ -2267,11 +2315,15 @@ OUTSIDE_CODE = {
     "link-definition": ("[a]: https://example.com", "]:", DEFINITION),
     "footnote-definition": ("[^1]: A note.", "]:", DEFINITION),
     "image": ("An ![image](a.png) here.", "![", IMAGE),
+    "image-without-text": ("An ![ ](a.png) here.", "![", IMAGE),
     "double-quoted-title": ('A [link](a.md "A title") here.', "](", TITLE),
     "single-quoted-title": ("A [link](a.md 'A title') here.", "](", TITLE),
     "parenthesised-title": ("A [link](a.md (A title)) here.", "](", TITLE),
     "title-after-brackets": ('A [link](<a.md> "A title") here.', "](", TITLE),
     "target-cut-by-the-line": ("A [link](a.md", "](", TITLE),
+    "link-without-text": ("A [](https://example.invalid) here.", "](", NO_TEXT),
+    "link-with-blank-text": ("A [ \t](a.md) here.", "](", NO_TEXT),
+    "link-without-text-after-a-backslash": ("A \\\\[](a.md) here.", "](", NO_TEXT),
     "dollar": ("It costs $5.", "$", DOLLAR),
     "escaped-backtick": ("A \\`<!-- hidden -->\\` word.", "\\", BACKSLASHED),
 }
@@ -2326,8 +2378,11 @@ def test_a_table_whose_rows_hold_no_more_cells_than_its_header_passes(
     assert page_problems(plant(tmp_path, {"docs/table.md": page(table)})) == []
 
 
-def test_a_table_row_in_a_quote_is_read_as_github_reads_it(tmp_path: Path) -> None:
-    table = "> | A |\n> |---|\n> | 1 | hidden |\n"
+@pytest.mark.parametrize(
+    "table",
+    ["> | A |\n> |---|\n> | 1 | hidden |\n", "1. > | A |\n   > |---|\n   > | 1 | hidden |\n"],
+)
+def test_a_table_row_in_a_quote_is_read_as_github_reads_it(tmp_path: Path, table: str) -> None:
     root = plant(tmp_path, {"docs/table.md": page(table)})
     assert page_problems(root) == [
         "docs/table.md:5 holds a table row of 2 cells under a header of 1, whose cells past the"
@@ -2415,6 +2470,7 @@ IN_CODE = [
     "An autolink, <https://example.com/a?b=1>, and another, <someone@example.com>.",
     "a < b, 1<2, <-, <= and <3 show as written, as do R&D, &c and &NotAnEntity;.",
     "A [link](a.md), [another](<a b.md>) and [a third](a_(b).md) give no title.",
+    "Links whose text is [`code`](a.md) or [[]](a.md) show it, and \\[](a.md) is no link.",
     "An escaped backslash before code, \\\\`code`, reads as GitHub reads it.",
 ]
 
@@ -2543,6 +2599,36 @@ RAW_HTML_LINES = [
         "<!-- A comment. --> `&#x202E;`\n",
         f".github/pull_request_template.md:1:21 holds a backtick{OPENS_NO_CODE}",
     ),
+    (
+        "README.md",
+        "- <details>\n  `<!-- x -->`\n  </details>\n",
+        f"README.md:2:3 holds a backtick{OPENS_NO_CODE}",
+    ),
+    (
+        "README.md",
+        "> <details>\n> `<!-- x -->`\n> </details>\n",
+        f"README.md:2:3 holds a backtick{OPENS_NO_CODE}",
+    ),
+    (
+        "README.md",
+        "1. > <details>\n   > ~~~\n",
+        f"README.md:2:6 holds a run of tildes{OPENS_NO_CODE}",
+    ),
+    (
+        ".github/pull_request_template.md",
+        "- <!-- A comment. --> `&#x202E;`\n",
+        f".github/pull_request_template.md:1:23 holds a backtick{OPENS_NO_CODE}",
+    ),
+    (
+        ".github/pull_request_template.md",
+        "> <!-- A comment\n> that closes. --> `&#x202E;`\n",
+        f".github/pull_request_template.md:2:20 holds a backtick{OPENS_NO_CODE}",
+    ),
+    (
+        ".github/pull_request_template.md",
+        "Text.\n\n- A list.\n  <!-- A comment. --> `&#x202E;`\n",
+        f".github/pull_request_template.md:4:23 holds a backtick{OPENS_NO_CODE}",
+    ),
 ]
 
 
@@ -2557,14 +2643,61 @@ def test_code_on_a_line_that_github_reads_as_raw_html_fails(
     ("path", "text"),
     [
         (".github/pull_request_template.md", "Fill in `this` <!-- A comment. --> and `that`.\n"),
+        (".github/pull_request_template.md", "- Fill in `this` <!-- A comment. --> and `that`.\n"),
         ("README.md", FOLDED.replace("Text.", "Text and `code`.")),
         ("README.md", "```\n<details>\n`x`\n```\n"),
+        ("README.md", "> <details>\n>\n> Text and `code`.\n"),
+        ("README.md", "- Text <details>\n  and `code`.\n"),
     ],
 )
 def test_code_after_a_comment_within_a_line_after_a_fold_s_blank_line_or_in_code_passes(
     tmp_path: Path, path: str, text: str
 ) -> None:
     assert page_problems(plant(tmp_path, {path: text})) == []
+
+
+# The extensions of the markups other than Markdown that GitHub's markup library renders, as
+# its README listed them on 2026-11-22, written out here so that one that the check leaves
+# out fails.
+OTHER_MARKUP_EXTENSIONS = (
+    "textile",
+    "rdoc",
+    "org",
+    "creole",
+    "mediawiki",
+    "wiki",
+    "rst",
+    "asciidoc",
+    "adoc",
+    "asc",
+    "pod",
+)
+
+
+@pytest.mark.parametrize("extension", [*OTHER_MARKUP_EXTENSIONS, "RST", "Adoc"])
+def test_a_page_in_a_markup_other_than_markdown_fails(tmp_path: Path, extension: str) -> None:
+    files = {f"docs/notes.{extension}": "Notes.\n", "docs/page.md": "Text.\n"}
+    assert page_problems(plant(tmp_path, files)) == [f"docs/notes.{extension}{OTHER_MARKUP}"]
+
+
+def test_a_page_in_another_markup_is_named_where_no_markdown_page_is_read(tmp_path: Path) -> None:
+    assert page_problems(plant(tmp_path, {"docs/notes.rst": "Notes.\n"})) == [
+        f"docs/notes.rst{OTHER_MARKUP}",
+        PAGES_READ_NOTHING,
+    ]
+
+
+def test_a_file_that_only_names_another_markup_or_that_others_write_passes(
+    tmp_path: Path,
+) -> None:
+    files = {
+        "docs/rst-notes.md": "Text.\n",
+        "docs/notes.rst.md": "Text.\n",
+        "docs/notes.pod.txt": "Text.\n",
+        "docs/notes.organisation": "Text.\n",
+        "vendor/superpowers/docs/notes.rst": "Notes.\n",
+    }
+    assert page_problems(plant(tmp_path, files)) == []
 
 
 def test_a_page_that_others_write_or_a_file_that_is_no_page_is_not_read(tmp_path: Path) -> None:

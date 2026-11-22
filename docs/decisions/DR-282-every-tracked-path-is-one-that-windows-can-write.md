@@ -37,7 +37,7 @@ Every tracked path holds none of the characters that Windows refuses in a file n
 
 ## Scope
 
-This covers the names and the length of every tracked path. Which other characters a path may hold, and two paths, or a path and a folder, that differ only in case, are DR-274 (Everything that this repository writes holds printable ASCII), and the line endings that a checkout writes are DR-281 (A checkout writes line feeds whatever `core.autocrlf` says, and the checks read Windows line endings as git stages them).
+This covers the names and the length of every tracked path. Which other characters a path may hold, and paths and folders that differ only in case, are DR-274 (Everything that this repository writes holds printable ASCII), and the line endings that a checkout writes are DR-281 (A checkout writes line feeds whatever `core.autocrlf` says, and the checks read Windows line endings as git stages them).
 
 ## What reversing it would change
 

@@ -2014,6 +2014,11 @@ Every tracked file that this repository writes SHALL hold only printable ASCII a
 - **WHEN** a tracked path is the same, once the case of its letters is set aside, as a folder that holds another tracked path, as `.claude-plugin/marketplace.json` is as the folder of `.claude-plugin/Marketplace.json/notes.md`, which a file system that ignores case cannot hold both of
 - **THEN** a test fails and names both paths
 
+#### Scenario: Two folders that differ only in case fail CI
+
+- **WHEN** two tracked paths lie in folders that are the same once the case of their letters is set aside, such as `vendor/Superpowers/hooks/hooks.json` beside `vendor/superpowers/hooks/run-hook.cmd`, which a file system that ignores case writes into one folder
+- **THEN** a test fails and names both folders
+
 #### Scenario: A Python file that declares an encoding other than UTF-8 fails CI
 
 - **WHEN** a tracked file that this repository writes and that Python reads as source, by the extension `.py` or `.pyi` or by a first line that runs Python, declares on its first or second line an encoding other than UTF-8, such as `# -*- coding: utf-7 -*-` or `# coding: unicode_escape`, with which a line that reads as a comment can run as code
@@ -2026,17 +2031,22 @@ Every tracked file that this repository writes SHALL hold only printable ASCII a
 
 ### Requirement: The pages that this repository writes hold no text that GitHub hides
 
-Each Markdown file that this repository writes SHALL hold, outside code, no raw HTML, character reference, link or footnote definition, image, link title, `$`, escaped backtick or table row with more cells than its header, and draw no block but Mermaid, hiding nothing in an info string or a drawing, so that what GitHub shows is what checks and agents read. A template under `.github/` may hold comments, and the README the elements that fold its sections of detail. Tests SHALL fail otherwise.
+Each page that this repository writes SHALL be Markdown and hold, outside code, no raw HTML, character reference, link or footnote definition, image, link title, link without text, `$`, escaped backtick or table cell past its header's, and draw no block but Mermaid, hiding nothing in an info string or a drawing, so that what GitHub shows is what checks and agents read. A template under `.github/` may hold comments, and the README the elements that fold its detail. Tests SHALL fail otherwise.
 
 #### Scenario: Text that GitHub hides in a page fails CI
 
-- **WHEN** a Markdown file that this repository writes holds, outside inline code and fenced blocks, an HTML comment, an element other than those with which the README folds its sections of detail, a declaration or a processing instruction, a character reference such as `&#x202E;` or `&nbsp;`, a link or footnote definition, an image, a link with a title, which GitHub shows only under a pointer, a `$`, with which GitHub starts a mathematical expression, a backtick that a backslash escapes, a run of backticks that its line leaves open, which GitHub may pair with one on a later line, or a backtick or a run of tildes on a line that GitHub reads as raw HTML, from a fold of the README up to a blank line or after a template's comment on the line where it closes, where GitHub and the test would tell code in two ways, or a table row with more cells than its header
+- **WHEN** a Markdown file that this repository writes holds, outside inline code and fenced blocks, an HTML comment, an element other than those with which the README folds its sections of detail, a declaration or a processing instruction, a character reference such as `&#x202E;` or `&nbsp;`, a link or footnote definition, an image, a link with a title, which GitHub shows only under a pointer, a link without text, such as `[](https://example.invalid)`, which GitHub shows as nothing, a `$`, with which GitHub starts a mathematical expression, a backtick that a backslash escapes, a run of backticks that its line leaves open, which GitHub may pair with one on a later line, or a backtick or a run of tildes on a line that GitHub reads as raw HTML, from a fold of the README up to a blank line or after a template's comment on the line where it closes, where GitHub and the test would tell code in two ways, or a table row with more cells than its header
 - **THEN** a test fails and names the file, the line and what it holds
 
 #### Scenario: A drawn block that can hide text fails CI
 
 - **WHEN** a Markdown file that this repository writes holds a fenced block that GitHub draws other than Mermaid, such as `math` or `geojson`, an opening fence that gives more than a language, one word of letters, digits, `+`, `#`, `.`, `_` or `-`, which GitHub does not show, or a Mermaid block that holds an entity code, such as `#8238;`, a comment, which starts with `%%`, raw HTML, front matter, or a line that opens with `accTitle`, `accDescr`, `click`, `style`, `classDef` or `linkStyle`, which give text that the drawing does not show or change how it shows what it does
 - **THEN** a test fails and names the file, the line and what it holds
+
+#### Scenario: A page in a markup other than Markdown fails CI
+
+- **WHEN** a tracked file that this repository writes has, in any case, an extension with which GitHub's markup library renders a markup other than Markdown, `.textile`, `.rdoc`, `.org`, `.creole`, `.mediawiki`, `.wiki`, `.rst`, `.asciidoc`, `.adoc`, `.asc` or `.pod`, each of which can hold a comment that GitHub hides and that an agent reading the raw file reads
+- **THEN** a test fails and names the file
 
 #### Scenario: A template's comment passes
 
