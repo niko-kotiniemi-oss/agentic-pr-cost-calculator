@@ -76,7 +76,7 @@ CHANGED = "changed, "
 OTHER_SECTIONS = ("For B-007", "Left as it is")
 
 
-class Unreadable(Exception):
+class UnreadableError(Exception):
     """The script cannot compare, and says why."""
 
 
@@ -87,7 +87,7 @@ def git(*args: str) -> str | None:
     try:
         return done.stdout.decode("utf-8")
     except UnicodeDecodeError:
-        raise Unreadable(f"git's output is not UTF-8, from `git {' '.join(args)}`") from None
+        raise UnreadableError(f"git's output is not UTF-8, from `git {' '.join(args)}`") from None
 
 
 def normal(text: str) -> str:
@@ -183,7 +183,7 @@ def blocks(lines: list[str], start: int) -> tuple[list[tuple[str, str, int]], in
             or lines[index + 1].strip()
             or lines[index + 2] != "~~~~text"
         ):
-            raise Unreadable(f"the mapping is not in its form at line {index + 1}")
+            raise UnreadableError(f"the mapping is not in its form at line {index + 1}")
         found.append((line[:-1], "\n".join(lines[index + 3 : end]), index + 1))
         index = end + 1
     return found, index
@@ -203,7 +203,7 @@ def parse(text: str) -> dict[str, list[Entry]]:
             entries.setdefault(path, [])
         elif line.startswith("## "):
             if line[3:] not in OTHER_SECTIONS:
-                raise Unreadable(f"the mapping is not in its form at line {index + 1}")
+                raise UnreadableError(f"the mapping is not in its form at line {index + 1}")
             path = None
         elif line.startswith("### ") and path is not None:
             entry: Entry | None = None
@@ -212,15 +212,15 @@ def parse(text: str) -> dict[str, list[Entry]]:
                 if label == "Old" and entry is None:
                     entry = Entry(normal(body))
                 elif entry is None:
-                    raise Unreadable(f"the mapping is not in its form at line {number}")
+                    raise UnreadableError(f"the mapping is not in its form at line {number}")
                 elif label == "New" and entry.new is None and not entry.clauses:
                     entry.new = normal(body)
                 elif label.startswith("Clause, "):
                     entry.clauses.append((normal(body), label[len("Clause, ") :]))
                 else:
-                    raise Unreadable(f"the mapping is not in its form at line {number}")
+                    raise UnreadableError(f"the mapping is not in its form at line {number}")
             if entry is None or not entry.clauses:
-                raise Unreadable(f"the mapping is not in its form at line {index + 1}")
+                raise UnreadableError(f"the mapping is not in its form at line {index + 1}")
             entries[path].append(entry)
             index = stop
             continue
@@ -239,20 +239,20 @@ class Head:
 
 
 def side(commit: str, path: str, there: bool, name: str) -> str | None:
-    """The file at a commit, None where git says it is not there; Unreadable where git
+    """The file at a commit, None where git says it is not there; UnreadableError where git
     says it is there and cannot show it."""
     if not there:
         return None
     text = git("show", f"{commit}:{path}")
     if text is None:
-        raise Unreadable(f"git cannot read `{path}` at {name}")
+        raise UnreadableError(f"git cannot read `{path}` at {name}")
     return text
 
 
 def head_places() -> Head:
     listed = git("ls-tree", "-r", "-z", "--full-tree", "--name-only", "HEAD")
     if listed is None:
-        raise Unreadable("git cannot list the files at HEAD")
+        raise UnreadableError("git cannot list the files at HEAD")
     files = listed.split("\0")
     register = side("HEAD", "docs/requirements.md", "docs/requirements.md" in files, "HEAD") or ""
     requirements = set(re.findall(r"^\| (R\d+) \|", register, re.MULTILINE))
@@ -381,11 +381,11 @@ def compare(reference: str) -> Comparison:
     base = git("merge-base", "HEAD", reference)
     head = git("rev-parse", "HEAD")
     if base is None or head is None:
-        raise Unreadable(f"cannot resolve the merge base with {reference}")
+        raise UnreadableError(f"cannot resolve the merge base with {reference}")
     found = Comparison(base.strip(), head.strip())
     mapping_text = git("show", f"HEAD:{MAPPING}")
     if mapping_text is None:
-        raise Unreadable(f"HEAD holds no {MAPPING}")
+        raise UnreadableError(f"HEAD holds no {MAPPING}")
     entries = parse(mapping_text)
     listed = git(
         "diff",
@@ -399,7 +399,7 @@ def compare(reference: str) -> Comparison:
         *MARKDOWN,
     )
     if listed is None:
-        raise Unreadable("git cannot list the files that changed")
+        raise UnreadableError("git cannot list the files that changed")
     fields = listed.split("\0")
     changed = dict(zip(fields[1::2], fields[0::2], strict=False))
     places = head_places()
@@ -463,7 +463,7 @@ def main(argv: Sequence[str]) -> int:
     reference = argv[0] if argv else DEFAULT_BRANCH
     try:
         found = compare(reference)
-    except Unreadable as reason:
+    except UnreadableError as reason:
         print(f"Cannot compare: {reason}.")
         return 2
     print(

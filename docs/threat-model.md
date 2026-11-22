@@ -4116,7 +4116,7 @@ The trust boundaries:
 - **Raw impact:** 1 (low)
 - **Raw likelihood:** 3 (likely)
 - **Raw risk:** 3
-- **What could happen:** the test of R271 reads what `pyproject.toml` selects and ignores, while ruff passes over a name on a line with a `noqa` comment, in a file with a `ruff: noqa` comment, under a folder with a configuration file of its own, in a file that `.gitignore` names, under a setting of the naming rules that exempts names, or under any folder named `vendor`, which `pyproject.toml` leaves out at any depth. An agent asked to make ruff pass could add such a comment, and a name out of form would stay.
+- **What could happen:** the test of R271 reads what `pyproject.toml` selects and ignores, while ruff passes over a name on a line with a `noqa` comment, in a file with a `ruff: noqa` comment, under a folder with a configuration file of its own, in a file that `.gitignore` names, under a setting of the naming rules that exempts names, or under any folder named `vendor`, which `pyproject.toml` leaves out at any depth, or in a file that `ruff check .` does not read unasked, as one whose extension is `.pyw` or a script without an extension, which the build found. An agent asked to make ruff pass could add such a comment, and a name out of form would stay.
 - **Answer:** a test runs ruff's naming rules on every Python file that this repository writes with no configuration, no `noqa` comment and no ignore file, and `pyproject.toml` leaves out `vendor/superpowers/` alone (R271, DR-277).
 - **Residual:** ruff's other rules can still be kept from a line by a `noqa` comment, which review reads.
 - **Held by:** `project-standards`: "A name kept from the naming rules fails CI"; DR-277; `add-pr-cost-calculator` task 1.53

@@ -48,24 +48,37 @@ own, with no person's own attributes, so that a clone's `.git/info/attributes` o
 attributes file is not read as the repository's, and an attributes file that a checkout
 re-encodes still fails (R274, DR-280).
 
+`pyproject.toml` selects ruff's naming rules, `N`, whole, by `N` or `ALL`, and ignores none
+of them, by a code, a prefix of one, `ALL` or a rule's name, for every file or for some, in
+its table `lint` or in the table above it, whose settings of the rules ruff still reads, and
+takes no setting from another file. Every Python file that this repository writes, by its
+extension or by a first line that runs Python, passes those rules when ruff runs them with
+no configuration, no `noqa` comment and no ignore file, each file given by its path, so that
+no folder, setting or ignore file leaves one out; each problem names the file, the line and
+the rule, and a run that fails, warns or contradicts its exit status passes nothing (R271,
+DR-277).
+
 Each check is shown to fail on a git repository into which its defect is planted.
 """
 
 from __future__ import annotations
 
 import codecs
+import functools
 import html.entities
+import json
 import mimetypes
 import os
 import re
 import stat
 import subprocess
 import sys
+import tomllib
 import unicodedata
 from collections import defaultdict
 from collections.abc import Iterable, Iterator, Mapping
 from pathlib import Path, PurePosixPath
-from typing import NamedTuple
+from typing import Any, NamedTuple
 
 import pytest
 import yaml
@@ -73,7 +86,7 @@ from conventions import named, shown, shown_path, written_by_others
 from test_decisions import AUTHOR, CODE_SPAN, attribute_problems, records_of, repository_attributes
 from test_decisions import record as decision_record
 from test_guide import reviewed
-from test_repository import oldest_python
+from test_repository import oldest_python, pyproject
 from test_roadmap import isolated_environment, session_free_environment
 from wording import BACKTICKS, CELL_BORDER, MARKDOWN, Block, block_lines, code_spans, reading
 
@@ -247,6 +260,16 @@ ATTRIBUTES_READ_NOTHING = "git lists no tracked file, so the test of attributes 
 MEDIA_READ_NOTHING = (
     "git lists no tracked file, so the check of images, PDFs and videos read nothing"
 )
+# Where `pyproject.toml` gives which of ruff's rules ruff applies: the table `lint`, and the
+# table above it, whose settings of the rules ruff 0.17 still reads, as deprecated. Ruff
+# takes the `select` of `lint` over the other's and adds each `extend-select` (R271).
+RUFF_TABLES = ("tool.ruff", "tool.ruff.lint")
+IGNORING = ("ignore", "extend-ignore")
+IGNORING_FOR_SOME = ("per-file-ignores", "extend-per-file-ignores")
+NO_NAMING = "pyproject.toml selects no N, so ruff's naming rules do not run: "
+IGNORES_NAMING = ", which ignores one of ruff's naming rules"
+NAMES_READ_NOTHING = "the test of names read no Python file that this repository writes"
+NAMES_UNREAD = "ruff's naming rules gave no reading that the test can trust: ruff exited "
 
 
 class Entry(NamedTuple):
@@ -469,12 +492,18 @@ def front_matter_problems(path: str, text: str, where: str, markdown: bool) -> l
     return problems
 
 
+def read_as_python(path: str, first_line: str) -> bool:
+    """Whether Python reads a file as source, by its extension or by a first line that runs
+    Python (R268, R271)."""
+    return bool(PYTHON_FILE.search(path) or PYTHON_LINE.match(first_line))
+
+
 def encoding_problems(path: str, text: str, where: str = "") -> list[str]:
     """The encoding that a file that Python reads as source declares, by its extension or by
     a first line that runs Python, on either of its first two lines, unless it is UTF-8
     (R268, T260)."""
     lines = text.split("\n")[:2]
-    if not (PYTHON_FILE.search(path) or PYTHON_LINE.match(lines[0])):
+    if not read_as_python(path, lines[0]):
         return []
     problems = []
     for line in lines:
@@ -1043,6 +1072,143 @@ def other_attribute_problems(root: Path) -> list[str]:
         f"{shown_path(path)}{where} has {shown(name)}: {shown(value)}{OTHER_ATTRIBUTE}"
         for (path, name, value), where in sorted(found)
         if name not in LINE_ENDINGS
+    ]
+
+
+def ruff(root: Path, *args: str) -> subprocess.CompletedProcess[bytes]:
+    """The pinned ruff run in the folder at root, with none of the session's variables of
+    ruff's, one of which would send its findings to a file."""
+    return subprocess.run(
+        [sys.executable, "-m", "ruff", *args],
+        cwd=root,
+        capture_output=True,
+        check=False,
+        env={name: value for name, value in os.environ.items() if not name.startswith("RUFF_")},
+    )
+
+
+@functools.cache
+def naming_rules() -> dict[str, str]:
+    """Each of ruff's naming rules, by its code, with its name, as the pinned ruff gives them."""
+    done = ruff(ROOT, "rule", "--all", "--output-format", "json")
+    done.check_returncode()
+    return {
+        rule["code"]: rule["name"]
+        for rule in json.loads(done.stdout)
+        if rule["linter"] == "pep8-naming"
+    }
+
+
+def ignores_naming(selector: str) -> bool:
+    """Whether a selector of ruff's rules covers one of its naming rules: `ALL`, a prefix of
+    the code of one, such as `N` or `N8`, or the name of one, which ruff takes in preview."""
+    rules = naming_rules()
+    return (
+        selector == "ALL"
+        or selector in rules.values()
+        or any(code.startswith(selector) for code in rules)
+    )
+
+
+def naming_configuration_problems(config: Mapping[str, Any]) -> list[str]:
+    """Each setting of `pyproject.toml`, read as `config`, that leaves ruff's naming rules
+    unselected or ignores one of them, for every file or for some, or that takes ruff's
+    settings from a file that the test does not read, by the setting and what it gives
+    (R271)."""
+    tables: dict[str, Mapping[str, Any]] = {}
+    for name in RUFF_TABLES:
+        table: Any = config
+        for key in name.split("."):
+            table = table.get(key, {}) if isinstance(table, Mapping) else {}
+        tables[name] = table if isinstance(table, Mapping) else {}
+    applied = next((name for name in reversed(RUFF_TABLES) if "select" in tables[name]), "")
+    selected = {
+        *(tables[applied]["select"] if applied else []),
+        *(selector for table in tables.values() for selector in table.get("extend-select", [])),
+    }
+    problems = []
+    if not selected & {"N", "ALL"}:
+        where = f"{applied}.select, which ruff applies," if applied else "no select is set, and"
+        problems.append(f"{NO_NAMING}{where} gives neither N nor ALL, and no extend-select does")
+    if "extend" in tables["tool.ruff"]:
+        problems.append(
+            "pyproject.toml's tool.ruff.extend takes ruff's settings from "
+            f"{shown(str(tables['tool.ruff']['extend']))}, which the test does not read"
+        )
+    for name, table in tables.items():
+        for key in IGNORING:
+            problems += [
+                f"pyproject.toml's {name}.{key} gives {shown(selector)}{IGNORES_NAMING}"
+                for selector in table.get(key, [])
+                if ignores_naming(selector)
+            ]
+        for key in IGNORING_FOR_SOME:
+            problems += [
+                f"pyproject.toml's {name}.{key} gives {shown(selector)} for "
+                f"{shown(pattern)}{IGNORES_NAMING}"
+                for pattern, selectors in table.get(key, {}).items()
+                for selector in selectors
+                if ignores_naming(selector)
+            ]
+    return problems
+
+
+def python_files(root: Path) -> list[str]:
+    """Each tracked file that this repository writes and that Python reads as source, as the
+    working tree holds it; a link, a submodule and a path that the working tree does not
+    hold as a file are none."""
+    folders: dict[str, str] = {}
+    found = []
+    for entry in tracked_entries(root):
+        if entry.mode not in (FILE, EXECUTABLE) or written_by_others(entry.path):
+            continue
+        held = in_working_tree(root, entry.path, folders)
+        if held is not None and held[0] == "file":
+            first = held[1].split(b"\n", 1)[0].decode("utf-8", "surrogateescape")
+            if read_as_python(entry.path, first):
+                found.append(entry.path)
+    return found
+
+
+def name_problems(root: Path) -> list[str]:
+    """Each name in a Python file that this repository writes that ruff's naming rules refuse
+    when ruff runs them with no configuration, no `noqa` comment and no ignore file, each
+    file given by its path, so that no folder, setting or ignore file leaves one out, by the
+    file, the line and the rule (R271)."""
+    paths = python_files(root)
+    if not paths:
+        return [NAMES_READ_NOTHING]
+    given = {str(root / path): path for path in paths}
+    done = ruff(
+        root,
+        "check",
+        "--isolated",
+        "--select",
+        "N",
+        "--ignore-noqa",
+        "--no-cache",
+        "--output-format",
+        "json",
+        "--",
+        *given,
+    )
+    return naming_findings(done, given)
+
+
+def naming_findings(
+    done: subprocess.CompletedProcess[bytes], given: Mapping[str, str]
+) -> list[str]:
+    """Each finding of a run of ruff's, by the file, the line and the rule, or that the run
+    gave none that the test can trust: one that failed or warned, as ruff does of a file
+    that it cannot read, or whose findings its exit status contradicts."""
+    warned = done.stderr.decode("utf-8", "replace").strip()
+    findings = json.loads(done.stdout) if done.returncode in (0, 1) and not warned else None
+    if not isinstance(findings, list) or bool(findings) != (done.returncode == 1):
+        return [f"{NAMES_UNREAD}{done.returncode}" + (f": {shown(warned)}" if warned else "")]
+    return [
+        f"{shown_path(given.get(found['filename'], found['filename']))}:"
+        f"{found['location']['row']}: {shown(found['code'])} {shown(found['message'])}"
+        for found in findings
     ]
 
 
@@ -2353,6 +2519,309 @@ def test_a_check_of_attributes_that_reads_no_tracked_file_fails(tmp_path: Path) 
     assert other_attribute_problems(tmp_path) == [ATTRIBUTES_READ_NOTHING]
 
 
+# R271: Python names follow PEP 8, as ruff's naming rules check them.
+
+# Settings of ruff's in `pyproject.toml` that leave a naming rule out of its check, for every
+# file or for some, each with what the test says of it.
+UNNAMING = [
+    ('[tool.ruff.lint]\nselect = ["E", "F"]\n', f"{NO_NAMING}tool.ruff.lint.select, which"),
+    ("[tool.ruff]\nline-length = 100\n", f"{NO_NAMING}no select is set"),
+    (
+        '[tool.ruff]\nselect = ["N"]\n[tool.ruff.lint]\nselect = ["E"]\n',
+        f"{NO_NAMING}tool.ruff.lint.select, which",
+    ),
+    ('[tool.ruff.lint]\nselect = ["N8", "N9"]\n', f"{NO_NAMING}tool.ruff.lint.select, which"),
+    ('[tool.ruff.lint]\nselect = ["N"]\nignore = ["N801"]\n', "tool.ruff.lint.ignore gives N801,"),
+    (
+        '[tool.ruff.lint]\nselect = ["N"]\nextend-ignore = ["N8"]\n',
+        "tool.ruff.lint.extend-ignore gives N8,",
+    ),
+    ('[tool.ruff.lint]\nselect = ["ALL"]\nignore = ["N"]\n', "tool.ruff.lint.ignore gives N,"),
+    ('[tool.ruff.lint]\nselect = ["N"]\nignore = ["ALL"]\n', "tool.ruff.lint.ignore gives ALL,"),
+    (
+        '[tool.ruff.lint]\npreview = true\nselect = ["N"]\n'
+        'ignore = ["error-suffix-on-exception-name"]\n',
+        "tool.ruff.lint.ignore gives error-suffix-on-exception-name,",
+    ),
+    (
+        '[tool.ruff]\nignore = ["N818"]\n[tool.ruff.lint]\nselect = ["N"]\n',
+        "tool.ruff.ignore gives N818,",
+    ),
+    (
+        '[tool.ruff.lint]\nselect = ["N"]\n'
+        '[tool.ruff.lint.per-file-ignores]\n"tests/*.py" = ["N802"]\n',
+        "tool.ruff.lint.per-file-ignores gives N802 for tests/*.py,",
+    ),
+    (
+        '[tool.ruff.lint]\nselect = ["N"]\nextend-per-file-ignores = {"scripts/*" = ["N999"]}\n',
+        "tool.ruff.lint.extend-per-file-ignores gives N999 for scripts/*,",
+    ),
+    (
+        '[tool.ruff]\nper-file-ignores = {"x.py" = ["ALL"]}\n[tool.ruff.lint]\nselect = ["N"]\n',
+        "tool.ruff.per-file-ignores gives ALL for x.py,",
+    ),
+    (
+        '[tool.ruff]\nextend = "base.toml"\n[tool.ruff.lint]\nselect = ["N"]\n',
+        "tool.ruff.extend takes ruff's settings from base.toml,",
+    ),
+]
+
+
+@pytest.mark.parametrize(("settings", "problem"), UNNAMING)
+def test_ruff_s_configuration_without_the_naming_rules_fails_and_names_the_setting(
+    settings: str, problem: str
+) -> None:
+    found = naming_configuration_problems(tomllib.loads(settings))
+    assert len(found) == 1 and problem in found[0], found
+
+
+@pytest.mark.parametrize(
+    "settings",
+    [
+        '[tool.ruff.lint]\nselect = ["N"]\n',
+        '[tool.ruff.lint]\nselect = ["E"]\nextend-select = ["N"]\n',
+        '[tool.ruff]\nextend-select = ["N"]\n[tool.ruff.lint]\nselect = ["E"]\n',
+        '[tool.ruff.lint]\nselect = ["ALL"]\nignore = ["NPY", "D", "E501"]\n'
+        'per-file-ignores = {"tests/*.py" = ["S101"]}\n',
+    ],
+)
+def test_ruff_s_configuration_that_selects_every_naming_rule_and_ignores_none_passes(
+    settings: str,
+) -> None:
+    assert naming_configuration_problems(tomllib.loads(settings)) == []
+
+
+def planted_module(definition: str = "class lower:\n    pass\n", opening: str = "") -> str:
+    """A Python module whose fifth line opens this definition, after an opening line that may
+    run Python or keep names from ruff's check."""
+    return f'{opening}\n"""A planted module."""\n\n\n{definition}'
+
+
+def configured(root: Path, files: Mapping[str, str]) -> Path:
+    """A folder at root with the repository's own `pyproject.toml` and these files."""
+    for name, content in {
+        "pyproject.toml": (ROOT / "pyproject.toml").read_text(encoding="utf-8"),
+        **files,
+    }.items():
+        (root / name).parent.mkdir(parents=True, exist_ok=True)
+        (root / name).write_text(content, encoding="utf-8")
+    return root
+
+
+CONCISE = re.compile(r"([^:]+):(\d+):\d+: (\S+) .*")
+
+
+def concise_findings(done: subprocess.CompletedProcess[bytes]) -> list[tuple[str, int, str]]:
+    """Each finding of a run of `ruff check --output-format concise`, by file, line and rule."""
+    return [
+        (found.group(1), int(found.group(2)), found.group(3))
+        for found in map(CONCISE.fullmatch, done.stdout.decode("utf-8").splitlines())
+        if found
+    ]
+
+
+@pytest.mark.parametrize(
+    ("definition", "rule"),
+    [
+        ("class lower:\n    pass\n", "N801"),
+        ("def mixedCase() -> None:\n    pass\n", "N802"),
+        ("class Refused(Exception):\n    pass\n", "N818"),
+    ],
+)
+def test_a_name_that_pep_8_does_not_give_fails_ruff_s_check_and_names_the_rule_and_the_line(
+    tmp_path: Path, definition: str, rule: str
+) -> None:
+    configured(tmp_path, {"names.py": planted_module(definition)})
+    done = ruff(tmp_path, "check", "--no-cache", "--output-format", "concise", ".")
+    assert done.returncode == 1
+    assert concise_findings(done) == [("names.py", 5, rule)]
+
+
+# Names of each kind that the naming rules check, as PEP 8 gives them.
+PEP_8 = (
+    "class Lower:\n    pass\n\n\ndef snake_case() -> None:\n    pass\n\n\n"
+    "class RefusedError(Exception):\n    pass\n"
+)
+
+
+def test_names_that_pep_8_gives_pass_ruff_s_check(tmp_path: Path) -> None:
+    configured(tmp_path, {"names.py": planted_module(PEP_8)})
+    done = ruff(tmp_path, "check", "--no-cache", "--output-format", "concise", ".")
+    assert (done.returncode, concise_findings(done)) == (0, [])
+
+
+def test_ruff_s_configuration_leaves_out_the_vendored_copy_alone(tmp_path: Path) -> None:
+    configured(
+        tmp_path,
+        {
+            "vendor/superpowers/skills/names.py": planted_module(),
+            "vendor/names.py": planted_module(),
+            "tests/vendor/names.py": planted_module(),
+        },
+    )
+    done = ruff(tmp_path, "check", "--no-cache", "--output-format", "concise", ".")
+    assert concise_findings(done) == [
+        ("tests/vendor/names.py", 5, "N801"),
+        ("vendor/names.py", 5, "N801"),
+    ]
+
+
+# The settings with which a planted repository's own `ruff check` applies the naming rules.
+SELECTS_NAMING = '[tool.ruff.lint]\nselect = ["N"]\n'
+# Each way in which a file, its folder or a setting keeps a class named in lower case from
+# `ruff check`, by the files that plant it and the file that gives the name.
+KEPT = {
+    "a noqa comment": (
+        {"names.py": planted_module("class lower:  # noqa: N801\n    pass\n")},
+        "names.py",
+    ),
+    "a bare noqa comment": (
+        {"names.py": planted_module("class lower:  # noqa\n    pass\n")},
+        "names.py",
+    ),
+    "a ruff: noqa comment": (
+        {"names.py": planted_module(opening="# ruff: noqa: N801")},
+        "names.py",
+    ),
+    "a bare ruff: noqa comment": ({"names.py": planted_module(opening="# ruff: noqa")}, "names.py"),
+    "a flake8: noqa comment": ({"names.py": planted_module(opening="# flake8: noqa")}, "names.py"),
+    "a ruff.toml in its folder": (
+        {
+            "tool/ruff.toml": '[lint]\nselect = ["N"]\nignore = ["N801"]\n',
+            "tool/names.py": planted_module(),
+        },
+        "tool/names.py",
+    ),
+    "a .ruff.toml in its folder": (
+        {"tool/.ruff.toml": '[lint]\nselect = ["E"]\n', "tool/names.py": planted_module()},
+        "tool/names.py",
+    ),
+    "a pyproject.toml in its folder": (
+        {
+            "tool/pyproject.toml": '[tool.ruff.lint]\nselect = ["N"]\nignore = ["N801"]\n',
+            "tool/names.py": planted_module(),
+        },
+        "tool/names.py",
+    ),
+    "a .gitignore line": ({".gitignore": "names.py\n", "names.py": planted_module()}, "names.py"),
+    "an .ignore line": ({".ignore": "names.py\n", "names.py": planted_module()}, "names.py"),
+    "a setting of the naming rules": (
+        {
+            "pyproject.toml": (
+                f'{SELECTS_NAMING}[tool.ruff.lint.pep8-naming]\nignore-names = ["lower"]\n'
+            ),
+            "names.py": planted_module(),
+        },
+        "names.py",
+    ),
+    "a folder named vendor": (
+        {
+            "pyproject.toml": f'[tool.ruff]\nextend-exclude = ["vendor"]\n{SELECTS_NAMING}',
+            "tests/vendor/names.py": planted_module(),
+        },
+        "tests/vendor/names.py",
+    ),
+    "an extension that ruff does not read unasked": ({"names.pyw": planted_module()}, "names.pyw"),
+    "a script without an extension": (
+        {"scripts/names": planted_module(opening="#!/usr/bin/env python3")},
+        "scripts/names",
+    ),
+}
+LOWER_CLASS = "N801 Class name `lower` should use CapWords convention"
+
+
+@pytest.mark.parametrize("case", sorted(KEPT))
+def test_a_name_kept_from_ruff_s_check_fails_the_test_of_names(tmp_path: Path, case: str) -> None:
+    files, path = KEPT[case]
+    root = plant(tmp_path, {"pyproject.toml": SELECTS_NAMING, **files})
+    git(root, "add", "-f", "--", path).check_returncode()
+    kept = ruff(root, "check", "--no-cache", "--output-format", "concise", ".")
+    assert (kept.returncode, concise_findings(kept)) == (0, []), "the planted name is not kept"
+    assert name_problems(root) == [f"{path}:5: {LOWER_CLASS}"]
+
+
+def test_names_in_the_files_that_others_write_are_left_to_them(tmp_path: Path) -> None:
+    root = plant(
+        tmp_path,
+        {
+            "vendor/superpowers/skills/names.py": planted_module(),
+            ".claude/skills/openspec-explore/names.py": planted_module(),
+            "names.py": planted_module(PEP_8),
+        },
+    )
+    assert name_problems(root) == []
+
+
+def test_a_file_that_python_does_not_read_or_a_link_is_not_given_to_ruff(tmp_path: Path) -> None:
+    root = plant(
+        tmp_path,
+        {
+            "scripts/names.sh": "#!/bin/sh\nclass lower:\n",
+            "notes.txt": "class lower:\n",
+            "vendor/superpowers/names.py": planted_module(),
+            "names.py": planted_module(PEP_8),
+        },
+        links={"linked.py": "vendor/superpowers/names.py"},
+    )
+    assert name_problems(root) == []
+
+
+def test_a_python_file_that_ruff_cannot_parse_fails_the_test_of_names(tmp_path: Path) -> None:
+    root = plant(tmp_path, {"broken.py": "def broken(:\n"})
+    found = name_problems(root)
+    assert found and all(problem.startswith("broken.py:") for problem in found), found
+    assert "broken.py:1: invalid-syntax " in found[0]
+
+
+def test_a_test_of_names_that_reads_no_python_file_fails(tmp_path: Path) -> None:
+    root = plant(tmp_path, {"README.md": "A page.\n", "scripts/run.sh": "#!/bin/sh\n"})
+    assert name_problems(root) == [NAMES_READ_NOTHING]
+
+
+@pytest.mark.parametrize(
+    ("status", "output", "warning", "problem"),
+    [
+        (
+            2,
+            b"",
+            b"ruff failed\n  Cause: a cause",
+            f"{NAMES_UNREAD}2: ruff failedU+000A  Cause: a cause",
+        ),
+        (
+            0,
+            b"[]",
+            b"warning: Failed to lint names.py: denied",
+            f"{NAMES_UNREAD}0: warning: Failed to lint names.py: denied",
+        ),
+        (1, b"[]", b"", f"{NAMES_UNREAD}1"),
+        (
+            0,
+            b'[{"filename": "/names.py", "location": {"row": 5}, "code": "N801", "message": "m"}]',
+            b"",
+            f"{NAMES_UNREAD}0",
+        ),
+    ],
+)
+def test_a_run_of_ruff_that_fails_warns_or_contradicts_its_status_passes_nothing(
+    status: int, output: bytes, warning: bytes, problem: str
+) -> None:
+    done = subprocess.CompletedProcess[bytes]([], status, output, warning)
+    assert naming_findings(done, {"/names.py": "names.py"}) == [problem]
+
+
+def test_a_finding_names_the_file_by_its_tracked_path_in_printable_ascii() -> None:
+    done = subprocess.CompletedProcess[bytes](
+        [],
+        1,
+        '[{"filename": "/root/n\u00e4mes.py", "location": {"row": 5}, "code": "N801", '
+        '"message": "Class name `l\u00f6wer` should use CapWords convention"}]'.encode(),
+        b"",
+    )
+    assert naming_findings(done, {"/root/n\u00e4mes.py": "n\u00e4mes.py"}) == [
+        "nU+00E4mes.py:5: N801 Class name `lU+00F6wer` should use CapWords convention"
+    ]
+
+
 # The definitions that the tests share.
 
 
@@ -2470,3 +2939,11 @@ def test_every_page_that_this_repository_writes_holds_only_text_that_github_show
 
 def test_the_repository_s_attributes_set_nothing_but_line_endings() -> None:
     assert other_attribute_problems(ROOT) == []
+
+
+def test_the_repository_s_ruff_settings_select_every_naming_rule_and_ignore_none() -> None:
+    assert naming_configuration_problems(pyproject()) == []
+
+
+def test_every_python_file_that_this_repository_writes_gives_only_names_that_pep_8_gives() -> None:
+    assert name_problems(ROOT) == []

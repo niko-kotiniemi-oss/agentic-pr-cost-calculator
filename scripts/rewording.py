@@ -78,7 +78,7 @@ ADDED = "An added file's lines are not compared, since the base holds none of th
 KEPT_AS_WRITTEN = "which keeps its words as written"
 
 
-class Refused(Exception):
+class RefusedError(Exception):
     """Why the comparison cannot be made."""
 
 
@@ -144,7 +144,7 @@ def git(*args: str, refused: str = "") -> str:
     try:
         return shown(Path.cwd(), *args)
     except subprocess.CalledProcessError as failed:
-        raise Refused(refused or failed.stderr.decode("utf-8", "replace").strip()) from None
+        raise RefusedError(refused or failed.stderr.decode("utf-8", "replace").strip()) from None
 
 
 def blob(commit: str, path: str) -> str:
@@ -337,14 +337,14 @@ def report(base: str) -> str:
     text = git("cat-file", "blob", f"HEAD:{GLOSSARY}", refused=f"HEAD holds no {GLOSSARY}")
     entries, problems = glossary(text)
     if problems:
-        raise Refused("\n".join([f"{GLOSSARY} at HEAD is not in its form:", *problems]))
+        raise RefusedError("\n".join([f"{GLOSSARY} at HEAD is not in its form:", *problems]))
     if not any(entry.avoid for entry in entries):
-        raise Refused(f"{GLOSSARY} at HEAD gives no word to avoid")
+        raise RefusedError(f"{GLOSSARY} at HEAD gives no word to avoid")
     fresh = new_words(entries, entries_at(since))
     try:
         kept = kept_at(Path.cwd(), since)
     except subprocess.CalledProcessError as failed:
-        raise Refused(failed.stderr.decode("utf-8", "replace").strip()) from None
+        raise RefusedError(failed.stderr.decode("utf-8", "replace").strip()) from None
     changes = sorted(changed_files(since), key=listed_first)
     seen = {path for _, old, new in changes for path in (old, new)}
     every = git("diff-tree", "-r", "-z", "--name-only", since, "HEAD").split("\0")[:-1]
@@ -423,7 +423,7 @@ def main(argv: list[str]) -> int:
         return 2
     try:
         text = report(argv[0] if argv else DEFAULT_BRANCH)
-    except Refused as refusal:
+    except RefusedError as refusal:
         print(f"rewording: {refusal}", file=sys.stderr)
         return 2
     sys.stdout.write(text.encode("utf-8", "surrogateescape").decode("utf-8", "replace"))
