@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Re-materialise vendor/superpowers from the upstream sha in UPSTREAM.lock.
+# Re-materialise vendor/superpowers from the upstream sha in UPSTREAM.lock, each
+# file with the bytes and the mode that the pinned commit's objects give it.
 #
 # THE SCRIPT IS THE DEFINITION AND CI RUNS IT. `--check` re-syncs into a
 # temporary tree and diffs; any difference fails, so a hand-edit to a vendored
@@ -18,7 +19,13 @@ LOCK="${DEST}/UPSTREAM.lock"
 # vendored_paths.
 PATHS=(.claude-plugin skills hooks/run-hook.cmd hooks/session-start LICENSE)
 
-read_lock() { sed -n "s/^$1=//p" "$LOCK"; }
+# The lock as git would stage it: a carriage return before a line feed is part of
+# the line's end, so that a lock that an editor saved with Windows line endings
+# reads as one saved with line feeds.
+LOCK_TEXT="$(cat "$LOCK"; printf x)"
+LOCK_TEXT=${LOCK_TEXT%x}
+LOCK_TEXT=${LOCK_TEXT//$'\r\n'/$'\n'}
+read_lock() { printf '%s' "$LOCK_TEXT" | sed -n "s/^$1=//p"; }
 
 REPO="$(read_lock repo)"
 SHA="$(read_lock sha)"
@@ -45,27 +52,65 @@ if [ "$named" != "$SHA" ]; then
   exit 1
 fi
 
+# Each vendored file is written from the pinned commit's objects, not through
+# `git archive` or a checkout, whose output follows the person's core.autocrlf, a
+# .git/info/attributes that git's template gives a new repository, and upstream's
+# own attributes.
 materialise() {
-  local into="$1" work
+  local into="$1" work path entry mode oid perm
   work="$(mktemp -d)"
   trap 'rm -rf "$work"' RETURN
-  git -c advice.detachedHead=false clone -q --filter=blob:none --no-checkout \
-      "$URL" "$work/src"
-  git -C "$work/src" fetch -q --depth 1 origin "$SHA"
+  git init -q "$work/src"
+  git -C "$work/src" fetch -q --depth 1 "$URL" "$SHA"
+  for path in "${PATHS[@]}"; do
+    git -C "$work/src" cat-file -e "${SHA}:${path}" 2>/dev/null || {
+      echo "sync: ${REPO}@${SHA} gives no ${path}" >&2
+      return 1
+    }
+  done
+  git -C "$work/src" ls-tree -r -z "$SHA" -- "${PATHS[@]}" >"$work/listing"
   mkdir -p "$into"
-  git -C "$work/src" archive "$SHA" "${PATHS[@]}" | tar -x -C "$into"
+  while IFS= read -r -d '' entry; do
+    read -r mode _ oid <<<"${entry%%$'\t'*}"
+    path="${entry#*$'\t'}"
+    # Only files: a link could point a vendored path anywhere, and a submodule
+    # gives no file at all.
+    case "$mode" in
+      100644) perm=644 ;;
+      100755) perm=755 ;;
+      *)
+        printf 'sync: %s gives %q the mode %s, which the sync does not copy\n' \
+          "${REPO}@${SHA}" "$path" "$mode" >&2
+        return 1
+        ;;
+    esac
+    # Git's objects can name a path through `.`, `..` or a folder named `.git` in
+    # any case, which no checkout writes and `git archive` refused as invalid.
+    case "/${path}/" in
+      */./* | */../* | */[.][gG][iI][tT]/*)
+        printf 'sync: %s gives the path %q, which the sync does not write\n' \
+          "${REPO}@${SHA}" "$path" >&2
+        return 1
+        ;;
+    esac
+    case "$path" in */*) mkdir -p "${into}/${path%/*}" ;; esac
+    git -C "$work/src" cat-file blob "$oid" >"${into}/${path}"
+    chmod "$perm" "${into}/${path}"
+  done <"$work/listing"
 }
 
 if [ "${1:-}" = "--check" ]; then
   probe="$(mktemp -d)"
   trap 'rm -rf "$probe"' EXIT
   materialise "$probe"
-  # Compare only the vendored subset; UPSTREAM.lock is ours and is not upstream's.
-  if diff -r --exclude=UPSTREAM.lock "$probe" "$DEST" >/dev/null 2>&1; then
+  # The lock at the root is ours, not upstream's, so it is copied into the tree
+  # built here, and the comparison leaves out no other path, whatever its name.
+  cp "$LOCK" "${probe}/UPSTREAM.lock"
+  if diff -r "$probe" "$DEST" >/dev/null 2>&1; then
     echo "sync: vendor/superpowers matches ${REPO}@${SHA}"
   else
     echo "sync: vendor/superpowers DIFFERS from ${REPO}@${SHA}" >&2
-    diff -r --exclude=UPSTREAM.lock "$probe" "$DEST" >&2 || true
+    diff -r "$probe" "$DEST" >&2 || true
     exit 1
   fi
 else

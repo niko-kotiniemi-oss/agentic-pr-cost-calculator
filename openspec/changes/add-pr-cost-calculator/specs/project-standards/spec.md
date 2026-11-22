@@ -2247,6 +2247,11 @@ CI SHALL compare every path under `vendor/superpowers/`, whatever its name, with
 - **WHEN** `scripts/sync-superpowers.sh` runs, with and without `--check`, where git's global configuration sets `core.autocrlf` to `true`, where git's template gives each new clone a `.git/info/attributes` that holds `* eol=crlf`, or where its lock holds a carriage return before each line feed
 - **THEN** the refresh writes each vendored file with the bytes and the mode that the pinned commit gives it, and the check passes a vendored copy that matches that commit and fails one that differs
 
+#### Scenario: The sync writes only files, and only inside its copy
+
+- **WHEN** the pinned commit gives, under a vendored path, a link, a submodule, or a file whose path runs through `.`, `..` or a folder named `.git` in any case
+- **THEN** the sync, with and without `--check`, stops and names it, and writes nothing outside the folder that it writes the copy into
+
 ### Requirement: An image, a PDF or a video is tracked only with a record that names it
 
 A tracked file with the extension of an image, a PDF or a video SHALL be one that the test's list of exceptions gives with its object id and an accepted record whose text names its path in a code span, and the list SHALL give no other file, so that a diagram stays text, what a diff cannot show enters only with a record that the owner reviews, and a changed file needs a changed entry. The test of characters SHALL still read a listed file whose bytes are UTF-8. Tests SHALL fail otherwise.

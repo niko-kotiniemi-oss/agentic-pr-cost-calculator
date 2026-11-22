@@ -25,3 +25,10 @@ insert_final_newline = unset
 trim_trailing_whitespace = unset
 indent_style = unset
 indent_size = unset
+
+[vendor/superpowers/UPSTREAM.lock]
+# The lock is this repository's own file, which the sync reads.
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
