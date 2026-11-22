@@ -2133,12 +2133,27 @@ Every command that a step of a workflow under `.github/workflows/` runs SHALL wr
 
 ### Requirement: The repository's attributes set nothing but line endings
 
-The repository's attributes SHALL give a tracked file no attribute but `text` and `eol`, and each check of them SHALL read them as git's index holds them and also as the working tree holds them, and never a person's own, such as the clone's `.git/info/attributes`, so that no attribute makes a checkout, an archive or GitHub's diff give other text than git holds, or folds a diff that the owner reads, and no attributes file hides from the checks by re-encoding itself. Tests SHALL fail otherwise.
+The repository's attributes SHALL give a tracked file, or a folder that holds one, no attribute but `text` and `eol`, in lines that git reads whole, and each check SHALL read them as git's index and the working tree hold them, never a person's own, such as `.git/info/attributes`, so that no attribute makes a checkout, an archive or GitHub's diff give other text than git holds, or folds a diff that the owner reads, and no attributes file hides by re-encoding itself. Tests SHALL fail otherwise.
 
 #### Scenario: An attribute other than `text` and `eol` fails CI
 
 - **WHEN** the repository's attributes give a tracked file any attribute other than `text` and `eol`, in any state, such as `working-tree-encoding`, `filter`, `ident`, `export-subst`, `export-ignore`, `binary`, `diff` or `linguist-generated`
 - **THEN** a test fails and names the file and the attribute
+
+#### Scenario: An attribute on a folder fails CI
+
+- **WHEN** the repository's attributes give a folder that holds a tracked file an attribute other than `text` and `eol`, such as `export-ignore` on `vendor` or on `/docs`, which `git archive` applies to the folder and so to every file in it, while git gives it to no file in it
+- **THEN** a test fails and names the folder, with a slash at its end, and the attribute
+
+#### Scenario: An attributes line that git does not read fails CI
+
+- **WHEN** a tracked attributes file holds, in git's index or in the working tree, a line of 2048 bytes or more, which git ignores, or git warns while it reads the repository's attributes, as it does of a negative pattern or of a name that no attribute may take
+- **THEN** a test fails and names the file and the line, or what git warned, in printable ASCII
+
+#### Scenario: A split index is read as git reads it
+
+- **WHEN** a clone keeps its index split, as `core.splitIndex` or `git update-index --split-index` makes it
+- **THEN** the tests of attributes read the index with its shared part, as git does, and give what they give for a whole index
 
 #### Scenario: An attributes file that a checkout re-encodes is read as git holds it
 

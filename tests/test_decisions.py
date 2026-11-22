@@ -1155,14 +1155,16 @@ ATTRIBUTE_ENVIRONMENT = {"GIT_ATTR_NOSYSTEM": "1"}
 Attribute = tuple[str, str, str]
 
 
-def repository_attributes(
+def attribute_readings(
     root: Path, paths: Iterable[str]
-) -> tuple[list[Attribute], list[Attribute]]:
-    """Each attribute that the repository's attributes give these paths, as git's index
-    holds them and as the working tree holds them. Both are read in a git folder of the
-    check's own, which reads the clone's objects and a copy of its index and holds no
-    `info/attributes`, with no global or system attributes file, since `git check-attr`
-    reads a clone's `.git/info/attributes` even with `--cached` (R134, R274, DR-280).
+) -> tuple[tuple[list[Attribute], set[str]], tuple[list[Attribute], set[str]]]:
+    """Each attribute that the repository's attributes give these paths, and each line that
+    git warns while it reads them, in printable ASCII, as git's index holds them and as the
+    working tree holds them. Both are read in a git folder of the check's own, which reads
+    the clone's objects and a copy of its index, with the shared part of an index that the
+    clone keeps split, and holds no `info/attributes`, with no global or system attributes
+    file, since `git check-attr` reads a clone's `.git/info/attributes` even with `--cached`
+    (R134, R274, DR-280).
 
     Raises LookupError when git cannot read them.
     """
@@ -1180,7 +1182,7 @@ def repository_attributes(
         raise LookupError(f"git rev-parse failed: {done.stderr.decode().strip()}")
     index, objects, form = done.stdout.decode("utf-8", "surrogateescape").split("\n")[:3]
     asked = "".join(f"{path}\0" for path in paths).encode("utf-8", "surrogateescape")
-    readings: list[list[Attribute]] = []
+    readings: list[tuple[list[Attribute], set[str]]] = []
     with tempfile.TemporaryDirectory() as folder:
         made = git(Path(folder), "init", "-q", "--template=", f"--object-format={form}", folder)
         if made.returncode != 0:
@@ -1190,6 +1192,8 @@ def repository_attributes(
         (own / "objects" / "info" / "alternates").write_text(f"{objects}\n", encoding="utf-8")
         if Path(index).is_file():
             shutil.copyfile(index, own / "index")
+            for shared in Path(index).parent.glob("sharedindex.*"):
+                shutil.copyfile(shared, own / shared.name)
         for cached in (["--cached"], []):
             read = subprocess.run(
                 [
@@ -1212,9 +1216,27 @@ def repository_attributes(
             )
             if read.returncode != 0:
                 raise LookupError(f"git check-attr failed: {read.stderr.decode().strip()}")
+            warned = read.stderr.decode("utf-8", "surrogateescape").splitlines()
             fields = read.stdout.decode("utf-8", "surrogateescape").split("\0")[:-1]
-            readings.append(list(zip(fields[0::3], fields[1::3], fields[2::3], strict=True)))
+            readings.append(
+                (
+                    list(zip(fields[0::3], fields[1::3], fields[2::3], strict=True)),
+                    {shown(line.strip()) for line in warned if line.strip()},
+                )
+            )
     return readings[0], readings[1]
+
+
+def repository_attributes(
+    root: Path, paths: Iterable[str]
+) -> tuple[list[Attribute], list[Attribute]]:
+    """Each attribute that the repository's attributes give these paths, as git's index
+    holds them and as the working tree holds them, read as `attribute_readings` reads them.
+
+    Raises LookupError when git cannot read them.
+    """
+    (index, _), (tree, _) = attribute_readings(root, paths)
+    return index, tree
 
 
 def attribute_problems(root: Path, paths: list[str]) -> list[str]:

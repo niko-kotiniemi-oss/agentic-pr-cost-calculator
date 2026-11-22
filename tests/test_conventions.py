@@ -79,6 +79,7 @@ from __future__ import annotations
 import codecs
 import functools
 import html.entities
+import io
 import json
 import mimetypes
 import os
@@ -86,6 +87,7 @@ import re
 import stat
 import subprocess
 import sys
+import tarfile
 import tomllib
 import unicodedata
 from collections import defaultdict
@@ -108,7 +110,14 @@ from conventions import (
     staged_bytes,
     written_by_others,
 )
-from test_decisions import AUTHOR, CODE_SPAN, attribute_problems, records_of, repository_attributes
+from test_decisions import (
+    AUTHOR,
+    CODE_SPAN,
+    attribute_problems,
+    attribute_readings,
+    records_of,
+    repository_attributes,
+)
 from test_decisions import record as decision_record
 from test_guide import reviewed
 from test_repository import oldest_python, pyproject
@@ -316,6 +325,13 @@ PLAIN = {"$": DOLLAR, "]:": DEFINITION, "![": IMAGE}
 LINE_ENDINGS = frozenset({"text", "eol"})
 OTHER_ATTRIBUTE = ", an attribute other than text and eol"
 ATTRIBUTES_READ_NOTHING = "git lists no tracked file, so the test of attributes read nothing"
+# The length from which git ignores a line of an attributes file, its line feed left out, and
+# what the test of attributes says of such a line (R274).
+LONG_LINE = 2048
+LINE_IGNORED = " is a line of {} bytes, which git ignores, as it ignores each of 2048 or more"
+# What the test of attributes says before each line that git warns while it reads them, as
+# of a line that it ignores, which another reader of the attributes may not ignore.
+WARNED = " while it reads the repository's attributes: "
 # The line endings that the repository's attributes give every tracked file, so that a
 # checkout writes line feeds whatever `core.autocrlf` says (R276).
 LINE_FEEDS = {"text": "auto", "eol": "lf"}
@@ -1276,25 +1292,68 @@ def page_problems(root: Path) -> list[str]:
     return others + (problems if read else [PAGES_READ_NOTHING])
 
 
+def attribute_line_problems(root: Path) -> list[str]:
+    """Each line of a tracked attributes file, as git's index holds it and as the working
+    tree holds it, that git ignores for its length, by the file, the line and its length,
+    and by which of the two holds it where only one does (R274, DR-280)."""
+    entries = [
+        entry
+        for entry in tracked_entries(root)
+        if PurePosixPath(entry.path).name.casefold() == ".gitattributes"
+    ]
+    staged = blobs(root, [entry.oid for entry in entries])
+    held: dict[str, set[tuple[str, int, int]]] = {IN_INDEX: set(), IN_TREE: set()}
+    folders: dict[str, str] = {}
+    for entry in entries:
+        readings = {IN_INDEX: staged.get(entry.oid)}
+        tree = in_working_tree(root, entry.path, folders)
+        if tree is not None and tree[0] == "file":
+            readings[IN_TREE] = tree[1]
+        for where, data in readings.items():
+            for number, line in enumerate((data or b"").split(b"\n"), 1):
+                if len(line) >= LONG_LINE:
+                    held[where].add((entry.path, number, len(line)))
+    return [
+        f"{shown_path(path)}:{number}{where}{LINE_IGNORED.format(length)}"
+        for (path, number, length), where in placed(held[IN_INDEX], held[IN_TREE])
+    ]
+
+
 def other_attribute_problems(root: Path) -> list[str]:
     """Each attribute other than `text` and `eol` that the repository's attributes give a
-    tracked file, as git's index holds them and as the working tree holds them, read in a
-    git folder of the test's own with no person's own attributes, by the file, the attribute
-    and its value, and by which of the two gives it where only one does (R274, DR-280)."""
+    tracked file or a folder that holds one, as git's index holds them and as the working
+    tree holds them, read in a git folder of the test's own with no person's own attributes,
+    by the file or the folder, the attribute and its value, and by which of the two gives it
+    where only one does (R274, DR-280)."""
     paths = [entry.path for entry in tracked_entries(root)]
     if not paths:
         return [ATTRIBUTES_READ_NOTHING]
-    index, tree = repository_attributes(root, paths)
-    held = {IN_INDEX: set(index), IN_TREE: set(tree)}
-    both = held[IN_INDEX] & held[IN_TREE]
-    found = [(attribute, "") for attribute in both] + [
-        (attribute, where) for where, given in held.items() for attribute in given - both
-    ]
+    # Each folder on a tracked path's way, with a slash at its end, as `git archive` asks
+    # about a folder, so that a pattern that names only folders is read too.
+    folders = sorted(
+        {
+            "/".join(parts[:end]) + "/"
+            for parts in (path.split("/") for path in paths)
+            for end in range(1, len(parts))
+        }
+    )
+    (index, index_warned), (tree, tree_warned) = attribute_readings(root, paths + folders)
     return [
         f"{shown_path(path)}{where} has {shown(name)}: {shown(value)}{OTHER_ATTRIBUTE}"
-        for (path, name, value), where in sorted(found)
+        for (path, name, value), where in placed(set(index), set(tree))
         if name not in LINE_ENDINGS
-    ]
+    ] + [f"git warns{where}{WARNED}{line}" for line, where in placed(index_warned, tree_warned)]
+
+
+def placed(index: set[Any], tree: set[Any]) -> list[tuple[Any, str]]:
+    """Each item that git's index or the working tree gives, in order, with nothing where
+    both give it, and else which of the two does."""
+    both = index & tree
+    held = {IN_INDEX: index, IN_TREE: tree}
+    return sorted(
+        [(item, "") for item in both]
+        + [(item, where) for where, given in held.items() for item in given - both]
+    )
 
 
 def line_ending_problems(root: Path) -> list[str]:
@@ -3105,6 +3164,8 @@ def test_an_attributes_file_that_a_checkout_re_encodes_is_read_as_git_holds_it(
     )
     assert b"+AD0-" in (clone / ".gitattributes").read_bytes(), "no checkout re-encoded it"
     hidden = ("diff: x", "linguist-generated: set")
+    # Git cannot read the copy that the checkout re-encoded, and says so, which the test names
+    # too, as it names each warning of git's while it reads the attributes.
     assert other_attribute_problems(clone) == [
         f".gitattributes{IN_INDEX} has working-tree-encoding: UTF-7{OTHER_ATTRIBUTE}",
         *(
@@ -3112,6 +3173,9 @@ def test_an_attributes_file_that_a_checkout_re_encodes_is_read_as_git_holds_it(
             for path in REENCODED_FILES
             for each in hidden
         ),
+        f"git warns{IN_TREE}{WARNED}diff+AD0-x is not a valid attribute name: .gitattributes:2",
+        f"git warns{IN_TREE}{WARNED}working-tree-encoding+AD0-UTF-7 is not a valid attribute name:"
+        " .gitattributes:1",
     ]
     for path, paths in (
         ("docs/decisions/DR-001-a-choice.md", ["docs/decisions/DR-001-a-choice.md"]),
@@ -3158,6 +3222,150 @@ def test_a_partial_clone_s_missing_attributes_file_is_not_fetched(tmp_path: Path
 def test_a_check_of_attributes_that_reads_no_tracked_file_fails(tmp_path: Path) -> None:
     git(tmp_path, "init", "-q").check_returncode()
     assert other_attribute_problems(tmp_path) == [ATTRIBUTES_READ_NOTHING]
+
+
+# Attributes that a folder's own pattern gives it, which `git archive` applies to the folder
+# and so to every file in it, while `git check-attr` gives them to no file in it, each with
+# the folder that the test names and what it says that the folder has.
+FOLDER_ATTRIBUTES = [
+    ("vendor export-ignore\n", "vendor/", "export-ignore: set"),
+    ("/docs export-ignore\n", "docs/", "export-ignore: set"),
+    ("docs/decisions export-ignore\n", "docs/decisions/", "export-ignore: set"),
+    ("docs/ export-ignore\n", "docs/", "export-ignore: set"),
+    ("vendor -diff\n", "vendor/", "diff: unset"),
+]
+FOLDER_FILES = {
+    "docs/decisions/DR-001-a-choice.md": "Text.\n",
+    "vendor/a/SKILL.md": "Text.\n",
+    "README.md": "Text.\n",
+}
+
+
+def test_git_archive_leaves_out_a_folder_that_its_attributes_give_export_ignore(
+    tmp_path: Path,
+) -> None:
+    root = give(plant(tmp_path, FOLDER_FILES), "vendor export-ignore\n")
+    commit(root)
+    done = git(root, "archive", "HEAD")
+    done.check_returncode()
+    with tarfile.open(fileobj=io.BytesIO(done.stdout)) as archive:
+        names = {member.name.rstrip("/") for member in archive.getmembers()}
+    assert names == {".gitattributes", "README.md", "docs", "docs/decisions"} | {
+        "docs/decisions/DR-001-a-choice.md"
+    }
+    assert [entry.path for entry in tracked_entries(root) if entry.path.startswith("vendor/")]
+
+
+@pytest.mark.parametrize(
+    ("attributes", "folder", "given"),
+    FOLDER_ATTRIBUTES,
+    ids=["vendor", "/docs", "docs/decisions", "docs/", "vendor -diff"],
+)
+def test_an_attribute_on_a_folder_that_holds_a_tracked_file_fails(
+    tmp_path: Path, attributes: str, folder: str, given: str
+) -> None:
+    root = give(plant(tmp_path, FOLDER_FILES), attributes)
+    assert other_attribute_problems(root) == [f"{folder} has {given}{OTHER_ATTRIBUTE}"]
+
+
+def test_line_endings_on_a_folder_and_attributes_on_a_folder_that_holds_none_pass(
+    tmp_path: Path,
+) -> None:
+    root = give(plant(tmp_path, FOLDER_FILES), "docs text=auto eol=lf\nbuild export-ignore\n")
+    assert other_attribute_problems(root) == []
+
+
+def long_line(length: int) -> str:
+    """A line that gives `docs/page.md` the attribute `ident`, as long as the length given."""
+    head, tail = "docs/page.md", " ident"
+    return head + " " * (length - len(head) - len(tail)) + tail
+
+
+@pytest.mark.parametrize("length", [LONG_LINE, LONG_LINE + 79])
+def test_an_attributes_line_that_git_ignores_for_its_length_fails(
+    tmp_path: Path, length: int
+) -> None:
+    root = give(plant(tmp_path, {"docs/page.md": "Text.\n"}), f"* text\n{long_line(length)}\n")
+    assert attribute_line_problems(root) == [f".gitattributes:2{LINE_IGNORED.format(length)}"]
+    assert other_attribute_problems(root) == [
+        f"git warns{WARNED}warning: ignoring overly long attributes line 2"
+    ]
+
+
+def test_a_long_attributes_line_that_only_git_s_index_or_only_the_working_tree_holds_fails(
+    tmp_path: Path,
+) -> None:
+    root = plant(tmp_path, {"docs/page.md": "Text.\n", "docs/.gitattributes": "* text\n"})
+    give(root, f"{long_line(LONG_LINE)}\n", index="* text\n")
+    (root / "docs" / ".gitattributes").write_text(
+        f"* text\n{long_line(LONG_LINE)}\n", encoding="utf-8"
+    )
+    assert attribute_line_problems(root) == [
+        f".gitattributes:1{IN_TREE}{LINE_IGNORED.format(LONG_LINE)}",
+        f"docs/.gitattributes:2{IN_TREE}{LINE_IGNORED.format(LONG_LINE)}",
+    ]
+
+
+def test_an_attributes_file_named_in_another_case_is_read_for_its_lines(tmp_path: Path) -> None:
+    root = plant(tmp_path, {"docs/page.md": "Text.\n", "docs/.GitAttributes": "* text\n"})
+    (root / "docs" / ".GitAttributes").write_text(f"{long_line(LONG_LINE)}\n", encoding="utf-8")
+    assert attribute_line_problems(root) == [
+        f"docs/.GitAttributes:1{IN_TREE}{LINE_IGNORED.format(LONG_LINE)}"
+    ]
+
+
+def test_an_attributes_line_one_byte_short_of_the_limit_is_read(tmp_path: Path) -> None:
+    root = give(plant(tmp_path, {"docs/page.md": "Text.\n"}), f"{long_line(LONG_LINE - 1)}\n")
+    assert attribute_line_problems(root) == []
+    assert other_attribute_problems(root) == [f"docs/page.md has ident: set{OTHER_ATTRIBUTE}"]
+
+
+@pytest.mark.parametrize(
+    ("line", "warned"),
+    [
+        (
+            "!docs/page.md ident",
+            [
+                "Use '\\!' for literal leading exclamation.",
+                "warning: Negative patterns are ignored in git attributes",
+            ],
+        ),
+        ("docs/page.md a@b", ["a@b is not a valid attribute name: .gitattributes:1"]),
+        (
+            "docs/page.md \N{RIGHT-TO-LEFT OVERRIDE}",
+            ["U+202E is not a valid attribute name: .gitattributes:1"],
+        ),
+    ],
+    ids=["a negative pattern", "a name that no attribute may take", "a hidden name"],
+)
+def test_a_warning_that_git_gives_while_it_reads_the_attributes_fails(
+    tmp_path: Path, line: str, warned: list[str]
+) -> None:
+    root = give(plant(tmp_path, {"docs/page.md": "Text.\n"}), f"{line}\n")
+    assert other_attribute_problems(root) == [f"git warns{WARNED}{each}" for each in warned]
+
+
+def test_a_warning_that_only_the_working_tree_s_attributes_bring_is_named_as_its(
+    tmp_path: Path,
+) -> None:
+    root = give(plant(tmp_path, {"docs/page.md": "Text.\n"}), "!docs/x a\n", index="* text\n")
+    assert other_attribute_problems(root) == [
+        f"git warns{IN_TREE}{WARNED}Use '\\!' for literal leading exclamation.",
+        f"git warns{IN_TREE}{WARNED}warning: Negative patterns are ignored in git attributes",
+    ]
+
+
+def test_a_split_index_is_read_as_git_reads_it(tmp_path: Path) -> None:
+    root = give(plant(tmp_path, {"docs/page.md": "Text.\n"}), "docs/*.md ident diff=x\n")
+    git(root, "update-index", "--split-index").check_returncode()
+    assert list((root / ".git").glob("sharedindex.*")), "git split no index"
+    assert other_attribute_problems(root) == [
+        f"docs/page.md has diff: x{OTHER_ATTRIBUTE}",
+        f"docs/page.md has ident: set{OTHER_ATTRIBUTE}",
+    ]
+    assert attribute_problems(root, ["docs/page.md"]) == [
+        "docs/page.md has diff: x, which changes how its diff shows"
+    ]
 
 
 # R271: Python names follow PEP 8, as ruff's naming rules check them.
@@ -4169,6 +4377,11 @@ def test_every_page_that_this_repository_writes_holds_only_text_that_github_show
 
 def test_the_repository_s_attributes_set_nothing_but_line_endings() -> None:
     assert other_attribute_problems(ROOT) == []
+
+
+def test_every_line_of_the_repository_s_attributes_is_one_that_git_reads() -> None:
+    assert ".gitattributes" in {entry.path for entry in tracked_entries(ROOT)}
+    assert attribute_line_problems(ROOT) == []
 
 
 def test_the_repository_s_attributes_give_every_tracked_file_line_feeds() -> None:
