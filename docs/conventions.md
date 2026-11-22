@@ -26,7 +26,7 @@ Files and folders are named in lower case, with a hyphen between words, as `docs
 - A file named for an identifier opens with it in its form, as each record and each backlog item does.
 - A name that GitHub, Claude Code or a format fixes stays as it fixes it, as `README.md`, `LICENSE`, `CONTRIBUTING.md`, `SECURITY.md`, `CODE_OF_CONDUCT.md`, `.github/CODEOWNERS`, `.github/pull_request_template.md` and `.github/ISSUE_TEMPLATE/` for GitHub, `CLAUDE.md` for Claude Code, and `CHANGELOG.md`, which Keep a Changelog gives.
 
-Tests hold the names of the records (R124) and of the backlog items (R211), and every tracked path's characters and its case against every other path's (R268); task 1.55 of `add-pr-cost-calculator` adds a test of what Windows can write in a path (R277). Any other name is for review. Four names predate this page and do not follow it: `tests/spec_form_openspec.json`, `vendor/superpowers/UPSTREAM.lock`, and the issue templates `.github/ISSUE_TEMPLATE/bug_report.yml` and `.github/ISSUE_TEMPLATE/feature_request.md`.
+Tests hold the names of the records (R124) and of the backlog items (R211), every tracked path's characters and its case against every other path's (R268), and that Windows can write every tracked path under its own name (R277). Any other name is for review. Four names predate this page and do not follow it: `tests/spec_form_openspec.json`, `vendor/superpowers/UPSTREAM.lock`, and the issue templates `.github/ISSUE_TEMPLATE/bug_report.yml` and `.github/ISSUE_TEMPLATE/feature_request.md`.
 
 ## Python names
 

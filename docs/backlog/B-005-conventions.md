@@ -1,11 +1,11 @@
 # B-005: Conventions
 
-- **Status:** Planned
-- **Last changed:** 2026-11-21
+- **Status:** Done
+- **Last changed:** 2026-11-22
 - **Brief:** Printable ASCII in everything the project writes, line feeds in every checkout, paths that Windows can write, diagrams as code, and naming conventions, each checked in CI.
 - **Rests on:** none
 - **Issue:** none
-- **Pull requests:** none
+- **Pull requests:** 59
 
 ## Problem
 

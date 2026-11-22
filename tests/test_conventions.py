@@ -89,7 +89,7 @@ import sys
 import tomllib
 import unicodedata
 from collections import defaultdict
-from collections.abc import Iterable, Iterator, Mapping
+from collections.abc import Callable, Iterable, Iterator, Mapping
 from pathlib import Path, PurePosixPath
 from typing import Any, NamedTuple
 
@@ -298,6 +298,22 @@ ATTRIBUTES_READ_NOTHING = "git lists no tracked file, so the test of attributes 
 LINE_FEEDS = {"text": "auto", "eol": "lf"}
 NOT_LINE_FEEDS = ", not text=auto and eol=lf, with which a checkout writes line feeds"
 LINE_FEEDS_READ_NOTHING = "git lists no tracked file, so the test of line endings read nothing"
+# What Windows refuses in a name among printable ASCII, besides the slash that separates
+# folders, the names that it keeps for devices, alone or before a dot and in any case, and the
+# longest path that a clone on Windows, in a folder whose own path holds up to 100
+# characters, can write (R277, DR-282).
+REFUSED_BY_WINDOWS = '<>:"\\|?*'
+DEVICES = (
+    "CON",
+    "PRN",
+    "AUX",
+    "NUL",
+    *(f"COM{digit}" for digit in range(10)),
+    *(f"LPT{digit}" for digit in range(10)),
+    "CONIN$",
+    "CONOUT$",
+)
+LONGEST_PATH = 140
 MEDIA_READ_NOTHING = (
     "git lists no tracked file, so the check of images, PDFs and videos read nothing"
 )
@@ -626,6 +642,43 @@ def version_problems(
     return text_problems(entry.path, text, where, others, markdown)
 
 
+def windows_problems(path: str) -> list[str]:
+    """What Windows refuses in a tracked path or reads as another file's: each character that
+    it refuses in a name, a `~`, which it writes in the short name that it gives a file or a
+    folder, each part that ends in a dot, which it drops, or that is a name that it keeps for a
+    device, alone or before a dot and in any case, and more than `LONGEST_PATH` characters,
+    each named with the path (R277, DR-282)."""
+    name = shown_path(path)
+    problems = [
+        f"the path {name} holds `{character}`, which Windows refuses in a name"
+        for character in REFUSED_BY_WINDOWS
+        if character in path
+    ]
+    if "~" in path:
+        problems.append(
+            f"the path {name} holds a `~`, which Windows writes in the short name that it gives "
+            "a file or a folder"
+        )
+    for part in path.split("/"):
+        if part.endswith("."):
+            problems.append(
+                f"the path {name} has the part {shown_path(part)}, which ends in a dot that "
+                "Windows drops"
+            )
+        device = part.split(".")[0].upper()
+        if device in DEVICES:
+            problems.append(
+                f"the path {name} has the part {shown_path(part)}, which Windows reads as the "
+                f"device {device}"
+            )
+    if len(path) > LONGEST_PATH:
+        problems.append(
+            f"the path {name} holds {len(path)} characters, more than the {LONGEST_PATH} that a "
+            "clone on Windows can write"
+        )
+    return problems
+
+
 def path_problems(paths: Iterable[str]) -> list[str]:
     """Each tracked path that holds a character other than printable ASCII but the space,
     and each two paths, or a path and a folder that holds another, that differ only in the
@@ -636,6 +689,8 @@ def path_problems(paths: Iterable[str]) -> list[str]:
         for path in unique
         if not all("!" <= character <= "~" for character in path)
     ]
+    for path in unique:
+        problems += windows_problems(path)
     by_case: dict[str, list[str]] = defaultdict(list)
     folders: dict[str, dict[str, str]] = defaultdict(dict)
     for path in unique:
@@ -1745,6 +1800,128 @@ def test_a_file_and_a_folder_that_differ_only_in_case_fail(tmp_path: Path) -> No
         "which holds .claude-plugin/Marketplace.json/notes.md, differ only in case, which a file "
         "system that ignores case cannot hold both of"
     ]
+
+
+# R277: every tracked path is one that Windows can write.
+
+# The names that Windows keeps for devices, as the scenario names them, written out here so
+# that a name that the check leaves out fails, and the three cases that the test plants each in.
+NAMED_DEVICES = (
+    "CON",
+    "PRN",
+    "AUX",
+    "NUL",
+    "COM0",
+    "COM1",
+    "COM2",
+    "COM3",
+    "COM4",
+    "COM5",
+    "COM6",
+    "COM7",
+    "COM8",
+    "COM9",
+    "LPT0",
+    "LPT1",
+    "LPT2",
+    "LPT3",
+    "LPT4",
+    "LPT5",
+    "LPT6",
+    "LPT7",
+    "LPT8",
+    "LPT9",
+    "CONIN$",
+    "CONOUT$",
+)
+CASES: dict[str, Callable[[str], str]] = {
+    "upper": str.upper,
+    "lower": str.lower,
+    "mixed": lambda name: name[0] + name[1:].lower(),
+}
+# Each form that a device's name takes in a path, by the folder that plants it.
+FORMS = {
+    "alone": "{}",
+    "before-one-dot": "{}.md",
+    "before-two-dots": "{}.tar.gz",
+    "folder": "{}/notes.md",
+}
+
+
+@pytest.fixture(scope="module")
+def planted_devices(tmp_path_factory: pytest.TempPathFactory) -> tuple[list[str], list[str]]:
+    """What the test of characters finds in a repository that plants each name that Windows
+    keeps for a device, in each case and each form, and the problems that it should find."""
+    files, expected = {}, []
+    for case, spelled in CASES.items():
+        for form, pattern in FORMS.items():
+            for device in NAMED_DEVICES:
+                part = spelled(device)
+                path = f"devices/{case}/{form}/{pattern.format(part)}"
+                shown_part = pattern.format(part).split("/")[0]
+                files[path] = "Printable.\n"
+                expected.append(
+                    f"the path {path} has the part {shown_part}, which Windows reads as the "
+                    f"device {device}"
+                )
+    return character_problems(plant(tmp_path_factory.mktemp("devices"), files)), expected
+
+
+def test_each_name_that_windows_keeps_for_a_device_fails_in_each_case_and_form(
+    planted_devices: tuple[list[str], list[str]],
+) -> None:
+    found, expected = planted_devices
+    assert len(expected) == 26 * 3 * 4
+    assert sorted(found) == sorted(expected)
+
+
+@pytest.mark.parametrize("character", ["<", ">", ":", '"', "\\", "|", "?", "*"])
+def test_a_character_that_windows_refuses_in_a_name_fails(tmp_path: Path, character: str) -> None:
+    path = f"docs/a{character}b.md"
+    assert character_problems(plant(tmp_path, {path: "Printable.\n"})) == [
+        f"the path {path} holds `{character}`, which Windows refuses in a name"
+    ]
+
+
+def test_a_path_that_windows_can_read_as_a_short_name_fails(tmp_path: Path) -> None:
+    path = "CLAUDE~1/marketplace.json"
+    assert character_problems(plant(tmp_path, {path: "{}\n"})) == [
+        f"the path {path} holds a `~`, which Windows writes in the short name that it gives a "
+        "file or a folder"
+    ]
+
+
+@pytest.mark.parametrize(
+    ("path", "part"), [("docs/page.", "page."), ("docs./page.md", "docs."), ("a../b.md", "a..")]
+)
+def test_a_part_that_ends_in_a_dot_fails(tmp_path: Path, path: str, part: str) -> None:
+    assert character_problems(plant(tmp_path, {path: "Printable.\n"})) == [
+        f"the path {path} has the part {part}, which ends in a dot that Windows drops"
+    ]
+
+
+def test_a_path_of_more_than_140_characters_fails(tmp_path: Path) -> None:
+    path = f"docs/{'a' * 100}/{'b' * 32}.md"
+    assert len(path) == LONGEST_PATH + 1
+    assert character_problems(plant(tmp_path, {path: "Printable.\n"})) == [
+        f"the path {path} holds 141 characters, more than the 140 that a clone on Windows can write"
+    ]
+
+
+def test_paths_that_windows_can_write_pass(tmp_path: Path) -> None:
+    longest = f"docs/{'a' * 100}/{'b' * 31}.md"
+    assert len(longest) == LONGEST_PATH
+    paths = [
+        longest,
+        "docs/console.md",
+        "scripts/com10.py",
+        "docs/auxiliary/nul-terminated.md",
+        "docs/lpt.md",
+        "docs/conin.md",
+        "docs/.prn",
+        "docs/a.b.c.md",
+    ]
+    assert character_problems(plant(tmp_path, {path: "Printable.\n" for path in paths})) == []
 
 
 # R268: what Python reads as source declares no encoding but UTF-8.
@@ -3567,6 +3744,7 @@ def test_everything_that_a_failing_run_of_the_test_of_characters_prints_is_print
         "carriage\rreturn.md": "Printable.\n",
         "escape\x1b[2Jcharacter.md": "Printable.\n",
         "tag\U000e0069\U000e0067.md": "A <!-- x --> word.\n",
+        "tag\U000e0069\U000e0067~1./aux.md": "Printable.\n",
         "selector\ufe0f.md": "Printable.\n",
         "page.md": "ab\u202ecd\x07\ue000\u0378\n",
         "vendor/superpowers/a.md": "\U000e0041\ufe0f\n",
@@ -3591,6 +3769,8 @@ def test_everything_that_a_failing_run_of_the_test_of_characters_prints_is_print
     assert b"tagU+E0069U+E0067.md:1:3 holds an HTML comment" in printed
     assert b"tagU+E0069U+E0067.md has answer: U+E0041U+001B, an attribute other than" in printed
     assert b"tagU+E0069U+E0067.md has text: unspecified and eol: U+E0041U+001B, not" in printed
+    assert b"has the part tagU+E0069U+E0067~1., which ends in a dot that Windows drops" in printed
+    assert b"the path tagU+E0069U+E0067~1./aux.md holds a `~`" in printed
     beyond = sorted({byte for byte in printed if not 0x20 <= byte <= 0x7E and byte != 0x0A})
     assert not beyond, f"the run printed the bytes {beyond}"
 
