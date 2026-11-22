@@ -2107,6 +2107,30 @@ The test of characters SHALL read each tracked file as git's index holds it, and
 - **WHEN** git lists no tracked file, or the test reads none
 - **THEN** the test fails and says that it read nothing
 
+### Requirement: What CI's commands print reaches the log as printable ASCII
+
+Every command that a step of a workflow under `.github/workflows/` runs SHALL write its output and its errors through one filter that writes each character other than printable ASCII and a line feed by its code point, and each byte that is not UTF-8 by its value, and that keeps the command's exit status, so that no check that quotes a path or a file's text as it is carries a hidden character into a log that a session reads. Tests SHALL fail otherwise.
+
+#### Scenario: What a command of CI prints is written in printable ASCII
+
+- **WHEN** a command that a step runs prints, as its output or its errors, a character other than printable ASCII and a line feed, such as a tag character, a variation selector, an escape character, a carriage return or a tab, or a byte that is not UTF-8, as ruff, mypy, pytest and the sync's check print a planted path as it is
+- **THEN** the log holds each such character as `U+` and its code point in at least four hexadecimal digits, each such byte as `\x` and its value in two, and every other character as the command printed it, in the order that the command printed them, and nothing but printable ASCII and line feeds
+
+#### Scenario: A character split between two reads is written once
+
+- **WHEN** the filter reads the first bytes of a character in one read and the rest in the next
+- **THEN** it writes that character once, by its code point
+
+#### Scenario: The step keeps the command's exit status
+
+- **WHEN** the command exits with a status, or a signal stops it, or the filter cannot start it
+- **THEN** the step exits with that status, with 128 and the signal's number, or with 127 and a line in printable ASCII that says so
+
+#### Scenario: A step whose output does not go through the filter fails CI
+
+- **WHEN** a workflow under `.github/workflows/` does not give its steps the filter's shell, `python3 -I scripts/printable_log.py bash --noprofile --norc -eo pipefail {0}`, or a job or a step gives a shell of its own, or a job runs a command before it checks out the repository, which holds the filter
+- **THEN** a test fails and names the workflow, the job and, where one does, the step
+
 ### Requirement: The repository's attributes set nothing but line endings
 
 The repository's attributes SHALL give a tracked file no attribute but `text` and `eol`, and each check of them SHALL read them as git's index holds them and also as the working tree holds them, and never a person's own, such as the clone's `.git/info/attributes`, so that no attribute makes a checkout, an archive or GitHub's diff give other text than git holds, or folds a diff that the owner reads, and no attributes file hides from the checks by re-encoding itself. Tests SHALL fail otherwise.

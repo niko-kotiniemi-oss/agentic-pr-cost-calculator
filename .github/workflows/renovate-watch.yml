@@ -16,7 +16,9 @@ on:
 
 defaults:
   run:
-    shell: bash
+    # GitHub's own shell for `bash`, run through a filter that writes what each command
+    # prints in printable ASCII, as every workflow here does (R278).
+    shell: python3 -I scripts/printable_log.py bash --noprofile --norc -eo pipefail {0}
 
 # Declared rather than inherited, so what this workflow can do is readable here. It writes
 # nothing, comments nowhere and reads no secret: its one credential is its own token.

@@ -15,9 +15,12 @@ on:
 
 defaults:
   run:
-    # GitHub's default is `bash -e` without pipefail, which lets `check | head`
-    # pass while the check failed.
-    shell: bash
+    # GitHub's own shell for `bash`, with pipefail, which its default lacks, so
+    # that `check | head` fails where the check fails, run through a filter that
+    # writes what each command prints in printable ASCII, so that a check which
+    # quotes a planted path as it is writes no hidden character into the log
+    # (R278).
+    shell: python3 -I scripts/printable_log.py bash --noprofile --norc -eo pipefail {0}
 
 # Declared rather than inherited, so what these jobs can do is readable here.
 # Nothing in this workflow writes, comments or reads a secret.
@@ -111,6 +114,10 @@ jobs:
     needs: [python, openspec, vendor, windows-line-endings]
     runs-on: ubuntu-latest
     steps:
+      # The shell's filter is a file of the repository.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
       - run: |
           set -euo pipefail
           results='${{ toJSON(needs.*.result) }}'
