@@ -170,14 +170,16 @@ SELECTOR = "\ufe0f"
 # musical null notehead, which a font draws as nothing.
 BLANK = frozenset({0x2800, 0x1D159})
 
-# An escape that writes a character by its code, as JSON, JavaScript and YAML allow (T263).
+# An escape that writes a character by its code, as JSON, JavaScript, YAML and bash allow
+# it, the last with fewer digits too, or by its name, as Python allows it (T263).
 ESCAPE = re.compile(
-    r"\\(?:u\{([0-9A-Fa-f]{1,6})\}|u([0-9A-Fa-f]{4})|U([0-9A-Fa-f]{8})|x([0-9A-Fa-f]{2}))"
+    r"\\(?:u\{([0-9A-Fa-f]+)\}|u([0-9A-Fa-f]{1,4})|U([0-9A-Fa-f]{1,8})|x([0-9A-Fa-f]{1,2})"
+    r"|N\{([^{}\n]*)\})"
 )
 # PEP 263's declaration of a source file's encoding, which Python reads on either of its
 # first two lines.
 CODING = re.compile(r"^[ \t\f]*#.*?coding[:=][ \t]*([-\w.]+)")
-PYTHON_FILE = re.compile(r"\.py[iw]?\Z")
+PYTHON_FILE = re.compile(r"\.py[iw]?\Z", re.IGNORECASE)
 PYTHON_LINE = re.compile(r"#!.*python")
 
 FILE, EXECUTABLE, LINK, GITLINK = "100644", "100755", "120000", "160000"
@@ -185,6 +187,14 @@ IN_INDEX = ", in git's index,"
 IN_TREE = ", in the working tree,"
 NOT_ASCII = ", which is not printable ASCII"
 NOT_LISTED = ", which the list does not give; the owner decides whether it does"
+# The files that a loader decodes, by the extension that names their format in any case, and
+# what the test says of one that its loader cannot read (R268).
+LOADERS = {".json": "JSON", ".toml": "TOML", ".yaml": "YAML", ".yml": "YAML"}
+UNLOADED = " is not {} that the test can read, so the test cannot read its strings"
+NEVER_LISTED = (
+    ", which the list does not give and may not, since it gives only punctuation and symbols"
+    " that show"
+)
 MARKDOWN_ALONE = ", which the list gives for Markdown alone"
 READ_NOTHING = "the test of characters read no tracked file"
 # What the test of characters says of a script whose working tree holds a carriage return
@@ -483,6 +493,9 @@ def refused(character: str, before: str, others: bool, markdown: bool) -> str:
         return f" right after {after}, after which the list does not give it"
     entry = LISTED.get(character)
     if entry is None:
+        category = unicodedata.category(character)
+        if category != "Cn" and (category[0] not in "PS" or ord(character) in BLANK):
+            return NEVER_LISTED
         return NOT_LISTED
     return MARKDOWN_ALONE if entry.markdown_only and not markdown else ""
 
@@ -494,7 +507,16 @@ def escapes(line: str) -> Iterator[tuple[int, str, str]]:
     runs: list[list[tuple[int, int]]] = []
     end = -1
     for found in ESCAPE.finditer(line):
-        code = int(next(group for group in found.groups() if group), 16)
+        if found[5] is not None:
+            try:
+                written = unicodedata.lookup(found[5])
+            except KeyError:
+                continue
+            if len(written) != 1:
+                continue
+            code = ord(written)
+        else:
+            code = int(next(group for group in found.groups() if group), 16)
         if runs and found.start() == end:
             runs[-1].append((found.start() + 1, code))
         else:
@@ -531,15 +553,21 @@ def scalars(node: yaml.Node | None, seen: set[int]) -> Iterator[yaml.ScalarNode]
             yield from scalars(value, seen)
 
 
-def front_matter_problems(path: str, text: str, where: str, markdown: bool) -> list[str]:
-    """Each character that a skill's front matter gives once YAML reads it and that the file
-    may not hold, other than one that the file holds as itself or by an escape there, which
-    the reading of its lines names already (R269, T263)."""
+def front_matter_problems(
+    path: str, text: str, where: str, markdown: bool, others: bool
+) -> list[str]:
+    """Each character that a page's front matter gives once YAML reads it and that the file
+    may not hold, other than one that the file holds as itself, or, in a file that others
+    write, by an escape there, which the reading of its lines names already. Front matter
+    opens and closes on a line of `---` that spaces or tabs may follow, as Claude Code reads
+    a skill's (R268, R269, T263)."""
     lines = text.split("\n")
-    if lines[0] != "---":
+    if lines[0].rstrip(" \t") != "---":
         return []
     name = shown_path(path)
-    closing = next((number for number in range(1, len(lines)) if lines[number] == "---"), 0)
+    closing = next(
+        (number for number in range(1, len(lines)) if lines[number].rstrip(" \t") == "---"), 0
+    )
     if not closing:
         return [f"{name}{where} opens front matter that no line of --- closes"]
     body = "\n".join(lines[1:closing])
@@ -547,12 +575,14 @@ def front_matter_problems(path: str, text: str, where: str, markdown: bool) -> l
         document = yaml.compose(body, Loader=yaml.SafeLoader)
     except yaml.YAMLError:
         return [f"{name}{where} gives front matter that the test cannot read as YAML"]
-    held = set(body) | {character for line in lines[1:closing] for _, character, _ in escapes(line)}
+    held = set(body)
+    if others:
+        held |= {character for line in lines[1:closing] for _, character, _ in escapes(line)}
     problems = []
     for node in scalars(document, set()):
         before = ""
         for character in str(node.value):
-            reason = refused(character, before, True, markdown)
+            reason = refused(character, before, others, markdown)
             if reason and character not in held:
                 problems.append(
                     f"{name}:{node.start_mark.line + 2}{where} gives {named(character)} in its "
@@ -560,6 +590,58 @@ def front_matter_problems(path: str, text: str, where: str, markdown: bool) -> l
                 )
             before = character
     return problems
+
+
+def strings_of(value: object) -> Iterator[str]:
+    """Each string that a value that JSON or TOML gives holds, keys among them, in order."""
+    if isinstance(value, str):
+        yield value
+    elif isinstance(value, dict):
+        for key, item in value.items():
+            yield key
+            yield from strings_of(item)
+    elif isinstance(value, list):
+        for item in value:
+            yield from strings_of(item)
+
+
+def loaded_strings(kind: str, text: str) -> list[tuple[int, str]]:
+    """Each string of a YAML, JSON or TOML file as its loader decodes it, keys among them,
+    with its line where YAML gives one, and else 0."""
+    if kind == "YAML":
+        return [
+            (node.start_mark.line + 1, str(node.value))
+            for document in yaml.compose_all(text, Loader=yaml.SafeLoader)
+            for node in scalars(document, set())
+        ]
+    value = json.loads(text) if kind == "JSON" else tomllib.loads(text)
+    return [(0, string) for string in strings_of(value)]
+
+
+def loaded_problems(path: str, text: str, where: str, others: bool) -> list[str]:
+    """Each character that a YAML, JSON or TOML file gives once its loader reads it and that
+    the file may not hold, as an escape writes one in a file of printable ASCII, other than
+    one that the file holds as itself, or, in a file that others write, by an escape that the
+    reading of its lines reads, which that reading names already; and the file where its
+    loader cannot read it (R268, R269, T263, T271)."""
+    kind = LOADERS.get(PurePosixPath(path).suffix.casefold())
+    if kind is None:
+        return []
+    name = shown_path(path)
+    try:
+        strings = loaded_strings(kind, text)
+    except (yaml.YAMLError, ValueError):
+        return [f"{name}{where}{UNLOADED.format(kind)}"]
+    held = set(text)
+    if others:
+        held |= {character for line in text.split("\n") for _, character, _ in escapes(line)}
+    return [
+        f"{name}{f':{line}' if line else ''}{where} gives {named(character)}, read as {kind}"
+        f"{refused(character, '', others, False)}"
+        for line, value in strings
+        for character in value
+        if refused(character, "", others, False) and character not in held
+    ]
 
 
 def read_as_python(path: str, first_line: str) -> bool:
@@ -593,8 +675,10 @@ def encoding_problems(path: str, text: str, where: str = "") -> list[str]:
 
 def text_problems(path: str, text: str, where: str, others: bool, markdown: bool) -> list[str]:
     """Each character of a file's text that its writer may not use, by line and column, each
-    that an escape writes in a file that others write, and each that a skill's front matter
-    gives, and the encoding that a file that this repository writes declares to Python."""
+    that an escape writes in a file that others write, each that YAML, JSON or TOML decodes
+    from a file, each that the front matter of a page that this repository writes or of a
+    skill gives, and the encoding that a file that this repository writes declares to
+    Python."""
     name = shown_path(path)
     problems = []
     for number, line in enumerate(text.split("\n"), 1):
@@ -613,9 +697,10 @@ def text_problems(path: str, text: str, where: str, others: bool, markdown: bool
                         f"escape{reason}"
                     )
     if not others:
-        return problems + encoding_problems(path, text, where)
-    if markdown and PurePosixPath(path).name.casefold() == "skill.md":
-        problems += front_matter_problems(path, text, where, markdown)
+        problems += encoding_problems(path, text, where)
+    problems += loaded_problems(path, text, where, others)
+    if markdown and (not others or PurePosixPath(path).name.casefold() == "skill.md"):
+        problems += front_matter_problems(path, text, where, markdown, others)
     return problems
 
 
@@ -1496,17 +1581,41 @@ def test_a_character_that_a_reader_cannot_see_in_a_file_that_others_write_fails(
     planted_characters: list[str], case: str, kind: str
 ) -> None:
     character = OTHERS_CHARACTERS[case][0]
-    assert f"{kind.format(case)}:2:3 holds {named(character)}{NOT_LISTED}" in planted_characters
+    assert f"{kind.format(case)}:2:3 holds {named(character)}{NEVER_LISTED}" in planted_characters
+
+
+@pytest.mark.parametrize("character", ["\u2800", "\U0001d159"])
+def test_a_symbol_that_shows_as_blank_is_named_as_one_that_the_list_may_not_give(
+    tmp_path: Path, character: str
+) -> None:
+    path = "vendor/superpowers/skills/a/helper.js"
+    assert character_problems(plant(tmp_path, {path: planted_line(character)})) == [
+        f"{path}:2:3 holds {named(character)}{NEVER_LISTED}"
+    ]
+
+
+# Shaking face, a symbol since Unicode 15, which the database of Python 3.11 does not know.
+@pytest.mark.parametrize("character", ["\u2603", "\U0001f600", "\u00a9", "\U0001fae8"])
+def test_a_visible_symbol_that_the_list_does_not_give_is_left_to_the_owner(
+    tmp_path: Path, character: str
+) -> None:
+    path = "vendor/superpowers/skills/a/helper.js"
+    problems = character_problems(plant(tmp_path, {path: planted_line(character)}))
+    assert problems == [f"{path}:2:3 holds {named(character)}{NOT_LISTED}"]
+    assert "add" not in problems[0] and "VISIBLE" not in problems[0]
 
 
 def test_each_planted_character_is_named_once_and_nothing_else_is(
     planted_characters: list[str],
 ) -> None:
     planted = len(OWN_CHARACTERS) * len(OWN_KINDS) + len(OTHERS_CHARACTERS) * len(OTHERS_KINDS)
-    assert len(planted_characters) == len(set(planted_characters)) == planted
+    # YAML refuses a tab where the workflow holds one, so the test names that file as one
+    # whose strings it cannot read, too.
+    assert f"own/tab/check.yml{UNLOADED.format('YAML')}" in planted_characters
+    assert len(planted_characters) == len(set(planted_characters)) == planted + 1
 
 
-def test_a_visible_character_that_the_list_does_not_give_is_left_to_the_owner(
+def test_a_letter_that_looks_like_a_latin_one_is_named_as_one_that_the_list_may_not_give(
     planted_characters: list[str],
 ) -> None:
     found = [
@@ -1514,8 +1623,8 @@ def test_a_visible_character_that_the_list_does_not_give_is_left_to_the_owner(
     ]
     assert len(found) == len(OTHERS_KINDS)
     for problem in found:
-        assert problem.endswith(", which the list does not give; the owner decides whether it does")
-        assert "add" not in problem and "VISIBLE" not in problem
+        assert problem.endswith(NEVER_LISTED)
+        assert "owner" not in problem and "add" not in problem and "VISIBLE" not in problem
 
 
 def test_printable_ascii_and_line_feeds_pass(tmp_path: Path) -> None:
@@ -1572,24 +1681,41 @@ def test_variation_selector_16_after_a_character_not_listed_for_it_fails(
 
 
 ESCAPED = [
-    ("\\u200b", "\u200b"),
-    ("\\u{202e}", "\u202e"),
-    ("\\U000e0041", "\U000e0041"),
-    ("\\x1b", "\x1b"),
-    ("\\ud83d\\ude00", "\U0001f600"),
-    ("\\ud83d", "\ud83d"),
+    ("\\u200b", "\u200b", NEVER_LISTED),
+    ("\\u{202e}", "\u202e", NEVER_LISTED),
+    ("\\U000e0041", "\U000e0041", NEVER_LISTED),
+    ("\\x1b", "\x1b", NEVER_LISTED),
+    ("\\ud83d\\ude00", "\U0001f600", NOT_LISTED),
+    ("\\ud83d", "\ud83d", NEVER_LISTED),
+    ("\\u{000202e}", "\u202e", NEVER_LISTED),
+    ("\\u{00000e0041}", "\U000e0041", NEVER_LISTED),
+    ("\\U202e", "\u202e", NEVER_LISTED),
+    ("\\UE0049", "\U000e0049", NEVER_LISTED),
+    ("\\u7f", "\x7f", NEVER_LISTED),
+    ("\\x7", "\x07", NEVER_LISTED),
+    ("\\N{RIGHT-TO-LEFT OVERRIDE}", "\u202e", NEVER_LISTED),
+    ("\\N{zero width space}", "\u200b", NEVER_LISTED),
 ]
 
 
 @pytest.mark.parametrize("kind", ["helper.js", "SKILL.md"])
-@pytest.mark.parametrize(("escape", "character"), ESCAPED)
+@pytest.mark.parametrize(("escape", "character", "reason"), ESCAPED)
 def test_a_character_written_by_an_escape_is_held_as_the_character(
-    tmp_path: Path, escape: str, character: str, kind: str
+    tmp_path: Path, escape: str, character: str, reason: str, kind: str
 ) -> None:
     path = f"vendor/superpowers/skills/a/{kind}"
     assert character_problems(plant(tmp_path, {path: f"x = '{escape}'\n"})) == [
-        f"{path}:1:6 writes {named(character)} by an escape{NOT_LISTED}"
+        f"{path}:1:6 writes {named(character)} by an escape{reason}"
     ]
+
+
+def test_an_escape_that_writes_no_character_passes(tmp_path: Path) -> None:
+    path = "vendor/superpowers/skills/a/helper.js"
+    text = (
+        "x = '\\u{110000} \\N{NOT A NAME} \\N{} \\usage \\u{} \\x"
+        " \\N{LATIN CAPITAL LETTER A WITH MACRON AND GRAVE}'\n"
+    )
+    assert character_problems(plant(tmp_path, {path: text})) == []
 
 
 def test_an_escape_of_a_character_that_the_file_may_hold_passes(tmp_path: Path) -> None:
@@ -1621,7 +1747,20 @@ def test_a_character_that_a_skill_s_front_matter_gives_once_yaml_reads_it_fails(
     path = ".claude/skills/openspec-a/SKILL.md"
     text = f'---\nname: a\ndescription: "before {escape} after"\n---\n# A\n'
     assert character_problems(plant(tmp_path, {path: text})) == [
-        f"{path}:3 gives {named(character)} in its front matter, read as YAML{NOT_LISTED}"
+        f"{path}:3 gives {named(character)} in its front matter, read as YAML{NEVER_LISTED}"
+    ]
+
+
+@pytest.mark.parametrize(
+    ("opening", "closing"), [("--- ", "---"), ("---\t", "---  "), ("---", "--- ")]
+)
+def test_front_matter_opened_or_closed_after_spaces_or_tabs_is_read(
+    tmp_path: Path, opening: str, closing: str
+) -> None:
+    path = "vendor/superpowers/skills/a/SKILL.md"
+    text = f'{opening}\nname: a\ndescription: "a \\e b"\n{closing}\n# A\n'
+    assert character_problems(plant(tmp_path, {path: text})) == [
+        f"{path}:3 gives {named(chr(0x1B))} in its front matter, read as YAML{NEVER_LISTED}"
     ]
 
 
@@ -1629,7 +1768,7 @@ def test_a_key_of_a_skill_s_front_matter_is_read_too(tmp_path: Path) -> None:
     path = "vendor/superpowers/skills/a/SKILL.md"
     text = '---\nname: a\n"na\\eme": a\n---\n'
     assert character_problems(plant(tmp_path, {path: text})) == [
-        f"{path}:3 gives {named(chr(0x1B))} in its front matter, read as YAML{NOT_LISTED}"
+        f"{path}:3 gives {named(chr(0x1B))} in its front matter, read as YAML{NEVER_LISTED}"
     ]
 
 
@@ -1637,7 +1776,7 @@ def test_an_escape_in_a_skill_s_front_matter_is_named_once(tmp_path: Path) -> No
     path = "vendor/superpowers/skills/a/SKILL.md"
     text = '---\nname: a\ndescription: "a \\u200b b"\n---\n'
     assert character_problems(plant(tmp_path, {path: text})) == [
-        f"{path}:3:17 writes {named(chr(0x200B))} by an escape{NOT_LISTED}"
+        f"{path}:3:17 writes {named(chr(0x200B))} by an escape{NEVER_LISTED}"
     ]
 
 
@@ -1655,12 +1794,112 @@ def test_front_matter_that_the_test_cannot_read_fails(
     assert character_problems(plant(tmp_path, {path: text})) == [f"{path} {problem}"]
 
 
-def test_front_matter_is_read_only_in_a_skill_that_others_write(tmp_path: Path) -> None:
+def test_front_matter_of_others_is_read_only_in_a_skill(tmp_path: Path) -> None:
+    files = {"vendor/superpowers/skills/a/notes.md": "---\nname: [a\n---\n"}
+    assert character_problems(plant(tmp_path, files)) == []
+
+
+@pytest.mark.parametrize(
+    "path", ["docs/SKILL.md", ".github/ISSUE_TEMPLATE/feature_request.md", "docs/page.markdown"]
+)
+def test_the_front_matter_of_a_page_that_this_repository_writes_is_read_as_yaml(
+    tmp_path: Path, path: str
+) -> None:
+    text = '---\nname: a\nabout: "b \\u202e \\e"\n---\nText.\n'
+    assert character_problems(plant(tmp_path, {path: text})) == [
+        f"{path}:3 gives {named(chr(0x202E))} in its front matter, read as YAML{NOT_ASCII}",
+        f"{path}:3 gives {named(chr(0x1B))} in its front matter, read as YAML{NOT_ASCII}",
+    ]
+
+
+def test_front_matter_of_printable_ascii_in_a_page_that_this_repository_writes_passes(
+    tmp_path: Path,
+) -> None:
+    text = '---\nname: A "quoted" \\u0041 and \\n\ntitle: "\\u0041\\n"\n---\nText.\n'
+    assert character_problems(plant(tmp_path, {".github/ISSUE_TEMPLATE/a.md": text})) == []
+
+
+# R268: what a loader decodes from a YAML, JSON or TOML file that this repository writes.
+
+LOADED = [
+    ("openspec/config.yaml", 'context: "Keep it short.\\U000E0049"\n', 1, "YAML", 0xE0049),
+    ("ci.YML", 'a:\n  - "\\e[8m"\n', 2, "YAML", 0x1B),
+    ("a.yml", '"k\\u200bey": b\n', 1, "YAML", 0x200B),
+    ("a.yaml", "a: |\n  b\nc: 'd'\nd: \"\\L\"\n", 4, "YAML", 0x2028),
+    ("a.yml", 'a: 1\n---\nb: "\\u202e"\n', 3, "YAML", 0x202E),
+    (".claude/settings.json", '{"hooks": {"a": "\\u202e"}}\n', 0, "JSON", 0x202E),
+    ("a.json", '{"\\u200b": 1}\n', 0, "JSON", 0x200B),
+    ("a.JSON", '["\\ud83d\\ude00"]\n', 0, "JSON", 0x1F600),
+    ("a.json", '{"a": "\\r"}\n', 0, "JSON", 0x0D),
+    ("pyproject.toml", 'a = "\\u202E"\n', 0, "TOML", 0x202E),
+    ("a.toml", '"\\U000E0041" = 1\n', 0, "TOML", 0xE0041),
+]
+
+
+@pytest.mark.parametrize(("path", "text", "line", "kind", "code"), LOADED)
+def test_a_character_that_a_loader_decodes_in_a_file_that_this_repository_writes_fails(
+    tmp_path: Path, path: str, text: str, line: int, kind: str, code: int
+) -> None:
+    where = f":{line}" if line else ""
+    assert character_problems(plant(tmp_path, {path: text})) == [
+        f"{path}{where} gives {named(chr(code))}, read as {kind}{NOT_ASCII}"
+    ]
+
+
+@pytest.mark.parametrize(
+    ("path", "text", "kind"),
+    [("a.json", "{\n", "JSON"), ("a.yml", "a: [b\n", "YAML"), ("a.toml", "a =\n", "TOML")],
+)
+def test_a_file_that_its_loader_cannot_read_fails(
+    tmp_path: Path, path: str, text: str, kind: str
+) -> None:
+    assert character_problems(plant(tmp_path, {path: text})) == [
+        f"{path} is not {kind} that the test can read, so the test cannot read its strings"
+    ]
+
+
+def test_a_file_that_a_loader_decodes_to_printable_ascii_passes(tmp_path: Path) -> None:
     files = {
-        "vendor/superpowers/skills/a/notes.md": "---\nname: [a\n---\n",
-        "docs/SKILL.md": '---\nname: "\\e"\n---\n',
+        "a.json": '{"a": "\\u0041\\n\\"", "b": [1, true, null]}\n',
+        "a.yml": 'a: "\\x41\\n"\nb: !!binary aGk=\n---\nc: 1\n',
+        "a.toml": 'a = "\\u0041"\nb = 1979-05-27\n[c]\nd = [1, 2]\n',
+        "vendor/superpowers/a.json": '{"a": "\\u2014 \\u26a0\\ufe0f", "b": "\\t"}\n',
+        "docs/a.txt": "{\n",
     }
     assert character_problems(plant(tmp_path, files)) == []
+
+
+@pytest.mark.parametrize(
+    ("text", "problem"),
+    [
+        ('{"description": "a\\rb"}\n', f"gives {named(chr(0x0D))}, read as JSON{NEVER_LISTED}"),
+        ('{"description": "a\\fb"}\n', f"gives {named(chr(0x0C))}, read as JSON{NEVER_LISTED}"),
+        ("{\n", f"{UNLOADED.format('JSON')}"),
+    ],
+)
+def test_a_file_that_others_write_and_that_a_loader_decodes_is_read_as_it_decodes(
+    tmp_path: Path, text: str, problem: str
+) -> None:
+    path = "vendor/superpowers/.claude-plugin/plugin.json"
+    separator = "" if problem.startswith(" ") else " "
+    assert character_problems(plant(tmp_path, {path: text})) == [f"{path}{separator}{problem}"]
+
+
+def test_an_escape_in_a_file_that_others_write_and_that_a_loader_decodes_is_named_once(
+    tmp_path: Path,
+) -> None:
+    path = "vendor/superpowers/.claude-plugin/plugin.json"
+    assert character_problems(plant(tmp_path, {path: '{"a": "\\u202e"}\n'})) == [
+        f"{path}:1:8 writes {named(chr(0x202E))} by an escape{NEVER_LISTED}"
+    ]
+
+
+def test_a_character_that_a_file_that_a_loader_decodes_holds_as_itself_is_named_once(
+    tmp_path: Path,
+) -> None:
+    assert character_problems(plant(tmp_path, {"a.json": '{"a": "\u202e"}\n'})) == [
+        f"a.json:1:8 holds {named(chr(0x202E))}{NOT_ASCII}"
+    ]
 
 
 # R272: the test reads every file as git's index holds it and as the working tree holds it.
@@ -1983,6 +2222,10 @@ def test_paths_that_windows_can_write_pass(tmp_path: Path) -> None:
         ("scripts/stub.pyi", "# vim: set fileencoding=latin-1 :\n", "latin-1"),
         ("hooks/run", "#!/usr/bin/env python3\n# coding=cp1252\n", "cp1252"),
         ("scripts/tool.py", "# coding: no-such-encoding\n", "no-such-encoding"),
+        ("tests/conftest.PY", "# -*- coding: utf-7 -*-\n", "utf-7"),
+        ("scripts/stub.Pyi", "# coding: utf-7\n", "utf-7"),
+        ("scripts/tool.pyw", "# coding: utf-7\n", "utf-7"),
+        ("scripts/tool.PYW", "# coding: utf-7\n", "utf-7"),
     ],
 )
 def test_a_python_file_that_declares_an_encoding_other_than_utf_8_fails(
@@ -3120,6 +3363,7 @@ KEPT = {
         "tests/vendor/names.py",
     ),
     "an extension that ruff does not read unasked": ({"names.pyw": planted_module()}, "names.pyw"),
+    "an extension in upper case": ({"names.PY": planted_module()}, "names.PY"),
     "a script without an extension": (
         {"scripts/names": planted_module(opening="#!/usr/bin/env python3")},
         "scripts/names",
@@ -3281,7 +3525,7 @@ def test_a_carriage_return_before_a_line_feed_in_a_script_fails_and_says_how_to_
     text, executable = SCRIPTS[path]
     root = plant(tmp_path, {path: text}, executable=[path] if executable else [])
     saved_with_windows_line_endings(root, [path])
-    reason = NOT_LISTED if written_by_others(path) else NOT_ASCII
+    reason = NEVER_LISTED if written_by_others(path) else NOT_ASCII
     assert character_problems(root) == [
         *(
             f"{path}:{number}:{len(line) + 1}{IN_TREE} holds {named(RETURN)}{reason}"

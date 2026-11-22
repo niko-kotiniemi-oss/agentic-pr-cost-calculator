@@ -68,6 +68,7 @@ from pathlib import Path
 
 import pytest
 import wording
+from conventions import written_by_others
 from wording import (
     CHANGELOG,
     DEFAULT_BRANCH,
@@ -294,6 +295,12 @@ def test_a_file_that_keeps_its_words_is_not_read(tmp_path: Path, path: str) -> N
         'docs/page.md:1: "The calculator" is a word to avoid; use "the tool"',
         f"docs/page.md:1: {CAPTURE_HOOK}",
     ]
+
+
+@pytest.mark.parametrize("path", ["vendor/notes.md", "vendor/superpowers-notes/a.md"])
+def test_a_page_that_this_repository_writes_under_vendor_is_read(tmp_path: Path, path: str) -> None:
+    root = repository(tmp_path, {path: "The calculator counts calls.\n"})
+    assert problems_in(root) == [f'{path}:1: "The calculator" is a word to avoid; use "the tool"']
 
 
 def test_a_released_changelog_entry_is_not_read(tmp_path: Path) -> None:
@@ -1002,10 +1009,8 @@ def test_a_path_that_is_not_utf_8_fails(tmp_path: Path) -> None:
 def test_the_repository_s_files_are_read() -> None:
     files = read_files(ROOT)
     assert "CLAUDE.md" in files and GLOSSARY in files and CHANGELOG in files
-    kept = re.compile(
-        r"docs/decisions/|vendor/|openspec/changes/archive/|\.claude/skills/openspec-"
-    )
-    assert not [path for path in files if kept.match(path)]
+    kept = re.compile(r"docs/decisions/|openspec/changes/archive/")
+    assert not [path for path in files if kept.match(path) or written_by_others(path)]
     shown_as_markdown = re.compile(
         r"(?:^|/)contents\.lr$|\.(?:md|livemd|markdown|mdown|mdwn|mkdn?|mkdown|ronn|scd|workbook"
         r"|mdx|litcoffee)$",

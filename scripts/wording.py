@@ -23,16 +23,17 @@ from itertools import pairwise
 from pathlib import Path
 from typing import NamedTuple
 
+from conventions import written_by_others
+
 GLOSSARY = "docs/glossary.md"
 DEFAULT_BRANCH = "refs/remotes/origin/main"
 CHANGELOG = "CHANGELOG.md"
 HEADER = ["Term", "Meaning", "Words to avoid"]
 
-# Kept as written: the records and their index, the archived changes, the vendored files
-# and the skills that OpenSpec generates.
-KEPT = re.compile(
-    r"(?:docs/decisions|openspec/changes/archive|vendor)/|\.claude/skills/openspec-[^/]+/"
-)
+# Kept as written: the records and their index, the archived changes, and the files that
+# others write, the vendored ones and the skills that OpenSpec generates, as
+# `keeps_its_words` gives them.
+KEPT = re.compile(r"(?:docs/decisions|openspec/changes/archive)/")
 # The files that GitHub shows as Markdown: those with the extensions and the name that
 # GitHub's language list, linguist, gives Markdown, MDX and Literate CoffeeScript, the
 # languages that its markup library renders as Markdown.
@@ -263,13 +264,23 @@ def shown(root: Path, *args: str) -> str:
     return done.stdout.decode("utf-8", "surrogateescape")
 
 
+def keeps_its_words(path: str) -> bool:
+    """Whether a tracked file keeps its words as written: a record or the records' index, an
+    archived change, or a file that others write."""
+    return bool(KEPT.match(path) or written_by_others(path))
+
+
 def read_files(root: Path) -> list[str]:
     """The Markdown files that git tracks and this test reads, as the working tree has them,
     a symbolic link among them, to be named rather than followed."""
     return [
         path
         for path in shown(root, "ls-files", "-z", "--", *MARKDOWN).split("\0")
-        if path and not KEPT.match(path) and ((root / path).is_symlink() or (root / path).is_file())
+        if (
+            path
+            and not keeps_its_words(path)
+            and ((root / path).is_symlink() or (root / path).is_file())
+        )
     ]
 
 

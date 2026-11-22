@@ -1992,7 +1992,7 @@ Each date that a record's decider gives SHALL be no earlier than 2026-10-17, the
 
 ### Requirement: The files that this repository writes hold only printable ASCII
 
-Every tracked file that this repository writes SHALL hold only printable ASCII and line feeds, and declare to Python no encoding but UTF-8, and every tracked path only printable ASCII but the space, unlike any other path or folder in more than case, so that no character that cannot be seen, reorders text or passes for ASCII reaches code, pages or names. Others write the files under `vendor/superpowers/` but its root lock, and under `.claude/skills/openspec-*/`. Tests SHALL fail otherwise.
+Every tracked file that this repository writes SHALL hold only printable ASCII and line feeds, also as YAML, JSON or TOML decodes it, and declare to Python no encoding but UTF-8, and every tracked path only printable ASCII but the space, unlike any other path or folder in more than case, so that no hidden, reordering or look-alike character reaches code, pages or names. Others write `vendor/superpowers/` but its root lock, and `.claude/skills/openspec-*/`. Tests SHALL fail otherwise.
 
 #### Scenario: A character beyond printable ASCII in a file that this repository writes fails CI
 
@@ -2021,12 +2021,22 @@ Every tracked file that this repository writes SHALL hold only printable ASCII a
 
 #### Scenario: A Python file that declares an encoding other than UTF-8 fails CI
 
-- **WHEN** a tracked file that this repository writes and that Python reads as source, by the extension `.py` or `.pyi` or by a first line that runs Python, declares on its first or second line an encoding other than UTF-8, such as `# -*- coding: utf-7 -*-` or `# coding: unicode_escape`, with which a line that reads as a comment can run as code
+- **WHEN** a tracked file that this repository writes and that Python reads as source, by the extension `.py`, `.pyi` or `.pyw` in any case or by a first line that runs Python, declares on its first or second line an encoding other than UTF-8, such as `# -*- coding: utf-7 -*-` or `# coding: unicode_escape`, with which a line that reads as a comment can run as code
 - **THEN** a test fails and names the file and the encoding
+
+#### Scenario: A character that a loader decodes from an escape fails CI
+
+- **WHEN** a YAML, JSON or TOML file that this repository writes, by its extension in any case, or the front matter of a Markdown file that it writes, opened and closed by a line of `---` that spaces or tabs may follow, gives once read as YAML, JSON or TOML a string, a key among them, that holds a character other than printable ASCII and a line feed, as an escape such as `\U000E0049` in a value of `openspec/config.yaml` writes one in a file of printable ASCII alone
+- **THEN** a test fails and names the file, the line where YAML gives one, and the character by its code point and its name
+
+#### Scenario: A file that its loader cannot read fails CI
+
+- **WHEN** a YAML, JSON or TOML file that this repository writes, or the front matter of a Markdown file that it writes, cannot be read as YAML, JSON or TOML
+- **THEN** a test fails and names the file
 
 #### Scenario: Printable ASCII and line feeds pass
 
-- **WHEN** every tracked file that this repository writes holds only printable ASCII and line feeds, and declares no encoding but UTF-8 where Python reads it as source, and every tracked path holds only printable ASCII other than the space, unlike every other path or folder in more than case
+- **WHEN** every tracked file that this repository writes holds only printable ASCII and line feeds, also as YAML, JSON or TOML decodes it where one does, and declares no encoding but UTF-8 where Python reads it as source, and every tracked path holds only printable ASCII other than the space, unlike every other path or folder in more than case
 - **THEN** the test passes them
 
 ### Requirement: The pages that this repository writes hold no text that GitHub hides
@@ -2205,8 +2215,13 @@ Each file that others write SHALL hold, as itself or by an escape, only printabl
 
 #### Scenario: A visible character that the list does not give fails CI
 
-- **WHEN** a file that others write holds a visible character beyond printable ASCII that the test does not list, such as a Cyrillic letter that looks like a Latin one
+- **WHEN** a file that others write holds a visible character beyond printable ASCII that the test does not list and that the list may give, punctuation or a symbol that shows, such as the copyright sign
 - **THEN** a test fails, names the file, the line, the column and the character by its code point and its name, and says that the owner decides whether the list gives it, with no step for adding it
+
+#### Scenario: A character that the list may not give is named as one that it may not give
+
+- **WHEN** a file that others write holds a character beyond printable ASCII that the list may not give, as it is no punctuation or symbol or it shows as blank, such as a Cyrillic letter that looks like a Latin one, a zero-width space or a carriage return
+- **THEN** a test fails, names the file, the line, the column and the character by its code point and its name, and says that the list may not give it
 
 #### Scenario: A character listed for Markdown alone fails in another file
 
@@ -2215,7 +2230,7 @@ Each file that others write SHALL hold, as itself or by an escape, only printabl
 
 #### Scenario: A character written by an escape is held as the character
 
-- **WHEN** a file that others write holds an escape that writes a character that the file may not hold, `\u` and four hexadecimal digits or up to six in braces, `\U` and eight or `\x` and two, or a skill's front matter, read as YAML, gives a value that holds such a character, as an escape such as `\e` or `\_` writes it
+- **WHEN** a file that others write holds an escape that writes a character that the file may not hold, `\u` and one to four hexadecimal digits or any number in braces, `\U` and one to eight, `\x` and one or two, or `\N` and a character's name in braces, or a skill's front matter, opened and closed by a line of `---` that spaces or tabs may follow and read as YAML, or a YAML, JSON or TOML file, read as its loader reads it, gives a value that holds such a character, as an escape such as `\e`, `\_` or JSON's `\r` writes it
 - **THEN** a test fails and names the file, the line and the character by its code point and its name
 
 #### Scenario: The characters that the list gives pass

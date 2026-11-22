@@ -43,11 +43,11 @@ from wording import (
     DEFAULT_BRANCH,
     FINAL_Y,
     GLOSSARY,
-    KEPT,
     MARKDOWN,
     Entry,
     found_words,
     glossary,
+    keeps_its_words,
     kept_at,
     readable,
     same,
@@ -360,7 +360,7 @@ def report(base: str) -> str:
     only = touched = 0
     added = False
     for status, old, new in changes:
-        if KEPT.match(new):
+        if keeps_its_words(new):
             moved = f", renamed to {code(new)}" if old != new else ""
             skipped.append((old, f"- {code(old)}{moved}, {KEPT_AS_WRITTEN}"))
         elif status == "A":
