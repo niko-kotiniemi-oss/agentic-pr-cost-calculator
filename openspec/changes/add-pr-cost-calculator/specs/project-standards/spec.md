@@ -2464,16 +2464,16 @@ The README SHALL hold, after its section on what the tool will do and before its
 
 ### Requirement: A diagram numbers its parts and explains each below it, and the README links the overview of how it works
 
-Each Mermaid diagram on a page that this repository writes SHALL number its parts in quoted labels that open with the number and `)`, give each node and participant an ID of at most three letters or digits, and be followed by a list explaining each number once, citing the requirement for what the part does; each feature page and `docs/how-it-works.md`, whose first section holds its overview, SHALL hold one, and the README SHALL link that page without a fragment. Tests SHALL fail otherwise.
+Each Mermaid diagram on a page that this repository writes SHALL number its parts in labels that open with the number and `)`, in double quotes in a flowchart, keep each node's and participant's ID to three letters or digits, and be followed by a list explaining each number once, citing its requirement; each feature page and `docs/how-it-works.md`, whose first section holds its overview, SHALL hold one, and the README SHALL link that page without a fragment. Tests SHALL fail otherwise.
 
 #### Scenario: A numbered and explained diagram passes
 
-- **WHEN** a Mermaid diagram's parts carry the numbers 1 to n, each in a label in double quotes that opens with its number and `)`, such as `A["1) Capture step"]`, each identifier is at most three letters or digits, and the list right after the diagram explains each of those numbers once and no other
+- **WHEN** a Mermaid diagram's parts carry the numbers 1 to n, each in a label that opens with its number and `)`, in double quotes in a flowchart, such as `A["1) Capture step"]`, or as a sequence diagram's message or participant's alias, such as `H->>G: 1) asks git`, each identifier is at most three letters or digits, and the list right after the diagram explains each of those numbers once and no other
 - **THEN** the test passes it
 
 #### Scenario: A number left unexplained, or explained but not drawn, fails a test
 
-- **WHEN** a diagram carries a number that the list after it does not explain, the list explains a number that the diagram does not carry, explains one twice, or the numbers skip one, a diagram carries no number, a number stands in a label that no double quotes hold, or an identifier of a node or a participant is longer than three characters or holds other than letters and digits
+- **WHEN** a diagram carries a number that the list after it does not explain, the list explains a number that the diagram does not carry, explains one twice, or the numbers skip one, a diagram carries no number, a number stands in a flowchart's label that no double quotes hold, or an identifier of a node or a participant is longer than three characters or holds other than letters and digits
 - **THEN** a test fails and names the file, the diagram's line and the number or the identifier
 
 #### Scenario: A page without its diagram fails a test

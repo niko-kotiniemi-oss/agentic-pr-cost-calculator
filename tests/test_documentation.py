@@ -22,6 +22,7 @@ its section on how the outcome is validated.
 from __future__ import annotations
 
 import re
+import subprocess
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -677,3 +678,599 @@ def test_workflows_ending_in_yaml_are_collected(tmp_path: Path) -> None:
     (folder / "a.yml").write_text(WORKFLOW)
     (folder / "b.yaml").write_text(WORKFLOW)
     assert [p.name for p in workflows(tmp_path)] == ["a.yml", "b.yaml"]
+
+
+# What crosses the tool's boundary, the README's uses to avoid, and the diagrams' form
+# (R279, R280, R281; design decision 24 of `add-pr-cost-calculator`).
+
+RECORD_FIELD = re.compile(r"^- \*\*(Boundary|Status|Closed by):\*\* (.+?)\s*$", re.M)
+RECORD_ID = re.compile(r"\bDR-\d+\b")
+CITED_ID = re.compile(r"\bDR-\d+\b|\bR\d+\b")
+HEADING = re.compile(r"^## (.+?)\s*$", re.M)
+SUBHEADING = re.compile(r"^### (.+?)\s*$", re.M)
+WILL_DO = "What it will do"
+USES_HEADING = "What it is for, and what to avoid using it for"
+DOCUMENTS = "Documentation"
+OWN_REASONS = frozenset({"R279", "DR-286"})
+FIRST_STEP = re.compile(r"^(?:\d+[.)] |```)", re.M)
+INPUTS = "Inputs and outputs"
+CROSSING = "What comes in and what goes out"
+TOOL_IN = "What the tool takes in when it runs"
+REPOSITORY_IN = "What this repository takes in to be built and checked"
+GOES_OUT = "What goes out to adopters"
+TABLES = (TOOL_IN, REPOSITORY_IN, GOES_OUT)
+MERMAID = re.compile(r"^```mermaid[ \t]*\n(.*?)^```[ \t]*$", re.M | re.S)
+QUOTED_NUMBER = re.compile(r'"(\d+)\) ')
+BARE_NUMBER = re.compile(r"(?:[\[({>|]|^)[ \t]*(\d+)\)", re.M)
+SEQUENCE_NUMBER = re.compile(r"(?::|\bas)[ \t]+(\d+)\) ")
+EXPLAINED = re.compile(r"^- (\d+)\) ")
+IDENTIFIER = re.compile(r"[A-Za-z0-9]{1,3}")
+ARROW = re.compile(r"<?(?:-{2,}|={2,}|-\.+-|~{3,})[->ox]?|<?-+>>?|<?-->>|<<-+|-\)|--\)|-x|--x")
+BRACKETS = re.compile(r"[\[({][^\[\](){}]*[\])}]|>[^\[\](){}]*\]")
+FLOW_WORDS = frozenset({"flowchart", "graph", "direction", "end"})
+SEQUENCE_WORDS = frozenset(
+    {
+        "Note",
+        "note",
+        "loop",
+        "alt",
+        "else",
+        "opt",
+        "par",
+        "and",
+        "rect",
+        "end",
+        "autonumber",
+        "activate",
+        "deactivate",
+        "critical",
+        "break",
+        "option",
+        "box",
+    }
+)
+HOW_IT_WORKS_LINK = re.compile(r"\]\((?:\./)?docs/how-it-works\.md\)")
+
+
+@dataclass(frozen=True)
+class Record:
+    boundary: str
+    open: bool
+
+
+def decision_records(root: Path) -> dict[str, Record]:
+    """Each decision record by its ID, with the boundary that it faces and whether it is
+    open: accepted and closed by none."""
+    found = {}
+    for path in sorted((root / "docs" / "decisions").glob("DR-*.md")):
+        ident = RECORD_ID.match(path.name)
+        if not ident:
+            continue
+        fields = dict(RECORD_FIELD.findall(path.read_text(encoding="utf-8")))
+        found[ident[0]] = Record(
+            fields.get("Boundary", ""),
+            fields.get("Status") == "accepted" and fields.get("Closed by") == "none",
+        )
+    return found
+
+
+def register_ids(root: Path) -> set[str]:
+    text = (root / "docs" / "requirements.md").read_text(encoding="utf-8")
+    return {row.ident for row in register_rows(text)}
+
+
+def slug(heading: str) -> str:
+    """The fragment that GitHub gives a heading."""
+    return re.sub(r"[^a-z0-9 _-]", "", heading.lower()).replace(" ", "-")
+
+
+def cited_problem(ident: str, records: dict[str, Record], requirements: set[str]) -> str:
+    if ident.startswith("DR-"):
+        record = records.get(ident)
+        if record is None:
+            return f"{ident}, which no record holds"
+        return "" if record.open else f"{ident}, which is closed"
+    return "" if ident in requirements else f"{ident}, which the register does not hold"
+
+
+def readme_uses_problems(
+    readme: str, records: dict[str, Record], requirements: set[str]
+) -> list[str]:
+    """What R279 asks of the README's section on uses to avoid, and of a short start."""
+    names = HEADING.findall(readme)
+    if USES_HEADING not in names:
+        return [f"the README has no section {USES_HEADING!r}"]
+    problems = []
+    at = names.index(USES_HEADING)
+    if WILL_DO not in names or names.index(WILL_DO) > at:
+        problems.append(
+            f"the README's section {USES_HEADING!r} comes before its section {WILL_DO!r}"
+        )
+    if DOCUMENTS not in names or names.index(DOCUMENTS) < at:
+        problems.append(f"the README's section {USES_HEADING!r} comes after its list of documents")
+    uses = [line for line in section(readme, USES_HEADING).splitlines() if line.startswith("- ")]
+    if not uses:
+        problems.append(f"the README's section {USES_HEADING!r} lists no use to avoid")
+    for line in uses:
+        cited = CITED_ID.findall(line)
+        if not set(cited) - OWN_REASONS:
+            problems.append(
+                f"the use to avoid {line[:60]!r} cites no requirement or record but R279 and DR-286"
+            )
+        for ident in dict.fromkeys(cited):
+            problem = cited_problem(ident, records, requirements)
+            if problem:
+                problems.append(f"the use to avoid {line[:60]!r} cites {problem}")
+    if names and names[0] != WILL_DO:
+        start = section(readme, names[0])
+        link = start.find(f"](#{slug(USES_HEADING)})")
+        step = FIRST_STEP.search(start)
+        if link < 0 or (step is not None and step.start() < link):
+            problems.append(
+                f"the short start, {names[0]!r}, does not link the section {USES_HEADING!r}"
+                " before its first step"
+            )
+    return problems
+
+
+def table_rows(body: str) -> list[list[str]]:
+    lines = [line.strip() for line in body.splitlines() if line.strip().startswith("|")]
+    return [[cell.strip() for cell in line.strip("|").split("|")] for line in lines[2:]]
+
+
+def crossing_problems(text: str, records: dict[str, Record]) -> list[str]:
+    """What R280 asks of the section of how it works on what comes in and goes out."""
+    names = HEADING.findall(text)
+    if CROSSING not in names:
+        return [f"how it works has no section {CROSSING!r}"]
+    problems = []
+    if INPUTS not in names or names.index(INPUTS) > names.index(CROSSING):
+        problems.append(f"the section {CROSSING!r} stands before the section {INPUTS!r}")
+    parts = SUBHEADING.split(section(text, CROSSING))
+    tables = dict(zip(parts[1::2], parts[2::2], strict=True))
+    cited: dict[str, set[str]] = {table: set() for table in TABLES}
+    for table in TABLES:
+        rows = table_rows(tables.get(table, ""))
+        if not rows:
+            problems.append(f"the section {CROSSING!r} has no table {table!r}")
+        for row in rows:
+            if len(row) != 4:
+                problems.append(f"the row {row[0]!r} of {table!r} has {len(row)} cells, not 4")
+                continue
+            thing, _, pinned, cell = row
+            if not pinned:
+                problems.append(f"the row {thing!r} of {table!r} gives no word on how it is pinned")
+            for ident in RECORD_ID.findall(cell):
+                problem = cited_problem(ident, records, set())
+                if problem:
+                    problems.append(f"the row {thing!r} of {table!r} cites {problem}")
+                cited[table].add(ident)
+    incoming = cited[TOOL_IN] | cited[REPOSITORY_IN]
+    for ident, record in records.items():
+        if record.open and record.boundary == "incoming" and ident not in incoming:
+            problems.append(f"{ident} faces incoming, and neither table of what comes in cites it")
+        if record.open and record.boundary == "outgoing" and ident not in cited[GOES_OUT]:
+            problems.append(f"{ident} faces outgoing, and the table {GOES_OUT!r} does not cite it")
+    return problems
+
+
+def diagram_identifiers(block: str) -> list[str]:
+    """The identifiers of a diagram's nodes, subgraphs and participants: the words that are
+    left once its quoted labels, its edges' labels, its shapes and its keywords are taken
+    out, and in a sequence diagram what each line names before its first `:`."""
+    lines = block.splitlines()
+    sequence = bool(lines) and lines[0].strip() == "sequenceDiagram"
+    found = []
+    for raw in lines[1:]:
+        line = re.sub(r'"[^"]*"', "", raw.strip())
+        line = re.sub(r"\|[^|]*\|", "", line)
+        words = line.split()
+        if not words:
+            continue
+        if sequence:
+            if words[0] in ("participant", "actor"):
+                found.extend(words[1:2])
+            elif words[0] not in SEQUENCE_WORDS:
+                head = line.split(":", 1)[0]
+                found.extend(part for part in re.split(r"[-<>x)+ ]+", head) if part)
+            continue
+        if words[0] in FLOW_WORDS:
+            continue
+        if words[0] == "subgraph":
+            found.extend(re.findall(r"^[^\s\[({]+", " ".join(words[1:]))[:1])
+            continue
+        before = None
+        while before != line:
+            before, line = line, BRACKETS.sub(" ", line)
+        found.extend(word for word in re.split(r"[\s&]+", ARROW.sub(" ", line)) if word)
+    return found
+
+
+def explained_numbers(text: str, end: int) -> list[int]:
+    """The numbers that the list right after a diagram explains, in their order."""
+    numbers = []
+    started = False
+    for line in text[end:].splitlines()[1:]:
+        if not line.strip():
+            if started:
+                break
+            continue
+        if line.startswith("- "):
+            started = True
+            match = EXPLAINED.match(line)
+            if match:
+                numbers.append(int(match[1]))
+        elif not (started and line.startswith("  ")):
+            break
+    return numbers
+
+
+def diagram_problems(name: str, text: str) -> list[str]:
+    """What R281 asks of each Mermaid diagram on a page."""
+    problems = []
+    for block in MERMAID.finditer(text):
+        where = f"{name}:{text.count(chr(10), 0, block.start()) + 1}"
+        body = block[1]
+        sequence = body.strip().startswith("sequenceDiagram")
+        drawn = [int(n) for n in QUOTED_NUMBER.findall(body)]
+        if sequence:
+            drawn += [int(n) for n in SEQUENCE_NUMBER.findall(body)]
+        else:
+            unquoted = re.sub(r'"[^"]*"', '""', body)
+            for number in BARE_NUMBER.findall(unquoted):
+                problems.append(f"{where}: the number {number} stands in a label without quotes")
+        explained = explained_numbers(text, block.end())
+        if not drawn:
+            problems.append(f"{where}: the diagram numbers none of its parts")
+        for number in sorted(set(drawn) - set(explained)):
+            problems.append(f"{where}: the number {number} is drawn and not explained below")
+        for number in sorted(set(explained) - set(drawn)):
+            problems.append(f"{where}: the number {number} is explained and not drawn")
+        for number in sorted({n for n in explained if explained.count(n) > 1}):
+            problems.append(f"{where}: the number {number} is explained twice")
+        every = set(drawn) | set(explained)
+        for number in sorted(set(range(1, max(every, default=0) + 1)) - every):
+            problems.append(f"{where}: the number {number} is skipped")
+        for ident in dict.fromkeys(diagram_identifiers(body)):
+            if not IDENTIFIER.fullmatch(ident):
+                problems.append(
+                    f"{where}: the identifier {ident!r} is not one to three letters or digits"
+                )
+    return problems
+
+
+def written_pages(root: Path) -> list[Path]:
+    """The Markdown pages that this repository writes."""
+    import conventions
+
+    listed = subprocess.run(
+        ["git", "ls-files", "-z", "--", "*.md"], cwd=root, capture_output=True, check=True
+    ).stdout.decode("utf-8")
+    return [
+        root / path
+        for path in sorted(listed.split("\0"))
+        if path and not conventions.written_by_others(path)
+    ]
+
+
+def page_diagram_problems(root: Path) -> list[str]:
+    """Every feature page and how it works hold a diagram, how it works holds its overview in
+    its first section, and the README links that page without a fragment (R281)."""
+    problems = []
+    features = root / "docs" / "features"
+    pages = [p for p in sorted(features.glob("*.md")) if p.name != "README.md"]
+    if not pages:
+        problems.append("docs/features/ holds no feature page")
+    how = root / "docs" / "how-it-works.md"
+    for page in [*pages, how]:
+        if not MERMAID.search(page.read_text(encoding="utf-8")):
+            problems.append(f"{page.relative_to(root).as_posix()} holds no Mermaid diagram")
+    text = how.read_text(encoding="utf-8")
+    names = HEADING.findall(text)
+    if not names or not MERMAID.search(section(text, names[0])):
+        problems.append("the first section of docs/how-it-works.md holds no diagram")
+    if not HOW_IT_WORKS_LINK.search((root / "README.md").read_text(encoding="utf-8")):
+        problems.append("the README does not link docs/how-it-works.md without a fragment")
+    return problems
+
+
+def test_the_readme_says_what_the_tool_is_for_and_which_uses_to_avoid() -> None:
+    readme = (ROOT / "README.md").read_text(encoding="utf-8")
+    problems = readme_uses_problems(readme, decision_records(ROOT), register_ids(ROOT))
+    assert not problems, "\n".join(problems)
+
+
+def test_how_it_works_lists_everything_that_comes_in_and_goes_out() -> None:
+    text = (ROOT / "docs" / "how-it-works.md").read_text(encoding="utf-8")
+    records = decision_records(ROOT)
+    assert records, "no decision record was read, so this test covered nothing"
+    problems = crossing_problems(text, records)
+    assert not problems, "\n".join(problems)
+
+
+def test_every_diagram_numbers_its_parts_and_explains_them() -> None:
+    pages = written_pages(ROOT)
+    problems = [
+        problem
+        for page in pages
+        for problem in diagram_problems(
+            page.relative_to(ROOT).as_posix(), page.read_text(encoding="utf-8")
+        )
+    ]
+    assert any(MERMAID.search(page.read_text(encoding="utf-8")) for page in pages), (
+        "no page holds a Mermaid diagram, so this test covered nothing"
+    )
+    assert not problems, "\n".join(problems)
+
+
+def test_each_feature_page_and_how_it_works_hold_a_diagram_and_the_readme_links_it() -> None:
+    problems = page_diagram_problems(ROOT)
+    assert not problems, "\n".join(problems)
+
+
+OPEN_RECORDS = {
+    "DR-002": Record("outgoing", True),
+    "DR-286": Record("outgoing", True),
+    "DR-044": Record("incoming", True),
+    "DR-041": Record("incoming", True),
+    "DR-010": Record("inside", True),
+    "DR-009": Record("incoming", False),
+}
+REQUIREMENTS = {"R3", "R94", "R279"}
+USES_SECTION = (
+    "## What it is for, and what to avoid using it for\n\n"
+    "It estimates what a pull request cost.\n\n"
+    "- As a bill (R94, [DR-002](docs/decisions/DR-002-x.md)).\n"
+    "- In a session that also works on private repositories (R3).\n\n"
+)
+README = (
+    "# Tool\n\nIntro.\n\n## What it will do\n\nThings.\n\n"
+    + USES_SECTION
+    + "## Documentation\n\n- [How it works](docs/how-it-works.md)\n"
+)
+
+
+def test_a_readme_with_its_section_on_uses_passes() -> None:
+    assert readme_uses_problems(README, OPEN_RECORDS, REQUIREMENTS) == []
+
+
+def test_a_short_start_that_links_the_uses_before_its_first_step_passes() -> None:
+    start = (
+        "# Tool\n\nIntro.\n\n## Start here\n\nFirst read [the uses to avoid]"
+        "(#what-it-is-for-and-what-to-avoid-using-it-for).\n\n1. Turn it on.\n\n"
+    )
+    readme = README.replace("# Tool\n\nIntro.\n\n", start)
+    assert readme_uses_problems(readme, OPEN_RECORDS, REQUIREMENTS) == []
+
+
+@pytest.mark.parametrize(
+    ("readme", "expected"),
+    [
+        (README.replace(USES_SECTION, ""), "has no section"),
+        (
+            README.replace("## What it will do\n\nThings.\n\n" + USES_SECTION, USES_SECTION)
+            + "## What it will do\n\nThings.\n",
+            "comes before its section 'What it will do'",
+        ),
+        (
+            README.replace(USES_SECTION, "") + USES_SECTION,
+            "comes after its list of documents",
+        ),
+        (
+            README.replace("- In a session", "Text: in a session").replace(
+                "- As a bill (R94, [DR-002](docs/decisions/DR-002-x.md)).\n", ""
+            ),
+            "lists no use to avoid",
+        ),
+        (README.replace("(R3)", ""), "cites no requirement or record"),
+        (README.replace("(R3)", "(R279, DR-286)"), "cites no requirement or record"),
+        (README.replace("(R3)", "(R7)"), "R7, which the register does not hold"),
+        (README.replace("(R3)", "(DR-009)"), "DR-009, which is closed"),
+        (README.replace("(R3)", "(DR-999)"), "DR-999, which no record holds"),
+        (
+            README.replace("# Tool\n\nIntro.\n\n", "# Tool\n\nIntro.\n\n## Start\n\n1. On.\n\n"),
+            "does not link the section",
+        ),
+        (
+            README.replace(
+                "# Tool\n\nIntro.\n\n",
+                "# Tool\n\nIntro.\n\n## Start\n\n```sh\ngit config x\n```\n\n"
+                "[Uses](#what-it-is-for-and-what-to-avoid-using-it-for)\n\n",
+            ),
+            "does not link the section",
+        ),
+    ],
+)
+def test_a_section_on_uses_that_is_missing_out_of_place_or_unsupported_is_reported(
+    readme: str, expected: str
+) -> None:
+    problems = readme_uses_problems(readme, OPEN_RECORDS, REQUIREMENTS)
+    assert any(expected in problem for problem in problems), problems
+
+
+CROSSING_SECTION = (
+    "## Inputs and outputs\n\nData.\n\n"
+    "## What comes in and what goes out\n\n"
+    "### What the tool takes in when it runs\n\n"
+    "| What | What crosses | Pinned | Records |\n|---|---|---|---|\n"
+    "| Transcripts | Lines | Not pinned: Claude Code writes them | DR-044, DR-010 |\n\n"
+    "### What this repository takes in to be built and checked\n\n"
+    "| What | What crosses | Pinned | Records |\n|---|---|---|---|\n"
+    "| Superpowers | Skills | A commit | DR-041 |\n\n"
+    "### What goes out to adopters\n\n"
+    "| What | What crosses | Pinned | Records |\n|---|---|---|---|\n"
+    "| The comment | A figure | The release's commit | DR-002, DR-286 |\n\n"
+    "## Flows\n"
+)
+
+
+def test_a_complete_section_on_what_crosses_passes() -> None:
+    assert crossing_problems(CROSSING_SECTION, OPEN_RECORDS) == []
+
+
+@pytest.mark.parametrize(
+    ("text", "expected"),
+    [
+        (CROSSING_SECTION.replace("## What comes in and what goes out", "## Other"), "no section"),
+        (CROSSING_SECTION.replace(" DR-041 |", " none |"), "DR-041 faces incoming"),
+        (CROSSING_SECTION.replace("DR-002, DR-286", "DR-002"), "DR-286 faces outgoing"),
+        (
+            CROSSING_SECTION.replace("DR-044, DR-010", "DR-010").replace(
+                "DR-002, DR-286", "DR-002, DR-286, DR-044"
+            ),
+            "DR-044 faces incoming",
+        ),
+        (CROSSING_SECTION.replace("| A commit |", "|  |"), "no word on how it is pinned"),
+        (CROSSING_SECTION.replace("DR-010", "DR-009"), "DR-009, which is closed"),
+        (CROSSING_SECTION.replace("DR-010", "DR-999"), "DR-999, which no record holds"),
+        (
+            CROSSING_SECTION.replace("### What goes out to adopters", "### Elsewhere"),
+            "has no table 'What goes out to adopters'",
+        ),
+        (
+            CROSSING_SECTION.replace("## Inputs and outputs\n\nData.\n\n", "").replace(
+                "## Flows\n", "## Inputs and outputs\n\nData.\n"
+            ),
+            "stands before the section 'Inputs and outputs'",
+        ),
+        (CROSSING_SECTION.replace("| Lines |", "| Lines | more |"), "has 5 cells"),
+    ],
+)
+def test_a_record_left_out_of_the_section_or_cited_in_the_wrong_table_is_reported(
+    text: str, expected: str
+) -> None:
+    problems = crossing_problems(text, OPEN_RECORDS)
+    assert any(expected in problem for problem in problems), problems
+
+
+FLOW_PAGE = (
+    "# Page\n\n```mermaid\nflowchart LR\n"
+    '  subgraph M1["Machine"]\n    T["1) Transcripts"] -->|read| H["2) Capture step"]\n  end\n'
+    '  H --> S[("3) Store")] & L{"4) Staged?"}\n```\n\n'
+    "- 1) Transcripts: what Claude Code writes (R2).\n"
+    "- 2) Capture step: reads them (R3),\n  and keeps counts.\n"
+    "- 3) Store: holds them (R47).\n- 4) Staged: a decision (R56).\n\nAfter.\n"
+)
+SEQUENCE_PAGE = (
+    "# Page\n\n```mermaid\nsequenceDiagram\n  participant CC as 1) Claude Code\n"
+    "  participant H as 2) Capture hook\n  CC->>H: 3) Stop, with the transcript\n"
+    "  Note over H: what follows\n  alt on\n    H-->>CC: 4) Exit 0\n  end\n```\n\n"
+    "- 1) Claude Code (R7).\n- 2) The hook (R1).\n- 3) The event (R9).\n- 4) The exit (R30).\n"
+)
+
+
+@pytest.mark.parametrize("page", [FLOW_PAGE, SEQUENCE_PAGE])
+def test_a_numbered_and_explained_diagram_passes(page: str) -> None:
+    assert diagram_problems("page.md", page) == []
+
+
+def test_a_page_without_diagrams_has_no_diagram_problem() -> None:
+    assert diagram_problems("page.md", "# Page\n\n```sh\necho 1) no\n```\n") == []
+
+
+@pytest.mark.parametrize(
+    ("page", "expected"),
+    [
+        (FLOW_PAGE.replace("- 4) Staged: a decision (R56).\n", ""), "4 is drawn and not explained"),
+        (FLOW_PAGE.replace("- 1) Transcripts", "- 5) Transcripts"), "5 is explained and not drawn"),
+        (FLOW_PAGE.replace("- 4) Staged", "- 3) Staged"), "3 is explained twice"),
+        (
+            FLOW_PAGE.replace('"4) Staged?"', '"5) Staged?"').replace("- 4) Staged", "- 5) Staged"),
+            "4 is skipped",
+        ),
+        (FLOW_PAGE.replace('T["1) Transcripts"]', "T[1) Transcripts]"), "without quotes"),
+        (FLOW_PAGE.replace("-->|read|", "-->|1) read|"), "without quotes"),
+        (FLOW_PAGE.replace('M1["Machine"]', 'machine["Machine"]'), "'machine'"),
+        (FLOW_PAGE.replace('H["2) Capture step"]', 'Hook["2) Capture step"]'), "'Hook'"),
+        (FLOW_PAGE.replace("H --> S", "H_1 --> S"), "'H_1'"),
+        (
+            SEQUENCE_PAGE.replace("participant H as", "participant Hook as")
+            .replace("CC->>H", "CC->>Hook")
+            .replace("H-->>CC", "Hook-->>CC"),
+            "'Hook'",
+        ),
+        (SEQUENCE_PAGE.replace("3) Stop", "Stop"), "3 is explained and not drawn"),
+        (
+            "# P\n\n```mermaid\nflowchart LR\n  A --> B\n```\n",
+            "numbers none of its parts",
+        ),
+        (FLOW_PAGE.replace("\n- 1) Transcripts", "\nText.\n- 1) Transcripts"), "not explained"),
+    ],
+)
+def test_a_number_left_unexplained_or_explained_but_not_drawn_is_reported(
+    page: str, expected: str
+) -> None:
+    problems = diagram_problems("page.md", page)
+    assert any(expected in problem for problem in problems), problems
+
+
+def synthetic_pages(root: Path, feature: str, how: str, readme: str) -> None:
+    (root / "docs" / "features").mkdir(parents=True)
+    (root / "docs" / "features" / "README.md").write_text("# Features\n", encoding="utf-8")
+    (root / "docs" / "features" / "thing.md").write_text(feature, encoding="utf-8")
+    (root / "docs" / "how-it-works.md").write_text(how, encoding="utf-8")
+    (root / "README.md").write_text(readme, encoding="utf-8")
+
+
+HOW_PAGE = "# How\n\n## In one paragraph\n\nText.\n\n" + FLOW_PAGE.split("\n\n", 1)[1]
+LINKING_README = "# Tool\n\nSee [how it works](docs/how-it-works.md).\n"
+
+
+def test_pages_that_hold_their_diagrams_and_a_linking_readme_pass(tmp_path: Path) -> None:
+    synthetic_pages(tmp_path, FLOW_PAGE, HOW_PAGE, LINKING_README)
+    assert page_diagram_problems(tmp_path) == []
+
+
+@pytest.mark.parametrize(
+    ("feature", "how", "readme", "expected"),
+    [
+        ("# Thing\n", HOW_PAGE, LINKING_README, "docs/features/thing.md holds no Mermaid"),
+        (FLOW_PAGE, "# How\n\n## A\n\nText.\n", LINKING_README, "how-it-works.md holds no"),
+        (
+            FLOW_PAGE,
+            "# How\n\n## In one paragraph\n\nText.\n\n## Later\n\n" + FLOW_PAGE.split("\n\n", 1)[1],
+            LINKING_README,
+            "first section of docs/how-it-works.md holds no diagram",
+        ),
+        (FLOW_PAGE, HOW_PAGE, "# Tool\n", "does not link docs/how-it-works.md"),
+        (
+            FLOW_PAGE,
+            HOW_PAGE,
+            "# Tool\n\n[how](docs/how-it-works.md#overview)\n",
+            "does not link docs/how-it-works.md",
+        ),
+    ],
+)
+def test_a_page_without_its_diagram_or_a_readme_without_the_link_is_reported(
+    tmp_path: Path, feature: str, how: str, readme: str, expected: str
+) -> None:
+    synthetic_pages(tmp_path, feature, how, readme)
+    problems = page_diagram_problems(tmp_path)
+    assert any(expected in problem for problem in problems), problems
+
+
+def test_the_index_of_the_feature_pages_needs_no_diagram(tmp_path: Path) -> None:
+    synthetic_pages(tmp_path, FLOW_PAGE, HOW_PAGE, LINKING_README)
+    problems = page_diagram_problems(tmp_path)
+    assert not any("features/README.md" in problem for problem in problems)
+
+
+def test_the_decision_records_are_read_with_their_boundary_and_whether_they_are_open(
+    tmp_path: Path,
+) -> None:
+    folder = tmp_path / "docs" / "decisions"
+    folder.mkdir(parents=True)
+    fields = "- **Boundary:** {}\n- **Status:** {}\n- **Closed by:** {}\n"
+    (folder / "DR-001-a.md").write_text(fields.format("incoming", "accepted", "none"))
+    (folder / "DR-002-b.md").write_text(fields.format("outgoing", "closed", "DR-003"))
+    (folder / "README.md").write_text("# Records\n")
+    assert decision_records(tmp_path) == {
+        "DR-001": Record("incoming", True),
+        "DR-002": Record("outgoing", False),
+    }
+
+
+def test_a_heading_s_fragment_is_the_one_that_github_gives() -> None:
+    assert slug("What it is for, and what to avoid using it for") == (
+        "what-it-is-for-and-what-to-avoid-using-it-for"
+    )
