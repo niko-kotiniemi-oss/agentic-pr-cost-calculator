@@ -25,6 +25,16 @@ Usage is recorded by the directory that Claude is in when it makes each call, no
 
 The figure is an **API-equivalent estimate**, meaning what the same tokens would cost at list prices (R94). It is not a bill: subscription plans and included CI minutes change what you actually pay.
 
+## What it is for, and what to avoid using it for
+
+It is for seeing what a pull request built with an AI coding agent cost, in model tokens and CI minutes at list prices, so that a team can compare pull requests and follow the cost over time. Avoid using it:
+
+- as a bill or an invoice: the figure is an estimate at list prices, not what anyone paid (R94, [DR-002](docs/decisions/DR-002-an-estimate-not-a-bill.md));
+- to watch, rank or judge people: it records only those who opt in, and does not try to stop anyone who avoids it on purpose (R1, [DR-189](docs/decisions/DR-189-organization-mode-later.md));
+- in a public repository, by anyone who does not want their usage published: what is pushed stays published, even after an opt-out (R146);
+- in a session that also works on private repositories: a call counts in the repository that it is made from, whatever it works on (R3);
+- as a security or compliance control: a ledger file can be edited by hand, which the tool accepts, and a person can turn capture off ([DR-066](docs/decisions/DR-066-hand-edited-ledger-accepted.md), [DR-189](docs/decisions/DR-189-organization-mode-later.md)).
+
 ## Not supported in this first version
 
 - Commands sent through Claude Code's PowerShell tool, which is on by default on Windows for claude.ai and Console accounts: capture does not see a commit or a change of branch made through that tool ([DR-007](docs/decisions/DR-007-powershell-tool-out-of-scope.md)).
@@ -36,7 +46,7 @@ Each line links the decision record that leaves it out. A later version may add 
 
 ## Documentation
 
-- [How it works](docs/how-it-works.md): the tool as a whole, with its flows, how a cost is computed, and every credential, permission and outside connection it uses.
+- [How it works](docs/how-it-works.md): the tool as a whole, opening with a diagram of it, with its flows, how a cost is computed, and every credential, permission and outside connection it uses.
 - [Features](docs/features/README.md): one page per feature, with its expected behaviour, its requirements and how it is validated.
 - [Requirements](docs/requirements.md): every functional, behavioural and non-functional requirement, indexed to the specs that hold them.
 - [Threat model](docs/threat-model.md): what could go wrong, each threat rated for impact and likelihood, and what answers it.

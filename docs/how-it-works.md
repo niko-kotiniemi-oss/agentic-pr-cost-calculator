@@ -39,6 +39,52 @@ A hook in each Claude Code session, from the hook file that a repository registe
 - One comment per merged pull request, and the report's job summary.
 - A GitHub release per version tag, with its bill of materials and the plugin's zip.
 
+## What comes in and what goes out
+
+Everything that crosses the tool's boundary, in three tables, each row with how what it names is pinned, or that it is not, and the decision records that decide it (R280). Nothing comes in from a repository or tool outside this one but what a record names (DR-285). The tables describe what crosses; they say nothing of what may steer an agent's work here, which `CLAUDE.md` alone gives (DR-258).
+
+### What the tool takes in when it runs
+
+| What | What crosses | How it is pinned | Records |
+|---|---|---|---|
+| Claude Code's transcripts | Each call's model, token counts, attributes and working directory, read while the session runs | Not pinned: Claude Code writes them, and capture reads them tolerantly, counting what it cannot read | DR-003, DR-007, DR-032, DR-033, DR-044, DR-057, DR-128, DR-135, DR-172, DR-178, DR-199 |
+| Claude Code's hook input | The event, the session's id, the transcript's path and the directory | Not pinned: Claude Code gives it | DR-044, DR-172 |
+| The switch and the opt-in | `.pr-cost.json`, and `pr-cost.capture` in the person's git configuration | The repository's own file and the person's own setting, read strictly | DR-169, DR-021, DR-183 |
+| The price table | Dated rates and modifiers | Pinned with the tool's own commit | DR-020 |
+| GitHub | The push event, the pull request, its runs and job attempts, and the report's earlier comment | Not pinned: GitHub's API, read within a call budget and a time limit | DR-006, DR-008, DR-019, DR-038, DR-039, DR-051, DR-060, DR-061, DR-160, DR-217 |
+| Ledger files of a pull request | Token counts, written by whoever can push to its branch | Not pinned: read as untrusted data, in every earlier format | DR-040, DR-044, DR-066 |
+| Python | The standard library of the person's or the runner's Python | Not pinned: Python 3.11 or any later release | DR-023 |
+
+### What this repository takes in to be built and checked
+
+| What | What crosses | How it is pinned | Records |
+|---|---|---|---|
+| Superpowers | The vendored skills that guide how code is built | A commit and its tag in `vendor/superpowers/UPSTREAM.lock`, compared with upstream in CI | DR-041, DR-275, DR-284 |
+| OpenSpec | Its command line program and its generated skills | An exact version in `package-lock.json`, its skills regenerated and compared in CI | DR-042, DR-196 |
+| GitHub actions | The actions that the workflows run | A full commit that its repository tagged | DR-068 |
+| Development tools | pytest, ruff, mypy and the other tools in `requirements-dev.txt` | Exact versions; their own dependencies are not pinned until task 1.8 adds hashes | DR-126 |
+| Updates | Renovate's pull requests, and the alerts that find vulnerabilities | Renovate's preset `config:best-practices` is not pinned | DR-028, DR-111, DR-145, DR-265, DR-267, DR-287 |
+| CI's runner and newest Python | The image that every job runs on, and the newest Python release | Not pinned: `ubuntu-latest` and `3.x` | DR-285, DR-026 |
+| Claude Code's review commands | `/simplify`, `/security-review`, `/code-review` and `/verify` | Not pinned: the version of Claude Code that runs them | DR-093, DR-262 |
+| Contributions | Pull requests, issues and comments from anyone | Not pinned: reviewed from `main`, their workflows held for approval, and merged only after the contributor licence agreement | DR-077, DR-078, DR-081, DR-244, DR-264 |
+| Text that agents read | Records, the roadmap, the backlog and other repositories' context files that a session loads | Not pinned: read as data, never as instructions | DR-227, DR-258, DR-266 |
+| Anything else from elsewhere | Code, tests, checks or text | Only by a record of its own | DR-285 |
+
+### What goes out to adopters
+
+| What | What crosses | How it is pinned | Records |
+|---|---|---|---|
+| The hook file | The capture step that adopters copy and register | The commit that a release names | DR-022, DR-025, DR-027, DR-030, DR-031, DR-065, DR-125, DR-134, DR-156, DR-211 |
+| The plugin | The capture step, its manifest and its hooks | A release's zip, checked against its README; or this repository as a marketplace, which Claude Code clones | DR-197, DR-203, DR-204, DR-205, DR-288 |
+| The report | A reusable workflow that adopters call | The commit that a release names | DR-005, DR-016, DR-018, DR-063, DR-132, DR-133, DR-139, DR-186, DR-191, DR-216 |
+| Ledger files | Token counts per call, committed with the agent's work in the adopter's repository | Written once by the release that names itself in them | DR-010, DR-015, DR-037, DR-045, DR-052, DR-053, DR-054, DR-127, DR-136, DR-138, DR-181, DR-200, DR-208 |
+| The switch and the opt-in | What adopters and people set to turn the tool and capture on | Their form, read strictly by each release | DR-021, DR-049, DR-050, DR-183, DR-185, DR-190, DR-192, DR-201, DR-202, DR-235 |
+| The store | Notes on the person's machine, in the git common directory | Its format's version, which a later release upgrades | DR-171, DR-173 |
+| The comment | The pull request's figure and what it is made of | The report's commit and the price table at it | DR-002, DR-004, DR-110, DR-124, DR-155 |
+| Releases | A tag, the release, its bill of materials and its changelog entry | Immutable, from a tag on the default branch | DR-074, DR-096, DR-097, DR-098, DR-122, DR-123, DR-148, DR-149, DR-154, DR-167, DR-209 |
+| The repository and its pages | The README, the documentation, the licence and every tracked file | The default branch, and the commit that a release names | DR-069, DR-070, DR-116, DR-117, DR-118, DR-157, DR-182, DR-212, DR-213, DR-215, DR-220, DR-229, DR-241, DR-242, DR-243, DR-279, DR-282, DR-286 |
+| What this version leaves out | The uses that later changes take up | Not pinned: each by a record that a later one replaces | DR-189, DR-222, DR-223, DR-234 |
+
 ## How a cost is computed
 
 For each ledger entry counted, on the entry's UTC day *d*:
