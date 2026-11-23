@@ -1,6 +1,6 @@
 # B-006: Scope and visual documentation
 
-- **Status:** In progress
+- **Status:** Done
 - **Last changed:** 2026-11-23
 - **Brief:** Records on what the project takes from elsewhere, a section of the page on how the tool works that lists everything incoming and outgoing, and diagrams in the feature pages and on that page, whose overview the README links to.
 - **Rests on:** T94
@@ -13,7 +13,7 @@ What the project takes from elsewhere, and what crosses its boundaries, is sprea
 
 ## What done looks like
 
-Records say that nothing comes in from repositories or tools outside this one, that tests are built here, and that an adopter never needs to clone the whole repository, and a record says how vulnerabilities are found. The README says what the tool is for and which uses to avoid, and opens with the quickest way to start. The page on how the tool works has a section that lists everything incoming and outgoing, each with its record, and the feature pages hold diagrams, with the README linking to the overview diagram of the page on how the tool works.
+Records say that nothing comes in from repositories or tools outside this one, that tests are built here, and that an adopter never needs to clone the whole repository, and a record says how vulnerabilities are found. The README says what the tool is for and which uses to avoid, and the requirements that it opens with the quickest way to start and says what opting in records and publishes (R198, R199) are written, for task 4.4 to build with the first release. The page on how the tool works has a section that lists everything incoming and outgoing, each with its record, and the feature pages hold diagrams, with the README linking to the overview diagram of the page on how the tool works.
 
 ## Postponed points
 
