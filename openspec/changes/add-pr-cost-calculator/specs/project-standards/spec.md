@@ -2031,7 +2031,7 @@ Every tracked file that this repository writes SHALL hold only printable ASCII a
 
 #### Scenario: A character that a loader decodes from an escape fails CI
 
-- **WHEN** a YAML, JSON or TOML file that this repository writes, by its extension in any case, or the front matter of a Markdown file that it writes, opened and closed by a line of `---` that spaces or tabs may follow, gives once read as YAML, JSON or TOML a string, a key among them, that holds a character other than printable ASCII and a line feed, as an escape such as `\U000E0049` in a value of `openspec/config.yaml` writes one in a file of printable ASCII alone
+- **WHEN** a YAML, JSON or TOML file that this repository writes, by its extension in any case, or the front matter of a Markdown file that it writes, opened and closed by a line of `---` that spaces or tabs may follow, gives once read as YAML, JSON or TOML a string, a key among them, or the value of a key that JSON gives again, which its loader passes over, that holds a character other than printable ASCII and a line feed, as an escape such as `\U000E0049` in a value of `openspec/config.yaml` writes one in a file of printable ASCII alone
 - **THEN** a test fails and names the file, the line where YAML gives one, and the character by its code point and its name
 
 #### Scenario: A file that its loader cannot read fails CI
@@ -2050,18 +2050,18 @@ Each page that this repository writes SHALL be Markdown and hold, outside code, 
 
 #### Scenario: Text that GitHub hides in a page fails CI
 
-- **WHEN** a Markdown file that this repository writes holds, outside inline code and fenced blocks, an HTML comment, an element other than those with which the README folds its sections of detail, a declaration or a processing instruction, a character reference such as `&#x202E;` or `&nbsp;`, a link or footnote definition, an image, a link with a title, which GitHub shows only under a pointer, a link without text, such as `[](https://example.invalid)`, which GitHub shows as nothing, a `$`, with which GitHub starts a mathematical expression, a backtick that a backslash escapes, an autolink that holds a backtick, which GitHub shows as a link, a run of backticks that its line leaves open, which GitHub may pair with one on a later line, or a backtick or a run of tildes on a line that GitHub reads as raw HTML, from a fold of the README up to a blank line or after a template's comment on the line where it closes, where GitHub and the test would tell code in two ways, or a table row with more cells than its header
+- **WHEN** a Markdown file that this repository writes holds, outside inline code and fenced blocks, an HTML comment, an element other than those with which the README folds its sections of detail, a declaration or a processing instruction, a character reference such as `&#x202E;` or `&nbsp;`, a link or footnote definition, whatever backtick its label holds, an image, a link with a title, which GitHub shows only under a pointer, a link without text, such as `[](https://example.invalid)`, or an opening bracket that ends its line, which can open a link whose text is only a line break, either of which GitHub shows as nothing, a `$`, with which GitHub starts a mathematical expression, a backtick that a backslash escapes, an autolink, a web address or a link's destination that holds a backtick, which GitHub reads as part of the link, a run of backticks that its line leaves open, which GitHub may pair with one on a later line, a code span that holds a pipe that no backslash escapes, on a line of a table, whose cells GitHub splits before it reads code, or a backtick or a run of tildes on a line that GitHub reads as raw HTML, from a fold of the README up to a blank line or after a template's comment on the line where it closes, where GitHub and the test would tell code in two ways, or a table row with more cells than its header
 - **THEN** a test fails and names the file, the line and what it holds
 
 #### Scenario: A drawn block that can hide text fails CI
 
-- **WHEN** a Markdown file that this repository writes holds a fenced block that GitHub draws other than Mermaid, such as `math` or `geojson`, an opening fence that gives more than a language, one word of letters, digits, `+`, `#`, `.`, `_` or `-`, which GitHub does not show, or a Mermaid block that holds an entity code, such as `#8238;`, a comment, which starts with `%%`, raw HTML, front matter, or a line that opens with `accTitle`, `accDescr`, `click`, `style`, `classDef` or `linkStyle`, which give text that the drawing does not show or change how it shows what it does
+- **WHEN** a Markdown file that this repository writes holds a fenced block that GitHub draws other than Mermaid, such as `math` or `geojson`, a fence that opens inside a quote, whose block the test does not read, an opening fence that gives more than a language, one word of letters, digits, `+`, `#`, `.`, `_` or `-`, which GitHub does not show, or a Mermaid block that draws other than a flowchart or a sequence diagram, the two whose comments and statements the test reads, or that holds a `#`, which can open an entity code, such as `#8238;`, or a comment, a `%`, which can open a comment, such as one that starts with `%%`, or a directive, a character reference that a browser reads, with or without its `;`, such as `&rlm;` or `&shy`, raw HTML, front matter, shape data, which opens with `@{` and can give an image or an icon, or a statement, at a line's start or after a `;` and in any case, `accTitle`, `accDescr`, `click`, `link`, `links`, `callback`, `style`, `classDef` or `linkStyle`, which give text that the drawing does not show or change how it shows what it does
 - **THEN** a test fails and names the file, the line and what it holds
 
 #### Scenario: A page in a markup other than Markdown fails CI
 
-- **WHEN** a tracked file that this repository writes has, in any case, an extension with which GitHub's markup library renders a markup other than Markdown, `.textile`, `.rdoc`, `.org`, `.creole`, `.mediawiki`, `.wiki`, `.rst`, `.asciidoc`, `.adoc`, `.asc` or `.pod`, each of which can hold a comment that GitHub hides and that an agent reading the raw file reads
-- **THEN** a test fails and names the file
+- **WHEN** a tracked file that this repository writes has, in any case, an extension that GitHub's language list, Linguist, gives a language that GitHub's markup library renders other than as Markdown, `.textile`, `.rdoc`, `.org`, `.creole`, `.mediawiki`, `.wiki`, `.wikitext`, `.rst`, `.rest`, `.rst.txt`, `.rest.txt`, `.asciidoc`, `.adoc`, `.asc`, `.pod` or `.pod6`, each of which can hold a comment that GitHub hides and that an agent reading the raw file reads, or holds in its first or last five lines an Emacs or a Vim modeline, such as `-*- mode: org -*-` or `vim: set ft=rst:`, with which Linguist gives any file the language that it names, Markdown among them
+- **THEN** a test fails and names the file, and for a modeline the line
 
 #### Scenario: A template's comment passes
 
@@ -2085,7 +2085,7 @@ The test of characters SHALL read each tracked file as git's index holds it, and
 #### Scenario: A character that only git's index holds fails CI
 
 - **WHEN** git's index holds a character beyond printable ASCII in a file that this repository writes, while the working tree holds that file in printable ASCII alone, as an attribute such as `working-tree-encoding=UTF-7` makes a checkout write it
-- **THEN** a test fails and names the file, the line, the column and the character by its code point and its name
+- **THEN** a test fails and names the file, the line, the column and the character by its code point and its name, whatever object a replace ref of git's gives in place of the one that the index names
 
 #### Scenario: An edit not yet staged is read
 
@@ -2094,8 +2094,8 @@ The test of characters SHALL read each tracked file as git's index holds it, and
 
 #### Scenario: A file that the test cannot read as text fails CI
 
-- **WHEN** a tracked file that no exception lets in holds bytes that are not UTF-8, in git's index or in the working tree, or a tracked path is neither a file nor a link, such as a submodule
-- **THEN** a test fails and names the path
+- **WHEN** a tracked file that no exception lets in holds bytes that are not UTF-8, in git's index or in the working tree, or a tracked path is neither a file nor a link, such as a submodule, or one that the working tree cannot open, as where a part of its name is too long for the file system or a folder on its way cannot be searched
+- **THEN** a test fails and names the path, and stops on nothing that it cannot read
 
 #### Scenario: A link is read as the path that it holds
 
@@ -2114,7 +2114,7 @@ The test of characters SHALL read each tracked file as git's index holds it, and
 
 ### Requirement: What CI's commands print reaches the log as printable ASCII
 
-Every command that a step of a workflow under `.github/workflows/` runs SHALL write its output and its errors through one filter that writes each character other than printable ASCII and a line feed by its code point, and each byte that is not UTF-8 by its value, and that keeps the command's exit status, so that no check that quotes a path or a file's text as it is carries a hidden character into a log that a session reads. Tests SHALL fail otherwise.
+Every command that a step of a workflow here runs, but one step of the job `ci` that checks the filter, SHALL write its output and its errors through one filter that writes each character other than printable ASCII and a line feed by its code point, and each byte that is not UTF-8 by its value, and that keeps the command's exit status, so that no check that quotes a path or a file's text as it is carries a hidden character into a log that a session reads. Tests SHALL fail otherwise.
 
 #### Scenario: What a command of CI prints is written in printable ASCII
 
@@ -2131,9 +2131,19 @@ Every command that a step of a workflow under `.github/workflows/` runs SHALL wr
 - **WHEN** the command exits with a status, or a signal stops it, or the filter cannot start it
 - **THEN** the step exits with that status, with 128 and the signal's number, or with 127 and a line in printable ASCII that says so
 
+#### Scenario: A step that the runner cancels stops its command
+
+- **WHEN** the runner cancels a step, and sends the filter SIGINT or SIGTERM while the command runs
+- **THEN** the filter sends the same signal to the command, writes in printable ASCII what the command prints until it ends, and exits as the command does, with nothing of its own
+
+#### Scenario: A filter that loses a command's exit status fails CI
+
+- **WHEN** the filter exits otherwise than the scenario above gives for a command that exits with a status or that a signal stops, as where a change makes it drop the status, so that every step and the job `ci` itself would pass
+- **THEN** the job `ci`, for which a merge waits, fails, through its one step that runs under GitHub's own shell for bash, outside the filter, which runs the filter on such commands and which the test gives word for word
+
 #### Scenario: A step whose output does not go through the filter fails CI
 
-- **WHEN** a workflow under `.github/workflows/` does not give its steps the filter's shell, `python3 -I scripts/printable_log.py bash --noprofile --norc -eo pipefail {0}`, or a job or a step gives a shell of its own, or a job runs a command before it checks out the repository, which holds the filter
+- **WHEN** a workflow under `.github/workflows/` does not give its steps the filter's shell, `python3 -I scripts/printable_log.py bash --noprofile --norc -eo pipefail {0}`, or a job or a step gives a shell of its own, but the step of the job `ci` that checks the filter, which gives GitHub's own `bash` and runs the script that the test gives, or a job runs a command before it checks out the repository, which holds the filter
 - **THEN** a test fails and names the workflow, the job and, where one does, the step
 
 ### Requirement: The repository's attributes set nothing but line endings
@@ -2192,7 +2202,7 @@ The repository's attributes SHALL give every tracked file `text=auto` and `eol=l
 #### Scenario: A clone made before the attributes is told how to write its scripts again
 
 - **WHEN** a clone made with `core.autocrlf` set to `true` before the commit that adds the attributes pulls that commit, so that each file that the pull does not change keeps a carriage return before each line feed while `git status` shows nothing
-- **THEN** the test of characters, and for a vendored script the test of the files that others write, fail on each script there that holds a carriage return, name it, and say to stage it, delete it, check it out again and unstage it, which keeps an edit not yet staged, or to clone the repository again, as `CONTRIBUTING.md` also says
+- **THEN** the test of characters, and for a vendored script the test of the files that others write, fail on each script there that holds a carriage return, name it, and say to stage it as git normalizes it, which works whatever `core.safecrlf` says, delete it, check it out again and unstage it, which keeps an edit not yet staged, or to clone the repository again, as `CONTRIBUTING.md` also says
 
 #### Scenario: A clone made before the attributes is told how to write the vendored copy again
 
@@ -2202,7 +2212,7 @@ The repository's attributes SHALL give every tracked file `text=auto` and `eol=l
 #### Scenario: A clone made before the attributes passes the check of the generated skills
 
 - **WHEN** a generated skill holds a carriage return before each line feed, as a clone made with `core.autocrlf` set to `true` before the commit that adds the attributes keeps one in each file that a pull does not change, so that git's index records the size of that copy, and `scripts/verify-openspec.sh` has the pinned CLI write the skill again with line feeds
-- **THEN** the script compares each skill with git's index by content, as git will commit it, and passes it, while a skill that differs in content, a tracked file of a skill that the CLI no longer writes and a file there that git does not track or ignores still fail it
+- **THEN** the script compares each skill with git's index by content, as git will commit it, whatever `diff.autoRefreshIndex` says and with no replacement object of git's, and passes it, while a skill that differs in content, a tracked file of a skill that the CLI no longer writes and a file there that git does not track or ignores still fail it
 
 #### Scenario: Files saved with Windows line endings pass every check
 
@@ -2216,8 +2226,8 @@ The repository's attributes SHALL give every tracked file `text=auto` and `eol=l
 
 #### Scenario: The job of Windows line endings writes only the files that it saves
 
-- **WHEN** that job's script runs on a working tree that holds a link in place of a tracked folder or file, or a file in place of a link that git's index holds, or runs on a folder below the top of its working tree, from which git gives each path
-- **THEN** it reads the working tree as the test of characters does, writes through no link and writes no file but one that git's index tracks as a file that this repository writes, and on a folder below the top it writes nothing and says why
+- **WHEN** that job's script runs on a working tree that holds a link in place of a tracked folder or file, a file in place of a link that git's index holds, or a tracked path that it cannot open, as where a part of its name is too long for the file system, or runs on a folder below the top of its working tree, from which git gives each path
+- **THEN** it reads the working tree as the test of characters does, writes through no link and writes no file but one that git's index tracks as a file that this repository writes, and on a path that it cannot open or a folder below the top it writes nothing and says why
 
 #### Scenario: A test of Windows line endings that meets none fails
 
@@ -2231,8 +2241,8 @@ The repository's attributes SHALL give every tracked file `text=auto` and `eol=l
 
 #### Scenario: A job or a step that CI may skip or let fail fails CI
 
-- **WHEN** a job of `.github/workflows/ci.yml` other than the job `ci` sets `if`, any job there sets `continue-on-error`, or a step of any job there sets either, so that a check could be skipped, or fail, while the job `ci` passes
-- **THEN** a test fails and names the job, the step and the key
+- **WHEN** a job of `.github/workflows/ci.yml` other than the job `ci` sets `if`, any job there sets `continue-on-error`, or a step of any job there sets either, so that a check could be skipped, or fail, while the job `ci` passes, or the job `ci` sets no `if` or one other than `always()`, without which GitHub skips it where a job that it needs fails and reports it as passing, or its last step passes where a job that it needs did not succeed
+- **THEN** a test fails and names the job and, where one does, the step and the key
 
 #### Scenario: A lone carriage return, or one that git's index or a script holds, still fails
 
@@ -2333,7 +2343,7 @@ CI SHALL compare every path under `vendor/superpowers/`, whatever its name, with
 
 #### Scenario: The sync copies the pinned commit's bytes whatever the person's git converts
 
-- **WHEN** `scripts/sync-superpowers.sh` runs, with and without `--check`, where git's global configuration sets `core.autocrlf` to `true`, where git's template gives each new clone a `.git/info/attributes` that holds `* eol=crlf`, or where its lock holds a carriage return before each line feed
+- **WHEN** `scripts/sync-superpowers.sh` runs, with and without `--check`, where git's global configuration sets `core.autocrlf` to `true`, where git's template gives each new clone a `.git/info/attributes` that holds `* eol=crlf`, where `GIT_DEFAULT_HASH` gives a new repository another object format than the pinned commit's, or where its lock holds a carriage return before each line feed
 - **THEN** the refresh writes each vendored file with the bytes and the mode that the pinned commit gives it, and the check passes a vendored copy that matches that commit and fails one that differs
 
 #### Scenario: The sync writes only files, and only inside its copy
@@ -2351,6 +2361,11 @@ CI SHALL compare every path under `vendor/superpowers/`, whatever its name, with
 - **WHEN** the refresh stops on what the pinned commit gives, such as a link, a file that holds a carriage return or the lack of a vendored path, or on a fetch that fails
 - **THEN** each file below `vendor/superpowers/` holds the bytes and the mode that it held before the refresh, and the refresh adds or removes none
 
+#### Scenario: A refresh replaces each vendored path wherever the clone lies
+
+- **WHEN** the refresh runs in a clone whose path holds a character that bash reads in the replacement of a substitution, such as `&`, where the vendored copy holds each vendored path already
+- **THEN** each vendored path holds what the pinned commit gives, none holds a copy of itself, and the refresh removes nothing outside the vendored paths
+
 #### Scenario: A link in the vendored copy stops the sync
 
 - **WHEN** `vendor`, `vendor/superpowers/`, or a folder or file below it, is a link
@@ -2358,13 +2373,13 @@ CI SHALL compare every path under `vendor/superpowers/`, whatever its name, with
 
 #### Scenario: The sync reads and writes no repository that a person's git variables name
 
-- **WHEN** the sync runs, with and without `--check`, with a variable that names a repository, such as `GIT_DIR`, `GIT_WORK_TREE`, `GIT_INDEX_FILE`, `GIT_OBJECT_DIRECTORY` or `GIT_COMMON_DIR`, naming another repository or a part of one
-- **THEN** it reads and writes nothing there, and it still takes the configuration that `GIT_CONFIG_PARAMETERS` and `GIT_CONFIG_COUNT` give
+- **WHEN** the sync runs, with and without `--check`, with a variable that names a repository, such as `GIT_DIR`, `GIT_WORK_TREE`, `GIT_INDEX_FILE`, `GIT_OBJECT_DIRECTORY` or `GIT_COMMON_DIR`, naming another repository or a part of one, or with one that changes how git reads a path, such as `GIT_LITERAL_PATHSPECS`, `GIT_GLOB_PATHSPECS`, `GIT_NOGLOB_PATHSPECS` or `GIT_ICASE_PATHSPECS`
+- **THEN** it reads and writes nothing in another repository, the refresh writes and the check passes the copy that the pinned commit gives, and it still takes the configuration that `GIT_CONFIG_PARAMETERS` and `GIT_CONFIG_COUNT` give
 
 #### Scenario: A vendored file that git's index gives another mode fails CI
 
 - **WHEN** git's index gives a file below `vendor/superpowers/` another mode than the pinned commit gives it, as when its executable bit is dropped or added
-- **THEN** the vendor check fails and names the file and both modes, reading a name that git could take as a pattern as the name that it is, and the check fails where no git repository holds the copy, rather than compare no mode
+- **THEN** the vendor check fails and names the file and both modes, reading a name that git could take as a pattern as the name that it is, whatever a variable of the person's, such as `GIT_LITERAL_PATHSPECS`, says of how git reads one, and the check fails where no git repository holds the copy, rather than compare no mode
 
 ### Requirement: An image, a PDF or a video is tracked only with a record that names it
 
