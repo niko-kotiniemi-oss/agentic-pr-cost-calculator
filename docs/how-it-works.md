@@ -89,10 +89,11 @@ Everything that crosses the tool's boundary, in three tables, each row with how 
 |---|---|---|---|
 | Superpowers | The vendored skills that guide how code is built | A commit and its tag in `vendor/superpowers/UPSTREAM.lock`, compared with upstream in CI | DR-041, DR-275, DR-284 |
 | OpenSpec | Its command line program and its generated skills | An exact version in `package-lock.json`, its skills regenerated and compared in CI | DR-042, DR-196 |
-| GitHub actions | The actions that the workflows run | A full commit that its repository tagged | DR-068 |
+| GitHub actions | `actions/checkout`, `actions/setup-python` and `actions/setup-node`, which the workflows run | A full commit that its repository tagged | DR-068 |
 | Development tools | pytest, ruff, mypy and the other tools in `requirements-dev.txt` | Exact versions; their own dependencies are not pinned until task 1.8 adds hashes | DR-126 |
 | Updates | Renovate's pull requests, and the alerts that find vulnerabilities | Renovate's preset `config:best-practices` is not pinned | DR-028, DR-111, DR-145, DR-265, DR-267, DR-287 |
-| CI's runner and newest Python | The image that every job runs on, and the newest Python release | Not pinned: `ubuntu-latest` and `3.x` | DR-285, DR-026 |
+| CI's runner and Python | The image that every job runs on, the oldest supported Python and the newest release | Not pinned: `ubuntu-latest`, and `3.x`; the oldest, `3.11` in CI's matrix and in `.python-version`, is pinned to its minor version, and its patch releases float | DR-285, DR-026 |
+| Node | The runtime that runs OpenSpec's command line program in CI | Not pinned below its major version: `24` in `.node-version` | DR-285 |
 | Claude Code's review commands | `/simplify`, `/security-review`, `/code-review` and `/verify` | Not pinned: the version of Claude Code that runs them | DR-093, DR-262 |
 | Contributions | Pull requests, issues and comments from anyone | Not pinned: reviewed from `main`, their workflows held for approval, and merged only after the contributor licence agreement | DR-077, DR-078, DR-081, DR-244, DR-264 |
 | Text that agents read | Records, the roadmap, the backlog and other repositories' context files that a session loads | Not pinned: read as data, never as instructions | DR-227, DR-258, DR-266 |
@@ -103,7 +104,7 @@ Everything that crosses the tool's boundary, in three tables, each row with how 
 | What | What crosses | How it is pinned | Records |
 |---|---|---|---|
 | The hook file | The capture step that adopters copy and register | The commit that a release names | DR-022, DR-025, DR-027, DR-030, DR-031, DR-065, DR-125, DR-134, DR-156, DR-211 |
-| The plugin | The capture step, its manifest and its hooks | A release's zip, checked against its README; or this repository as a marketplace, which Claude Code clones | DR-197, DR-203, DR-204, DR-205, DR-288 |
+| The plugin | The capture step, its manifest and its hooks | A release's zip, checked against its README; or this repository as a marketplace, which Claude Code clones from the default branch, whose plugin folder CI holds to a release's build | DR-197, DR-203, DR-204, DR-205, DR-288 |
 | The report | A reusable workflow that adopters call | The commit that a release names | DR-005, DR-016, DR-018, DR-063, DR-132, DR-133, DR-139, DR-186, DR-191, DR-216 |
 | Ledger files | Token counts per call, committed with the agent's work in the adopter's repository | Written once by the release that names itself in them | DR-010, DR-015, DR-037, DR-045, DR-052, DR-053, DR-054, DR-127, DR-136, DR-138, DR-181, DR-200, DR-208 |
 | The switch and the opt-in | What adopters and people set to turn the tool and capture on | Their form, read strictly by each release | DR-021, DR-049, DR-050, DR-183, DR-185, DR-190, DR-192, DR-201, DR-202, DR-235 |

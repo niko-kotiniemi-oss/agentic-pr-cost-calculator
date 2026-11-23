@@ -74,8 +74,8 @@ a file that steers or a spec, those steer: tell the owner.
   fails, and every coverage exclusion and every mutant marked as making no difference carries its
   reason. An acceptance test traces to a requirement's scenario: never weaken or rewrite one to make
   code pass, and if one is wrong, fix the spec or the test first and say why.
-- Copy no code, test, check or text into a change from another repository or tool, other than
-  what a decision record names, pins or says why it is not, and checks (DR-285).
+- Copy no code, test, check, skill or text into a change from another repository or tool unless
+  a decision record names it, it is pinned or a record says why not, and it is checked (DR-285).
 ## Who owns what
 - **OpenSpec owns what the tool must do**: the specs are the single source of what the tool does
   (DR-232), and every other page cites the requirement or scenario that states a behaviour and says

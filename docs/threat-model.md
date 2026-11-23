@@ -53,7 +53,7 @@ flowchart LR
 
 - 1) The plugin, from a release's zip that the person uploads or from this repository's marketplace (boundary 9; R179, R184, R187).
 - 2) The environment's setup script, which can write the opt-in that capture reads (boundary 9; R185).
-- 3) Instructions, memory and other repositories' files that Claude Code loads into the session (boundary 9).
+- 3) Instructions, memory and other repositories' files that Claude Code loads into the session, beside this repository's own context files (boundary 9; R252, R255).
 - 4) The session's and its subagents' transcripts, read by the hooks (boundary 1; R2, R75).
 - 5) The capture step (boundaries 1 and 2; R1, R3).
 - 6) Its store in the git common directory (boundary 2; R47).
@@ -4455,9 +4455,9 @@ The trust boundaries:
 - **Raw likelihood:** 3 (likely)
 - **Raw risk:** 6
 - **What could happen:** a diagram on a feature page or on the page on how the tool works draws a step, a decision or a connection that no requirement states, or draws one otherwise than its requirement does, so that an adopter or a contributor who reads the drawing rather than the spec takes the tool to do what it does not, while the specs are the single source of what it does (DR-232). The likeliest way is a later change that rewrites a requirement and keeps its ID, such as backlog item B-007, after which every citation still resolves while the drawing shows the old text.
-- **Answer:** each diagram numbers its parts and is followed by a list that explains each number once and cites the requirement that states what the part does where one does, and a test fails on a number drawn and not explained or explained and not drawn (R281, DR-293); whether the drawing says what its requirement says is for review, as a rule about prose is (DR-251).
+- **Answer:** each diagram numbers its parts and is followed by a list that explains each number once and cites the requirement that states what the part does where one does, and a test fails on a number drawn and not explained or explained and not drawn, and on an item that cites no requirement (R281, DR-293); whether the drawing says what its requirement says is for review, as a rule about prose is (DR-251).
 - **Residual:** a part that cites the right requirement and still draws it otherwise, and a requirement rewritten under its ID without its diagrams being read again, which review reads (A15); backlog item B-007, the next to rewrite requirements, holds a postponed point to read again each diagram part that cites one that it rewrites, on the owner's answer of 2026-11-23.
-- **Held by:** `project-standards`: "A number left unexplained, or explained but not drawn, fails a test"; DR-293; DR-251
+- **Held by:** `project-standards`: "A number left unexplained, or explained but not drawn, fails a test"; `project-standards`: "A diagram in a fence that the checks do not read, or an explanation that cites no requirement, fails a test"; DR-293; DR-251
 - **Assumptions:** A15
 
 ### T284. The README's uses to avoid come too late, drop a use or give no reason for one
@@ -4470,8 +4470,8 @@ The trust boundaries:
 - **Raw likelihood:** 3 (likely)
 - **Raw risk:** 6
 - **What could happen:** the README's section on what the tool is for and which uses to avoid stands where an adopter who reads from the top meets it only after the short start's steps, which come first (R198), or a use to avoid loses the requirement or record that gives its reason, or cites only the record that adds the section, so that an adopter uses the tool as a bill, to watch people, or in a way that publishes usage that they meant to keep private.
-- **Answer:** a test fails on a README that holds no such section or holds it out of its place, on a use that cites no requirement or accepted record, or only R279, DR-286 or the README, and on a short start that does not link the section before its first step (R279, DR-286).
-- **Residual:** a use dropped from the list, or one that cites a record that exists but gives another reason, which the owner's review of the diff reads (A15).
+- **Answer:** a test fails on a README that holds no such section or holds it out of its place, on a use that cites no requirement or accepted record, or only R279, DR-286 or the README, and on a short start that does not link the section before its first list item or any code, where a step can stand, reading a use as any item of a list, whatever its marker (R279, DR-286).
+- **Residual:** a use dropped from the list, or one that cites a record that exists but gives another reason, which the owner's review of the diff reads (A15), and a short start that is not the README's first section, whose place R198's test holds once task 4.4 builds it.
 - **Held by:** `project-standards`: "A section on uses that is missing, out of place or unsupported fails a test"; DR-286
 - **Assumptions:** A15
 
@@ -4481,15 +4481,15 @@ The trust boundaries:
 
 - **Kind:** reliability
 - **Impact:** 2 (medium)
-- **Likelihood:** 1 (unlikely)
-- **Risk:** 2
+- **Likelihood:** 2 (possible)
+- **Risk:** 4
 - **Raw impact:** 2 (medium)
 - **Raw likelihood:** 3 (likely)
 - **Raw risk:** 6
 - **What could happen:** a later change adds a record whose boundary is incoming, such as one that takes in a new tool, or outgoing, such as one that changes what adopters copy, and leaves the page on how the tool works without it, so that an adopter who reads that page to learn what crosses the tool's boundary misses it; or the tables say that everything listed is pinned while some of it is not.
-- **Answer:** a test fails on an open record whose boundary is incoming that neither table of what comes in cites, on an open outgoing record that the table of what goes out does not cite, on a row that does not say how what it names is pinned, and on a citation of a record that does not exist or is closed (R280); a row may also cite a record of another boundary, such as one that faces inside and governs what lands in an adopter's repository.
-- **Residual:** an input brought in with no record, or with its record's boundary given as inside, which the test cannot see and review reads (T288, A15), and a row that cites the right record and describes what crosses otherwise than the record does.
-- **Held by:** `project-standards`: "A record left out of the section, or cited in the wrong table, fails a test"; DR-285; DR-288
+- **Answer:** a test fails on an open record whose boundary is incoming that neither table of what comes in cites, on an open outgoing record that the table of what goes out does not cite, on a row that gives no word on how what it names is pinned, on a citation of a record that does not exist or is closed, and on an action, runner image, Python version or file of versions that a workflow names and the section does not, or the version that such a file holds (R280); a row may also cite a record of another boundary, such as one that faces inside and governs what lands in an adopter's repository.
+- **Residual:** an input that no workflow names brought in with no record, or with its record's boundary given as inside, which the test cannot see and review reads (T288, A15), a row that cites the right record and describes what crosses otherwise than the record does, and a row whose word on how it is pinned is false, which no test compares with the files and review reads; the review against what was built rated the likelihood 2 for that last case.
+- **Held by:** `project-standards`: "A record left out of the section, or cited in the wrong table, fails a test"; `project-standards`: "An input that a workflow names and the section does not fails a test"; DR-285; DR-288
 - **Assumptions:** A15
 
 ## Boundary 6, continued: found at the design-stage review of the scope and visual documentation
@@ -4504,7 +4504,7 @@ The trust boundaries:
 - **Raw likelihood:** 3 (likely)
 - **Raw risk:** 9
 - **What could happen:** a Mermaid block that GitHub cannot parse, such as one whose label holds a parenthesis outside quotes, which Mermaid reads as a node's shape, is shown to a reader as an error, while an agent that reads the raw page reads all its text, so that what the block holds reaches agents and never a reader, and the adopter loses the drawing.
-- **Answer:** a numbered part's label stands in double quotes, and a test fails on a number outside them (R281, DR-293); each diagram is looked at on GitHub at the build, before the review against what was built (task 1.59), and R273 already refuses the statements that hide text in a block that draws.
+- **Answer:** a numbered part's label stands in double quotes, and a test fails on a number outside them (R281, DR-293); each diagram was looked at on GitHub at the build, before the review against what was built, and drew (task 1.59), and R273 already refuses the statements that hide text in a block that draws.
 - **Residual:** a block that a later release of GitHub's Mermaid stops drawing, which a reader reports or review sees.
 - **Held by:** `project-standards`: "A number left unexplained, or explained but not drawn, fails a test"; DR-293; `add-pr-cost-calculator` task 1.59
 
@@ -4519,10 +4519,10 @@ The trust boundaries:
 - **Raw impact:** 3 (high)
 - **Raw likelihood:** 2 (possible)
 - **Raw risk:** 6
-- **What could happen:** the runner image `ubuntu-latest`, CI's newest Python, `3.x`, Renovate's preset `config:best-practices` and the development tools' own dependencies come in unpinned, so a change to one of them outside this repository changes what CI runs and checks without a diff here.
-- **Answer:** DR-285 names each input that is not pinned and the record that says why, the table of what comes in says for each row how it is pinned or that it is not (R280), and every workflow here holds a read-only token (DR-067).
+- **What could happen:** the runner image `ubuntu-latest`, CI's newest Python, `3.x`, the oldest Python's patch releases, Node, which `.node-version` gives by its major version alone, Renovate's preset `config:best-practices` and the development tools' own dependencies come in unpinned, so a change to one of them outside this repository changes what CI runs and checks without a diff here.
+- **Answer:** DR-285 names each input that is not pinned and the record that says why, the table of what comes in says for each row how it is pinned or that it is not, a test fails on an action, runner image, Python version or file of versions that a workflow names and the table does not (R280), and every workflow here holds a read-only token (DR-067).
 - **Residual:** a change upstream that weakens a check without failing it, until the input is pinned or its change is seen; the development tools' hashes wait for task 1.8 (DR-126).
-- **Held by:** `project-standards`: "A record left out of the section, or cited in the wrong table, fails a test"; DR-285; DR-067
+- **Held by:** `project-standards`: "A record left out of the section, or cited in the wrong table, fails a test"; `project-standards`: "An input that a workflow names and the section does not fails a test"; DR-285; DR-067
 
 ### T288. An agent copies another repository's checks or text into this one
 
@@ -4551,9 +4551,9 @@ The trust boundaries:
 - **Raw likelihood:** 2 (possible)
 - **Raw risk:** 6
 - **What could happen:** a node's or a participant's identifier is text that the drawing does not show, which T257 accepts; with a diagram on every feature page, and the agent that sets the tool up sent to the page on how the tool works, an identifier long enough to hold a note worded for an agent reaches that agent and no reader.
-- **Answer:** each identifier of a node or a participant is at most three letters or digits, and a test fails on a longer one (R281, DR-293).
+- **Answer:** each identifier of a node or a participant is at most three letters or digits, and a test fails on a longer one, and on a Mermaid block in a fence that the test does not read, such as one of tildes or one indented under a list item (R281, DR-293).
 - **Residual:** an identifier of up to three characters, which holds no instruction.
-- **Held by:** `project-standards`: "A number left unexplained, or explained but not drawn, fails a test"; DR-293
+- **Held by:** `project-standards`: "A number left unexplained, or explained but not drawn, fails a test"; `project-standards`: "A diagram in a fence that the checks do not read, or an explanation that cites no requirement, fails a test"; DR-293
 
 ## Risk matrix
 
@@ -4562,7 +4562,7 @@ Generated from the ratings above. Each cell lists the threats whose impact and l
 | Impact \ Likelihood | 1 unlikely | 2 possible | 3 likely |
 |---|---|---|---|
 | 3 high | T1, T12, T14, T15, T23, T24, T28, T29, T35, T43, T46, T58, T59, T63, T64, T66, T67, T68, T73, T77, T81, T82, T83, T92, T93, T94, T95, T103, T107, T108, T119, T125, T133, T138, T140, T141, T142, T144, T147, T148, T150, T151, T160, T163, T164, T165, T167, T169, T174, T175, T177, T178, T180, T183, T184, T186, T187, T188, T190, T192, T210, T211, T212, T213, T214, T217, T219, T225, T226, T227, T229, T230, T231, T233, T234, T237, T240, T251, T252, T253, T254, T256, T257, T258, T259, T260, T261, T263, T264, T265, T270, T271, T279, T286, T288, T289 | T2, T32, T33, T34, T61, T62, T65, T132, T137, T232 | |
-| 2 medium | T4, T6, T11, T13, T18, T25, T26, T38, T41, T42, T53, T55, T56, T57, T60, T69, T70, T76, T78, T79, T80, T84, T85, T86, T87, T88, T89, T90, T91, T97, T98, T99, T100, T101, T102, T104, T105, T109, T112, T115, T124, T126, T127, T135, T139, T146, T149, T152, T153, T155, T156, T157, T162, T172, T173, T179, T181, T182, T185, T189, T191, T193, T194, T195, T196, T197, T198, T199, T202, T203, T204, T206, T207, T215, T216, T220, T221, T223, T228, T235, T236, T238, T239, T245, T247, T248, T250, T266, T268, T269, T280, T284, T285, T287 | T3, T9, T10, T17, T19, T20, T21, T22, T27, T30, T39, T40, T44, T45, T47, T48, T49, T50, T51, T52, T54, T71, T72, T74, T75, T96, T111, T116, T120, T121, T122, T123, T129, T130, T131, T134, T136, T143, T145, T154, T158, T159, T161, T166, T168, T170, T171, T176, T200, T201, T208, T209, T222, T224, T241, T242, T249, T283 | T7, T8, T16, T128 |
+| 2 medium | T4, T6, T11, T13, T18, T25, T26, T38, T41, T42, T53, T55, T56, T57, T60, T69, T70, T76, T78, T79, T80, T84, T85, T86, T87, T88, T89, T90, T91, T97, T98, T99, T100, T101, T102, T104, T105, T109, T112, T115, T124, T126, T127, T135, T139, T146, T149, T152, T153, T155, T156, T157, T162, T172, T173, T179, T181, T182, T185, T189, T191, T193, T194, T195, T196, T197, T198, T199, T202, T203, T204, T206, T207, T215, T216, T220, T221, T223, T228, T235, T236, T238, T239, T245, T247, T248, T250, T266, T268, T269, T280, T284, T287 | T3, T9, T10, T17, T19, T20, T21, T22, T27, T30, T39, T40, T44, T45, T47, T48, T49, T50, T51, T52, T54, T71, T72, T74, T75, T96, T111, T116, T120, T121, T122, T123, T129, T130, T131, T134, T136, T143, T145, T154, T158, T159, T161, T166, T168, T170, T171, T176, T200, T201, T208, T209, T222, T224, T241, T242, T249, T283, T285 | T7, T8, T16, T128 |
 | 1 low | T113, T218, T243, T244, T246, T262, T272, T273, T274, T275, T276, T277, T278, T281, T282 | T31, T36, T37, T110, T114, T118, T255, T267 | T5, T106, T117, T205 |
 
 The threats with a risk of 6 or more:

@@ -12,8 +12,8 @@ Each risk takes the band that the overall risk severity of OWASP's Risk Rating M
 |---|---|---|---|
 | critical | 9 | 38 | 0 |
 | high | 6 | 184 | 14 |
-| medium | 3 and 4 | 60 | 158 |
-| low | 2 | 6 | 102 |
+| medium | 3 and 4 | 60 | 159 |
+| low | 2 | 6 | 101 |
 | note | 1 | 1 | 15 |
 | all | 1 to 9 | 289 | 289 |
 
@@ -34,7 +34,7 @@ Each cell lists the threats whose impact and likelihood it names.
 | Impact by likelihood | 1 unlikely | 2 possible | 3 likely |
 |---|---|---|---|
 | 3 high | T1, T12, T14, T15, T23, T24, T28, T29, T35, T43, T46, T58, T59, T63, T64, T66, T67, T68, T73, T77, T81, T82, T83, T92, T93, T94, T95, T103, T107, T108, T119, T125, T133, T138, T140, T141, T142, T144, T147, T148, T150, T151, T160, T163, T164, T165, T167, T169, T174, T175, T177, T178, T180, T183, T184, T186, T187, T188, T190, T192, T210, T211, T212, T213, T214, T217, T219, T225, T226, T227, T229, T230, T231, T233, T234, T237, T240, T251, T252, T253, T254, T256, T257, T258, T259, T260, T261, T263, T264, T265, T270, T271, T279, T286, T288, T289 | T2, T32, T33, T34, T61, T62, T65, T132, T137, T232 | |
-| 2 medium | T4, T6, T11, T13, T18, T25, T26, T38, T41, T42, T53, T55, T56, T57, T60, T69, T70, T76, T78, T79, T80, T84, T85, T86, T87, T88, T89, T90, T91, T97, T98, T99, T100, T101, T102, T104, T105, T109, T112, T115, T124, T126, T127, T135, T139, T146, T149, T152, T153, T155, T156, T157, T162, T172, T173, T179, T181, T182, T185, T189, T191, T193, T194, T195, T196, T197, T198, T199, T202, T203, T204, T206, T207, T215, T216, T220, T221, T223, T228, T235, T236, T238, T239, T245, T247, T248, T250, T266, T268, T269, T280, T284, T285, T287 | T3, T9, T10, T17, T19, T20, T21, T22, T27, T30, T39, T40, T44, T45, T47, T48, T49, T50, T51, T52, T54, T71, T72, T74, T75, T96, T111, T116, T120, T121, T122, T123, T129, T130, T131, T134, T136, T143, T145, T154, T158, T159, T161, T166, T168, T170, T171, T176, T200, T201, T208, T209, T222, T224, T241, T242, T249, T283 | T7, T8, T16, T128 |
+| 2 medium | T4, T6, T11, T13, T18, T25, T26, T38, T41, T42, T53, T55, T56, T57, T60, T69, T70, T76, T78, T79, T80, T84, T85, T86, T87, T88, T89, T90, T91, T97, T98, T99, T100, T101, T102, T104, T105, T109, T112, T115, T124, T126, T127, T135, T139, T146, T149, T152, T153, T155, T156, T157, T162, T172, T173, T179, T181, T182, T185, T189, T191, T193, T194, T195, T196, T197, T198, T199, T202, T203, T204, T206, T207, T215, T216, T220, T221, T223, T228, T235, T236, T238, T239, T245, T247, T248, T250, T266, T268, T269, T280, T284, T287 | T3, T9, T10, T17, T19, T20, T21, T22, T27, T30, T39, T40, T44, T45, T47, T48, T49, T50, T51, T52, T54, T71, T72, T74, T75, T96, T111, T116, T120, T121, T122, T123, T129, T130, T131, T134, T136, T143, T145, T154, T158, T159, T161, T166, T168, T170, T171, T176, T200, T201, T208, T209, T222, T224, T241, T242, T249, T283, T285 | T7, T8, T16, T128 |
 | 1 low | T113, T218, T243, T244, T246, T262, T272, T273, T274, T275, T276, T277, T278, T281, T282 | T31, T36, T37, T110, T114, T118, T255, T267 | T5, T106, T117, T205 |
 
 ## High and critical risks
@@ -126,6 +126,7 @@ The highest risk with the answer in place first, then the highest raw risk, then
 | [T242](threat-model.md#t242-warnings-that-renovate-is-working-through-are-learned-to-be-ignored) | Warnings that Renovate is working through are learned to be ignored | 7 | reliability | 6 high (2, 3) | 4 medium (2, 2) | DR-267 | none |
 | [T249](threat-model.md#t249-a-records-boundary-or-reversibility-misstates-it) | A record's boundary or reversibility misstates it | 7 | reliability | 6 high (2, 3) | 4 medium (2, 2) | R264; DR-230, DR-270, DR-271 | A15 |
 | [T283](threat-model.md#t283-a-diagram-draws-what-its-spec-does-not-state) | A diagram draws what its spec does not state | 6 | reliability | 6 high (2, 3) | 4 medium (2, 2) | R281; DR-293, DR-251 | A15 |
+| [T285](threat-model.md#t285-the-tables-of-what-comes-in-and-what-goes-out-fall-behind-the-records) | The tables of what comes in and what goes out fall behind the records | 7 | reliability | 6 high (2, 3) | 4 medium (2, 2) | R280; DR-285, DR-288 | A15 |
 | [T30](threat-model.md#t30-a-price-is-changed-to-misreport) | A price is changed to misreport | 6 | tampering | 4 medium (2, 2) | 4 medium (2, 2) | R93, R14; DR-020, DR-186, DR-217; `add-pr-cost-calculator` task 3.1; `add-pr-cost-calculator` task 3.2 | A56, A58 |
 | [T45](threat-model.md#t45-in-a-partial-clone-reading-a-ledger-file-fetches-it-from-the-remote) | In a partial clone, reading a ledger file fetches it from the remote | 2 | denial of service, reliability | 4 medium (2, 2) | 4 medium (2, 2) | R111, R45, R30; DR-060; `add-pr-cost-calculator` task 2.1 | A11, A63 |
 | [T47](threat-model.md#t47-a-ledger-file-that-leaves-the-default-branch-and-comes-back-is-counted-again) | A ledger file that leaves the default branch and comes back is counted again | 3 | tampering, reliability | 4 medium (2, 2) | 4 medium (2, 2) | R59, R119; DR-131; `add-pr-cost-calculator` task 4.2 | A12, A15, A45, A53 |
@@ -294,7 +295,6 @@ The highest risk with the answer in place first, then the highest raw risk, then
 | [T248](threat-model.md#t248-the-exception-for-a-repeated-number-moves-a-record-that-should-keep-its-number-or-changes-it-on-the-way) | The exception for a repeated number moves a record that should keep its number, or changes it on the way | 7 | tampering | 6 high (2, 3) | 2 low (2, 1) | R266; DR-269 | A15 |
 | [T255](threat-model.md#t255-a-sound-update-of-superpowers-or-openspec-is-held-up-by-a-character-that-the-list-does-not-give) | A sound update of Superpowers or OpenSpec is held up by a character that the list does not give | 7 | denial of service | 6 high (2, 3) | 2 low (1, 2) | R269; DR-275 | A15 |
 | [T284](threat-model.md#t284-the-readmes-uses-to-avoid-come-too-late-drop-a-use-or-give-no-reason-for-one) | The README's uses to avoid come too late, drop a use or give no reason for one | 6 | reliability | 6 high (2, 3) | 2 low (2, 1) | R279; DR-286 | A15 |
-| [T285](threat-model.md#t285-the-tables-of-what-comes-in-and-what-goes-out-fall-behind-the-records) | The tables of what comes in and what goes out fall behind the records | 7 | reliability | 6 high (2, 3) | 2 low (2, 1) | R280; DR-285, DR-288 | A15 |
 | [T287](threat-model.md#t287-an-input-that-is-not-pinned-changes-what-ci-checks) | An input that is not pinned changes what CI checks | 7 | tampering | 6 high (3, 2) | 2 low (2, 1) | R280; DR-285, DR-067 | none |
 | [T6](threat-model.md#t6-a-malformed-value-is-recorded-as-usage) | A malformed value is recorded as usage | 1 | tampering | 4 medium (2, 2) | 2 low (2, 1) | R5, R95; DR-044 | A2, A4, A52 |
 | [T25](threat-model.md#t25-the-report-overwrites-someone-elses-comment) | The report overwrites someone else's comment | 4 | tampering | 4 medium (2, 2) | 2 low (2, 1) | R96, R93; DR-044, DR-186 | A19 |

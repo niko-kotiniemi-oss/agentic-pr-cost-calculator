@@ -20,8 +20,6 @@ flowchart LR
   P --> W["5) Windows line endings"]
   PY & OS & V & W --> C["6) The ci check"]
   P --> R["7) Threat review and review lanes"]
-  C --> M["8) The owner's merge"]
-  R --> M
 ```
 
 - 1) A pull request, whose text is checked for private references (R33).
@@ -29,9 +27,8 @@ flowchart LR
 - 3) The pinned OpenSpec reads every spec, and CI compares that reading with the tests' (R178).
 - 4) The vendored copy of Superpowers holds only what its pinned commit gives (R275).
 - 5) The checks read a checkout's files with Windows line endings as git stages them (R276).
-- 6) The one check that the ruleset requires, `ci`, which passes only when every job above passes (DR-043, DR-072, DR-283).
+- 6) The one check that the ruleset requires, `ci`, which passes only when every job above passes, the tests on both Pythons among them (R25; DR-043, DR-072, DR-283).
 - 7) The threat model is reviewed independently at design and before the merge, and every threat is rated (R31).
-- 8) The owner decides every merge (DR-080).
 
 In detail:
 

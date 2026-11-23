@@ -692,7 +692,15 @@ WILL_DO = "What it will do"
 USES_HEADING = "What it is for, and what to avoid using it for"
 DOCUMENTS = "Documentation"
 OWN_REASONS = frozenset({"R279", "DR-286"})
-FIRST_STEP = re.compile(r"^(?:\d+[.)] |```)", re.M)
+FIRST_STEP = re.compile(r"^[ \t]*(?:[-*+]|\d+[.)])[ \t]|`|~~~", re.M)
+LIST_ITEM = re.compile(r"^(?:[-*+]|\d+[.)])[ \t]")
+REQUIREMENT_ID = re.compile(r"\bR\d+\b")
+ANY_MERMAID_FENCE = re.compile(r"^[ \t>]*(?:`{3,}|~{3,})[ \t]*mermaid\b", re.M | re.I)
+WORKFLOW_INPUT = re.compile(
+    r"^\s*(?:-\s+)?(?:uses:\s*([^@\s]+)@|runs-on:\s*([^\s#]+)|python-version:\s*(.+?)\s*$"
+    r"|(?:python|node)-version-file:\s*([^\s#]+))",
+    re.M,
+)
 INPUTS = "Inputs and outputs"
 CROSSING = "What comes in and what goes out"
 TOOL_IN = "What the tool takes in when it runs"
@@ -788,7 +796,7 @@ def readme_uses_problems(
         )
     if DOCUMENTS not in names or names.index(DOCUMENTS) < at:
         problems.append(f"the README's section {USES_HEADING!r} comes after its list of documents")
-    uses = [line for line in section(readme, USES_HEADING).splitlines() if line.startswith("- ")]
+    uses = [line for line in section(readme, USES_HEADING).splitlines() if LIST_ITEM.match(line)]
     if not uses:
         problems.append(f"the README's section {USES_HEADING!r} lists no use to avoid")
     for line in uses:
@@ -838,7 +846,7 @@ def crossing_problems(text: str, records: dict[str, Record]) -> list[str]:
                 problems.append(f"the row {row[0]!r} of {table!r} has {len(row)} cells, not 4")
                 continue
             thing, _, pinned, cell = row
-            if not pinned:
+            if not re.search(r"[A-Za-z]", pinned):
                 problems.append(f"the row {thing!r} of {table!r} gives no word on how it is pinned")
             for ident in RECORD_ID.findall(cell):
                 problem = cited_problem(ident, records, set())
@@ -852,6 +860,34 @@ def crossing_problems(text: str, records: dict[str, Record]) -> list[str]:
         if record.open and record.boundary == "outgoing" and ident not in cited[GOES_OUT]:
             problems.append(f"{ident} faces outgoing, and the table {GOES_OUT!r} does not cite it")
     return problems
+
+
+def workflow_input_problems(text: str, root: Path) -> list[str]:
+    """Each action, runner image, Python version and file of versions that a workflow of this
+    repository names, and the version that such a file holds, is named in the text (R280)."""
+    named: dict[str, str] = {}
+    for workflow in workflows(root):
+        where = workflow.relative_to(root).as_posix()
+        for match in WORKFLOW_INPUT.finditer(workflow.read_text(encoding="utf-8")):
+            action, runner, versions, version_file = match.groups()
+            found = [action, runner] if action or runner else []
+            if versions and not versions.startswith("$"):
+                found += re.findall(r"[\w.]+", versions)
+            if version_file:
+                found.append(version_file)
+                held = root / version_file
+                if held.is_file():
+                    found.append(held.read_text(encoding="utf-8").strip())
+            for thing in found:
+                if thing:
+                    named.setdefault(thing, where)
+    if not named:
+        return ["no workflow names an input, so the check read nothing"]
+    return [
+        f"{where} names {thing!r}, and the section {CROSSING!r} does not"
+        for thing, where in named.items()
+        if f"`{thing}`" not in text
+    ]
 
 
 def diagram_identifiers(block: str) -> list[str]:
@@ -886,28 +922,39 @@ def diagram_identifiers(block: str) -> list[str]:
     return found
 
 
-def explained_numbers(text: str, end: int) -> list[int]:
-    """The numbers that the list right after a diagram explains, in their order."""
-    numbers = []
-    started = False
+def explained_items(text: str, end: int) -> list[str]:
+    """The items of the list right after a diagram, each with its continued lines."""
+    items: list[str] = []
     for line in text[end:].splitlines()[1:]:
         if not line.strip():
-            if started:
+            if items:
                 break
             continue
         if line.startswith("- "):
-            started = True
-            match = EXPLAINED.match(line)
-            if match:
-                numbers.append(int(match[1]))
-        elif not (started and line.startswith("  ")):
+            items.append(line)
+        elif items and line.startswith("  "):
+            items[-1] += " " + line.strip()
+        else:
             break
-    return numbers
+    return items
+
+
+def explained_numbers(text: str, end: int) -> list[int]:
+    """The numbers that the list right after a diagram explains, in their order."""
+    return [
+        int(match[1]) for item in explained_items(text, end) if (match := EXPLAINED.match(item))
+    ]
 
 
 def diagram_problems(name: str, text: str) -> list[str]:
     """What R281 asks of each Mermaid diagram on a page."""
     problems = []
+    for fence in ANY_MERMAID_FENCE.finditer(text):
+        if not fence[0].startswith("```mermaid"):
+            line = text.count(chr(10), 0, fence.start()) + 1
+            problems.append(
+                f"{name}:{line}: a Mermaid block in a fence that the checks do not read"
+            )
     for block in MERMAID.finditer(text):
         where = f"{name}:{text.count(chr(10), 0, block.start()) + 1}"
         body = block[1]
@@ -920,6 +967,9 @@ def diagram_problems(name: str, text: str) -> list[str]:
             for number in BARE_NUMBER.findall(unquoted):
                 problems.append(f"{where}: the number {number} stands in a label without quotes")
         explained = explained_numbers(text, block.end())
+        for item in explained_items(text, block.end()):
+            if not REQUIREMENT_ID.search(item):
+                problems.append(f"{where}: the explanation {item[:40]!r} cites no requirement")
         if not drawn:
             problems.append(f"{where}: the diagram numbers none of its parts")
         for number in sorted(set(drawn) - set(explained)):
@@ -984,7 +1034,9 @@ def test_how_it_works_lists_everything_that_comes_in_and_goes_out() -> None:
     text = (ROOT / "docs" / "how-it-works.md").read_text(encoding="utf-8")
     records = decision_records(ROOT)
     assert records, "no decision record was read, so this test covered nothing"
-    problems = crossing_problems(text, records)
+    problems = crossing_problems(text, records) + workflow_input_problems(
+        section(text, CROSSING), ROOT
+    )
     assert not problems, "\n".join(problems)
 
 
@@ -1079,6 +1131,34 @@ def test_a_short_start_that_links_the_uses_before_its_first_step_passes() -> Non
             ),
             "does not link the section",
         ),
+        (
+            README.replace(
+                "# Tool\n\nIntro.\n\n",
+                "# Tool\n\nIntro.\n\n## Start\n\n- Turn it on.\n\n"
+                "[Uses](#what-it-is-for-and-what-to-avoid-using-it-for)\n\n",
+            ),
+            "does not link the section",
+        ),
+        (
+            README.replace(
+                "# Tool\n\nIntro.\n\n",
+                "# Tool\n\nIntro.\n\n## Start\n\nRun `git config x`, then read "
+                "[Uses](#what-it-is-for-and-what-to-avoid-using-it-for).\n\n",
+            ),
+            "does not link the section",
+        ),
+        (
+            README.replace(
+                "- In a session that also works on private repositories (R3).", "* In a session."
+            ),
+            "cites no requirement or record",
+        ),
+        (
+            README.replace(
+                "- In a session that also works on private repositories (R3).", "1. In a session."
+            ),
+            "cites no requirement or record",
+        ),
     ],
 )
 def test_a_section_on_uses_that_is_missing_out_of_place_or_unsupported_is_reported(
@@ -1121,6 +1201,7 @@ def test_a_complete_section_on_what_crosses_passes() -> None:
             "DR-044 faces incoming",
         ),
         (CROSSING_SECTION.replace("| A commit |", "|  |"), "no word on how it is pinned"),
+        (CROSSING_SECTION.replace("| A commit |", "| - |"), "no word on how it is pinned"),
         (CROSSING_SECTION.replace("DR-010", "DR-009"), "DR-009, which is closed"),
         (CROSSING_SECTION.replace("DR-010", "DR-999"), "DR-999, which no record holds"),
         (
@@ -1141,6 +1222,54 @@ def test_a_record_left_out_of_the_section_or_cited_in_the_wrong_table_is_reporte
 ) -> None:
     problems = crossing_problems(text, OPEN_RECORDS)
     assert any(expected in problem for problem in problems), problems
+
+
+INPUTS_WORKFLOW = (
+    "jobs:\n  a:\n    runs-on: ubuntu-latest\n    strategy:\n      matrix:\n"
+    '        python-version: ["3.11", "3.x"]\n    steps:\n'
+    "      - uses: actions/checkout@0123456789012345678901234567890123456789 # v7\n"
+    "      - uses: actions/setup-node@0123456789012345678901234567890123456789 # v7\n"
+    "        with:\n          node-version-file: .node-version\n"
+)
+NAMED = (
+    "`actions/checkout`, `actions/setup-node`, `ubuntu-latest`, `3.11`, `3.x`, "
+    "`.node-version` holding `24`"
+)
+
+
+def workflow_tree(root: Path, workflow: str) -> Path:
+    (root / ".github" / "workflows").mkdir(parents=True)
+    (root / ".github" / "workflows" / "ci.yml").write_text(workflow, encoding="utf-8")
+    (root / ".node-version").write_text("24\n", encoding="utf-8")
+    return root
+
+
+def test_a_section_that_names_every_input_of_the_workflows_passes(tmp_path: Path) -> None:
+    root = workflow_tree(tmp_path, INPUTS_WORKFLOW)
+    assert workflow_input_problems(NAMED, root) == []
+
+
+@pytest.mark.parametrize(
+    ("named", "expected"),
+    [
+        (NAMED.replace("`actions/checkout`, ", ""), "'actions/checkout'"),
+        (NAMED.replace("`ubuntu-latest`, ", ""), "'ubuntu-latest'"),
+        (NAMED.replace("`3.11`, ", ""), "'3.11'"),
+        (NAMED.replace("`.node-version` holding ", ""), "'.node-version'"),
+        (NAMED.replace(" holding `24`", ""), "'24'"),
+    ],
+)
+def test_an_input_that_a_workflow_names_and_the_section_does_not_is_reported(
+    tmp_path: Path, named: str, expected: str
+) -> None:
+    root = workflow_tree(tmp_path, INPUTS_WORKFLOW)
+    problems = workflow_input_problems(named, root)
+    assert any(expected in problem for problem in problems), problems
+
+
+def test_a_workflow_input_check_that_reads_no_workflow_fails(tmp_path: Path) -> None:
+    problems = workflow_input_problems(NAMED, tmp_path)
+    assert problems == ["no workflow names an input, so the check read nothing"]
 
 
 FLOW_PAGE = (
@@ -1195,6 +1324,21 @@ def test_a_page_without_diagrams_has_no_diagram_problem() -> None:
             "numbers none of its parts",
         ),
         (FLOW_PAGE.replace("\n- 1) Transcripts", "\nText.\n- 1) Transcripts"), "not explained"),
+        (
+            FLOW_PAGE.replace("- 3) Store: holds them (R47).", "- 3) Store: holds them."),
+            "cites no requirement",
+        ),
+        (
+            FLOW_PAGE.replace("- 3) Store: holds them (R47).", "- 3) Store (DR-010)."),
+            "cites no requirement",
+        ),
+        (
+            FLOW_PAGE.replace("```mermaid", "~~~mermaid").replace("```\n\n- 1)", "~~~\n\n- 1)"),
+            "fence",
+        ),
+        ("# P\n\n- An item\n\n  ```mermaid\n  flowchart LR\n    LongName --> B\n  ```\n", "fence"),
+        ("# P\n\n> ```mermaid\n> flowchart LR\n> ```\n", "fence"),
+        ("# P\n\n````mermaid\nflowchart LR\n````\n", "fence"),
     ],
 )
 def test_a_number_left_unexplained_or_explained_but_not_drawn_is_reported(

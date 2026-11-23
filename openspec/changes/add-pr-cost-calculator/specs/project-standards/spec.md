@@ -2445,7 +2445,7 @@ The README SHALL hold, after its section on what the tool will do and before its
 
 #### Scenario: A section on uses that is missing, out of place or unsupported fails a test
 
-- **WHEN** the README holds no such section, holds it before its section on what the tool will do or after its list of documents, lists a use to avoid that cites no requirement or decision record, cites one that does not exist or is closed, or cites only R279, DR-286 or the README itself, or its short start links the section only after a step that opts anyone in or turns the tool on, or not at all
+- **WHEN** the README holds no such section, holds it before its section on what the tool will do or after its list of documents, lists a use to avoid that cites no requirement or decision record, cites one that does not exist or is closed, or cites only R279, DR-286 or the README itself, or its short start links the section only after a list item or any code, inline or fenced, where a step can stand, or not at all, a use being any item of a list, whatever its marker
 - **THEN** a test fails and names the section, or the line and what it lacks
 
 ### Requirement: How it works lists everything that comes in and goes out, each with its records
@@ -2461,6 +2461,11 @@ The README SHALL hold, after its section on what the tool will do and before its
 
 - **WHEN** an open record whose boundary is incoming is cited in neither table of what comes in, an open outgoing record is not cited in the table of what goes out, a row gives no word on how what it names is pinned, the section stands before the section on inputs and outputs, or a citation names a record that does not exist or is closed
 - **THEN** a test fails and names the record or the row, and the table
+
+#### Scenario: An input that a workflow names and the section does not fails a test
+
+- **WHEN** a workflow of this repository names an action, a runner image, a Python version or a file of versions, and the section on what comes in and goes out does not name it in code, or does not name the version that such a file holds
+- **THEN** a test fails and names the workflow and what it names
 
 ### Requirement: A diagram numbers its parts and explains each below it, and the README links the overview of how it works
 
@@ -2480,3 +2485,8 @@ Each Mermaid diagram on a page that this repository writes SHALL number its part
 
 - **WHEN** one of the feature pages in `docs/features/`, which are its files other than its `README.md`, or `docs/how-it-works.md` holds no Mermaid diagram, the first section of `docs/how-it-works.md` holds no diagram, or the README holds no link to `docs/how-it-works.md` without a fragment
 - **THEN** a test fails and names the page
+
+#### Scenario: A diagram in a fence that the checks do not read, or an explanation that cites no requirement, fails a test
+
+- **WHEN** a page that this repository writes holds a Mermaid block in a fence other than three backticks at the start of a line, such as a fence of tildes, of more backticks, or one indented under a list item or inside a quote, or an item of the list after a diagram cites no requirement by its ID
+- **THEN** a test fails and names the file and the line
