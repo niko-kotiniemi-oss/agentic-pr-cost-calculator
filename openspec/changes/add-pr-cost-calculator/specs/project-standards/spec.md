@@ -2211,8 +2211,13 @@ The repository's attributes SHALL give every tracked file `text=auto` and `eol=l
 
 #### Scenario: A run on Windows line endings that rewrites nothing fails
 
-- **WHEN** the job of CI that saves each file that this repository writes, but its scripts, with a carriage return before each line feed finds no file to rewrite, or a file that it rewrote holds no such carriage return
+- **WHEN** the job of CI that saves each file that this repository writes, but its scripts, with a carriage return before each line feed finds no file to rewrite
 - **THEN** the job fails and says that it examined no Windows line endings
+
+#### Scenario: The job of Windows line endings writes only the files that it saves
+
+- **WHEN** that job's script runs on a working tree that holds a link in place of a tracked folder or file, or a file in place of a link that git's index holds, or runs on a folder below the top of its working tree, from which git gives each path
+- **THEN** it reads the working tree as the test of characters does, writes through no link and writes no file but one that git's index tracks as a file that this repository writes, and on a folder below the top it writes nothing and says why
 
 #### Scenario: A test of Windows line endings that meets none fails
 
@@ -2335,6 +2340,16 @@ CI SHALL compare every path under `vendor/superpowers/`, whatever its name, with
 
 - **WHEN** the pinned commit gives, under a vendored path, a link, a submodule, or a file whose path git's checkout refuses with the protections of NTFS and HFS+ on, such as one through `.` or `..`, or through a folder that git, Windows or macOS opens as `.git`, as `.git` in any case, `.git.`, `git~1` and `.git` with a character that HFS+ ignores are, whatever the person's configuration turns off
 - **THEN** the sync, with and without `--check`, stops and names it, and writes nothing outside the folder that it writes the copy into
+
+#### Scenario: A pinned file that holds a carriage return stops the sync
+
+- **WHEN** the pinned commit gives a vendored file that holds a carriage return, which git either commits as a line feed, so that the copy would no longer match that commit, or keeps, where the test of characters refuses it in a file that others write
+- **THEN** the sync, with and without `--check`, stops and names the file, even where the working tree holds the file as that commit gives it
+
+#### Scenario: A refresh that stops leaves the vendored copy as it was
+
+- **WHEN** the refresh stops on what the pinned commit gives, such as a link, a file that holds a carriage return or the lack of a vendored path, or on a fetch that fails
+- **THEN** each file below `vendor/superpowers/` holds the bytes and the mode that it held before the refresh, and the refresh adds or removes none
 
 #### Scenario: A link in the vendored copy stops the sync
 

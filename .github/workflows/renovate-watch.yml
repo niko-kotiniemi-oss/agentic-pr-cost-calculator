@@ -17,7 +17,9 @@ on:
 defaults:
   run:
     # GitHub's own shell for `bash`, run through a filter that writes what each command
-    # prints in printable ASCII, as every workflow here does (R278).
+    # prints in printable ASCII, as every workflow here does (R278). The filter reads until
+    # each process that holds its pipe ends, so a step that starts a process in the
+    # background sends that process's output elsewhere, or waits for it.
     shell: python3 -I scripts/printable_log.py bash --noprofile --norc -eo pipefail {0}
 
 # Declared rather than inherited, so what this workflow can do is readable here. It writes

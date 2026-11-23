@@ -127,6 +127,15 @@ materialise() {
     case "$path" in */*) mkdir -p "${into}/${path%/*}" ;; esac
     git -C "${work}/src" cat-file blob "$oid" >"${into}/${path}"
     chmod "$perm" "${into}/${path}"
+    # Git commits a carriage return before a line feed as a line feed, so that
+    # the copy would no longer match the pinned commit, and the test of
+    # characters refuses one that git keeps, so no vendored file may hold one
+    # (R269, R275).
+    if LC_ALL=C grep -q $'\r' "${into}/${path}"; then
+      printf 'sync: %s gives %q a carriage return, which no vendored file may hold\n' \
+        "${REPO}@${SHA}" "$path" >&2
+      return 1
+    fi
   done <"${work}/listing"
 }
 
@@ -149,10 +158,9 @@ if [ "${1:-}" = "--check" ]; then
   differs=0
   diff -r "$probe" "$DEST" >"${work}/report" 2>&1 || differs=1
   # Each file's mode, which `diff` does not compare, as git's index gives it,
-  # which is what a commit holds on any system, and a carriage return that the
-  # pinned commit's file does not hold, as a clone made with core.autocrlf set to
-  # true before the repository's attributes keeps one, which the way back writes
-  # again.
+  # which is what a commit holds on any system, and a carriage return, which no
+  # pinned file holds, as a clone made with core.autocrlf set to true before the
+  # repository's attributes keeps one, which the way back writes again.
   returns=0
   while IFS= read -r -d '' entry; do
     read -r mode _ <<<"${entry%%$'\t'*}"
@@ -163,8 +171,7 @@ if [ "${1:-}" = "--check" ]; then
         "$path" "$staged" "$mode" "that the pinned commit gives it" >>"${work}/report"
       differs=1
     fi
-    if [ -f "${ROOT}/${path}" ] && LC_ALL=C grep -q $'\r' "${ROOT}/${path}" &&
-      ! LC_ALL=C grep -q $'\r' "${probe}/${entry#*$'\t'}"; then
+    if [ -f "${ROOT}/${path}" ] && LC_ALL=C grep -q $'\r' "${ROOT}/${path}"; then
       printf "sync: %q holds a carriage return that the pinned commit's file does not\n" \
         "$path" >>"${work}/report"
       returns=1
@@ -183,7 +190,15 @@ if [ "${1:-}" = "--check" ]; then
     exit 1
   fi
 else
+  # The refresh writes the whole copy apart, and replaces the vendored paths
+  # only then, so that one that stops, on what the pinned commit gives or on a
+  # fetch that fails, leaves the vendored copy as it was.
+  copy="${work}/copy"
+  materialise "$copy"
   rm -rf "${PATHS[@]/#/${DEST}/}"
-  materialise "$DEST"
+  for path in "${PATHS[@]}"; do
+    case "$path" in */*) mkdir -p "${DEST}/${path%/*}" ;; esac
+    mv "${copy}/${path}" "${DEST}/${path}"
+  done
   echo "sync: vendor/superpowers re-materialised from ${REPO}@${SHA}"
 fi

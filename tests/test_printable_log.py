@@ -17,13 +17,14 @@ from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
 
+import conventions
+import printable_log
 import pytest
-import yaml
 from printable_log import relay
+from test_repository import load_workflow, workflows
 
 ROOT = Path(__file__).resolve().parents[1]
 FILTER = ROOT / "scripts" / "printable_log.py"
-WORKFLOWS = ROOT / ".github" / "workflows"
 # The shell that every workflow's defaults give its steps: GitHub's own for `bash`, run
 # through the filter.
 SHELL = "python3 -I scripts/printable_log.py bash --noprofile --norc -eo pipefail {0}"
@@ -32,6 +33,15 @@ CHECKOUT = "actions/checkout@"
 # and what the filter writes for it.
 HIDDEN = "".join(chr(0xE0000 + ord(letter)) for letter in "OBEY")
 HIDDEN_SHOWN = "U+E004FU+E0042U+E0045U+E0059"
+
+
+def test_the_filter_shows_text_as_the_checks_show_it() -> None:
+    # Under `python3 -I` the filter cannot import `scripts/conventions.py`, whose way of showing
+    # text the checks use, so it keeps a copy, which this test holds to it.
+    text = "".join(map(chr, [*range(0x80), 0xA0, 0x202E, 0xDC7F, 0xDD00, 0xE0041]))
+    text += b"\x80\xff".decode("utf-8", "surrogateescape")
+    assert printable_log.shown(text) == conventions.printable(text, " \n")
+    assert printable_log.NOT_UTF8 == conventions.ESCAPED_BYTES
 
 
 def printable(data: bytes) -> bool:
@@ -278,13 +288,13 @@ def test_a_step_whose_output_does_not_go_through_the_filter_is_named(
 
 
 def test_every_workflow_runs_its_commands_through_the_filter() -> None:
-    paths = sorted([*WORKFLOWS.glob("*.yml"), *WORKFLOWS.glob("*.yaml")])
+    paths = workflows()
     assert paths, "no workflow was read"
     problems = [
         problem
         for path in paths
         for problem in shell_problems(
-            path.relative_to(ROOT).as_posix(), yaml.safe_load(path.read_text(encoding="utf-8"))
+            path.relative_to(ROOT).as_posix(), load_workflow(path.read_text(encoding="utf-8"))
         )
     ]
     assert problems == []

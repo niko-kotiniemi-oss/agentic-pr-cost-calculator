@@ -10,7 +10,9 @@ printable ASCII and a line feed as `U+` and its code point, and each byte that i
 as `\\x` and its value, so that no check that quotes a path or a file's text as it is, as
 ruff, mypy, pytest and `diff` do, carries a hidden character into a log that a session
 reads (T264). The filter exits with the command's status, with 128 and the signal's number
-where a signal stopped the command, and with 127 where it could not start it.
+where a signal stopped the command, and with 127 where it could not start it. It reads until
+each process that holds its pipe ends, so a process that the command leaves running in the
+background with its output on the pipe keeps the step open until that process ends.
 """
 
 from __future__ import annotations
@@ -31,7 +33,9 @@ NOT_UTF8 = range(0xDC80, 0xDD00)
 
 def shown(text: str) -> str:
     """The text with each character other than printable ASCII and a line feed given as `U+`
-    and its code point, and each byte that is not UTF-8 as `\\x` and its value."""
+    and its code point, and each byte that is not UTF-8 as `\\x` and its value: a copy of
+    `printable` of `scripts/conventions.py`, which a script run with `python3 -I` cannot
+    import, and which its test holds this to."""
     return "".join(
         character
         if " " <= character <= "~" or character == "\n"

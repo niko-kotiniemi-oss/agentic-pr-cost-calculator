@@ -86,7 +86,7 @@ import mimetypes
 import os
 import re
 import shlex
-import stat
+import shutil
 import subprocess
 import sys
 import tarfile
@@ -99,10 +99,13 @@ from typing import Any, NamedTuple
 
 import conventions
 import pytest
-import windows_line_endings
 import yaml
 from conventions import (
+    EXECUTABLE,
+    FILE,
     NO_WINDOWS_LINE_ENDINGS,
+    Entry,
+    in_working_tree,
     is_script,
     named,
     read_staged,
@@ -122,7 +125,7 @@ from test_decisions import (
 )
 from test_decisions import record as decision_record
 from test_guide import reviewed
-from test_repository import oldest_python, pyproject
+from test_repository import load_workflow, oldest_python, pyproject
 from test_roadmap import (
     isolated_environment,
     saved_with_windows_line_endings,
@@ -193,7 +196,8 @@ CODING = re.compile(r"^[ \t\f]*#.*?coding[:=][ \t]*([-\w.]+)")
 PYTHON_FILE = re.compile(r"\.py[iw]?\Z", re.IGNORECASE)
 PYTHON_LINE = re.compile(r"#!.*python")
 
-FILE, EXECUTABLE, LINK, GITLINK = "100644", "100755", "120000", "160000"
+# The modes with which git's index tracks a link and a submodule.
+LINK, GITLINK = "120000", "160000"
 IN_INDEX = ", in git's index,"
 IN_TREE = ", in the working tree,"
 NOT_ASCII = ", which is not printable ASCII"
@@ -373,14 +377,6 @@ NAMES_READ_NOTHING = "the test of names read no Python file that this repository
 NAMES_UNREAD = "ruff's naming rules gave no reading that the test can trust: ruff exited "
 
 
-class Entry(NamedTuple):
-    """A path that git's index tracks, with its mode and its object id."""
-
-    mode: str
-    oid: str
-    path: str
-
-
 def git(
     root: Path, *args: str, stdin: bytes = b"", extra: Mapping[str, str] | None = None
 ) -> subprocess.CompletedProcess[bytes]:
@@ -397,17 +393,9 @@ def git(
 
 
 def tracked_entries(root: Path) -> list[Entry]:
-    """Each path that git's index tracks, as `git ls-files -s -z` gives it, unquoted, with
-    each byte that is not UTF-8 kept as `surrogateescape` keeps it."""
-    done = git(root, "ls-files", "-s", "-z")
-    done.check_returncode()
-    found = []
-    for record in done.stdout.split(b"\0"):
-        if record:
-            head, _, path = record.partition(b"\t")
-            mode, oid, _ = head.decode("ascii").split(" ")
-            found.append(Entry(mode, oid, path.decode("utf-8", "surrogateescape")))
-    return found
+    """Each path that git's index tracks, as `conventions.tracked_entries` reads it, with no
+    global or system configuration."""
+    return conventions.tracked_entries(root, isolated_environment(root))
 
 
 def markdown_files(root: Path) -> set[str]:
@@ -451,52 +439,6 @@ def blobs(root: Path, oids: Iterable[str]) -> dict[str, bytes | None]:
         found[pending[read]] = None
         pending = pending[read + 1 :]
     return found
-
-
-def kind_of(path: Path) -> str:
-    """What a path of the working tree is, read without following a link."""
-    try:
-        mode = os.lstat(path).st_mode
-    except (FileNotFoundError, NotADirectoryError):
-        return "missing"
-    if stat.S_ISLNK(mode):
-        return "link"
-    if stat.S_ISDIR(mode):
-        return "folder"
-    return "file" if stat.S_ISREG(mode) else "other"
-
-
-def in_working_tree(root: Path, path: str, folders: dict[str, str]) -> tuple[str, bytes] | None:
-    """What the working tree holds at a tracked path, as a kind and its bytes: a file's, a
-    link's path, or nothing for anything else or for a path that lies in a folder that is a
-    link; or None where it holds nothing. It follows no link, and opens a file only once it
-    knows the file to be one."""
-    parts = path.split("/")
-    for depth in range(1, len(parts)):
-        folder = "/".join(parts[:depth])
-        if folder not in folders:
-            folders[folder] = kind_of(root / folder)
-        if folders[folder] == "link":
-            return ("under a link", b"")
-        if folders[folder] != "folder":
-            return None
-    full = root / path
-    kind = kind_of(full)
-    if kind == "missing":
-        return None
-    if kind == "link":
-        return ("link", os.fsencode(os.readlink(full)))
-    if kind != "file":
-        return ("other", b"")
-    flags = os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0) | getattr(os, "O_NONBLOCK", 0)
-    descriptor = os.open(full, flags)
-    try:
-        if not stat.S_ISREG(os.fstat(descriptor).st_mode):
-            return ("other", b"")
-        with open(descriptor, "rb", closefd=False) as file:
-            return ("file", file.read())
-    finally:
-        os.close(descriptor)
 
 
 def refused(character: str, before: str, others: bool, markdown: bool) -> str:
@@ -658,10 +600,10 @@ def loaded_problems(path: str, text: str, where: str, others: bool) -> list[str]
         held |= {character for line in text.split("\n") for _, character, _ in escapes(line)}
     return [
         f"{name}{f':{line}' if line else ''}{where} gives {named(character)}, read as {kind}"
-        f"{refused(character, '', others, False)}"
+        f"{reason}"
         for line, value in strings
         for character in value
-        if refused(character, "", others, False) and character not in held
+        if character not in held and (reason := refused(character, "", others, False))
     ]
 
 
@@ -1320,7 +1262,7 @@ def attribute_line_problems(root: Path) -> list[str]:
         readings = {IN_INDEX: staged.get(entry.oid)}
         tree = in_working_tree(root, entry.path, folders)
         if tree is not None and tree[0] == "file":
-            readings[IN_TREE] = tree[1]
+            readings[IN_TREE] = staged_bytes(entry.path, tree[1], entry.mode == EXECUTABLE)
         for where, data in readings.items():
             for number, line in enumerate((data or b"").split(b"\n"), 1):
                 if len(line) >= LONG_LINE:
@@ -1983,13 +1925,7 @@ def test_a_character_that_only_git_s_index_holds_fails(tmp_path: Path) -> None:
     }
     source = plant(tmp_path / "source", files)
     commit(source)
-    clone = tmp_path / "clone"
-    subprocess.run(
-        ["git", "clone", "-q", str(source), str(clone)],
-        check=True,
-        capture_output=True,
-        env=isolated_environment(clone),
-    )
+    clone = cloned(source, tmp_path / "clone", {})
     assert (clone / "page.md").read_bytes().isascii()
     assert character_problems(clone) == [
         f"page.md:2:3{IN_INDEX} holds {named(chr(0x202E))}{NOT_ASCII}"
@@ -3185,13 +3121,7 @@ def test_an_attributes_file_that_a_checkout_re_encodes_is_read_as_git_holds_it(
 ) -> None:
     source = plant(tmp_path / "source", dict.fromkeys(REENCODED_FILES, "Text.\n"))
     commit(give(source, REENCODED))
-    clone = tmp_path / "clone"
-    subprocess.run(
-        ["git", "clone", "-q", str(source), str(clone)],
-        check=True,
-        capture_output=True,
-        env=isolated_environment(clone),
-    )
+    clone = cloned(source, tmp_path / "clone", {})
     assert b"+AD0-" in (clone / ".gitattributes").read_bytes(), "no checkout re-encoded it"
     hidden = ("diff: x", "linguist-generated: set")
     # Git cannot read the copy that the checkout re-encoded, and says so, which the test names
@@ -3348,6 +3278,21 @@ def test_an_attributes_line_one_byte_short_of_the_limit_is_read(tmp_path: Path) 
     root = give(plant(tmp_path, {"docs/page.md": "Text.\n"}), f"{long_line(LONG_LINE - 1)}\n")
     assert attribute_line_problems(root) == []
     assert other_attribute_problems(root) == [f"docs/page.md has ident: set{OTHER_ATTRIBUTE}"]
+
+
+def test_an_attributes_line_saved_with_a_windows_line_ending_is_measured_as_git_reads_it(
+    tmp_path: Path,
+) -> None:
+    # Git reads the working tree's attributes line by line without the carriage return
+    # before each line feed (R276).
+    root = give(plant(tmp_path, {"docs/page.md": "Text.\n"}), f"{long_line(LONG_LINE - 1)}\n")
+    saved_with_windows_line_endings(root, [".gitattributes"])
+    assert attribute_line_problems(root) == []
+    assert other_attribute_problems(root) == [f"docs/page.md has ident: set{OTHER_ATTRIBUTE}"]
+    (root / ".gitattributes").write_bytes(f"{long_line(LONG_LINE)}\r\n".encode())
+    assert attribute_line_problems(root) == [
+        f".gitattributes:1{IN_TREE}{LINE_IGNORED.format(LONG_LINE)}"
+    ]
 
 
 @pytest.mark.parametrize(
@@ -3932,7 +3877,7 @@ def skipping_problems(doc: Mapping[str, Any]) -> list[str]:
 
 
 def ci_workflow() -> Any:
-    return yaml.safe_load(read_staged(ROOT / ".github" / "workflows" / "ci.yml"))
+    return load_workflow(read_staged(ROOT / ".github" / "workflows" / "ci.yml").decode("utf-8"))
 
 
 def gated(**changes: Any) -> dict[str, Any]:
@@ -4132,26 +4077,30 @@ def test_the_job_fails_where_it_saves_nothing(tmp_path: Path) -> None:
     assert NO_WINDOWS_LINE_ENDINGS in done.stderr
 
 
-def test_the_job_fails_where_a_file_that_it_saved_holds_no_windows_line_endings(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
-) -> None:
-    root = plant(tmp_path, {"docs/page.md": "Text.\n", "docs/other.md": "Text.\n"})
-    monkeypatch.setattr(
-        windows_line_endings, "save", lambda root: ["docs/page.md", "docs/other.md"]
-    )
-    (root / "docs" / "other.md").write_bytes(b"Text.\r\n")
-    assert windows_line_endings.main([str(WINDOWS_SCRIPT), str(root)]) == 1
-    assert capsys.readouterr().err == (
-        f"windows-line-endings: {NO_WINDOWS_LINE_ENDINGS} in docs/page.md\n"
-    )
-
-
 @pytest.mark.parametrize("where", ["a folder that no repository holds", "no folder"])
 def test_the_job_that_cannot_list_the_tracked_files_says_so(tmp_path: Path, where: str) -> None:
     done = run_the_job(tmp_path if where == "a folder that no repository holds" else tmp_path / "x")
     assert (done.returncode, done.stdout) == (2, "")
     assert done.stderr.startswith("windows-line-endings: git ls-files failed: ")
     assert done.stderr.count("\n") == 1
+
+
+def test_the_job_that_cannot_tell_where_its_root_lies_says_so(tmp_path: Path) -> None:
+    root = plant(tmp_path / "repository", {"docs/page.md": "Text.\n"})
+    real = shutil.which("git")
+    assert real
+    wrapper = tmp_path / "bin" / "git"
+    wrapper.parent.mkdir()
+    wrapper.write_text(
+        '#!/usr/bin/env bash\n[ "$1" = rev-parse ] && echo refused >&2 && exit 128\n'
+        f'exec "{real}" "$@"\n',
+        encoding="utf-8",
+    )
+    wrapper.chmod(0o755)
+    done = run_the_job(root, {"PATH": f"{wrapper.parent}{os.pathsep}{os.environ['PATH']}"})
+    assert (done.returncode, done.stdout) == (2, "")
+    assert done.stderr == "windows-line-endings: git rev-parse failed: refused\n"
+    assert (root / "docs" / "page.md").read_bytes() == b"Text.\n"
 
 
 def test_the_job_lists_the_files_of_the_repository_that_it_is_given(tmp_path: Path) -> None:
@@ -4165,7 +4114,8 @@ def test_the_job_lists_the_files_of_the_repository_that_it_is_given(tmp_path: Pa
 def test_the_job_writes_through_no_link_and_over_no_link_that_git_s_index_holds(
     tmp_path: Path,
 ) -> None:
-    outside = tmp_path / "outside.md"
+    # Its name holds a line feed, so that the link's own text holds one too.
+    outside = tmp_path / "out\nside.md"
     outside.write_bytes(b"Outside.\n")
     files = {"docs/page.md": "Text.\n", "docs/held.md": "Held.\n"}
     root = plant(tmp_path / "repository", files, links={"docs/link.md": "page.md"})
@@ -4182,6 +4132,42 @@ def test_the_job_writes_through_no_link_and_over_no_link_that_git_s_index_holds(
     assert outside.read_bytes() == b"Outside.\n"
     assert (root / "docs" / "link.md").read_bytes() == b"page.md\nmore\n"
     assert (root / "docs" / "page.md").read_bytes() == b"Text.\r\n"
+
+
+def test_the_job_writes_into_no_folder_that_the_working_tree_holds_as_a_link(
+    tmp_path: Path,
+) -> None:
+    """A folder on a tracked path's way that the working tree holds as a link, here to a
+    folder outside the repository, which git's index cannot hold beside a file below it, is
+    read as the test of characters reads it, through no link (R272, R276)."""
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    (outside / "page.md").write_bytes(b"Outside.\n")
+    root = plant(tmp_path / "repository", {"docs/page.md": "Text.\n", "notes/kept.md": "Kept.\n"})
+    commit(root)
+    (root / "docs" / "page.md").unlink()
+    (root / "docs").rmdir()
+    (root / "docs").symlink_to(outside, target_is_directory=True)
+    done = run_the_job(root)
+    assert done.returncode == 0, done.stderr
+    assert "saved 1 files" in done.stdout
+    assert (outside / "page.md").read_bytes() == b"Outside.\n"
+    assert (root / "notes" / "kept.md").read_bytes() == b"Kept.\r\n"
+
+
+def test_the_job_refuses_a_root_below_the_top_of_its_working_tree(tmp_path: Path) -> None:
+    """Below the top, git gives each path from the root that it is given, which the files
+    that others write do not match, so that the job would rewrite vendored files (R276)."""
+    vendored = {"vendor/superpowers/skills/a.md": "Upstream.\n", "docs/page.md": "Text.\n"}
+    root = plant(tmp_path, vendored)
+    done = run_the_job(root / "vendor")
+    assert (done.returncode, done.stdout) == (2, "")
+    assert done.stderr == (
+        f"windows-line-endings: {shown_path(str(root / 'vendor'))} is a folder below the top of"
+        " its working tree, vendor/, where git would give each path from that folder\n"
+    )
+    for path, text in vendored.items():
+        assert (root / path).read_bytes() == text.encode("ascii"), path
 
 
 # A file of each kind that a clone writes: a page, a script by each of its marks, and a file
@@ -4363,6 +4349,15 @@ def test_a_path_is_shown_with_each_other_character_by_its_code_point() -> None:
 
 def test_text_is_shown_with_each_character_beyond_printable_ascii_by_its_code_point() -> None:
     assert shown("a b\t\u2014~") == "a bU+0009U+2014~"
+
+
+def test_a_byte_that_is_not_utf_8_is_shown_by_its_value_in_text_as_in_a_path() -> None:
+    # Git's warnings and the attributes that git gives are read with `surrogateescape`, and a
+    # message names a path beside them that can hold the same byte.
+    byte = b"\xff".decode("utf-8", "surrogateescape")
+    assert shown(f"b{byte}") == "b\\xFF"
+    assert shown_path(f"a{byte}.md") == "a\\xFF.md"
+    assert shown(chr(0xDC7F) + chr(0xDD00)) == "U+DC7FU+DD00"
 
 
 @pytest.mark.parametrize(

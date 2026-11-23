@@ -16,7 +16,7 @@ from collections.abc import Mapping
 from pathlib import Path
 
 import pytest
-from sweep_evidence import MAPPING, cited, holds, main, short, units
+from sweep_evidence import MAPPING, cited, holds, main, normal, short, units
 
 GIT_ENVIRONMENT = {
     "GIT_CONFIG_GLOBAL": os.devnull,
@@ -164,6 +164,27 @@ def test_a_mapping_that_places_every_clause_passes(
     assert f"`{base}`" in out and f"`{head}`" in out
     assert "| `docs/page.md` | 8 | 7 | 3 |" in out
     assert out.rstrip().endswith("No problems.")
+
+
+# The mapping holds printable ASCII alone, so it writes each arrow that the base held as `->`.
+ARROW = "\N{RIGHTWARDS ARROW}"
+
+
+def test_an_arrow_that_the_base_holds_is_read_as_the_mapping_writes_it(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    quoted = entry("Counts -> cost.", [("Counts -> cost.", '`ledger`: "Counts are kept"')])
+    after = {"docs/page.md": PAGE, MAPPING: mapping(("docs/page.md", [quoted]))}
+    history(tmp_path, after, before={"docs/page.md": f"{PAGE}\nCounts {ARROW} cost.\n"})
+    code, out = run(tmp_path, monkeypatch, capsys)
+    assert code == 0, out
+    assert out.rstrip().endswith("No problems.")
+
+
+def test_an_arrow_is_read_as_the_two_characters_that_write_it_and_no_others() -> None:
+    assert normal(f"a {ARROW} b") == normal("a -> b") == "a -> b"
+    assert normal("a => b") != "a -> b"
+    assert normal(f"~~~~text\na {ARROW}\n~~~~") == "~~~~text\na ->\n~~~~"
 
 
 def test_a_removed_unit_without_an_entry_is_reported(

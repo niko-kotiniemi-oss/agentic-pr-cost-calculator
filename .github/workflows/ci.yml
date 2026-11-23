@@ -19,7 +19,9 @@ defaults:
     # that `check | head` fails where the check fails, run through a filter that
     # writes what each command prints in printable ASCII, so that a check which
     # quotes a planted path as it is writes no hidden character into the log
-    # (R278).
+    # (R278). The filter reads until each process that holds its pipe ends, so a
+    # step that starts a process in the background sends that process's output
+    # elsewhere, or waits for it.
     shell: python3 -I scripts/printable_log.py bash --noprofile --norc -eo pipefail {0}
 
 # Declared rather than inherited, so what these jobs can do is readable here.

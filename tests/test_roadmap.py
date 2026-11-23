@@ -69,7 +69,11 @@ from urllib.parse import unquote
 
 import pytest
 from conventions import NO_WINDOWS_LINE_ENDINGS, read_staged, shown_path, written_by_others
+
+# The other tests take it from here, as they did before the scripts shared it.
+from conventions import session_free_environment as session_free_environment
 from spec_form import find_specs
+from windows_line_endings import BARE_LINE_FEED
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -170,12 +174,6 @@ GIT_ENVIRONMENT = {
 }
 
 
-def session_free_environment() -> dict[str, str]:
-    """The environment with no git variable of the session's, such as an index file,
-    that would make git read another repository than the one it runs in."""
-    return {key: value for key, value in os.environ.items() if not key.startswith("GIT_")}
-
-
 def isolated_environment(root: Path) -> dict[str, str]:
     """The environment with no git variable of the session's and no global or system
     configuration, so that git reads only the repository at root, as it is.
@@ -195,12 +193,14 @@ def isolated_environment(root: Path) -> dict[str, str]:
 
 def saved_with_windows_line_endings(root: Path, paths: Iterable[str]) -> None:
     """Each file at these paths, in the working tree alone, with a carriage return before
-    each line feed, as an editor on Windows can save it, once the test has checked that it
-    holds one, so that a test of Windows line endings that meets none fails (R276)."""
+    each line feed, as an editor on Windows can save it and as the job of CI saves it, once
+    the test has checked that it holds a line feed, so that a test of Windows line endings
+    that meets none fails (R276)."""
     for path in paths:
         file = root / path
-        file.write_bytes(file.read_bytes().replace(b"\n", b"\r\n"))
-        assert b"\r\n" in file.read_bytes(), f"{path}: the test {NO_WINDOWS_LINE_ENDINGS}"
+        data = file.read_bytes()
+        assert b"\n" in data, f"{path}: the test {NO_WINDOWS_LINE_ENDINGS}"
+        file.write_bytes(BARE_LINE_FEED.sub(b"\r\n", data))
 
 
 def with_line_feeds(files: Mapping[str, str | None]) -> list[str]:

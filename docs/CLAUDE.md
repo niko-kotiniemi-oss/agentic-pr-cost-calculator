@@ -48,7 +48,8 @@ nothing that its documentation leaves out.
   is, such as the glossary or an assumption, is brought to the rule that the specs are the single
   source only by a change of its own that the owner asks for (DR-252).
 - The mapping describes: the text that it quotes is what the default branch held before the sweep,
-  kept as its evidence, and never says what the tool does or what to build.
+  with each arrow written as `->`, kept as its evidence, and never says what the tool does or what
+  to build.
 ## The guide and the backlog
 - Read the guide's opening before you change the guide. A principle that the owner asks you to add,
   remove, change or move to another concern goes in a pull request that changes nothing outside

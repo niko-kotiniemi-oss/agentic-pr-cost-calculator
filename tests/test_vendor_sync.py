@@ -12,10 +12,11 @@ with each carriage return before a line feed taken as a line feed, and its
 check compares every path below the vendored root with that commit's, leaving
 out the lock at the root alone, by its path, and the mode that git's index
 gives each with the mode that the commit gives it. It stops on a link in the
-copy, and on a path that git's checkout refuses on Windows or macOS, reads and
-writes no repository that a person's git variables name, and says how to write
-the copy again where a vendored file holds a carriage return that the commit's
-does not (R275, R276, DR-275, DR-281).
+copy, on a path that git's checkout refuses on Windows or macOS and on a pinned
+file that holds a carriage return, leaves the copy as it was where a refresh
+stops, reads and writes no repository that a person's git variables name, and
+says how to write the copy again where a vendored file holds a carriage return,
+which the commit's do not (R275, R276, DR-275, DR-281).
 
 These tests run the real script against a local upstream, never the network,
 with no git variable of the session's and no global or system configuration
@@ -318,14 +319,11 @@ def released(world: World) -> dict[str, tuple[int, bytes]]:
 
 
 def vendored(world: World) -> dict[str, tuple[int, bytes]]:
-    """Each file below the vendored root but the lock at the root, by its path, with its mode
-    and its bytes."""
-    root = world.repo / "vendor" / "superpowers"
-    return {
-        path.relative_to(root).as_posix(): (stat.S_IMODE(path.stat().st_mode), path.read_bytes())
-        for path in root.rglob("*")
-        if path.is_file() and path != root / "UPSTREAM.lock"
-    }
+    """Each file below the vendored root but the lock at the root, as `files_below` gives
+    it."""
+    given = files_below(world.repo / "vendor" / "superpowers")
+    given.pop("UPSTREAM.lock", None)
+    return given
 
 
 @pytest.mark.parametrize("case", CONDITIONS)
@@ -504,6 +502,89 @@ def test_the_sync_refuses_a_release_that_lacks_a_vendored_path(world: World) -> 
     assert f"sync: owner/superpowers@{commit} gives no hooks/session-start" in done.stderr
 
 
+# R275: a pinned file that holds a carriage return stops the sync, since git commits one before
+# a line feed as a line feed, so that the copy would no longer match the pinned commit, and the
+# test of characters refuses one that git keeps (R269).
+
+HELD_RETURNS = {
+    "a carriage return before a line feed": "A licence.\r\n",
+    "a lone carriage return": "A licence.\rAnd more.\n",
+}
+
+
+@pytest.mark.parametrize("args", [(), ("--check",)], ids=["refresh", "check"])
+@pytest.mark.parametrize("text", list(HELD_RETURNS.values()), ids=list(HELD_RETURNS))
+def test_the_sync_refuses_a_pinned_file_that_holds_a_carriage_return(
+    world: World, text: str, args: tuple[str, ...]
+) -> None:
+    bare = world.remotes / "owner" / "superpowers.git"
+    returned = git("hash-object", "-w", "--stdin", cwd=bare, stdin=text)
+    commit = craft(world, "skills", added=(f"100644 blob {returned}\tLICENSE.txt",))
+    # The copy as the pinned commit gives it, as the refresh wrote it before a commit, which a
+    # check that compared it with the pinned commit's files alone would pass.
+    assert sync(world, world.tagged, "v1.0.0").returncode == 0
+    licence = world.repo / "vendor" / "superpowers" / "skills" / "LICENSE.txt"
+    licence.write_bytes(text.encode())
+    assert b"\r" in licence.read_bytes(), f"{licence.name}: the test planted no carriage return"
+    before = vendored(world)
+    done = sync(world, commit, "v2.0.0", *args)
+    assert done.returncode == 1
+    said = (
+        f"sync: owner/superpowers@{commit} gives skills/LICENSE.txt a carriage return, which no"
+        " vendored file may hold"
+    )
+    assert said in done.stderr
+    assert vendored(world) == before
+
+
+# R275: a refresh that stops, on what the pinned commit gives or on a fetch that fails, leaves
+# the vendored copy as it was.
+
+STOPS = (
+    "a link that git lists before every vendored file",
+    "a link that git lists after every vendored file",
+    "a release that lacks a vendored path",
+    "a fetch that fails",
+)
+
+
+def stopping(tmp_path: Path, world: World, case: str) -> tuple[str, str, dict[str, str], str]:
+    """A pin on which the refresh stops, for the case, as its commit and its tag, with the
+    environment that the refresh runs in and what it says there: a crafted release, or the
+    tagged one where git's upload of the pinned commit fails, as where the network drops once
+    the tag is read."""
+    if case == "a fetch that fails":
+        configuration = tmp_path / "gitconfig"
+        configuration.write_bytes(b"[uploadpack]\n\tpackObjectsHook = false\n")
+        return world.tagged, "v1.0.0", {"GIT_CONFIG_GLOBAL": str(configuration)}, "fatal: "
+    if case == "a release that lacks a vendored path":
+        commit = craft(world, "hooks", dropped=("session-start",))
+        return commit, "v2.0.0", {}, "gives no hooks/session-start"
+    # Git lists `.claude-plugin`, `LICENSE`, `hooks` and `skills` in this order, a folder's
+    # `link` before `plugin.json` and after the folder `a`.
+    folder = ".claude-plugin" if case.endswith("before every vendored file") else "skills"
+    bare = world.remotes / "owner" / "superpowers.git"
+    link = git("hash-object", "-w", "--stdin", cwd=bare, stdin="../../outside")
+    commit = craft(world, folder, added=(f"120000 blob {link}\tlink",))
+    return commit, "v2.0.0", {}, f"gives {folder}/link the mode 120000"
+
+
+@pytest.mark.parametrize("case", STOPS)
+def test_a_refresh_that_stops_leaves_the_vendored_copy_as_it_was(
+    tmp_path: Path, world: World, case: str
+) -> None:
+    assert sync(world, world.tagged, "v1.0.0").returncode == 0
+    # An edit that a refresh which wrote part of its copy would write over, so that one shows.
+    (world.repo / "vendor" / "superpowers" / "LICENSE").write_bytes(b"Not upstream's.\n")
+    before = vendored(world)
+    commit, tag, environment, said = stopping(tmp_path, world, case)
+    done = sync(world, commit, tag, environment=environment)
+    assert done.returncode != 0
+    assert said in done.stderr
+    assert "re-materialised" not in done.stdout
+    assert vendored(world) == before
+
+
 def files_below(folder: Path) -> dict[str, tuple[int, bytes]]:
     """Each file below the folder by its path, with its mode and its bytes."""
     return {
@@ -672,20 +753,6 @@ def test_the_check_outside_a_git_repository_fails(world: World) -> None:
 # R276: the check says how to write the vendored copy again where a vendored file holds a
 # carriage return that the pinned commit's does not, as a clone made with `core.autocrlf`
 # set to `true` before the repository's attributes keeps one.
-
-
-def test_a_carriage_return_that_the_pinned_commit_gives_too_gets_no_advice(world: World) -> None:
-    bare = world.remotes / "owner" / "superpowers.git"
-    returned = git("hash-object", "-w", "--stdin", cwd=bare, stdin="A licence.\r\n")
-    commit = craft(world, "skills", added=(f"100644 blob {returned}\tLICENSE.txt",))
-    assert sync(world, commit, "v2.0.0").returncode == 0
-    licence = world.repo / "vendor" / "superpowers" / "skills" / "LICENSE.txt"
-    assert b"\r\n" in licence.read_bytes(), f"{licence.name}: the test {NO_WINDOWS_LINE_ENDINGS}"
-    licence.write_bytes(b"Edited.\r\n")
-    done = sync(world, commit, "v2.0.0", "--check")
-    assert done.returncode == 1
-    assert "DIFFERS" in done.stderr
-    assert "carriage return" not in done.stderr
 
 
 @pytest.mark.parametrize("way", ["the refresh", "a checkout"])
