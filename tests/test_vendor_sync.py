@@ -19,7 +19,7 @@ reads each path as the name that it is whatever they say of how git reads one,
 works whatever object format git gives a new repository, replaces each vendored
 path wherever the clone lies, and says how to write the copy again where a
 vendored file holds a carriage return, which the commit's do not (R275, R276,
-DR-275, DR-281).
+DR-275, DR-281, DR-284).
 
 These tests run the real script against a local upstream, never the network,
 with no git variable of the session's and no global or system configuration

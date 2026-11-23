@@ -66,11 +66,12 @@ line feed as a line feed, as git stages a text file, in every file but a script,
 whose name ends in `.sh`, that starts with `#!` or that git records as executable. A
 carriage return that git's index holds, one that no line feed follows and any in a script
 still fail, and one in a script's working tree that git's index does not hold is named with
-the way back: to stage the script, delete it, check it out again and unstage it, which keeps
-an edit not yet staged, or to clone the repository again. CI's job `windows-line-endings`
-runs every check on the files that this repository writes, but its scripts, saved with
-Windows line endings, and the job `ci`, for which a merge waits, needs every job, none of
-which, and no step of which, a condition skips or lets fail (R276, DR-281).
+the way back: to stage the script as git normalizes it, delete it, check it out again and
+unstage it, which keeps an edit not yet staged, or to clone the repository again. CI's job
+`windows-line-endings` runs every check on the files that this repository writes, but its
+scripts, saved with Windows line endings, and the job `ci`, for which a merge waits, needs
+every job, none of which, and no step of which, a condition skips or lets fail (R276,
+DR-281, DR-283).
 
 Each check is shown to fail on a git repository into which its defect is planted.
 """
@@ -219,8 +220,8 @@ READ_NOTHING = "the test of characters read no tracked file"
 # that git's index does not, as one in a clone made before the attributes does (R276, T267).
 CHECK_OUT_AGAIN = (
     " is a script that holds a carriage return, which bash or the system reads as part of "
-    "its line: stage it, delete it, check it out again and unstage it, which keeps an edit, "
-    "or clone the repository again, as CONTRIBUTING.md says"
+    "its line: stage it as git normalizes it, delete it, check it out again and unstage it,"
+    " which keeps an edit, or clone the repository again, as CONTRIBUTING.md says"
 )
 
 
@@ -5019,6 +5020,13 @@ def written_again(clone: Path, path: str) -> None:
         check=True,
         capture_output=True,
     )
+
+
+def test_the_advice_for_a_script_says_to_stage_it_as_git_normalizes_it() -> None:
+    """Plain `git add` stops where `core.safecrlf` is `true`, so the advice names the step
+    that the command in `CONTRIBUTING.md` takes first, whatever that setting says (R276)."""
+    assert "stage it as git normalizes it, delete it, check it out again" in CHECK_OUT_AGAIN
+    assert way_back().startswith("git add --renormalize <path> && ")
 
 
 # Git's own setting, and one that stops `git add` where staging would change a file's line
