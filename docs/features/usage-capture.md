@@ -10,6 +10,35 @@ While a Claude Code session works in the repository, a hook records what each mo
 
 ## Expected behaviour
 
+Which calls a run keeps:
+
+```mermaid
+flowchart TD
+  A["1) A call in a transcript"] --> B{"2) Is it over?"}
+  B -->|no| W["3) Wait for a later run"]
+  B -->|yes| C{"4) Is its repository this one?"}
+  C -->|no, or cannot be told| O["5) Left out"]
+  C -->|yes| D{"6) Made inside an interval?"}
+  D -->|no| O
+  D -->|yes| E{"7) Recorded before?"}
+  E -->|yes| X["8) Nothing new"]
+  E -->|no| S["9) Kept in the store"]
+  S --> L["10) Into its commit's ledger file"]
+```
+
+- 1) A model call in the session's transcript or a subagent's (R2, R75).
+- 2) A call is read from its line that gives a stop reason, or from its last line once it is over (R41, R42).
+- 3) A call that is not over yet waits for a later run (R42).
+- 4) A call's repository is told by the working directory that its line gives, alone (R3, R147).
+- 5) A call made elsewhere, or whose repository cannot be told, is left out, and the next ledger file says so only for the cases that R155 gives (R147, R155).
+- 6) Only a call made while both switches were on is recorded, as the [opt-in's page](switch-and-opt-in.md) says (R40, R144).
+- 7) Each call is recorded once, by a hash of its message id, also where two copies of the capture step run (R2, R181).
+- 8) A call already recorded adds nothing (R2).
+- 9) The store keeps its counts, with hashes of its session, worktree and branch, for no longer than its retention window (R149, R150).
+- 10) Just before a commit in its worktree, on the branch it was recorded on, the call goes into that commit's ledger file (R7, R78, R81).
+
+In detail:
+
 - **What is recorded.** For each model call, once: its UTC day, its model, a hash of its message id, whether the main agent or a subagent made it, and its input, output, cache-write and cache-read tokens. Where the transcript gives them, it also records the attributes that change the price: service tier, speed, inference region and server-side tool requests (R2). A call is recorded only when it was made while both switches were on, as the [opt-in's page](switch-and-opt-in.md) says (R40).
 - **Placed by the line it answers.** R165 gives how a run reads again the lines that earlier runs read, so that a call is placed inside or outside an interval by the line it answers, whichever run read that line, and what the next ledger file says of a call that it leaves out.
 - **Where from.** R147 and R169 give how a call's repository and worktree are told, by the working directory that its transcript line gives, alone. R76 and R180 give the repositories that a run of the hook file's registration and a run of the plugin work on (DR-198), and R197 where a run of the plugin lets git start a program that a repository's configuration names, so that a clone that the session only meets or moves into has git start none of the programs that its own configuration names, such as `core.fsmonitor` or `gpg.program`. A run that works on a repository records there only the calls made in it or in one of its worktrees (R3, R180). That rule has limits:

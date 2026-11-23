@@ -22,33 +22,52 @@ Capture's opt-in is set by the person whose sessions it records, or by the envir
 
 ```mermaid
 flowchart LR
-  subgraph account["The person's claude.ai account and cloud environment"]
-    Z[Plugin, from a release's zip or this repository's marketplace]
-    E[Environment's setup script]
-    I[Instructions, memory and other repositories' files]
+  subgraph AC["The person's account and environment"]
+    Z["1) Plugin"]
+    E["2) Setup script"]
+    I["3) Instructions and other repositories"]
   end
-  subgraph session["Developer's machine or cloud session"]
-    T[Session and subagent transcripts] -->|read by the hooks| C[Capture step]
-    C -->|records| S[Store in the git directory]
-    S -->|before each commit| L[New ledger file, staged]
+  subgraph SE["Developer's machine or cloud session"]
+    T["4) Transcripts"] -->|read by the hooks| C["5) Capture step"]
+    C -->|records| S["6) Store"]
+    S -->|before each commit| L["7) Ledger file"]
   end
-  L -->|commit and push| B[Pull request branch]
-  subgraph github["GitHub"]
-    B -->|merge by the owner| M[Default branch]
-    M -->|push event| R[Report workflow]
-    P[Price table, pinned with the tool] --> R
-    J[Actions jobs API] --> R
-    R -->|post or update| K[Comment on the pull request]
-    M -->|tag push by the owner| G[Release workflow]
-    G -->|publish| V[Release with its bill of materials and the plugin's zip]
+  L -->|commit and push| B["8) Pull request branch"]
+  subgraph GH["GitHub"]
+    B -->|merge by the owner| M["9) Default branch"]
+    M -->|push event| R["10) Report workflow"]
+    F["11) Git fetches"] --> R
+    P["12) Price table"] --> R
+    J["13) Actions jobs API"] --> R
+    R -->|post or update| K["14) Comment"]
+    M -->|tag push by the owner| G["15) Release workflow"]
+    G -->|publish| V["16) Release"]
   end
-  V -->|names the commit to pin| A[Adopters]
-  V -->|zip, checked and uploaded by the person| Z
-  M -->|plugin folder, moved after each release| Z
+  V -->|names the commit to pin| A["17) Adopters"]
+  V -->|zip, checked and uploaded| Z
+  M -->|plugin folder, after each release| Z
   Z -->|runs as hooks| C
-  E -->|writes the opt-in that capture reads| C
-  I -->|loaded as instructions| session
+  E -->|writes the opt-in| C
+  I -->|loaded as instructions| SE
 ```
+
+- 1) The plugin, from a release's zip that the person uploads or from this repository's marketplace (boundary 9; R179, R184, R187).
+- 2) The environment's setup script, which can write the opt-in that capture reads (boundary 9; R185).
+- 3) Instructions, memory and other repositories' files that Claude Code loads into the session (boundary 9).
+- 4) The session's and its subagents' transcripts, read by the hooks (boundary 1; R2, R75).
+- 5) The capture step (boundaries 1 and 2; R1, R3).
+- 6) Its store in the git common directory (boundary 2; R47).
+- 7) A new ledger file, staged before each commit (boundary 2; R8, R56).
+- 8) The pull request's branch, which whoever can push to it writes (boundary 3; R7).
+- 9) The default branch, which the owner merges to (R68).
+- 10) The report workflow, started by the merge's push (boundaries 3 and 4; R24, R68).
+- 11) The report's git fetches: the tool's own code at its commit, the default branch's history up to the push's commit, and the pull request's head as `refs/pull/<number>/head` (boundaries 3 and 4; R23, R24, R30).
+- 12) The price table, pinned with the tool (R14, R30).
+- 13) GitHub's Actions jobs API (boundary 4; R62).
+- 14) The comment on the pull request, which the report posts or updates (boundaries 4 and 5; R20, R96).
+- 15) The release workflow, which the owner's tag push starts (boundary 8; R27).
+- 16) The release with its bill of materials and the plugin's zip (boundary 8; R28, R183, R189).
+- 17) Adopters, whom the release tells which commit to pin (boundary 6; R203).
 
 The trust boundaries:
 

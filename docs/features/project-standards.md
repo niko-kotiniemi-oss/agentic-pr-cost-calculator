@@ -10,6 +10,31 @@ What holds for the whole tool rather than for one feature: documentation that na
 
 ## Expected behaviour
 
+What a pull request here goes through:
+
+```mermaid
+flowchart LR
+  P["1) Pull request"] --> PY["2) Tests and linters"]
+  P --> OS["3) OpenSpec"]
+  P --> V["4) Vendored copy"]
+  P --> W["5) Windows line endings"]
+  PY & OS & V & W --> C["6) The ci check"]
+  P --> R["7) Threat review and review lanes"]
+  C --> M["8) The owner's merge"]
+  R --> M
+```
+
+- 1) A pull request, whose text is checked for private references (R33).
+- 2) The tests, `ruff` and `mypy`, on the oldest supported Python and the newest release, among them the tests of the documentation, the records, the specs' form and the conventions (R25, R29, R100, R124, R173, R268).
+- 3) The pinned OpenSpec reads every spec, and CI compares that reading with the tests' (R178).
+- 4) The vendored copy of Superpowers holds only what its pinned commit gives (R275).
+- 5) The checks read a checkout's files with Windows line endings as git stages them (R276).
+- 6) The one check that the ruleset requires, `ci`, which passes only when every job above passes (DR-043, DR-072, DR-283).
+- 7) The threat model is reviewed independently at design and before the merge, and every threat is rated (R31).
+- 8) The owner decides every merge (DR-080).
+
+In detail:
+
 - **Documentation.** A register of every requirement, one page per feature, and [`../how-it-works.md`](../how-it-works.md), which names every credential, permission, connection and flow, each held by the tests that R29, R100 and R101 give.
 - **Validation, written down.** R73 and R74 give the page that each feature has, with all its requirements and how it is validated, what each change's proposal says of each capability, and the tests that hold both.
 - **The specs' form.** R173 to R178 give how every spec that OpenSpec reads is read as OpenSpec reads it, line by line, so that none is read otherwise than it is written or shown, and how CI compares that reading with what the pinned OpenSpec shows.

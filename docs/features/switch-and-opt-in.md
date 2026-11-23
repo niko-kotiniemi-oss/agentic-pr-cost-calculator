@@ -10,6 +10,32 @@ Two switches decide whether anything is recorded. The repository decides whether
 
 ## Expected behaviour
 
+Whether a run records anything:
+
+```mermaid
+flowchart TD
+  A["1) A run"] --> B{"2) Does the repository's switch turn the tool on?"}
+  B -->|no| F["3) Off: no store, nothing recorded"]
+  B -->|yes| C{"4) Has the person opted in?"}
+  C -->|no| F
+  C -->|yes| D{"5) Does git's own reading leave it on?"}
+  D -->|no| F
+  D -->|yes| E{"6) Is the fingerprint the last one noted?"}
+  E -->|no| O["7) Do what an opt-out does"]
+  E -->|yes| N["8) On: record inside the interval"]
+```
+
+- 1) A run of the capture step, which reads both switches before it starts any program (R118).
+- 2) The repository's switch is a valid `.pr-cost.json` in the working tree with `enabled` set to true (R19, R36, R91, R171).
+- 3) A run that finds a switch off creates no store and notes no session, and still takes back and puts back ledger files (R1, R110, R145).
+- 4) The person's opt-in is `pr-cost.capture`, read from their two global git configuration files alone, by git's rules, with only some of git's true values turning it on (R37, R38, R105, R106).
+- 5) Git's own reading of the key in the repository can turn capture off, never on (R39, R160).
+- 6) A run that finds both switches on notes its time and a fingerprint of the files that hold the opt-in (R107).
+- 7) A fingerprint other than the last one noted is taken as an opt-out, which ends every session's interval and empties the store (R109, R162).
+- 8) Otherwise the run records the calls made inside its session's interval, which begins and ends at a run (R40, R108, R144).
+
+In detail:
+
 - **The repository's switch.** A repository turns the tool on by adding a valid `.pr-cost.json` at its root with `enabled` set to true, and off by removing the file or setting `enabled` to false. R36 and R171 give when capture takes the file to be valid: a file that holds a key that its format does not document, which in this version is any key but `enabled`, is not valid and leaves the tool off, whatever `enabled` says (DR-190). R19 and R172 give the report on such a file, and what the comment and the job summary then say (DR-191, DR-192). A key that a later version adds is a breaking change, since every earlier version takes a file that holds it to be not valid, so it goes in only with or after the pull request that moves the hook file and the calling workflow's pin to that version, and so is a key that a later version no longer documents, which goes out before or with that pull request.
 - **The person's opt-in.** A person turns capture on for themselves by setting `pr-cost.capture` to `true` in their global git configuration: `~/.gitconfig`, or git's file in their XDG configuration folder, and `~/.gitconfig` decides where both set it. In a cloud environment of Claude Code, the global git configuration is the session machine's own, so a person opts in there with one line in the environment's setup script, `git config --global pr-cost.capture true`, which opts in each session in that environment (DR-201). Removing that line, or using another environment, reaches only the sessions that start, or whose machines are rebuilt, afterwards: in a session that is running, `git config --global pr-cost.capture false` turns capture off until something writes the opt-in again, as the setup script does on a machine that is rebuilt and an organization's hook can at a session's start or resume, or after `/clear` or a compaction, and on an environment the variables `GIT_CONFIG_COUNT=1`, `GIT_CONFIG_KEY_0=pr-cost.capture` and `GIT_CONFIG_VALUE_0=false` do, from each of its sessions' next restore, since git's own reading of them can turn capture off, never on, unless a settings file that the session loads sets `GIT_CONFIG_COUNT` itself. `git config --show-origin --get-all pr-cost.capture` shows each value of a session's opt-in and where it comes from, and `git config --global --get pr-cost.capture` only the global file's value (R194). R37, R38, R103 and R104 give how capture reads those two files itself. So nothing in a repository can turn capture on for anyone, whether through its own git configuration, a variable that its Claude Code settings set, or a file that a configuration includes, and an outside contributor's usage is never committed because a repository's owner turned the tool on.
 - **Strict values.** `pr-cost.capture` opts a person in only as `true`, `yes`, `on`, `1` or the bare key, in any case. Any other value, including ones that git itself reads as true, such as `2`, does not.

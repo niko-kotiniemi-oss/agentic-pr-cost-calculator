@@ -10,6 +10,32 @@ The ledger is a set of small files under `.pr-cost/ledger/` that the agent's com
 
 ## Expected behaviour
 
+The life of a ledger file:
+
+```mermaid
+flowchart LR
+  A["1) Noted in the store"] --> W["2) Written once"]
+  W --> S["3) Staged alone"]
+  S --> C{"4) Did a commit take it?"}
+  C -->|no| T["5) Taken back"]
+  C -->|yes| P["6) Pushed"]
+  P --> M["7) Merged"]
+  M --> R["8) Read by the report"]
+  M --> K["9) Kept as the record"]
+```
+
+- 1) A ledger file is noted in the store before it is written (R57).
+- 2) It is written once, with a first line that states its format's version (R10, R156).
+- 3) The capture step stages only the ledger file that it wrote (R56).
+- 4) A ledger file that a commit takes stays taken (R52).
+- 5) One that no commit takes is taken back, and its calls wait for a later commit (R9, R113).
+- 6) The push of the commit publishes it, and an opt-out later leaves it to git (R146).
+- 7) The merge adds it to the default branch (R58).
+- 8) The report counts only the ledger files that the merge adds, each call at most once (R58, R59).
+- 9) The ledger stays in the repository as the record (R22).
+
+In detail:
+
 - **One file per commit,** named `.pr-cost/ledger/<YYYY-MM>/<random>.jsonl`, one line per call after a first line that states the file's format, and written once, as R10 gives it.
 - **The first line.** It states the version and the release that R156 gives, so that the report can say when a file of any version comes from a later release than its own (DR-208), the number of calls that capture refused, and one flag for each reason that capture left calls out: for consent, for their age, or because their repository could not be told, as R155 gives them. Each entry after it marks the calls that R42 and R43 count.
 - **Counts, never content.** A line holds no prompt, response, code, file contents, tool name, tool input or output, path, working directory, branch name, user name, session identifier, transcript path, `tool_use_id` or time of day, nor a hash of any of them. The model's name and the price attributes are the only text taken from a transcript, and each is recorded only when the price table lists it, or else as `unknown` (R4, R77).
