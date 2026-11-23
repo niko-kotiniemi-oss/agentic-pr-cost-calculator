@@ -4437,7 +4437,7 @@ The trust boundaries:
 - **Raw risk:** 6
 - **What could happen:** a diagram on a feature page or on the page on how the tool works draws a step, a decision or a connection that no requirement states, or draws one otherwise than its requirement does, so that an adopter or a contributor who reads the drawing rather than the spec takes the tool to do what it does not, while the specs are the single source of what it does (DR-232). The likeliest way is a later change that rewrites a requirement and keeps its ID, such as backlog item B-007, after which every citation still resolves while the drawing shows the old text.
 - **Answer:** each diagram numbers its parts and is followed by a list that explains each number once and cites the requirement that states what the part does where one does, and a test fails on a number drawn and not explained or explained and not drawn (R281, DR-293); whether the drawing says what its requirement says is for review, as a rule about prose is (DR-251).
-- **Residual:** a part that cites the right requirement and still draws it otherwise, and a requirement rewritten under its ID without its diagrams being read again, which review reads (A15).
+- **Residual:** a part that cites the right requirement and still draws it otherwise, and a requirement rewritten under its ID without its diagrams being read again, which review reads (A15); backlog item B-007, the next to rewrite requirements, holds a postponed point to read again each diagram part that cites one that it rewrites, on the owner's answer of 2026-11-23.
 - **Held by:** `project-standards`: "A number left unexplained, or explained but not drawn, fails a test"; DR-293; DR-251
 - **Assumptions:** A15
 
