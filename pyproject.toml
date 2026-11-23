@@ -8,11 +8,13 @@ requires-python = ">=3.11"
 [tool.ruff]
 line-length = 100
 target-version = "py311"
-# Vendored files are upstream's and are never edited here.
-extend-exclude = ["vendor"]
+# The vendored copy is upstream's and is never edited here. It alone is left out, not
+# every folder named `vendor`, and a test runs the naming rules on every file that this
+# repository writes, whatever this file leaves out (R271).
+extend-exclude = ["vendor/superpowers"]
 
 [tool.ruff.lint]
-select = ["E", "F", "W", "I", "B", "UP"]
+select = ["E", "F", "W", "I", "B", "UP", "N"]
 
 [tool.mypy]
 strict = true

@@ -28,6 +28,7 @@ import sys
 from collections.abc import Callable
 from pathlib import Path
 
+import conventions
 import pytest
 import risk_register
 from risk_register import (
@@ -348,13 +349,25 @@ def test_rows_follow_the_risk_then_the_raw_risk_then_the_id(tmp_path: Path) -> N
 
 
 def test_a_file_in_a_folder_that_others_write_is_named_by_its_folder(tmp_path: Path) -> None:
-    held = "`vendor/superpowers/UPSTREAM.lock`; `.claude/skills/a/SKILL.md`; `docs/note.md`"
+    held = (
+        "`vendor/superpowers/hooks/session-start`; `.claude/skills/openspec-a/SKILL.md`; "
+        "`vendor/superpowers/UPSTREAM.lock`; `docs/note.md`"
+    )
     page = write(tree(tmp_path, model(threat(1, held=held))))
-    named = "a file under `vendor/`; a file of a generated skill under `.claude/`; `docs/note.md`"
+    named = (
+        "a file under `vendor/`; a file of a generated skill under `.claude/`; "
+        "`vendor/superpowers/UPSTREAM.lock`; `docs/note.md`"
+    )
     assert f"| {named} |" in page
     assert not [
         found for found in hidden_problems(page, ROOT) if "vendor" in found or ".claude" in found
     ]
+
+
+def test_the_register_tells_the_files_that_others_write_as_the_tests_do() -> None:
+    """Under `python3 -I` the script cannot import the module that the tests share, so it
+    keeps a copy of its definition, which this holds to it (R246, R268)."""
+    assert risk_register.OTHERS_WRITE.pattern == conventions.OTHERS_WRITE.pattern
 
 
 def test_with_no_high_risk_the_page_says_so(tmp_path: Path) -> None:
@@ -475,7 +488,7 @@ def test_a_requirement_that_the_register_does_not_list_stops_the_script(tmp_path
     ]
 
 
-@pytest.mark.parametrize("mark", ["|", "<", "&", "\\", "]:", "é", "\t"])
+@pytest.mark.parametrize("mark", ["|", "<", "&", "\\", "]:", "\u00e9", "\t"])
 def test_a_title_that_the_rule_forbids_stops_the_script(tmp_path: Path, mark: str) -> None:
     root = tree(tmp_path, model(threat(1, title=f"Something {mark} goes wrong")))
     with pytest.raises(RegisterError) as raised:
@@ -494,7 +507,7 @@ def test_a_title_that_the_rule_forbids_stops_the_script(tmp_path: Path, mark: st
         ("Held by", '- **Held by:** `thing`: "It works"; DR-001\n'),
     ],
 )
-@pytest.mark.parametrize("mark", ["<", "&", "]:", "é"])
+@pytest.mark.parametrize("mark", ["<", "&", "]:", "\u00e9"])
 def test_text_that_the_rule_forbids_in_a_copied_field_stops_the_script(
     tmp_path: Path, name: str, line: str, mark: str
 ) -> None:

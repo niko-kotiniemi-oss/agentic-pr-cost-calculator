@@ -87,10 +87,12 @@ from test_roadmap import (
     make_tree,
     read,
     records,
+    saved_with_windows_line_endings,
     section_of,
     sections,
     tasks,
     tracked,
+    with_line_feeds,
 )
 from test_roadmap import (
     item as item_text,
@@ -771,6 +773,12 @@ def test_a_complete_tree_has_no_problem(tmp_path: Path) -> None:
     root = build(tmp_path)
     assert backlog_problems(root) == []
     assert history_problems(root, today=TODAY) == []
+
+
+def test_a_tree_saved_with_windows_line_endings_has_no_problem(tmp_path: Path) -> None:
+    root = build(tmp_path)
+    saved_with_windows_line_endings(root, with_line_feeds(WHOLE))
+    assert backlog_problems(root) == []
 
 
 FORM = [

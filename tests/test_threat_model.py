@@ -20,7 +20,9 @@ GitHub as part of the field above it, while no check here would read it.
 Every threat is also rated for impact and likelihood, from 1 to 3 each, and its
 risk is their product. The risk matrix places each threat in the cell its two
 ratings name, so a reader sees at a glance where the risk sits, and a rating
-changed in one place and not the other is reported.
+changed in one place and not the other is reported. The list below it names each
+threat whose risk is 6 or more, with that risk and its title, in the order of their
+numbers, so that a threat whose rating rises to it is never left out of it (R31).
 
 The model's opening says how many threats it holds and across how many trust
 boundaries. A threat added without that sentence changing makes it wrong, so
@@ -53,7 +55,11 @@ from risk_register import (
 )
 from test_backlog import AGREED, Item, backlog_items, items_in
 from test_decisions import DECIDER, Record, attribute_problems, base_commits, git, records_of
-from test_roadmap import hidden_text_problems_in, link_problems_in
+from test_roadmap import (
+    hidden_text_problems_in,
+    link_problems_in,
+    saved_with_windows_line_endings,
+)
 
 ROOT = Path(__file__).resolve().parents[1]
 THREAT_MODEL = ROOT / "docs" / "threat-model.md"
@@ -96,6 +102,8 @@ THREAT_ID = re.compile(r"T\d+")
 COUNT = re.compile(r"\bIt holds (\d+) threats across (\d+) trust boundaries\b")
 BOUNDARY = re.compile(r"^## Boundary (\d+)\b", re.M)
 WHAT_DONE = re.compile(r"^## What done looks like\n(.*?)(?=^## |\Z)", re.M | re.S)
+HIGH_LIST = "The threats with a risk of 6 or more:"
+HIGH_ENTRY = re.compile(r"^- \*\*(T\d+)\*\* \(risk (\d+)\): (.+)", re.M)
 
 
 @dataclass(frozen=True)
@@ -142,7 +150,7 @@ def citation_problems(ident: str, held: str, found: Index, root: Path) -> tuple[
             problems.append(f"{ident} cites DR-{number}, which is not a decision record")
     for path in cited.paths:
         target = (root / path).resolve()
-        if root.resolve() not in target.parents or not target.exists():
+        if root.resolve() not in target.parents or not target.is_file():
             problems.append(f"{ident} cites `{path}`, which is not a file in this repository")
     return problems, len(cited)
 
@@ -264,6 +272,40 @@ def count_problems(text: str, threats: list[Threat]) -> list[str]:
         problems.append(
             f"the model says it has {boundaries} trust boundaries, and its headings name {named}"
         )
+    return problems
+
+
+def high_list_problems(text: str, threats: list[Threat]) -> list[str]:
+    """R31: the list below the risk matrix names each threat whose risk is 6 or more, once,
+    with the risk and the title that its ratings and its heading give, in order."""
+    opening = f"\n{HIGH_LIST}\n"
+    if text.count(opening) != 1:
+        return [f'the model does not say once "{HIGH_LIST}"']
+    body = text.split(opening, 1)[1]
+    following = ANY_HEADING.search(body)
+    if following:
+        body = body[: following.start()]
+    listed = [(ident, int(risk), title) for ident, risk, title in HIGH_ENTRY.findall(body)]
+    expected = [(t.ident, score_of(t), t.title) for t in threats if score_of(t) >= 6]
+    named = [ident for ident, _, _ in listed]
+    problems = [
+        f"the list of the threats with a risk of 6 or more lacks {ident} (risk {risk}): {title}"
+        for ident, risk, title in expected
+        if (ident, risk, title) not in listed
+    ]
+    problems += [
+        f"the list of the threats with a risk of 6 or more names {ident} (risk {risk}): "
+        f"{title}, which no threat with a risk of 6 or more gives"
+        for ident, risk, title in listed
+        if (ident, risk, title) not in expected
+    ]
+    problems += [
+        f"the list of the threats with a risk of 6 or more names {ident} twice"
+        for ident in dict.fromkeys(named)
+        if named.count(ident) > 1
+    ]
+    if not problems and listed != expected:
+        problems.append("the list of the threats with a risk of 6 or more is out of order")
     return problems
 
 
@@ -526,6 +568,7 @@ def test_an_accepted_risk_with_its_reason_cites_nothing(tmp_path: Path) -> None:
         ("DR-01", "cites nothing and is not accepted"),
         ("`docs/absent.md`", "cites `docs/absent.md`, which is not a file in this repository"),
         ("`../outside.md`", "cites `../outside.md`, which is not a file in this repository"),
+        ("`docs/decisions`", "cites `docs/decisions`, which is not a file in this repository"),
         ("the hook, somehow", "cites nothing and is not accepted"),
         ("accepted", "is accepted without a reason"),
     ],
@@ -799,6 +842,91 @@ def test_a_count_that_the_headings_do_not_bear_out_is_reported(
     assert count_problems(text, threats_in(text)) == expected
 
 
+def test_the_model_lists_each_threat_with_a_risk_of_6_or_more() -> None:
+    text = THREAT_MODEL.read_text()
+    threats = threats_in(text)
+    assert [t for t in threats if score_of(t) >= 6], "no such threat was read, so none was checked"
+    assert high_list_problems(text, threats) == []
+
+
+LISTED = "the list of the threats with a risk of 6 or more"
+WRONG = "Something goes wrong"
+
+
+def entry(number: int, risk: int = 6, title: str = WRONG) -> str:
+    return f"- **T{number}** (risk {risk}): {title}"
+
+
+def listed(*entries: str) -> str:
+    """A model of three threats, T1 and T3 with a risk of 6, and its list of `entries`."""
+    high = threat("`docs/note.md`", impact="3 (high)", likelihood="2 (possible)", risk="6")
+    text = high + threat("`docs/note.md`", number=2) + high.replace("### T1.", "### T3.")
+    return text + f"\n## Risk matrix\n\n{HIGH_LIST}\n\n" + "".join(f"{e}\n" for e in entries)
+
+
+def test_a_list_that_names_each_threat_with_a_risk_of_6_or_more_passes() -> None:
+    text = listed(entry(1), entry(3))
+    assert high_list_problems(text, threats_in(text)) == []
+
+
+@pytest.mark.parametrize(
+    ("entries", "expected"),
+    [
+        ([entry(1)], [f"{LISTED} lacks T3 (risk 6): {WRONG}"]),
+        (
+            [entry(1), entry(3, risk=9)],
+            [
+                f"{LISTED} lacks T3 (risk 6): {WRONG}",
+                f"{LISTED} names T3 (risk 9): {WRONG}, which no threat with a risk of 6 or more "
+                "gives",
+            ],
+        ),
+        (
+            [entry(1), entry(3, title="Another thing")],
+            [
+                f"{LISTED} lacks T3 (risk 6): {WRONG}",
+                f"{LISTED} names T3 (risk 6): Another thing, which no threat with a risk of 6 or "
+                "more gives",
+            ],
+        ),
+        (
+            [entry(1), entry(2), entry(3)],
+            [
+                f"{LISTED} names T2 (risk 6): {WRONG}, which no threat with a risk of 6 or "
+                "more gives"
+            ],
+        ),
+        (
+            [entry(1), entry(4), entry(3)],
+            [
+                f"{LISTED} names T4 (risk 6): {WRONG}, which no threat with a risk of 6 or "
+                "more gives"
+            ],
+        ),
+        ([entry(1), entry(3), entry(1)], [f"{LISTED} names T1 twice"]),
+        ([entry(3), entry(1)], [f"{LISTED} is out of order"]),
+    ],
+)
+def test_a_list_that_leaves_out_doubles_or_misnames_a_threat_is_reported(
+    entries: list[str], expected: list[str]
+) -> None:
+    text = listed(*entries)
+    assert high_list_problems(text, threats_in(text)) == expected
+
+
+def test_the_list_ends_at_the_next_heading() -> None:
+    text = listed(entry(1)) + f"\n## Assumptions\n\n{entry(3)}\n"
+    assert high_list_problems(text, threats_in(text)) == [f"{LISTED} lacks T3 (risk 6): {WRONG}"]
+
+
+@pytest.mark.parametrize("times", [0, 2])
+def test_a_model_without_one_list_is_reported(times: int) -> None:
+    text = listed(entry(1), entry(3)).replace(f"\n{HIGH_LIST}\n", f"\n{HIGH_LIST}\n" * times)
+    assert high_list_problems(text, threats_in(text)) == [
+        f'the model does not say once "{HIGH_LIST}"'
+    ]
+
+
 # R249: a further answer or an acceptance for each high or critical risk.
 
 
@@ -886,6 +1014,15 @@ def test_a_high_or_critical_risk_answered_further_or_accepted_passes(
 ) -> None:
     base = further_repository(tmp_path)
     assert further_problems(high_threat(extra, rated), tmp_path, [base]) == []
+
+
+def test_a_further_answer_whose_item_and_record_are_saved_with_windows_line_endings_passes(
+    tmp_path: Path,
+) -> None:
+    base = further_repository(tmp_path)
+    saved_with_windows_line_endings(tmp_path, [ITEM_PATH, "docs/decisions/DR-002-an-acceptance.md"])
+    for extra in ("- **Further answer:** B-007\n", "- **Acceptance:** DR-002, as the owner said\n"):
+        assert further_problems(high_threat(extra), tmp_path, [base]) == []
 
 
 @pytest.mark.parametrize(

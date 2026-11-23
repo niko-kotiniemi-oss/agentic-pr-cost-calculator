@@ -17,7 +17,7 @@ max_line_length = 100
 # Two trailing spaces are a line break in Markdown.
 trim_trailing_whitespace = false
 
-[vendor/**]
+[vendor/superpowers/**]
 # Vendored files are upstream's and are never edited here.
 charset = unset
 end_of_line = unset
@@ -25,3 +25,21 @@ insert_final_newline = unset
 trim_trailing_whitespace = unset
 indent_style = unset
 indent_size = unset
+
+[.claude/skills/openspec-*/**]
+# The pinned OpenSpec writes these skills, which are never edited here.
+charset = unset
+end_of_line = unset
+insert_final_newline = unset
+trim_trailing_whitespace = unset
+indent_style = unset
+indent_size = unset
+
+[vendor/superpowers/UPSTREAM.lock]
+# The lock is this repository's own file, which the sync reads.
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 2

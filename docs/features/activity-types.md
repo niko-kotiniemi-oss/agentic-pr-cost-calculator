@@ -17,7 +17,7 @@ The label comes from the first tool the call used, as R6 gives it:
 | A file edit or write | code generation |
 | A read or a search | file reading |
 | A shell command | tooling |
-| An MCP tool (`mcp__…`) | MCP |
+| An MCP tool (`mcp__...`) | MCP |
 | Starting a subagent | subagent |
 | A tool the classification does not know | other |
 | No tool at all | conversation |

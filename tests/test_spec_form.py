@@ -8,11 +8,13 @@ never follows, and on a file named `spec.md` in any case that is not one of thos
 specs, naming the file, so that no spec escapes it and none of its reads leaves the
 repository.
 
-Each spec is checked as plain text before it is split into lines at line feeds alone
-(R176, DR-195): bytes that are not UTF-8, a character other than printable ASCII and
-the line feed, a run of backticks that no run as long closes on its line, and, outside
-inline code, a `<`, an `&`, a backslash, a `|`, a `](`, a `]:`, a `$` or a `~`, with
-which GitHub would hide or show text otherwise than OpenSpec and agents read it.
+Each spec is read as git will stage it, through `read_staged` of `scripts/conventions.py`,
+each carriage return right before a line feed read as a line feed (R276), and checked as
+plain text before it is split into lines at line feeds alone (R176, DR-195): bytes that
+are not UTF-8, a character other than printable ASCII and the line feed, a run of
+backticks that no run as long closes on its line, and, outside inline code, a `<`, an
+`&`, a backslash, a `|`, a `](`, a `]:`, a `$` or a `~`, with which GitHub would hide or
+show text otherwise than OpenSpec and agents read it.
 
 A spec's lines are then read in one pass as OpenSpec reads them (R175, DR-193): an
 optional title before any heading, then the sections that OpenSpec reads, `## Purpose`
@@ -83,7 +85,9 @@ from typing import Any
 
 import pytest
 import spec_form
-from spec_form import Requirement, Spec, find_specs, problems_in, prose_of, shown
+from conventions import shown
+from spec_form import Requirement, Spec, find_specs, problems_in, prose_of
+from test_roadmap import saved_with_windows_line_endings
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -465,7 +469,7 @@ TEXT = "The tool SHALL hold the first rule."
 @pytest.mark.parametrize(
     ("new", "shown_as"),
     [
-        (f"{TEXT}\r", "U+000D"),
+        ("The tool SHALL hold the first\rrule.", "U+000D"),
         (f"{TEXT}\f", "U+000C"),
         (f"{TEXT}\t", "U+0009"),
         ("The tool SHALL hold the first\u0085rule.", "U+0085"),
@@ -1403,6 +1407,12 @@ def test_a_scenario_with_and_lines_passes(tmp_path: Path) -> None:
 def test_the_specs_keep_openspec_s_form() -> None:
     problems = problems_in(ROOT)
     assert not problems, "\n".join(problems)
+
+
+def test_specs_saved_with_windows_line_endings_keep_openspec_s_form(tmp_path: Path) -> None:
+    root = passing(tmp_path)
+    saved_with_windows_line_endings(root, PASSING)
+    assert problems_in(root) == []
 
 
 # A run of spaces long enough that a pattern which can match it in many ways takes seconds,

@@ -8,11 +8,12 @@ to its lengths, wrapped at 100 characters, the root within its ceiling and with 
 harm before a review in its first 60 lines (R253); each names the tool on its first line,
 and a folder file opens by saying that its rules add to the root's, that the root wins and
 that the root is read first (R254); and none holds text that GitHub hides, a link, an
-address or an import (R255). Git ignores a personal instruction file in every folder and
-the folders where worktrees are made (R257), and the README and `CONTRIBUTING.md` say where
-a session starts (R258). Design decision 21 gives the reasons; `tests/test_repository.py`
-holds Claude Code's settings here and the marketplace that they name (R256), and Renovate's
-rules (R259 to R262).
+address or an import (R255), each read as git will stage it, so that a carriage return that
+no line feed follows still shows (R276). Git ignores a personal instruction file in every
+folder and the folders where worktrees are made (R257), and the README and
+`CONTRIBUTING.md` say where a session starts (R258). Design decision 21 gives the reasons;
+`tests/test_repository.py` holds Claude Code's settings here and the marketplace that they
+name (R256), and Renovate's rules (R259 to R262).
 """
 
 from __future__ import annotations
@@ -24,8 +25,14 @@ from collections.abc import Iterable, Mapping
 from pathlib import Path
 
 import pytest
+from conventions import read_staged
 from test_documentation import section
-from test_roadmap import GIT_ENVIRONMENT, hidden_text_problems_in, session_free_environment
+from test_roadmap import (
+    GIT_ENVIRONMENT,
+    hidden_text_problems_in,
+    saved_with_windows_line_endings,
+    session_free_environment,
+)
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -116,9 +123,10 @@ def tracked_modes(root: Path) -> dict[str, str]:
 
 
 def read(root: Path, path: str) -> str:
-    """A file's text as its bytes give it, so that a carriage return shows."""
+    """A file's text as git will stage it, each carriage return right before a line feed
+    read as a line feed but in a script, so that any other carriage return shows (R276)."""
     target = root / path
-    return target.read_bytes().decode("utf-8") if target.is_file() else ""
+    return read_staged(target).decode("utf-8") if target.is_file() else ""
 
 
 def lines_of(text: str) -> list[str]:
@@ -628,9 +636,28 @@ def test_the_context_files_hold_no_hidden_text_link_or_import() -> None:
     assert [p for path, text in texts.items() for p in hidden_problems(path, text)] == []
 
 
+def test_the_context_files_saved_with_windows_line_endings_pass_their_checks(
+    tmp_path: Path,
+) -> None:
+    for path in CONTEXT_FILES:
+        (tmp_path / path).parent.mkdir(parents=True, exist_ok=True)
+        (tmp_path / path).write_bytes(read(ROOT, path).encode("utf-8"))
+    saved_with_windows_line_endings(tmp_path, CONTEXT_FILES)
+    texts = {path: read(tmp_path, path) for path in CONTEXT_FILES}
+    assert [
+        problem
+        for path, text in texts.items()
+        for problem in (
+            *length_problems(path, text),
+            *wording_problems(path, text),
+            *hidden_problems(path, text),
+        )
+    ] == []
+
+
 def test_a_carriage_return_in_a_context_file_on_disk_is_reported(tmp_path: Path) -> None:
     (tmp_path / "tests").mkdir()
-    (tmp_path / "tests" / "CLAUDE.md").write_bytes(b"# CLAUDE.md: x\r\nA rule.\rMore.\n")
+    (tmp_path / "tests" / "CLAUDE.md").write_bytes(b"# CLAUDE.md: x\r \nA rule.\rMore.\n")
     found = hidden_problems("tests/CLAUDE.md", read(tmp_path, "tests/CLAUDE.md"))
     assert found == ["tests/CLAUDE.md:1 holds U+000D", "tests/CLAUDE.md:2 holds U+000D"]
 
@@ -649,7 +676,7 @@ def test_a_carriage_return_in_a_context_file_on_disk_is_reported(tmp_path: Path)
             "| a | b |",
             "|, with which Markdown builds a table, whose cells past its header's it hides",
         ),
-        ("A zero​width space", "U+200B"),
+        ("A zero\u200bwidth space", "U+200B"),
         ("A carriage return\r", "U+000D"),
     ],
 )

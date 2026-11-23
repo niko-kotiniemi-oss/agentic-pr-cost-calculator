@@ -86,12 +86,13 @@ REQUIREMENT = re.compile(r"^### Requirement: (.+?)\s*$")
 SCENARIO = re.compile(r"^#### Scenario: (.+?)\s*$")
 REGISTER_ROW = re.compile(r"^\| (R\d+) \| [a-z-]+ \| `([a-z0-9-]+)` \| (.+?) \|\s*$", re.M)
 ROW_ID = re.compile(r"^\| \[(T\d+)\]\(")
-# The folders whose files others write, a vendored tree and the generated skills, which the
-# roadmap's rule lets no page name a file in (R209, R246), and how a row names such a file.
-OTHERS_WRITE = {
-    "vendor/": "a file under `vendor/`",
-    ".claude/skills/": "a file of a generated skill under `.claude/`",
-}
+# The files that others write, under the vendored tree but its root lock and in the generated
+# skills, which the roadmap's rule lets no page name (R209, R246), as `scripts/conventions.py`
+# gives them. Under `python3 -I` this script cannot import that module, so it keeps this copy,
+# which the register's test holds to it.
+OTHERS_WRITE = re.compile(
+    r"vendor/superpowers/(?!UPSTREAM\.lock\Z)|\.claude/skills/openspec-[^/]+/"
+)
 # What the roadmap's rule forbids, the table's `|` among them, since nothing that the page
 # copies from the threat model stands as a separator (R246).
 FORBIDDEN = ("|", "<", "&", "\\", "]:")
@@ -294,10 +295,13 @@ def requirements_of(root: Path) -> dict[tuple[str, str], str]:
 
 
 def shown_path(path: str) -> str:
-    """A cited file as a row gives it: by its path, or, in a folder whose files others
-    write, which the roadmap's rule lets no page name, by that folder alone."""
-    folder = next((folder for folder in OTHERS_WRITE if path.startswith(folder)), "")
-    return OTHERS_WRITE[folder] if folder else f"`{path}`"
+    """A cited file as a row gives it: by its path, or, for a file that others write, which
+    the roadmap's rule lets no page name, by the folder that holds it."""
+    if not OTHERS_WRITE.match(path):
+        return f"`{path}`"
+    if path.startswith("vendor/"):
+        return "a file under `vendor/`"
+    return "a file of a generated skill under `.claude/`"
 
 
 def answered_by(threat: Threat, held: dict[tuple[str, str], str]) -> tuple[str, list[str]]:

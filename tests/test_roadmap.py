@@ -11,7 +11,7 @@ two spaces that follow it. What Now, Next and Later list, as the index of the ba
 items, is `tests/test_backlog.py`'s to check (R213, R214).
 
 Every risk that the risks and trade-offs of a change's design give, active or
-archived, as a line that opens with `- [title]` and an arrow, is listed by its
+archived, as a line that opens with `- [title]` and `->`, is listed by its
 title, as a line `- **title**: ...`, under Known limitations or in the section on
 known limitations and the roadmap of a page in `docs/features/` named for a spec.
 A line under a design's risks that starts with `- ` in another form fails, and so
@@ -22,9 +22,9 @@ a short list and links each section. A listed title that no design gives fails t
 
 Every link in the roadmap, in each Markdown file in `docs/backlog/` and in each
 feature page's section, is read from its `](` over the whole text, whatever its text
-holds, and names a heading of its page, or a tracked file of this repository outside
-`vendor/` and `.claude/skills/`, whose files others write, by a relative path that
-stays inside it, with a heading of that file when the link names one, and gives no
+holds, and names a heading of its page, or a tracked file that this repository writes,
+not one of those that others write, which `scripts/conventions.py` gives, by a relative
+path that stays inside it, with a heading of that file when the link names one, and gives no
 title. The pages give no web address, no `@`, no image, no fenced or indented code,
 no inline code that holds a space or a line break, so that no command stands in them,
 and no `owner/repo` that is not the path of such a file from the repository's root,
@@ -47,6 +47,10 @@ which an HTML comment or tag opens, no line that opens with `$$`, and no carriag
 that no line feed follows, so that the checks that wait on a tick, or refuse one, read
 the tasks that GitHub shows (R232, T184).
 
+Each page is read as git will stage it, through `read_staged` of `scripts/conventions.py`,
+so that a page saved with Windows line endings passes, while a carriage return that no
+line feed follows still shows (R276).
+
 Each check is shown to fail on a synthetic tree, a git repository so that its
 tracked files can be read, into which the defect is planted. The tree holds backlog
 items and a roadmap that lists them, so that `tests/test_backlog.py` plants its
@@ -59,11 +63,17 @@ import os
 import posixpath
 import re
 import subprocess
+from collections.abc import Iterable, Mapping
 from pathlib import Path
 from urllib.parse import unquote
 
 import pytest
+from conventions import NO_WINDOWS_LINE_ENDINGS, read_staged, shown_path, written_by_others
+
+# The other tests take it from here, as they did before the scripts shared it.
+from conventions import session_free_environment as session_free_environment
 from spec_form import find_specs
+from windows_line_endings import BARE_LINE_FEED
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -123,7 +133,9 @@ BUILD_CHANGE = "add-pr-cost-calculator"
 CHANGE_TASKS = f"openspec/changes/{BUILD_CHANGE}/tasks.md"
 ARCHIVED_TASKS = f"openspec/changes/archive/2026-01-01-{BUILD_CHANGE}/tasks.md"
 ARCHIVED = re.compile(r"\d{4}-\d{2}-\d{2}-(.+)")
-RISK = re.compile(r"^- \[(.+?)\] \u2192 ")
+# A risk as a design gives it, with the arrow of OpenSpec's template written in printable
+# ASCII, which every file that this repository writes holds to (R268).
+RISK = re.compile(r"^- \[(.+?)\] -> ")
 LISTED = re.compile(r"^- \*\*(.+?)\*\*: ", re.M)
 # A link's target, read from its `](` whatever stands before it, over line breaks.
 TARGET = re.compile(r"\]\(([^)]*)\)")
@@ -139,8 +151,6 @@ NAME = re.compile(r"[A-Za-z0-9_./-]+")
 LETTERS = re.compile(r"[A-Za-z]+")
 ADDRESS = re.compile(r"\d+(?:\.\d+){3}")
 COMMIT_ID = re.compile(r"(?<![0-9A-Za-z])[0-9A-Fa-f]{7,}(?![0-9A-Za-z])")
-# Folders whose files others write: a vendored tree and the generated skills.
-OTHERS_WRITE = ("vendor/", ".claude/skills/")
 # Names that read as hosts, two or more labels joined by dots whose last is made of
 # letters, but name none, each with its reason.
 NOT_HOSTS = {
@@ -155,19 +165,20 @@ HIDING = (
     ("|", "|, with which Markdown builds a table, whose cells past its header's it hides"),
 )
 
-# With these, git reads no global or system configuration. A test plants the global one
+# With these, git reads no global or system configuration, and no attributes or ignore file of
+# the person's own, which git reads from `$XDG_CONFIG_HOME/git/`, or `~/.config/git/`, whatever
+# GIT_CONFIG_GLOBAL names, unless its configuration names others. A test plants the global one
 # in HOME; the system one is where git was built to look, such as /etc/gitconfig, which
 # no test writes, so no test sees GIT_CONFIG_NOSYSTEM dropped.
 GIT_ENVIRONMENT = {
     "GIT_CONFIG_GLOBAL": os.devnull,
     "GIT_CONFIG_NOSYSTEM": "1",
+    "GIT_CONFIG_COUNT": "2",
+    "GIT_CONFIG_KEY_0": "core.attributesFile",
+    "GIT_CONFIG_VALUE_0": os.devnull,
+    "GIT_CONFIG_KEY_1": "core.excludesFile",
+    "GIT_CONFIG_VALUE_1": os.devnull,
 }
-
-
-def session_free_environment() -> dict[str, str]:
-    """The environment with no git variable of the session's, such as an index file,
-    that would make git read another repository than the one it runs in."""
-    return {key: value for key, value in os.environ.items() if not key.startswith("GIT_")}
 
 
 def isolated_environment(root: Path) -> dict[str, str]:
@@ -181,10 +192,27 @@ def isolated_environment(root: Path) -> dict[str, str]:
     return {
         **session_free_environment(),
         **GIT_ENVIRONMENT,
-        "GIT_CONFIG_COUNT": "1",
-        "GIT_CONFIG_KEY_0": "safe.directory",
-        "GIT_CONFIG_VALUE_0": str(root),
+        "GIT_CONFIG_COUNT": "3",
+        "GIT_CONFIG_KEY_2": "safe.directory",
+        "GIT_CONFIG_VALUE_2": str(root),
     }
+
+
+def saved_with_windows_line_endings(root: Path, paths: Iterable[str]) -> None:
+    """Each file at these paths, in the working tree alone, with a carriage return before
+    each line feed, as an editor on Windows can save it and as the job of CI saves it, once
+    the test has checked that it holds a line feed, so that a test of Windows line endings
+    that meets none fails (R276)."""
+    for path in paths:
+        file = root / path
+        data = file.read_bytes()
+        assert b"\n" in data, f"{path}: the test {NO_WINDOWS_LINE_ENDINGS}"
+        file.write_bytes(BARE_LINE_FEED.sub(b"\r\n", data))
+
+
+def with_line_feeds(files: Mapping[str, str | None]) -> list[str]:
+    """The paths of the files that hold a line feed, which Windows line endings change."""
+    return [path for path, text in files.items() if text and "\n" in text]
 
 
 def tracked(root: Path) -> set[str]:
@@ -199,8 +227,9 @@ def tracked(root: Path) -> set[str]:
 
 
 def read(path: Path) -> str:
-    """A file's text with its line endings as written, so that a carriage return shows."""
-    return path.read_bytes().decode("utf-8") if path.is_file() else ""
+    """A file's text as git will stage it, each carriage return right before a line feed
+    read as a line feed but in a script, so that any other carriage return shows (R276)."""
+    return read_staged(path).decode("utf-8") if path.is_file() else ""
 
 
 def unfenced(text: str) -> list[tuple[int, str]]:
@@ -526,11 +555,6 @@ def shown(text: str) -> str:
     return "".join([*parts, BESIDE_A_DOT.sub("", text[last:])])
 
 
-def others_write(path: str) -> str:
-    """The folder whose files others write that a path lies in, or nothing."""
-    return next((folder for folder in OTHERS_WRITE if path.startswith(folder)), "")
-
-
 def address_problems(name: str, start: int, text: str, files: set[str]) -> list[str]:
     """The paths that the text gives, which name only tracked files outside the folders
     that others write, and the hosts, IP addresses and commit IDs that it names, in prose
@@ -542,10 +566,10 @@ def address_problems(name: str, start: int, text: str, files: set[str]) -> list[
             path = token.rstrip(".")
             if path not in files:
                 problems.append(
-                    f"{name}:{start + offset} names {path}, which is not a tracked file of "
-                    "this repository"
+                    f"{name}:{start + offset} names {shown_path(path)}, which is not a tracked "
+                    "file of this repository"
                 )
-            elif folder := others_write(path):
+            elif folder := written_by_others(path):
                 problems.append(
                     f"{name}:{start + offset} names {path}, a file under {folder} that others write"
                 )
@@ -564,7 +588,9 @@ def address_problems(name: str, start: int, text: str, files: set[str]) -> list[
             if len(labels) > 1 and LETTERS.fullmatch(labels[-1]) and host not in NOT_HOSTS:
                 problems.append(f"{at(found)} names {host}, which reads as a host")
     for found in ADDRESS.finditer(seen):
-        problems.append(f"{at(found)} names {found.group(0)}, which reads as an IP address")
+        problems.append(
+            f"{at(found)} names {shown_path(found.group(0))}, which reads as an IP address"
+        )
     for found in COMMIT_ID.finditer(seen):
         ident = found.group(0)
         if any(c.isdigit() for c in ident) and not ident.isdigit():
@@ -622,25 +648,26 @@ def target_problems(
     if len(parts) > 1:
         return [f"{where} holds a link with a title"]
     address = parts[0]
+    link = shown_path(address)
     if SCHEME.match(address) or address.startswith("//"):
-        return [f"{where} links to {address}, a web address"]
+        return [f"{where} links to {link}, a web address"]
     if address.startswith("#"):
         if address[1:] not in own:
-            return [f"{where} links to {address}, which is not a heading of its page"]
+            return [f"{where} links to {link}, which is not a heading of its page"]
         return []
     path, _, fragment = address.partition("#")
     path = unquote(path)
     if "\\" in path or path.startswith("/"):
-        return [f"{where} links to {address}, which is not a relative path"]
+        return [f"{where} links to {link}, which is not a relative path"]
     resolved = posixpath.normpath(posixpath.join(base, path))
     if resolved == ".." or resolved.startswith("../"):
-        return [f"{where} links to {address}, which leaves the repository"]
-    if folder := others_write(resolved):
-        return [f"{where} links to {address}, a file under {folder} that others write"]
+        return [f"{where} links to {link}, which leaves the repository"]
+    if folder := written_by_others(resolved):
+        return [f"{where} links to {link}, a file under {folder} that others write"]
     if resolved not in files or path.endswith("/"):
-        return [f"{where} links to {address}, which is not a tracked file of this repository"]
+        return [f"{where} links to {link}, which is not a tracked file of this repository"]
     if fragment and fragment not in anchors(read(root / resolved)):
-        return [f"{where} links to {address}, whose file has no such heading"]
+        return [f"{where} links to {link}, whose file has no such heading"]
     return []
 
 
@@ -767,18 +794,19 @@ TREE = {
     "docs/assumptions/README.md": "# Assumptions\n\n- **A1.** An assumption.\n",
     **ITEMS,
     "openspec/changes/c/design.md": (
-        f"# Design\n\n```\n## {RISKS}\n\n- [A fenced risk] \u2192 What.\n```\n\n"
-        f"## {RISKS}\n\n- [A risk] \u2192 What.\n- [Another risk] \u2192 What.\n"
+        f"# Design\n\n```\n## {RISKS}\n\n- [A fenced risk] -> What.\n```\n\n"
+        f"## {RISKS}\n\n- [A risk] -> What.\n- [Another risk] -> What.\n"
         "  - a line of the risk above.\n\n"
-        "## Open Questions\n\n- [Not a risk] \u2192 What.\n"
+        "## Open Questions\n\n- [Not a risk] -> What.\n"
     ),
     "openspec/changes/archive/2026-01-01-old/tasks.md": "- [x] 2.1 Did an old thing\n",
     "openspec/changes/archive/2026-01-01-old/design.md": (
-        f"# Design\n\n## {RISKS}\n\n- [An old risk] \u2192 What.\n"
+        f"# Design\n\n## {RISKS}\n\n- [An old risk] -> What.\n"
     ),
     "docs/features/README.md": "# Features\n\n- [Thing](thing.md)\n",
-    "vendor/a/SKILL.md": "# A skill that others write\n",
-    ".claude/skills/a/SKILL.md": "# A skill that others write\n",
+    "vendor/superpowers/skills/a/SKILL.md": "# A skill that others write\n",
+    "vendor/superpowers/UPSTREAM.lock": "commit=0123456789abcdef\n",
+    ".claude/skills/openspec-a/SKILL.md": "# A skill that others write\n",
     "docs/features/thing.md": (
         "# Thing\n\nIt says `<x>`, a@b and \u2192 outside the section.\n\n"
         f"## {FEATURE_SECTION}\n\n"
@@ -835,6 +863,67 @@ def planted(root: Path, name: str, old: str, new: str) -> Path:
     text = TREE[name]
     assert text.count(old) == 1, old
     return make_tree(root, {name: text.replace(old, new)})
+
+
+# A person's own attributes and ignore file, which git reads from `$XDG_CONFIG_HOME/git/`, or
+# from `~/.config/git/` where that variable is not set, whatever `GIT_CONFIG_GLOBAL` names,
+# unless git's configuration names other files.
+PERSONAL_FILES = {"attributes": "* export-subst\n", "ignore": "*.md\n"}
+
+
+def git_environments(root: Path) -> dict[str, dict[str, str]]:
+    """Each environment in which the tests run git, by the name that holds it. The modules
+    that hold the others import this one, so they are imported only once it is."""
+    import test_glossary
+    import test_rewording
+    import test_sweep_evidence
+
+    return {
+        "isolated_environment": isolated_environment(root),
+        "GIT_ENVIRONMENT": {**session_free_environment(), **GIT_ENVIRONMENT},
+        "test_glossary.GIT_ENVIRONMENT": dict(test_glossary.GIT_ENVIRONMENT),
+        "test_rewording.GIT_ENVIRONMENT": {**os.environ, **test_rewording.GIT_ENVIRONMENT},
+        "test_sweep_evidence.GIT_ENVIRONMENT": {
+            **os.environ,
+            **test_sweep_evidence.GIT_ENVIRONMENT,
+        },
+    }
+
+
+@pytest.mark.parametrize(
+    "name",
+    [
+        "isolated_environment",
+        "GIT_ENVIRONMENT",
+        "test_glossary.GIT_ENVIRONMENT",
+        "test_rewording.GIT_ENVIRONMENT",
+        "test_sweep_evidence.GIT_ENVIRONMENT",
+    ],
+)
+def test_git_in_the_tests_reads_no_attributes_or_ignore_file_of_the_person_s(
+    tmp_path: Path, name: str
+) -> None:
+    home = tmp_path / "home"
+    (home / "git").mkdir(parents=True)
+    for file, text in PERSONAL_FILES.items():
+        (home / "git" / file).write_text(text, encoding="utf-8")
+    root = tmp_path / "repository"
+    root.mkdir()
+    (root / "page.md").write_text("Text.\n", encoding="utf-8")
+
+    def asked(environment: dict[str, str], *args: str) -> subprocess.CompletedProcess[bytes]:
+        given = {**environment, "XDG_CONFIG_HOME": str(home)}
+        return subprocess.run(["git", *args], cwd=root, capture_output=True, env=given)
+
+    unisolated = {**session_free_environment(), "GIT_CONFIG_NOSYSTEM": "1"}
+    unisolated["GIT_CONFIG_GLOBAL"] = os.devnull
+    assert asked(unisolated, "init", "-q").returncode == 0
+    # Git reads both files where nothing else names them.
+    assert b"export-subst: set" in asked(unisolated, "check-attr", "-a", "--", "page.md").stdout
+    assert asked(unisolated, "check-ignore", "-q", "--", "page.md").returncode == 0
+    environment = git_environments(root)[name]
+    assert asked(environment, "check-attr", "-a", "--", "page.md").stdout == b""
+    assert asked(environment, "check-ignore", "-q", "--", "page.md").returncode == 1
 
 
 def test_a_complete_tree_has_no_problem(tmp_path: Path) -> None:
@@ -1049,6 +1138,8 @@ def test_text_that_github_does_not_show_at_the_top_of_a_task_list_is_reported(
     tmp_path: Path, opening: str, problems: list[str]
 ) -> None:
     root = make_tree(tmp_path, {TASKS: opening + TREE[TASKS]})
+    if "\r\n" in opening:
+        assert b"\r\n" in (root / TASKS).read_bytes(), f"the test {NO_WINDOWS_LINE_ENDINGS}"
     assert task_list_problems(root) == [f"{TASKS}:1 {problem}" for problem in problems]
 
 
@@ -1083,8 +1174,15 @@ def test_a_less_than_sign_in_inline_code_or_before_no_tag_passes(tmp_path: Path,
 
 
 def test_a_task_list_with_a_carriage_return_before_each_line_feed_passes(tmp_path: Path) -> None:
-    root = make_tree(tmp_path, {TASKS: (TREE[TASKS] + "Notes.\n---\n").replace("\n", "\r\n")})
+    root = make_tree(tmp_path, {TASKS: TREE[TASKS] + "Notes.\n---\n"})
+    saved_with_windows_line_endings(root, [TASKS])
     assert task_list_problems(root) == []
+
+
+def test_a_tree_saved_with_windows_line_endings_has_no_problem(tmp_path: Path) -> None:
+    root = make_tree(tmp_path)
+    saved_with_windows_line_endings(root, with_line_feeds(dict(TREE)))
+    assert roadmap_problems(root) == []
 
 
 @pytest.mark.parametrize(
@@ -1129,7 +1227,7 @@ def test_a_risk_of_an_archived_design_that_no_page_lists_is_reported(tmp_path: P
 
 def test_a_risk_out_of_form_or_a_design_without_risks_is_reported(tmp_path: Path) -> None:
     design = "openspec/changes/c/design.md"
-    root = planted(tmp_path, design, "- [Another risk] \u2192 What.", "- [Another risk] -> What.")
+    root = planted(tmp_path, design, "- [Another risk] -> What.", "- [Another risk] \u2192 What.")
     assert risk_problems(root) == [
         f"{design}:12 gives a risk in a form the test does not read",
         f"{FEATURE} lists 'Another risk', which no change's design gives as a risk",
@@ -1266,16 +1364,26 @@ LINKS_ELSEWHERE = [
     ("`192.0.2.1`", "names 192.0.2.1, which reads as an IP address"),
     ("0123abc", "names 0123abc, which reads as a commit ID"),
     ("`0123ABCDEF`", "names 0123ABCDEF, which reads as a commit ID"),
-    ("[a skill](../vendor/a/SKILL.md)", "links to ../vendor/a/SKILL.md, a file under vendor/"),
     (
-        "[a skill](../.claude/skills/a/SKILL.md)",
-        "links to ../.claude/skills/a/SKILL.md, a file under .claude/skills/",
+        "[a skill](../vendor/superpowers/skills/a/SKILL.md)",
+        "links to ../vendor/superpowers/skills/a/SKILL.md, a file under vendor/superpowers/",
     ),
-    ("vendor/a/SKILL.md", "names vendor/a/SKILL.md, a file under vendor/"),
     (
-        "`.claude/skills/a/SKILL.md`",
-        "names .claude/skills/a/SKILL.md, a file under .claude/skills/",
+        "[a skill](../.claude/skills/openspec-a/SKILL.md)",
+        "links to ../.claude/skills/openspec-a/SKILL.md, a file under .claude/skills/openspec-a/",
     ),
+    (
+        "vendor/superpowers/skills/a/SKILL.md",
+        "names vendor/superpowers/skills/a/SKILL.md, a file under vendor/superpowers/",
+    ),
+    (
+        "`.claude/skills/openspec-a/SKILL.md`",
+        "names .claude/skills/openspec-a/SKILL.md, a file under .claude/skills/openspec-a/",
+    ),
+    # A character that the message would carry is given by its code point (T264).
+    ("[a page](a\U000e0041\u202e.md)", "links to aU+E0041U+202E.md, which is not a tracked"),
+    ("caf\u00e9/else", "names cafU+00E9/else, which is not a tracked file"),
+    ("\u0661.\u0662.\u0663.\u0664", "names U+0661.U+0662.U+0663.U+0664, which reads as an IP"),
 ]
 
 
@@ -1340,6 +1448,14 @@ def test_what_only_looks_like_a_host_an_address_or_a_commit_id_passes(
     tmp_path: Path, new: str
 ) -> None:
     assert link_problems(planted(tmp_path, ROADMAP, "None yet.", new)) == []
+    assert link_problems(planted(tmp_path, ITEM, "Why it matters.", new)) == []
+
+
+def test_the_vendored_copy_s_lock_may_be_linked_and_named(tmp_path: Path) -> None:
+    """The lock at the vendored copy's root is a file that this repository writes (T160)."""
+    new = "[the lock](../vendor/superpowers/UPSTREAM.lock) and vendor/superpowers/UPSTREAM.lock."
+    assert link_problems(planted(tmp_path, ROADMAP, "None yet.", new)) == []
+    new = new.replace("](../", "](../../")
     assert link_problems(planted(tmp_path, ITEM, "Why it matters.", new)) == []
 
 

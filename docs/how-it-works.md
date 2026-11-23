@@ -44,12 +44,12 @@ A hook in each Claude Code session, from the hook file that a repository registe
 For each ledger entry counted, on the entry's UTC day *d*:
 
 ```
-token cost = input × rate(model, input, d)
-           + output × rate(model, output, d)
-           + cache write 5 min × rate(model, cache write 5 min, d)
-           + cache write 1 h × rate(model, cache write 1 h, d)
-           + cache read × rate(model, cache read, d)
-           + server-side tool requests × rate(model, request type, d)
+token cost = input * rate(model, input, d)
+           + output * rate(model, output, d)
+           + cache write 5 min * rate(model, cache write 5 min, d)
+           + cache write 1 h * rate(model, cache write 1 h, d)
+           + cache read * rate(model, cache read, d)
+           + server-side tool requests * rate(model, request type, d)
 ```
 
 `rate` is the latest row in `prices/models.json` dated on or before *d*, with every modifier that the table lists for the entry's attributes, combined as the table states (R14, R16). Where the transcript gave no cache lifetime, the cost is a range between the two lifetimes' rates (R15). An entry whose model, attribute or day has no price is counted in tokens and left out of the cost, and the comment names it (R14, R17, R61).
@@ -57,13 +57,13 @@ token cost = input × rate(model, input, d)
 For each attempt of each job of each counted run:
 
 ```
-CI cost = ceil(duration in seconds / 60) × rate(runner type, day the job ran)
+CI cost = ceil(duration in seconds / 60) * rate(runner type, day the job ran)
 ```
 
 The runs counted are those on the pull request's own commits that no push to the default branch started and that were created before the merge (R62, R120). A job on a runner that `prices/github-actions.json` does not list is counted in minutes and left out of the cost (R63).
 
 ```
-total = Σ token cost + Σ CI cost
+total = sum(token cost) + sum(CI cost)
 ```
 
 The comment splits the token cost by model, by token type and by activity type. Every figure can be recomputed from the ledger, the price table and the jobs API.
@@ -205,7 +205,7 @@ sequenceDiagram
   R->>GH: List pull requests associated with each commit the push adds
   alt the commits belong to exactly one pull request
     R->>R: Read .pr-cost.json before and after; if both leave the tool off, say why in the job summary and stop
-    R->>R: Fetch the default branch's history and refs/pull/<n>/head
+    R->>R: Fetch the default branch's history and the pull request's head, refs/pull/N/head
     R->>R: Read the ledger files the merge adds, as git blobs, within the size bound, holding each file to the version of the ledger format that its first line states
     R->>R: Read the call ids of the first-parent history's earlier ledger files, by the versions they state, so no call counts twice
     R->>R: Compare the hook file at the merged commit with the one at its own commit
@@ -273,7 +273,7 @@ It needs no `contents: write`, so a ruleset protecting the default branch needs 
 
 **The release workflow**, in this repository only, holds `contents: write` in its release job alone, to create the release as a draft, attach the bill of materials and the plugin's zip, read them back and then publish the release, and runs only for a pushed tag (R189).
 
-**This repository's CI** (`.github/workflows/ci.yml`) grants every job `contents: read` and nothing else. Its checkouts keep no credentials, and no job reads a secret. The job that runs the tests clones the whole history rather than one commit, so that the decision records' check can compare the records with what the default branch held before the change. The workflow names that commit in `BASE_COMMIT`: the pull request's base commit, or the commit that a push to the default branch replaced. The check also compares with where HEAD left the default branch, since a pull request's base is the branch that its author chose, and a pull request's run starts again when its base changes, and so when its title or description is edited, since GitHub reports these as one event. The repository is public, so the whole history gives the job nothing that it could not already read.
+**This repository's CI** (`.github/workflows/ci.yml`) grants every job `contents: read` and nothing else. Its checkouts keep no credentials, and no job reads a secret. Each job that runs the tests clones the whole history rather than one commit, so that the decision records' check can compare the records with what the default branch held before the change. The workflow names that commit in `BASE_COMMIT`: the pull request's base commit, or the commit that a push to the default branch replaced. The check also compares with where HEAD left the default branch, since a pull request's base is the branch that its author chose, and a pull request's run starts again when its base changes, and so when its title or description is edited, since GitHub reports these as one event. The repository is public, so the whole history gives those jobs nothing that they could not already read. Every command that a step of this workflow or of the next runs, but one step of the job `ci` that checks the filter from outside it, prints through `scripts/printable_log.py`, the shell that their defaults give, so that what those commands print reaches the log as printable ASCII (R278). The lines that the runner itself writes before each step's command, such as the step's script and its environment, and what an action prints, such as the checkout's, do not go through the filter.
 
 **The daily check of Renovate's proposals** (`.github/workflows/renovate-watch.yml`), in this repository only, runs every day and by hand, and grants its one job `contents: read`, to check out the pins, and `pull-requests: read` and `issues: read`, to list Renovate's pull requests and find its dependency dashboard. It holds no write permission and reads no secret: its one credential is the workflow's own token, which it sends to GitHub's API alone (R263, DR-267).
 
@@ -284,6 +284,7 @@ Each job of each workflow in this repository, with the permissions it is granted
 | `ci.yml` | `python` | `contents: read` |
 | `ci.yml` | `openspec` | `contents: read` |
 | `ci.yml` | `vendor` | `contents: read` |
+| `ci.yml` | `windows-line-endings` | `contents: read` |
 | `ci.yml` | `ci` | `contents: read` |
 | `renovate-watch.yml` | `check` | `contents: read`, `pull-requests: read`, `issues: read` |
 

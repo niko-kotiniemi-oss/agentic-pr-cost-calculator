@@ -1,0 +1,39 @@
+# DR-280: The repository's attributes set nothing but line endings, and are read as git holds them
+
+- **Type:** security and privacy
+- **Boundary:** inside
+- **Reversibility:** reversible
+- **Status:** accepted
+- **Decided by:** the change `add-pr-cost-calculator`
+- **Requirements:** R274
+- **Threats:** T81, T256, T259, T264, T272, T276
+- **Replaces:** none
+- **Closed by:** none
+
+## Context
+
+A git attribute that the repository commits can change what a reader of a file gets: `working-tree-encoding` and `filter` change what a checkout writes, `ident` writes an object's id into a file, `export-subst` and `export-ignore` change what `git archive` writes, and `binary`, `diff` and `linguist-generated` make git or GitHub fold a diff. R134 refused the last three for the records and the files that steer, and the first three for the plugin's files, and the design of this change refused `working-tree-encoding` for every file (T256). Its design-stage review found that the other attributes give some reader other text than git holds too: in a trial with git 2.43.0 on 2026-11-21, `export-subst` wrote a commit's subject, with a direction-changing character, into the file that `git archive` gave. It also found that an attributes file which gives itself `working-tree-encoding` is written by every checkout with each line that holds a character such as `=` or `*` rewritten, which git then cannot read as the attribute that the line gives, so that a check that asks git for the attributes as the working tree holds them, as each check of R134 did, misses each such line: in a trial with git 2.43.0 on 2026-11-21, those checks passed in a fresh clone of such a commit while git, read from its index, gave `CLAUDE.md` `linguist-generated` (T259). And `working-tree-encoding=UTF-7` changes code that holds printable ASCII alone, which no test of characters can see: a checkout writes `+` as `+-`, so that `print(1+1)`, as git held it in a trial that day, printed 0. On 2026-11-21 the repository tracked no attributes file. The threat review against what was built found three more gaps: git gives an attribute of a folder to no file in it, while `git archive` leaves out a folder that `export-ignore` names and every file in it, so that `vendor export-ignore` passed every check (T256); git ignores a line of an attributes file that is 2048 bytes long or longer, with a warning, which another reader may not ignore, so that such a line passed the checks that rest on git's reading (T81); and a clone that keeps its index split stopped every test of the real tree's attributes, since the copy of its index lacked the shared part (T272).
+
+## Decision
+
+The repository's attributes give a tracked file, or a folder that holds one, only `text` and `eol`, which set its line endings, and no other attribute, in any state, in lines that git reads whole: a line that git ignores, and any warning of git's while it reads them, fail the test. Each check of attributes, this one and each of R134, reads them as git's index holds them and as the working tree holds them, and reads none of a person's own: since `git check-attr` reads a clone's `.git/info/attributes` even with `--cached` or `--source`, as a trial with git 2.43.0 showed on 2026-11-21, each reads them in a git folder of its own that holds no `info/attributes`, with no global attributes file, and with a copy of the clone's index and of each shared part of it.
+
+## Alternatives
+
+- Refusing a named set of attributes, as R134 does for some files: an attribute that git or GitHub adds later would pass until a threat found it, as `export-subst` and `filter` passed the design of this change.
+- No attributes file at all: each clone's line endings would be left to the person's git, and a clone made with `core.autocrlf` set to `true` fails the tests and runs neither its hook nor its scripts, which DR-281 answers with `text` and `eol`, the only attributes that this rule lets in.
+- Reading the attributes from the working tree alone, as the checks of R134 did: an attributes file that re-encodes itself hides from them each line that a checkout rewrites (T259).
+
+## Consequences
+
+- `tests/test_conventions.py` fails on any other attribute that the repository's attributes give a tracked file or a folder that holds one, naming the file, or the folder with a slash at its end, and the attribute, on a line of an attributes file that git ignores for its length, naming the file and the line, and on each warning of git's while it reads them (R274; T81, T256; task 1.51), and the helper that the checks of R134 share reads the attributes as git's index holds them too, neither of them reading a person's own, and everything that they print is printable ASCII (R274; T256, T259, T264; task 1.51).
+- R134's checks stay as they are, and this rule holds every file besides, the vendored files and the tests among them.
+- An attribute that a later need asks for, such as one that marks the vendored files for GitHub's statistics of languages, takes a change to the test, which the owner reads.
+
+## Scope
+
+This covers the attributes that the repository sets and how the checks read them. Which diffs no attribute may hide is part of DR-108 (Each decision has a record of its own, in an index) and of R134. The characters that a checkout holds are DR-274 (Everything that this repository writes holds printable ASCII), and the line endings that the attributes give are DR-281 (A checkout writes line feeds whatever `core.autocrlf` says, and the checks read Windows line endings as git stages them).
+
+## What reversing it would change
+
+How hard it is to reverse: reversible. The rule is part of one test, and the reading is one helper. R274 in `project-standards` would change, with its scenarios, and so would the answers of T81, T256, T259, T272 and T276, design decision 23 and task 1.51. Nothing that adopters configure or depend on changes, so the change would not be a breaking one for adopters.

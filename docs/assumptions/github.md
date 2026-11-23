@@ -45,14 +45,14 @@ The assumptions about GitHub: this repository's settings there, and its workflow
 
 ## A8. Workflows and required checks run when the design expects them to.
 
-- **Rests on it:** R33, R129, T28, T35, T65, T70, T76, DR-043, DR-072, DR-119, DR-243
+- **Rests on it:** R33, R129, T28, T35, T65, T70, T76, DR-043, DR-072, DR-119, DR-243, DR-283
 - **If it is wrong:** A failed, cancelled or skipped job might not block a merge, so the `ci` check would not stand for the jobs before it (T28, T35). A change of a pull request's base, title or body that sends no event, or whose event carries stale text, would go unchecked until the next event (T70, T65).
 - **Fact:** A required check that never runs never reports, so a pull request that requires it waits for good.
   - **Relied on:** DR-043, DR-072
   - **Checked:** not yet: none will, since no test may reach GitHub
 - **Fact:** A job with `if: always()` runs even when a job that it needs has failed, so a last job that fails unless each job it needs succeeded can stand for all of them as the one required check.
-  - **Relied on:** T28, T35, DR-043, DR-072
-  - **Checked:** not yet: none will, since no test may reach GitHub; `add-pr-cost-calculator` task 1.7 tests only what this repository does with it
+  - **Relied on:** T28, T35, DR-043, DR-072, DR-283
+  - **Checked:** not yet: none will, since no test may reach GitHub; `add-pr-cost-calculator` task 1.7 and `add-pr-cost-calculator` task 1.54 test only what this repository does with it
 - **Fact:** GitHub runs a pull request's CI again when the pull request is pushed to, not when its base branch moves on.
   - **Relied on:** T76, DR-119
   - **Checked:** not yet: none will, since no test may reach GitHub
@@ -65,7 +65,7 @@ The assumptions about GitHub: this repository's settings there, and its workflow
 
 ## A9. GitHub shows text as the checks expect, and text posted on GitHub is public at once.
 
-- **Rests on it:** R21, R33, R97, R98, R128, R134, R176, R198, R200, R210, T26, T52, T61, T65, T73, T79, T81, T125, T126, T145, T147, T151, T165, T224, T226, DR-044, DR-108, DR-152, DR-195, DR-213, DR-227, DR-243, DR-244
+- **Rests on it:** R21, R33, R97, R98, R128, R134, R176, R198, R200, R210, R273, T26, T52, T61, T65, T73, T79, T81, T125, T126, T145, T147, T151, T165, T224, T226, T257, DR-044, DR-108, DR-152, DR-195, DR-213, DR-227, DR-243, DR-244, DR-276, DR-279
 - **If it is wrong:** Text shown as code could still render as a link, an image or a mention, and a log line could be read as a workflow command (T26, T52). A decision record could read one way to a reviewer and another way to an agent, or be collapsed and merged unread (T73, T79, T81), and a bug report opened without the form would never meet its privacy checkbox (T61, T65). A spec could read one way to its reviewers and another to an agent (T125), and the check of the specs' form could print a line that CI reads as a command (T126). The README's detail could show in full, so that its short start no longer comes first, or stay out of a reader's reach (T145), and if GitHub showed an HTML comment, or a drawn code block's text, as the raw file holds it, the README's test that refuses them would refuse more than it needs to (T151), and so would the roadmap's (T165). If GitHub showed the root's README on the repository's page where the `.github` folder holds one, the README's test that refuses such a file would refuse more than it needs to (R198, T147). A change to a context file could be hidden from the owner's review, or its text read one way by the owner and another by an agent (T224, T226).
 - **Fact:** GitHub shows text inside inline code in a comment or a job summary as code, never as a link, an image or a mention.
   - **Relied on:** R21, T26, T52, DR-044
@@ -74,19 +74,19 @@ The assumptions about GitHub: this repository's settings there, and its workflow
   - **Relied on:** R97, R98, T52, T126, DR-044
   - **Checked:** not yet: none will, since no test may reach GitHub; `add-pr-cost-calculator` task 4.1 tests only what this repository does with it
 - **Fact:** GitHub hides an HTML comment when it shows a file.
-  - **Relied on:** R128, R176, R200, R210, T73, T125, T151, T165, T226, DR-152, DR-195, DR-213, DR-227
+  - **Relied on:** R128, R176, R200, R210, R273, T73, T125, T151, T165, T226, T257, DR-152, DR-195, DR-213, DR-227, DR-279
   - **Checked:** not yet: none will, since no test may reach GitHub
 - **Fact:** GitHub shows text between dollar signs as a mathematical expression, and text between one or two tildes struck through, in a Markdown file as in a pull request.
-  - **Relied on:** R176, R200, T125, T151, DR-195
+  - **Relied on:** R176, R200, R273, T125, T151, T257, DR-195, DR-279
   - **Checked:** documented: <https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/writing-mathematical-expressions>, <https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax>, read 2026-11-09
 - **Fact:** GitHub shows the Markdown inside a `<details>` element collapsed, under its `<summary>`, until a reader clicks to expand it, and open from the start only when the element has the `open` attribute.
   - **Relied on:** R200, T145, DR-213
   - **Checked:** documented: <https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/organizing-information-with-collapsed-sections>, read 2026-11-10
 - **Fact:** GitHub draws a fenced code block whose language is `mermaid`, `geojson`, `topojson` or `stl` as a diagram, a map or a model, and one whose language is `math` as a mathematical expression.
-  - **Relied on:** R200, T151
+  - **Relied on:** R200, R273, T151, T257, DR-276, DR-279
   - **Checked:** documented: <https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/creating-diagrams>, <https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/writing-mathematical-expressions>, read 2026-11-11
 - **Fact:** GitHub hides a footnote's definition that nothing refers to, and raw HTML that is not an element, such as a processing instruction, a declaration or a CDATA section, as it hides a comment.
-  - **Relied on:** R200, T151
+  - **Relied on:** R200, R273, T151, T257, DR-279
   - **Checked:** not yet: none will, since no test may reach GitHub
 - **Fact:** Where a repository holds a README in its `.github` folder, GitHub shows that one on the repository's page in place of the one at its root.
   - **Relied on:** R198, T147

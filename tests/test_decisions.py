@@ -76,13 +76,16 @@ from __future__ import annotations
 import os
 import posixpath
 import re
+import shutil
 import subprocess
+import tempfile
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
 from datetime import UTC, date, datetime
 from pathlib import Path
 
 import pytest
+from conventions import shown, shown_path
 from test_context_files import CONTEXT_FILES
 from test_roadmap import GIT_ENVIRONMENT, isolated_environment
 from wording import ACCEPTED, DEFAULT_BRANCH, QUOTATION, SPEC_FILE, SPEC_TITLE
@@ -152,7 +155,7 @@ WORDS = r"[a-z0-9]+(?:-[a-z0-9]+)*"
 FILE_NAME = re.compile(rf"DR-({NUMBER})-{WORDS}\.md")
 # Files that keep history, and so may name a closed record: the records, their index, the
 # changelog, the archived changes, and the mapping of B-022, whose quotes are what the
-# default branch held before that sweep.
+# default branch held before that sweep, with each arrow written as `->`.
 HISTORY = re.compile(
     rf"docs/decisions/(?:README|DR-{NUMBER}-{WORDS})\.md|CHANGELOG\.md"
     r"|openspec/changes/archive/[0-9]{4}-[0-9]{2}-[0-9]{2}-[a-z0-9-]+/.+"
@@ -1144,22 +1147,113 @@ def mode_problems(root: Path) -> list[str]:
     return problems
 
 
-def attribute_problems(root: Path, paths: list[str]) -> list[str]:
-    """The attributes that would change how these files' diffs show. Only the repository's
-    attributes count, not a contributor's own file of them.
+# The machine's own attributes file, which git would read besides the repository's own and
+# which no check of them reads. The check's own git folder names no remote, so git fetches
+# nothing that a partial clone lacks even without `GIT_NO_LAZY_FETCH`.
+ATTRIBUTE_ENVIRONMENT = {"GIT_ATTR_NOSYSTEM": "1"}
+# An attribute that a path has, as its path, its name and its value.
+Attribute = tuple[str, str, str]
+
+
+def attribute_readings(
+    root: Path, paths: Iterable[str]
+) -> tuple[tuple[list[Attribute], set[str]], tuple[list[Attribute], set[str]]]:
+    """Each attribute that the repository's attributes give these paths, and each line that
+    git warns while it reads them, in printable ASCII, as git's index holds them and as the
+    working tree holds them. Both are read in a git folder of the check's own, which reads
+    the clone's objects and a copy of its index, with the shared part of an index that the
+    clone keeps split, and holds no `info/attributes`, with no global or system attributes
+    file, since `git check-attr` reads a clone's `.git/info/attributes` even with `--cached`
+    (R134, R274, DR-280).
 
     Raises LookupError when git cannot read them.
     """
     done = git(
-        root, "-c", f"core.attributesFile={os.devnull}", "check-attr", "-a", "-z", "--", *paths
+        root,
+        "rev-parse",
+        "--path-format=absolute",
+        "--git-path",
+        "index",
+        "--git-path",
+        "objects",
+        "--show-object-format",
     )
     if done.returncode != 0:
-        raise LookupError(f"git check-attr failed: {done.stderr.decode().strip()}")
-    fields = done.stdout.decode("utf-8").split("\0")[:-1]
+        raise LookupError(f"git rev-parse failed: {done.stderr.decode().strip()}")
+    index, objects, form = done.stdout.decode("utf-8", "surrogateescape").split("\n")[:3]
+    asked = "".join(f"{path}\0" for path in paths).encode("utf-8", "surrogateescape")
+    readings: list[tuple[list[Attribute], set[str]]] = []
+    with tempfile.TemporaryDirectory() as folder:
+        made = git(Path(folder), "init", "-q", "--template=", f"--object-format={form}", folder)
+        if made.returncode != 0:
+            raise LookupError(f"git init failed: {made.stderr.decode().strip()}")
+        own = Path(folder) / ".git"
+        (own / "objects" / "info").mkdir(parents=True, exist_ok=True)
+        (own / "objects" / "info" / "alternates").write_text(f"{objects}\n", encoding="utf-8")
+        if Path(index).is_file():
+            shutil.copyfile(index, own / "index")
+            for shared in Path(index).parent.glob("sharedindex.*"):
+                shutil.copyfile(shared, own / shared.name)
+        for cached in (["--cached"], []):
+            read = subprocess.run(
+                [
+                    "git",
+                    f"--git-dir={own}",
+                    f"--work-tree={root}",
+                    "-c",
+                    f"core.attributesFile={os.devnull}",
+                    "check-attr",
+                    *cached,
+                    "-a",
+                    "-z",
+                    "--stdin",
+                ],
+                cwd=root,
+                input=asked,
+                capture_output=True,
+                check=False,
+                env={**isolated_environment(root), **ATTRIBUTE_ENVIRONMENT},
+            )
+            if read.returncode != 0:
+                raise LookupError(f"git check-attr failed: {read.stderr.decode().strip()}")
+            warned = read.stderr.decode("utf-8", "surrogateescape").splitlines()
+            fields = read.stdout.decode("utf-8", "surrogateescape").split("\0")[:-1]
+            readings.append(
+                (
+                    list(zip(fields[0::3], fields[1::3], fields[2::3], strict=True)),
+                    {shown(line.strip()) for line in warned if line.strip()},
+                )
+            )
+    return readings[0], readings[1]
+
+
+def repository_attributes(
+    root: Path, paths: Iterable[str]
+) -> tuple[list[Attribute], list[Attribute]]:
+    """Each attribute that the repository's attributes give these paths, as git's index
+    holds them and as the working tree holds them, read as `attribute_readings` reads them.
+
+    Raises LookupError when git cannot read them.
+    """
+    (index, _), (tree, _) = attribute_readings(root, paths)
+    return index, tree
+
+
+def attribute_problems(root: Path, paths: list[str]) -> list[str]:
+    """The attributes that would change how these files' diffs show, as git's index holds
+    the repository's attributes and as the working tree holds them. Only the repository's
+    attributes count, not a person's own (R134).
+
+    Raises LookupError when git cannot read them.
+    """
+    index, tree = repository_attributes(root, paths)
     return sorted(
-        f"{path} has {name}: {value}, which changes how its diff shows"
-        for path, name, value in zip(fields[0::3], fields[1::3], fields[2::3], strict=True)
-        if name in DIFF_ATTRIBUTES
+        {
+            f"{shown_path(path)} has {shown(name)}: {shown(value)}, which changes how its diff"
+            " shows"
+            for path, name, value in (*index, *tree)
+            if name in DIFF_ATTRIBUTES
+        }
     )
 
 
@@ -1553,16 +1647,16 @@ def test_a_placeholder_or_a_pipe_in_inline_code_is_neither_html_nor_a_table(
             "has a line that starts with # and is not a section's heading: '  ## Decision'",
         ),
         ("It covers the thing.", "It covers\n#1, the thing.", "starts with # and is not a section"),
-        ("It covers the thing.", "It covers the​ thing.", "line breaks: U+200B"),
-        ("It covers the thing.", "It covers the ‮thing.", "line breaks: U+202E"),
+        ("It covers the thing.", "It covers the\u200b thing.", "line breaks: U+200B"),
+        ("It covers the thing.", "It covers the \u202ething.", "line breaks: U+202E"),
         ("It covers the thing.", "It covers the\tthing.", "line breaks: U+0009"),
         ("It covers the thing.", "It covers the\U000e0100 thing.", "line breaks: U+E0100"),
         (
             "It covers the thing.",
-            "It covers the ㅤᅟ⠀͏ thing.",
+            "It covers the \u3164\u115f\u2800\u034f thing.",
             "line breaks: U+034F, U+115F, U+2800, U+3164",
         ),
-        ("It covers the thing.", "It covers the thing — and more.", "line breaks: U+2014"),
+        ("It covers the thing.", "It covers the thing \u2014 and more.", "line breaks: U+2014"),
         ("It covers the thing.", "It covers &#x202E; the thing.", "holds &"),
         ("It covers the thing.", "It covers \\`<!-- x -->\\` the thing.", "holds a backslash"),
         ("It covers the thing.", "Ask @someone.", "holds @"),
@@ -1655,7 +1749,7 @@ def test_a_closed_record_from_dr_268_on_may_have_its_reversibility_sentence_remo
         "x.md",
         "DR-0001-a-choice.md",
         "DR-000-a-choice.md",
-        "DR-００１-a-choice.md",
+        "DR-\uff10\uff10\uff11-a-choice.md",
         "DR-001-a-choice.markdown",
     ],
 )
@@ -2780,7 +2874,7 @@ def test_an_attribute_that_changes_how_a_record_s_diff_shows_is_reported(tmp_pat
     ]
     outside = tmp_path.parent / f"{tmp_path.name}-outside"
     outside.mkdir()
-    with pytest.raises(LookupError, match="git check-attr failed: fatal: not a git repository"):
+    with pytest.raises(LookupError, match="git rev-parse failed: fatal: not a git repository"):
         attribute_problems(outside, paths)
 
 

@@ -970,23 +970,39 @@ def test_a_checkout_that_keeps_its_credentials_is_named() -> None:
 
 
 BASE_ENV = {"BASE_COMMIT": "${{ github.event.pull_request.base.sha || github.event.before }}"}
+# The job that runs the tests on each Python that the tool supports, held by its name, and a
+# command that runs the tests, in any form.
+TESTS_JOB = "python"
+RUNS_TESTS = re.compile(r"\bpytest\b")
 # GitHub's default activity types for a pull request, and `edited`, which a change of its
 # base branch is.
 TYPES = ["opened", "synchronize", "reopened", "edited"]
 
 
 def history_problems(doc: dict[Any, Any]) -> list[str]:
-    """What keeps the tests' job from comparing with its base: a clone of less than the
-    whole history, a base commit that the tests are not given, or a run that a change of
-    the pull request's base, or a push to the default branch, does not start."""
-    steps = doc["jobs"]["python"]["steps"]
-    checkout = next(s for s in steps if str(s.get("uses", "")).startswith("actions/checkout@"))
-    tests = next(s for s in steps if s.get("run") == "pytest")
-    problems = []
-    if (checkout.get("with") or {}).get("fetch-depth") != 0:
-        problems.append("the tests' checkout fetches less than the whole history")
-    if tests.get("env") != BASE_ENV:
-        problems.append("the tests name no base commit, or another one")
+    """What keeps a job that runs the tests from comparing with its base: the lack of the job
+    `python`, or its running no tests, and a clone of less than the whole history, or a step
+    that runs the tests, in any form, without their base commit, in that job and in each
+    other job that runs them, by its name; or a run that a change of the pull request's base,
+    or a push to the default branch, does not start."""
+    jobs = doc.get("jobs") or {}
+    problems = [] if TESTS_JOB in jobs else [f"CI has no job `{TESTS_JOB}`, which runs the tests"]
+    for name, job in jobs.items():
+        steps = job.get("steps") or []
+        tests = [step for step in steps if RUNS_TESTS.search(str(step.get("run", "")))]
+        if not tests:
+            if name == TESTS_JOB:
+                problems.append(f"the job `{TESTS_JOB}` runs no tests")
+            continue
+        checkout: dict[str, Any] = next(
+            (s for s in steps if str(s.get("uses", "")).startswith("actions/checkout@")), {}
+        )
+        if (checkout.get("with") or {}).get("fetch-depth") != 0:
+            problems.append(
+                f"the tests' checkout in the job `{name}` fetches less than the whole history"
+            )
+        if any(step.get("env") != BASE_ENV for step in tests):
+            problems.append(f"the tests in the job `{name}` name no base commit, or another one")
     on = doc.get("on", doc.get(True))
     pull_request = on.get("pull_request") if isinstance(on, dict) else None
     if not set(TYPES) <= set((pull_request or {}).get("types") or []):
@@ -1017,14 +1033,68 @@ def test_a_test_job_without_the_history_or_its_base_is_named() -> None:
         on = {"pull_request": {"types": TYPES}, "push": {"branches": ["main"]}}
         return {True: on, "jobs": {"python": {"steps": steps}}}
 
-    shallow = "the tests' checkout fetches less than the whole history"
-    unnamed = "the tests name no base commit, or another one"
+    shallow = "the tests' checkout in the job `python` fetches less than the whole history"
+    unnamed = "the tests in the job `python` name no base commit, or another one"
     assert history_problems(job({}, BASE_ENV)) == [shallow]
     assert history_problems(job({"fetch-depth": 1}, BASE_ENV)) == [shallow]
     assert history_problems(job({"fetch-depth": 0}, None)) == [unnamed]
     other = {"BASE_COMMIT": "${{ github.event.before }}"}
     assert history_problems(job({"fetch-depth": 0}, other)) == [unnamed]
     assert history_problems(job({"fetch-depth": 0}, BASE_ENV)) == []
+
+
+def test_each_job_that_runs_the_tests_is_held_to_the_history_and_its_base() -> None:
+    tests = {"run": "pytest", "env": BASE_ENV}
+    whole = {"uses": "actions/checkout@0123", "with": {"fetch-depth": 0}}
+    on = {"pull_request": {"types": TYPES}, "push": {"branches": ["main"]}}
+    jobs = {
+        "python": {"steps": [whole, tests]},
+        "other": {"steps": [{"uses": "actions/checkout@0123"}, {"run": "pytest"}]},
+        "vendor": {"steps": [{"uses": "actions/checkout@0123"}, {"run": "make"}]},
+    }
+    assert history_problems({True: on, "jobs": jobs}) == [
+        "the tests' checkout in the job `other` fetches less than the whole history",
+        "the tests in the job `other` name no base commit, or another one",
+    ]
+    jobs["other"] = {"steps": [whole, tests]}
+    assert history_problems({True: on, "jobs": jobs}) == []
+    assert history_problems({True: on, "jobs": {"vendor": jobs["vendor"]}}) == [
+        "CI has no job `python`, which runs the tests"
+    ]
+
+
+@pytest.mark.parametrize(
+    "command", ["python -m pytest", "pytest -q", "set -e\npytest\n", "pytest tests/"]
+)
+def test_a_job_python_that_runs_the_tests_in_any_form_without_their_base_is_named(
+    command: str,
+) -> None:
+    """The job `python` is held by its name, and each step of a job that runs the tests in
+    any form, beside a job that runs them as `pytest` with its base."""
+    whole = {"uses": "actions/checkout@0123", "with": {"fetch-depth": 0}}
+    on = {"pull_request": {"types": TYPES}, "push": {"branches": ["main"]}}
+    tests: dict[str, Any] = {"run": command}
+    steps: list[dict[str, Any]] = [whole, tests]
+    jobs = {
+        "python": {"steps": steps},
+        "windows-line-endings": {"steps": [whole, {"run": "pytest", "env": BASE_ENV}]},
+    }
+    unnamed = ["the tests in the job `python` name no base commit, or another one"]
+    assert history_problems({True: on, "jobs": jobs}) == unnamed
+    tests["env"] = BASE_ENV
+    assert history_problems({True: on, "jobs": jobs}) == []
+    steps.append({"run": "pytest -k later"})
+    assert history_problems({True: on, "jobs": jobs}) == unnamed
+
+
+def test_a_job_python_that_runs_no_tests_is_named() -> None:
+    whole = {"uses": "actions/checkout@0123", "with": {"fetch-depth": 0}}
+    on = {"pull_request": {"types": TYPES}, "push": {"branches": ["main"]}}
+    jobs = {
+        "python": {"steps": [whole, {"run": "make check"}]},
+        "windows-line-endings": {"steps": [whole, {"run": "pytest", "env": BASE_ENV}]},
+    }
+    assert history_problems({True: on, "jobs": jobs}) == ["the job `python` runs no tests"]
 
 
 def test_a_workflow_that_does_not_run_again_when_a_base_changes_is_named() -> None:

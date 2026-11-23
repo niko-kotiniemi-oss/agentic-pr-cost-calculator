@@ -134,13 +134,18 @@ for skill in .claude/skills/openspec-*; do
   : >"$skill/SKILL.md"
 done
 "$OPENSPEC" update --force >/dev/null
-# Compared with the index, so a staged tree is checked as it will be committed:
-# a line counts when its second column is not blank (the work tree differs from
-# the index), which also catches untracked (??) and ignored (!!) files.
-drift=$(git status --porcelain --untracked-files=all --ignored -- "$SKILLS" | awk 'substr($0, 2, 1) != " "')
-if [ -n "$drift" ]; then
+# Compared with the index by content, so a staged tree is checked as it will be
+# committed, and a skill that differs from git's record only in its size on disk,
+# as one that a clone checked out with Windows line endings before the attributes
+# keeps, is not taken for one that changed, whatever the clone's
+# diff.autoRefreshIndex says, and with git's own objects, not those that a replace
+# ref gives (R276); untracked (??) and ignored (!!) files there are named too.
+drift=$(git -c diff.autoRefreshIndex=true --no-replace-objects diff --name-status -- "$SKILLS")
+unlisted=$(git status --porcelain --untracked-files=all --ignored -- "$SKILLS" | awk '/^(\?\?|!!) /')
+if [ -n "$drift$unlisted" ]; then
   echo "verify-openspec: the generated skills differ from what the pinned CLI writes:" >&2
-  echo "$drift" >&2
+  [ -z "$drift" ] || echo "$drift" >&2
+  [ -z "$unlisted" ] || echo "$unlisted" >&2
   exit 1
 fi
 
