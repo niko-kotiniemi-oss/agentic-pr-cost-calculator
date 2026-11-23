@@ -4482,8 +4482,8 @@ The trust boundaries:
 - **Likelihood:** 1 (unlikely)
 - **Risk:** 3
 - **Raw impact:** 3 (high)
-- **Raw likelihood:** 2 (possible)
-- **Raw risk:** 6
+- **Raw likelihood:** 3 (likely)
+- **Raw risk:** 9
 - **What could happen:** a Mermaid block that GitHub cannot parse, such as one whose label holds a parenthesis outside quotes, which Mermaid reads as a node's shape, is shown to a reader as an error, while an agent that reads the raw page reads all its text, so that what the block holds reaches agents and never a reader, and the adopter loses the drawing.
 - **Answer:** a numbered part's label stands in double quotes, and a test fails on a number outside them (R281, DR-293); each diagram is looked at on GitHub at the build, before the review against what was built (task 1.59), and R273 already refuses the statements that hide text in a block that draws.
 - **Residual:** a block that a later release of GitHub's Mermaid stops drawing, which a reader reports or review sees.
@@ -4497,9 +4497,9 @@ The trust boundaries:
 - **Impact:** 2 (medium)
 - **Likelihood:** 1 (unlikely)
 - **Risk:** 2
-- **Raw impact:** 2 (medium)
+- **Raw impact:** 3 (high)
 - **Raw likelihood:** 2 (possible)
-- **Raw risk:** 4
+- **Raw risk:** 6
 - **What could happen:** the runner image `ubuntu-latest`, CI's newest Python, `3.x`, Renovate's preset `config:best-practices` and the development tools' own dependencies come in unpinned, so a change to one of them outside this repository changes what CI runs and checks without a diff here.
 - **Answer:** DR-285 names each input that is not pinned and the record that says why, the table of what comes in says for each row how it is pinned or that it is not (R280), and every workflow here holds a read-only token (DR-067).
 - **Residual:** a change upstream that weakens a check without failing it, until the input is pinned or its change is seen; the development tools' hashes wait for task 1.8 (DR-126).
@@ -4512,8 +4512,8 @@ The trust boundaries:
 - **Likelihood:** 1 (unlikely)
 - **Risk:** 3
 - **Raw impact:** 3 (high)
-- **Raw likelihood:** 2 (possible)
-- **Raw risk:** 6
+- **Raw likelihood:** 3 (likely)
+- **Raw risk:** 9
 - **What could happen:** a session that holds another repository beside this one, as the owner's sessions can (T232), copies that repository's checks, tests or text into a change here, bringing in what no record names, or private text into this public repository.
 - **Answer:** DR-285 lets nothing in from another repository or tool but what a record names, and the root `CLAUDE.md` carries the rule for agents among its rules; the private references that `tests/test_repository.py` knows catch only part of a copy of private text.
 - **Residual:** a copy that a review of the diff does not recognise as one, which rests on the owner's review (A15) and on agents following the rules (A16).
