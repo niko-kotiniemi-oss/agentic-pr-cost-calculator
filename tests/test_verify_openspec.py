@@ -190,3 +190,53 @@ def test_skills_that_differ_from_what_git_holds_still_fail(repo: Path) -> None:
     assert done.returncode == 1
     assert "the generated skills differ from what the pinned CLI writes" in done.stderr
     assert SKILL in done.stderr
+
+
+def test_a_skill_that_differs_from_git_s_record_only_in_its_size_on_disk_passes(
+    repo: Path,
+) -> None:
+    """A clone that checked the skills out with Windows line endings before the attributes
+    keeps them so, and git's index records the size of each such copy, so that once the CLI
+    writes a skill again with line feeds, `git status` takes it for changed without reading
+    it, though git would commit it unchanged. The skills are compared by content (R276)."""
+    (repo / ".gitattributes").write_text("* text=auto eol=lf\n", encoding="utf-8")
+    for args in (["add", "--", ".gitattributes"], ["commit", "-q", "-m", "Attributes"]):
+        subprocess.run(["git", *args], cwd=repo, check=True, env=environment())
+    (repo / SKILL).write_bytes(b"generated\r\n")
+    subprocess.run(["git", "update-index", "--", SKILL], cwd=repo, check=True, env=environment())
+    status = ["git", "status", "--porcelain", "--", SKILL]
+    assert subprocess.run(status, cwd=repo, capture_output=True, env=environment()).stdout == b""
+    done = run(repo)
+    assert done.returncode == PAST_THE_COMPARISONS, done.stderr
+    assert (repo / SKILL).read_bytes() == b"generated\n"
+    assert subprocess.run(status, cwd=repo, capture_output=True, env=environment()).stdout
+
+
+@pytest.mark.parametrize(
+    ("written", "shown"),
+    [
+        (".claude/skills/openspec-explore/extra.md", "?? .claude/skills/openspec-explore/extra.md"),
+        (
+            ".claude/skills/openspec-explore/CLAUDE.local.md",
+            "!! .claude/skills/openspec-explore/CLAUDE.local.md",
+        ),
+    ],
+)
+def test_a_file_that_git_does_not_track_or_ignores_among_the_skills_fails(
+    repo: Path, written: str, shown: str
+) -> None:
+    done = run(repo, FAKE_WRITES=written)
+    assert done.returncode == 1, done.stderr
+    assert "the generated skills differ from what the pinned CLI writes" in done.stderr
+    assert shown in done.stderr
+
+
+def test_a_tracked_file_of_a_skill_that_the_cli_no_longer_writes_fails(repo: Path) -> None:
+    kept = ".claude/skills/openspec-explore/references/kept.md"
+    (repo / kept).parent.mkdir(parents=True)
+    (repo / kept).write_text("Kept.\n", encoding="utf-8")
+    for args in (["add", "--", kept], ["commit", "-q", "-m", "Kept"]):
+        subprocess.run(["git", *args], cwd=repo, check=True, env=environment())
+    done = run(repo)
+    assert done.returncode == 1, done.stderr
+    assert f"D\t{kept}" in done.stderr

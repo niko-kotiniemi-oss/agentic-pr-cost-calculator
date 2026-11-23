@@ -2050,7 +2050,7 @@ Each page that this repository writes SHALL be Markdown and hold, outside code, 
 
 #### Scenario: Text that GitHub hides in a page fails CI
 
-- **WHEN** a Markdown file that this repository writes holds, outside inline code and fenced blocks, an HTML comment, an element other than those with which the README folds its sections of detail, a declaration or a processing instruction, a character reference such as `&#x202E;` or `&nbsp;`, a link or footnote definition, an image, a link with a title, which GitHub shows only under a pointer, a link without text, such as `[](https://example.invalid)`, which GitHub shows as nothing, a `$`, with which GitHub starts a mathematical expression, a backtick that a backslash escapes, a run of backticks that its line leaves open, which GitHub may pair with one on a later line, or a backtick or a run of tildes on a line that GitHub reads as raw HTML, from a fold of the README up to a blank line or after a template's comment on the line where it closes, where GitHub and the test would tell code in two ways, or a table row with more cells than its header
+- **WHEN** a Markdown file that this repository writes holds, outside inline code and fenced blocks, an HTML comment, an element other than those with which the README folds its sections of detail, a declaration or a processing instruction, a character reference such as `&#x202E;` or `&nbsp;`, a link or footnote definition, an image, a link with a title, which GitHub shows only under a pointer, a link without text, such as `[](https://example.invalid)`, which GitHub shows as nothing, a `$`, with which GitHub starts a mathematical expression, a backtick that a backslash escapes, an autolink that holds a backtick, which GitHub shows as a link, a run of backticks that its line leaves open, which GitHub may pair with one on a later line, or a backtick or a run of tildes on a line that GitHub reads as raw HTML, from a fold of the README up to a blank line or after a template's comment on the line where it closes, where GitHub and the test would tell code in two ways, or a table row with more cells than its header
 - **THEN** a test fails and names the file, the line and what it holds
 
 #### Scenario: A drawn block that can hide text fails CI
@@ -2198,6 +2198,11 @@ The repository's attributes SHALL give every tracked file `text=auto` and `eol=l
 
 - **WHEN** a vendored file holds a carriage return that the pinned commit's file does not, as a clone made with `core.autocrlf` set to `true` before the commit that adds the attributes keeps one in each file that a pull does not change
 - **THEN** the vendor check fails, names each such file once and says, once, to run `scripts/sync-superpowers.sh`, or to delete `vendor/superpowers/` and check it out again, as `CONTRIBUTING.md` also says, while a vendored file that differs otherwise is named with no such advice
+
+#### Scenario: A clone made before the attributes passes the check of the generated skills
+
+- **WHEN** a generated skill holds a carriage return before each line feed, as a clone made with `core.autocrlf` set to `true` before the commit that adds the attributes keeps one in each file that a pull does not change, so that git's index records the size of that copy, and `scripts/verify-openspec.sh` has the pinned CLI write the skill again with line feeds
+- **THEN** the script compares each skill with git's index by content, as git will commit it, and passes it, while a skill that differs in content, a tracked file of a skill that the CLI no longer writes and a file there that git does not track or ignores still fail it
 
 #### Scenario: Files saved with Windows line endings pass every check
 

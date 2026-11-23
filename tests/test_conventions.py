@@ -310,6 +310,9 @@ BACKSLASHED = (
     "a backtick that a backslash escapes, which GitHub shows as itself where the test would"
     " read code"
 )
+AUTOLINKED = (
+    "an autolink that holds a backtick, which GitHub shows as a link where the test may read code"
+)
 INFO = "an opening fence that gives more than a language, which GitHub does not show"
 IN_MERMAID = " in a Mermaid block"
 MERMAID_HIDES = ", which gives text that the drawing does not show or changes how it shows it"
@@ -1031,8 +1034,10 @@ def line_problems(seen: str, raw: str, folds: bool) -> list[tuple[int, str]]:
     raw HTML, a character reference that GitHub knows, `$`, a link or footnote definition, an
     image, a link that may give a title, the end of the line among what may follow its
     destination since a title may start there, a link without text, other than an image's,
-    which is named as an image, and a backtick that a backslash escapes, which the reading
-    takes to open or close code (R273)."""
+    which is named as an image, a backtick that a backslash escapes, which the reading
+    takes to open or close code, and an autolink that holds a backtick, read on the raw line
+    where its bracket lies outside code, since GitHub shows a link where the reading may
+    pair the backtick with a later one (R273)."""
     found: list[tuple[int, str]] = []
     angles: set[int] = set()
     for mark in MARK.finditer(seen):
@@ -1059,6 +1064,11 @@ def line_problems(seen: str, raw: str, folds: bool) -> list[tuple[int, str]]:
         (escape.end() - 1, BACKSLASHED)
         for escape in ESCAPED_BACKTICK.finditer(raw)
         if seen[escape.end() - 2] == "\\"
+    ]
+    found += [
+        (link.start() + 1, AUTOLINKED)
+        for link in AUTOLINK.finditer(raw)
+        if "`" in link.group() and seen[link.start()] == "<"
     ]
     return found
 
@@ -2630,6 +2640,9 @@ OUTSIDE_CODE = {
     "link-without-text-after-a-backslash": ("A \\\\[](a.md) here.", "](", NO_TEXT),
     "dollar": ("It costs $5.", "$", DOLLAR),
     "escaped-backtick": ("A \\`<!-- hidden -->\\` word.", "\\", BACKSLASHED),
+    "autolinked-backtick": ("A <`@x.y> <!-- hidden --> ` word.", "<", AUTOLINKED),
+    "autolinked-backtick-in-an-item": ("- A <`@x.y> <!-- hidden --> ` word.", "<", AUTOLINKED),
+    "autolinked-backtick-in-a-quote": ("> A <`@x.y> <!-- hidden --> ` word.", "<", AUTOLINKED),
 }
 
 
@@ -2648,6 +2661,21 @@ def test_text_that_github_hides_in_a_page_fails(planted_marks: list[str], name: 
 
 def test_each_planted_mark_is_named_once_and_nothing_else_is(planted_marks: list[str]) -> None:
     assert len(planted_marks) == len(OUTSIDE_CODE)
+
+
+@pytest.mark.parametrize("address", ["<`@x.y>", "<1`@x.y>", "<a`@x.y>", "<https://a`b>"])
+def test_an_autolink_that_holds_a_backtick_outside_code_fails(tmp_path: Path, address: str) -> None:
+    """GitHub shows the autolink, which starts first, as a link, while the reading pairs its
+    backtick with a later one, so that it takes the comment between them for code (R273).
+    Where the address starts with a letter, the reading also names the element that it
+    sees."""
+    root = plant(tmp_path, {"docs/a.md": page(f"A {address} <!-- hidden --> ` word.")})
+    assert f"docs/a.md:3:3 holds {AUTOLINKED}" in page_problems(root)
+
+
+@pytest.mark.parametrize("line", ["A <a@x.y> and <https://a.b/c> here.", "A `` <`@x.y> `` here."])
+def test_an_autolink_with_no_backtick_or_inside_code_passes(tmp_path: Path, line: str) -> None:
+    assert page_problems(plant(tmp_path, {"docs/a.md": page(line)})) == []
 
 
 def test_a_run_of_backticks_that_its_line_leaves_open_fails(tmp_path: Path) -> None:

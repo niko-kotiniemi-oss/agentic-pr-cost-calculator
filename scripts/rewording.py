@@ -19,12 +19,13 @@ apart, since that rule is the pull request's own. It exits 2, saying why, when i
 compare, as when the glossary at HEAD is not in its form.
 
 Its output is a pull request's account of its own rewording, so run the copies of this
-script and of `scripts/wording.py` that the default branch holds, not the pull
-request's (T94):
+script, of `scripts/wording.py` and of `scripts/conventions.py`, which `scripts/wording.py`
+imports, that the default branch holds, not the pull request's (T94):
 
     copy=$(mktemp -d)
     git show refs/remotes/origin/main:scripts/rewording.py > "$copy/rewording.py"
     git show refs/remotes/origin/main:scripts/wording.py > "$copy/wording.py"
+    git show refs/remotes/origin/main:scripts/conventions.py > "$copy/conventions.py"
     python3 "$copy/rewording.py"
 """
 

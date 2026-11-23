@@ -18,7 +18,10 @@ file's name and no row of the glossary writes the output's prose.
 
 from __future__ import annotations
 
+import ast
 import os
+import re
+import shutil
 import subprocess
 import sys
 from collections.abc import Mapping
@@ -31,6 +34,14 @@ from test_context_files import CONTEXT_FILES
 from wording import GLOSSARY
 
 SCRIPT = Path(__file__).resolve().parents[1] / "scripts" / "rewording.py"
+# The way that the docstring gives to run the default branch's copies (T94): a folder of
+# their own, one `git show` line for each file, and the run.
+PROCEDURE = re.compile(
+    r"\n    copy=\$\(mktemp -d\)\n"
+    r"((?:    git show refs/remotes/origin/main:scripts/\S+ > \"\$copy/\S+\"\n)+)"
+    r"    python3 \"\$copy/rewording\.py\"\n"
+)
+COPIED = re.compile(r"scripts/(\S+) > \"\$copy/(\S+)\"")
 GIT_ENVIRONMENT = {
     "GIT_CONFIG_GLOBAL": os.devnull,
     "GIT_CONFIG_NOSYSTEM": "1",
@@ -1047,3 +1058,40 @@ def test_the_script_runs_as_a_command(tmp_path: Path) -> None:
         check=False,
     )
     assert (done.returncode, done.stdout) == (2, "")
+
+
+def test_the_default_branch_s_copies_run_from_a_folder_that_holds_only_them(
+    tmp_path: Path,
+) -> None:
+    """T94's answer runs the copies of the files that the docstring's `git show` lines
+    name, in a folder that holds nothing else, so each module that they import must be
+    among them: one left out stops the run, and the quick ways round it run the pull
+    request's own copy. The copies are this tree's, as the default branch holds them
+    once it merges, and they print what the script prints where it lies."""
+    docstring = ast.get_docstring(ast.parse(SCRIPT.read_text(encoding="utf-8")), clean=False)
+    procedure = PROCEDURE.search(docstring or "")
+    assert procedure, "the docstring gives no way to run the default branch's copies"
+    named = COPIED.findall(procedure[1])
+    assert all(source == target for source, target in named), named
+    copy = tmp_path / "copy"
+    copy.mkdir()
+    for name, _ in named:
+        shutil.copyfile(SCRIPT.parent / name, copy / name)
+    repository = tmp_path / "repository"
+    repository.mkdir()
+    history(repository, {"docs/page.md": "The tool counts calls.\n"})
+    environment = {key: value for key, value in os.environ.items() if not key.startswith("PYTHON")}
+    copied, in_place = (
+        subprocess.run(
+            [sys.executable, str(script)],
+            cwd=repository,
+            env=environment,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        for script in (copy / "rewording.py", SCRIPT)
+    )
+    assert (copied.returncode, copied.stderr) == (0, ""), copied.stderr
+    assert copied.stdout == in_place.stdout
+    assert in_place.stdout.startswith("Compared HEAD at `")
