@@ -2445,7 +2445,7 @@ The README SHALL hold, after its section on what the tool will do and before its
 
 #### Scenario: A section on uses that is missing, out of place or unsupported fails a test
 
-- **WHEN** the README holds no such section, holds it before its section on what the tool will do or after its list of documents, lists a use to avoid that cites no requirement or decision record, cites one that does not exist or is closed, or cites only R279, DR-286 or the README itself, or its short start links the section only after a list item or any code, inline or fenced, where a step can stand, or not at all, a use being any item of a list, whatever its marker
+- **WHEN** the README holds no such section, holds it before its section on what the tool will do or after its list of documents, lists a use to avoid that cites no requirement or decision record, cites one that does not exist or is closed, or cites only R279, DR-286 or the README itself, or its short start links the section only after a list item, a paragraph that opens in bold or any code, inline or fenced, where a step can stand, or not at all, a use being any item of a list, whatever its marker, indent or quote, with the lines that continue it
 - **THEN** a test fails and names the section, or the line and what it lacks
 
 ### Requirement: How it works lists everything that comes in and goes out, each with its records
@@ -2464,7 +2464,7 @@ The README SHALL hold, after its section on what the tool will do and before its
 
 #### Scenario: An input that a workflow names and the section does not fails a test
 
-- **WHEN** a workflow of this repository names an action, a runner image, a Python version or a file of versions, and the section on what comes in and goes out does not name it in code, or does not name the version that such a file holds
+- **WHEN** a workflow of this repository names an action, a runner or container image, a Python or Node version, directly or through its job's matrix, or a file of versions, as its YAML gives them, and the section on what comes in and goes out does not name it in code, or does not name the version that such a file holds
 - **THEN** a test fails and names the workflow and what it names
 
 ### Requirement: A diagram numbers its parts and explains each below it, and the README links the overview of how it works
@@ -2478,7 +2478,7 @@ Each Mermaid diagram on a page that this repository writes SHALL number its part
 
 #### Scenario: A number left unexplained, or explained but not drawn, fails a test
 
-- **WHEN** a diagram carries a number that the list after it does not explain, the list explains a number that the diagram does not carry, explains one twice, or the numbers skip one, a diagram carries no number, a number stands in a flowchart's label that no double quotes hold, or an identifier of a node or a participant is longer than three characters or holds other than letters and digits
+- **WHEN** a diagram carries a number that the list after it does not explain, the list explains a number that the diagram does not carry, explains one twice, or the numbers skip one, a diagram carries no number, carries one twice or one below 1, a number stands in a flowchart's label that no double quotes hold, or an identifier of a node or a participant, in any statement of a line, after a `;` included, is longer than three characters or holds other than letters and digits
 - **THEN** a test fails and names the file, the diagram's line and the number or the identifier
 
 #### Scenario: A page without its diagram fails a test
@@ -2488,5 +2488,5 @@ Each Mermaid diagram on a page that this repository writes SHALL number its part
 
 #### Scenario: A diagram in a fence that the checks do not read, or an explanation that cites no requirement, fails a test
 
-- **WHEN** a page that this repository writes holds a Mermaid block in a fence other than three backticks at the start of a line, such as a fence of tildes, of more backticks, or one indented under a list item or inside a quote, or an item of the list after a diagram cites no requirement by its ID
+- **WHEN** a page that this repository writes holds a Mermaid block in a fence other than three backticks at the start of a line, opening it or closing it, such as a fence of tildes, of more backticks, or one indented under a list item or inside a quote, or an item of the list after a diagram cites no requirement by its ID
 - **THEN** a test fails and names the file and the line

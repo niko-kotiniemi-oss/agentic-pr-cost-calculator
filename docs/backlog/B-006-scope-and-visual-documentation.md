@@ -1,6 +1,6 @@
 # B-006: Scope and visual documentation
 
-- **Status:** Done
+- **Status:** In progress
 - **Last changed:** 2026-11-23
 - **Brief:** Records on what the project takes from elsewhere, a section of the page on how the tool works that lists everything incoming and outgoing, and diagrams in the feature pages and on that page, whose overview the README links to.
 - **Rests on:** T94

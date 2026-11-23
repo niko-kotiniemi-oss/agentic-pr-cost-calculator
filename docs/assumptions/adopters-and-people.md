@@ -141,7 +141,7 @@ The assumptions about the teams that adopt the tool, the people who opt in, and 
 - **Fact:** Whoever corrects a claim searches for its other copies, since no check holds that rule as a whole.
   - **Relied on:** R99, T55, DR-026, DR-146
   - **Checked:** not yet: none will, since no test may reach what adopters and people do
-- **Fact:** Agents working here copy no code, test, check or text into a change from another repository or tool, other than what a decision record names, pinned or with a record of why it is not, and checked.
+- **Fact:** Agents working here copy no code, test, check, skill or text into a change from another repository or tool, other than what a decision record names, pinned or with a record of why it is not, and checked.
   - **Relied on:** T288, DR-285
   - **Checked:** not yet: none will, since no test may reach what adopters and people do
 

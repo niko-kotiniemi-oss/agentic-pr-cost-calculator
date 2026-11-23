@@ -22,13 +22,14 @@ its section on how the outcome is validated.
 from __future__ import annotations
 
 import re
-import subprocess
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+import conventions
 import pytest
 import yaml
+from risk_register import slug
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -692,22 +693,19 @@ WILL_DO = "What it will do"
 USES_HEADING = "What it is for, and what to avoid using it for"
 DOCUMENTS = "Documentation"
 OWN_REASONS = frozenset({"R279", "DR-286"})
-FIRST_STEP = re.compile(r"^[ \t]*(?:[-*+]|\d+[.)])[ \t]|`|~~~", re.M)
-LIST_ITEM = re.compile(r"^(?:[-*+]|\d+[.)])[ \t]")
-REQUIREMENT_ID = re.compile(r"\bR\d+\b")
-ANY_MERMAID_FENCE = re.compile(r"^[ \t>]*(?:`{3,}|~{3,})[ \t]*mermaid\b", re.M | re.I)
-WORKFLOW_INPUT = re.compile(
-    r"^\s*(?:-\s+)?(?:uses:\s*([^@\s]+)@|runs-on:\s*([^\s#]+)|python-version:\s*(.+?)\s*$"
-    r"|(?:python|node)-version-file:\s*([^\s#]+))",
-    re.M,
-)
+FIRST_STEP = re.compile(r"^[ \t>]*(?:(?:[-*+]|\d+[.)])[ \t]|\*\*)|`|~~~", re.M)
+LIST_ITEM = re.compile(r"^[ \t>]*(?:[-*+]|\d+[.)])[ \t]")
+CITED_REQUIREMENT = re.compile(r"\bR\d+\b")
+FENCE = re.compile(r"^[ \t>]*(`{3,}|~{3,})")
+MERMAID_OPENING = re.compile(r"^[ \t>]*(?:`{3,}|~{3,})[ \t]*mermaid\b", re.I)
+MATRIX_VALUE = re.compile(r"^\$\{\{\s*matrix\.([\w-]+)\s*\}\}$")
+SEQUENCE_ARROW = re.compile(r"(?:<<)?--?(?:>>|>|x|\))")
 INPUTS = "Inputs and outputs"
 CROSSING = "What comes in and what goes out"
 TOOL_IN = "What the tool takes in when it runs"
 REPOSITORY_IN = "What this repository takes in to be built and checked"
 GOES_OUT = "What goes out to adopters"
 TABLES = (TOOL_IN, REPOSITORY_IN, GOES_OUT)
-MERMAID = re.compile(r"^```mermaid[ \t]*\n(.*?)^```[ \t]*$", re.M | re.S)
 QUOTED_NUMBER = re.compile(r'"(\d+)\) ')
 BARE_NUMBER = re.compile(r"(?:[\[({>|]|^)[ \t]*(\d+)\)", re.M)
 SEQUENCE_NUMBER = re.compile(r"(?::|\bas)[ \t]+(\d+)\) ")
@@ -767,11 +765,6 @@ def register_ids(root: Path) -> set[str]:
     return {row.ident for row in register_rows(text)}
 
 
-def slug(heading: str) -> str:
-    """The fragment that GitHub gives a heading."""
-    return re.sub(r"[^a-z0-9 _-]", "", heading.lower()).replace(" ", "-")
-
-
 def cited_problem(ident: str, records: dict[str, Record], requirements: set[str]) -> str:
     if ident.startswith("DR-"):
         record = records.get(ident)
@@ -779,6 +772,22 @@ def cited_problem(ident: str, records: dict[str, Record], requirements: set[str]
             return f"{ident}, which no record holds"
         return "" if record.open else f"{ident}, which is closed"
     return "" if ident in requirements else f"{ident}, which the register does not hold"
+
+
+def list_items(body: str) -> list[str]:
+    """Each item of the lists in a body, whatever its marker, indent or quote, with the lines
+    that continue it."""
+    items: list[str] = []
+    for line in body.splitlines():
+        if LIST_ITEM.match(line):
+            items.append(line.strip())
+        elif items and line.strip() and line[:1] in " \t" and not FENCE.match(line):
+            items[-1] += " " + line.strip()
+        elif not line.strip() or not items:
+            continue
+        else:
+            items.append("")
+    return [item for item in items if item]
 
 
 def readme_uses_problems(
@@ -796,7 +805,7 @@ def readme_uses_problems(
         )
     if DOCUMENTS not in names or names.index(DOCUMENTS) < at:
         problems.append(f"the README's section {USES_HEADING!r} comes after its list of documents")
-    uses = [line for line in section(readme, USES_HEADING).splitlines() if LIST_ITEM.match(line)]
+    uses = list_items(section(readme, USES_HEADING))
     if not uses:
         problems.append(f"the README's section {USES_HEADING!r} lists no use to avoid")
     for line in uses:
@@ -862,25 +871,54 @@ def crossing_problems(text: str, records: dict[str, Record]) -> list[str]:
     return problems
 
 
-def workflow_input_problems(text: str, root: Path) -> list[str]:
-    """Each action, runner image, Python version and file of versions that a workflow of this
-    repository names, and the version that such a file holds, is named in the text (R280)."""
+def workflow_inputs(root: Path) -> dict[str, str]:
+    """Each action, runner or container image, Python or Node version and file of versions
+    that a workflow of this repository names, and the version that such a file holds, with
+    the workflow that names it first. A value given by an expression is read from the job's
+    matrix when it names one, and is otherwise left out."""
     named: dict[str, str] = {}
     for workflow in workflows(root):
         where = workflow.relative_to(root).as_posix()
-        for match in WORKFLOW_INPUT.finditer(workflow.read_text(encoding="utf-8")):
-            action, runner, versions, version_file = match.groups()
-            found = [action, runner] if action or runner else []
-            if versions and not versions.startswith("$"):
-                found += re.findall(r"[\w.]+", versions)
-            if version_file:
-                found.append(version_file)
-                held = root / version_file
-                if held.is_file():
-                    found.append(held.read_text(encoding="utf-8").strip())
+        loaded = yaml.safe_load(workflow.read_text(encoding="utf-8")) or {}
+        for job in (loaded.get("jobs") or {}).values():
+            matrix = (job.get("strategy") or {}).get("matrix") or {}
+
+            def values(value: Any, matrix: dict[str, Any] = matrix) -> list[str]:
+                if isinstance(value, list):
+                    return [v for item in value for v in values(item)]
+                if value is None or isinstance(value, dict):
+                    return []
+                text = str(value).strip()
+                key = MATRIX_VALUE.match(text)
+                if key:
+                    return values(matrix.get(key[1]))
+                return [] if "${{" in text else [text]
+
+            found = values(job.get("runs-on"))
+            container = job.get("container")
+            found += values(container.get("image") if isinstance(container, dict) else container)
+            for service in (job.get("services") or {}).values():
+                found += values(service.get("image") if isinstance(service, dict) else service)
+            for step in job.get("steps") or []:
+                if "uses" in step:
+                    found.append(str(step["uses"]).split("@", 1)[0])
+                given = step.get("with") or {}
+                found += values(given.get("python-version")) + values(given.get("node-version"))
+                for key in ("python-version-file", "node-version-file"):
+                    if key in given:
+                        found.append(str(given[key]))
+                        held = root / str(given[key])
+                        if held.is_file():
+                            found.append(held.read_text(encoding="utf-8").strip())
             for thing in found:
                 if thing:
                     named.setdefault(thing, where)
+    return named
+
+
+def workflow_input_problems(text: str, root: Path) -> list[str]:
+    """Each input that a workflow of this repository names is named in the text (R280)."""
+    named = workflow_inputs(root)
     if not named:
         return ["no workflow names an input, so the check read nothing"]
     return [
@@ -890,16 +928,24 @@ def workflow_input_problems(text: str, root: Path) -> list[str]:
     ]
 
 
-def diagram_identifiers(block: str) -> list[str]:
+def diagram_identifiers(block: str, sequence: bool | None = None) -> list[str]:
     """The identifiers of a diagram's nodes, subgraphs and participants: the words that are
     left once its quoted labels, its edges' labels, its shapes and its keywords are taken
-    out, and in a sequence diagram what each line names before its first `:`."""
-    lines = block.splitlines()
-    sequence = bool(lines) and lines[0].strip() == "sequenceDiagram"
+    out, and in a sequence diagram what each statement names before its first `:`. Each
+    line is read as the statements that `;` separates, the first line's included."""
+    statements = [
+        part.strip()
+        for raw in block.splitlines()
+        for part in re.sub(r'"[^"]*"', "", raw).split(";")
+        if part.strip()
+    ]
+    if not statements:
+        return []
+    if sequence is None:
+        sequence = statements[0].split()[0] == "sequenceDiagram"
     found = []
-    for raw in lines[1:]:
-        line = re.sub(r'"[^"]*"', "", raw.strip())
-        line = re.sub(r"\|[^|]*\|", "", line)
+    for statement in statements[1:]:
+        line = re.sub(r"\|[^|]*\|", "", statement)
         words = line.split()
         if not words:
             continue
@@ -907,8 +953,8 @@ def diagram_identifiers(block: str) -> list[str]:
             if words[0] in ("participant", "actor"):
                 found.extend(words[1:2])
             elif words[0] not in SEQUENCE_WORDS:
-                head = line.split(":", 1)[0]
-                found.extend(part for part in re.split(r"[-<>x)+ ]+", head) if part)
+                head = SEQUENCE_ARROW.sub(" ", line.split(":", 1)[0])
+                found.extend(part.strip("+-") for part in head.split() if part.strip("+-"))
             continue
         if words[0] in FLOW_WORDS:
             continue
@@ -939,25 +985,53 @@ def explained_items(text: str, end: int) -> list[str]:
     return items
 
 
-def explained_numbers(text: str, end: int) -> list[int]:
-    """The numbers that the list right after a diagram explains, in their order."""
-    return [
-        int(match[1]) for item in explained_items(text, end) if (match := EXPLAINED.match(item))
-    ]
+def line_at(text: str, offset: int) -> int:
+    return text.count("\n", 0, offset) + 1
+
+
+def mermaid_blocks(text: str) -> tuple[list[tuple[int, int, str]], list[int]]:
+    """The Mermaid blocks of a page that the checks read, each as the offset of its opening,
+    the offset where its closing line ends and its body; and the offsets of each opening of
+    any other form, or closed by any other fence, which the checks do not read."""
+    blocks: list[tuple[int, int, str]] = []
+    unread: list[int] = []
+    lines = text.splitlines(keepends=True)
+    offsets = [0]
+    for line in lines:
+        offsets.append(offsets[-1] + len(line))
+    index = 0
+    while index < len(lines):
+        line = lines[index].rstrip("\r\n")
+        fence = FENCE.match(line)
+        if not fence:
+            index += 1
+            continue
+        mark = fence[1]
+        closer = re.compile(rf"^[ \t>]*{re.escape(mark[0])}{{{len(mark)},}}[ \t]*$")
+        closing = next(
+            (j for j in range(index + 1, len(lines)) if closer.match(lines[j].rstrip("\r\n"))),
+            len(lines),
+        )
+        if MERMAID_OPENING.match(line):
+            closed = closing < len(lines) and lines[closing].rstrip() == "```"
+            if line.rstrip() == "```mermaid" and closed:
+                body = "".join(lines[index + 1 : closing])
+                blocks.append((offsets[index], offsets[closing + 1], body))
+            else:
+                unread.append(offsets[index])
+        index = closing + 1
+    return blocks, unread
 
 
 def diagram_problems(name: str, text: str) -> list[str]:
     """What R281 asks of each Mermaid diagram on a page."""
-    problems = []
-    for fence in ANY_MERMAID_FENCE.finditer(text):
-        if not fence[0].startswith("```mermaid"):
-            line = text.count(chr(10), 0, fence.start()) + 1
-            problems.append(
-                f"{name}:{line}: a Mermaid block in a fence that the checks do not read"
-            )
-    for block in MERMAID.finditer(text):
-        where = f"{name}:{text.count(chr(10), 0, block.start()) + 1}"
-        body = block[1]
+    blocks, unread = mermaid_blocks(text)
+    problems = [
+        f"{name}:{line_at(text, at)}: a Mermaid block in a fence that the checks do not read"
+        for at in unread
+    ]
+    for start, end, body in blocks:
+        where = f"{name}:{line_at(text, start)}"
         sequence = body.strip().startswith("sequenceDiagram")
         drawn = [int(n) for n in QUOTED_NUMBER.findall(body)]
         if sequence:
@@ -966,12 +1040,17 @@ def diagram_problems(name: str, text: str) -> list[str]:
             unquoted = re.sub(r'"[^"]*"', '""', body)
             for number in BARE_NUMBER.findall(unquoted):
                 problems.append(f"{where}: the number {number} stands in a label without quotes")
-        explained = explained_numbers(text, block.end())
-        for item in explained_items(text, block.end()):
-            if not REQUIREMENT_ID.search(item):
+        items = explained_items(text, end - 1)
+        explained = [int(match[1]) for item in items if (match := EXPLAINED.match(item))]
+        for item in items:
+            if not CITED_REQUIREMENT.search(item):
                 problems.append(f"{where}: the explanation {item[:40]!r} cites no requirement")
         if not drawn:
             problems.append(f"{where}: the diagram numbers none of its parts")
+        for number in sorted({n for n in drawn if n < 1}):
+            problems.append(f"{where}: the number {number} is below 1")
+        for number in sorted({n for n in drawn if drawn.count(n) > 1}):
+            problems.append(f"{where}: the number {number} is drawn twice")
         for number in sorted(set(drawn) - set(explained)):
             problems.append(f"{where}: the number {number} is drawn and not explained below")
         for number in sorted(set(explained) - set(drawn)):
@@ -981,7 +1060,7 @@ def diagram_problems(name: str, text: str) -> list[str]:
         every = set(drawn) | set(explained)
         for number in sorted(set(range(1, max(every, default=0) + 1)) - every):
             problems.append(f"{where}: the number {number} is skipped")
-        for ident in dict.fromkeys(diagram_identifiers(body)):
+        for ident in dict.fromkeys(diagram_identifiers(body, sequence)):
             if not IDENTIFIER.fullmatch(ident):
                 problems.append(
                     f"{where}: the identifier {ident!r} is not one to three letters or digits"
@@ -990,17 +1069,13 @@ def diagram_problems(name: str, text: str) -> list[str]:
 
 
 def written_pages(root: Path) -> list[Path]:
-    """The Markdown pages that this repository writes."""
-    import conventions
-
-    listed = subprocess.run(
-        ["git", "ls-files", "-z", "--", "*.md"], cwd=root, capture_output=True, check=True
-    ).stdout.decode("utf-8")
-    return [
-        root / path
-        for path in sorted(listed.split("\0"))
-        if path and not conventions.written_by_others(path)
-    ]
+    """The Markdown pages that this repository writes, as git lists them without the
+    session's git variables."""
+    return sorted(
+        root / entry.path
+        for entry in conventions.tracked_entries(root)
+        if entry.path.endswith(".md") and not conventions.written_by_others(entry.path)
+    )
 
 
 def page_diagram_problems(root: Path) -> list[str]:
@@ -1012,12 +1087,14 @@ def page_diagram_problems(root: Path) -> list[str]:
     if not pages:
         problems.append("docs/features/ holds no feature page")
     how = root / "docs" / "how-it-works.md"
-    for page in [*pages, how]:
-        if not MERMAID.search(page.read_text(encoding="utf-8")):
-            problems.append(f"{page.relative_to(root).as_posix()} holds no Mermaid diagram")
     text = how.read_text(encoding="utf-8")
+    for page in pages:
+        if not mermaid_blocks(page.read_text(encoding="utf-8"))[0]:
+            problems.append(f"{page.relative_to(root).as_posix()} holds no Mermaid diagram")
+    if not mermaid_blocks(text)[0]:
+        problems.append("docs/how-it-works.md holds no Mermaid diagram")
     names = HEADING.findall(text)
-    if not names or not MERMAID.search(section(text, names[0])):
+    if not names or not mermaid_blocks(section(text, names[0]))[0]:
         problems.append("the first section of docs/how-it-works.md holds no diagram")
     if not HOW_IT_WORKS_LINK.search((root / "README.md").read_text(encoding="utf-8")):
         problems.append("the README does not link docs/how-it-works.md without a fragment")
@@ -1041,15 +1118,12 @@ def test_how_it_works_lists_everything_that_comes_in_and_goes_out() -> None:
 
 
 def test_every_diagram_numbers_its_parts_and_explains_them() -> None:
-    pages = written_pages(ROOT)
-    problems = [
-        problem
-        for page in pages
-        for problem in diagram_problems(
-            page.relative_to(ROOT).as_posix(), page.read_text(encoding="utf-8")
-        )
-    ]
-    assert any(MERMAID.search(page.read_text(encoding="utf-8")) for page in pages), (
+    texts = {
+        page.relative_to(ROOT).as_posix(): page.read_text(encoding="utf-8")
+        for page in written_pages(ROOT)
+    }
+    problems = [problem for name, text in texts.items() for problem in diagram_problems(name, text)]
+    assert any(mermaid_blocks(text)[0] for text in texts.values()), (
         "no page holds a Mermaid diagram, so this test covered nothing"
     )
     assert not problems, "\n".join(problems)
@@ -1084,6 +1158,14 @@ README = (
 
 def test_a_readme_with_its_section_on_uses_passes() -> None:
     assert readme_uses_problems(README, OPEN_RECORDS, REQUIREMENTS) == []
+
+
+def test_a_use_whose_citation_wraps_onto_its_next_line_passes() -> None:
+    readme = README.replace(
+        "- In a session that also works on private repositories (R3).",
+        "- In a session that also works on private\n  repositories (R3).",
+    )
+    assert readme_uses_problems(readme, OPEN_RECORDS, REQUIREMENTS) == []
 
 
 def test_a_short_start_that_links_the_uses_before_its_first_step_passes() -> None:
@@ -1159,6 +1241,35 @@ def test_a_short_start_that_links_the_uses_before_its_first_step_passes() -> Non
             ),
             "cites no requirement or record",
         ),
+        (
+            README.replace(
+                "- In a session that also works on private repositories (R3).", " - In a session."
+            ),
+            "cites no requirement or record",
+        ),
+        (
+            README.replace(
+                "- In a session that also works on private repositories (R3).",
+                "- In a session (R3).\n  - or to rank people.",
+            ),
+            "cites no requirement or record",
+        ),
+        (
+            README.replace(
+                "# Tool\n\nIntro.\n\n",
+                "# Tool\n\nIntro.\n\n## Start\n\n> 1. Turn it on.\n\n"
+                "[Uses](#what-it-is-for-and-what-to-avoid-using-it-for)\n\n",
+            ),
+            "does not link the section",
+        ),
+        (
+            README.replace(
+                "# Tool\n\nIntro.\n\n",
+                "# Tool\n\nIntro.\n\n## Start\n\n**In a repository:** add the file.\n\n"
+                "[Uses](#what-it-is-for-and-what-to-avoid-using-it-for)\n\n",
+            ),
+            "does not link the section",
+        ),
     ],
 )
 def test_a_section_on_uses_that_is_missing_out_of_place_or_unsupported_is_reported(
@@ -1228,12 +1339,14 @@ INPUTS_WORKFLOW = (
     "jobs:\n  a:\n    runs-on: ubuntu-latest\n    strategy:\n      matrix:\n"
     '        python-version: ["3.11", "3.x"]\n    steps:\n'
     "      - uses: actions/checkout@0123456789012345678901234567890123456789 # v7\n"
+    "      - uses: actions/setup-python@0123456789012345678901234567890123456789 # v7\n"
+    "        with:\n          python-version: ${{ matrix.python-version }}\n"
     "      - uses: actions/setup-node@0123456789012345678901234567890123456789 # v7\n"
     "        with:\n          node-version-file: .node-version\n"
 )
 NAMED = (
-    "`actions/checkout`, `actions/setup-node`, `ubuntu-latest`, `3.11`, `3.x`, "
-    "`.node-version` holding `24`"
+    "`actions/checkout`, `actions/setup-python`, `actions/setup-node`, `ubuntu-latest`, "
+    "`3.11`, `3.x`, `.node-version` holding `24`"
 )
 
 
@@ -1272,6 +1385,39 @@ def test_a_workflow_input_check_that_reads_no_workflow_fails(tmp_path: Path) -> 
     assert problems == ["no workflow names an input, so the check read nothing"]
 
 
+BLOCK_WORKFLOW = (
+    "jobs:\n  a:\n    runs-on: ${{ matrix.os }}\n    container: python:3.12-slim\n"
+    "    strategy:\n      matrix:\n        os:\n          - ubuntu-latest\n"
+    "        python:\n          - '3.11'\n          - '3.14'\n        shard: [1, 2]\n"
+    "    steps:\n"
+    "      - uses: actions/setup-python@0123456789012345678901234567890123456789 # newest\n"
+    "        with:\n          python-version: ${{ matrix.python }}\n"
+)
+BLOCK_NAMED = "`actions/setup-python`, `ubuntu-latest`, `python:3.12-slim`, `3.11`, `3.14`"
+
+
+def test_a_workflow_read_as_yaml_names_its_matrix_values_and_container(tmp_path: Path) -> None:
+    root = workflow_tree(tmp_path, BLOCK_WORKFLOW)
+    assert workflow_input_problems(BLOCK_NAMED, root) == []
+
+
+@pytest.mark.parametrize(
+    ("named", "expected"),
+    [
+        (BLOCK_NAMED.replace(", `3.14`", ""), "'3.14'"),
+        (BLOCK_NAMED.replace("`python:3.12-slim`, ", ""), "'python:3.12-slim'"),
+        (BLOCK_NAMED.replace("`ubuntu-latest`, ", ""), "'ubuntu-latest'"),
+    ],
+)
+def test_an_input_given_as_a_block_list_or_a_container_is_reported(
+    tmp_path: Path, named: str, expected: str
+) -> None:
+    root = workflow_tree(tmp_path, BLOCK_WORKFLOW)
+    problems = workflow_input_problems(named, root)
+    assert any(expected in problem for problem in problems), problems
+    assert not any("${{" in problem or "newest" in problem for problem in problems), problems
+
+
 FLOW_PAGE = (
     "# Page\n\n```mermaid\nflowchart LR\n"
     '  subgraph M1["Machine"]\n    T["1) Transcripts"] -->|read| H["2) Capture step"]\n  end\n'
@@ -1295,6 +1441,13 @@ def test_a_numbered_and_explained_diagram_passes(page: str) -> None:
 
 def test_a_page_without_diagrams_has_no_diagram_problem() -> None:
     assert diagram_problems("page.md", "# Page\n\n```sh\necho 1) no\n```\n") == []
+
+
+def test_the_written_pages_are_listed_whatever_git_variables_the_session_sets(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("GIT_LITERAL_PATHSPECS", "1")
+    assert ROOT / "README.md" in written_pages(ROOT)
 
 
 @pytest.mark.parametrize(
@@ -1339,6 +1492,34 @@ def test_a_page_without_diagrams_has_no_diagram_problem() -> None:
         ("# P\n\n- An item\n\n  ```mermaid\n  flowchart LR\n    LongName --> B\n  ```\n", "fence"),
         ("# P\n\n> ```mermaid\n> flowchart LR\n> ```\n", "fence"),
         ("# P\n\n````mermaid\nflowchart LR\n````\n", "fence"),
+        (FLOW_PAGE.replace("```\n\n- 1)", "````\n\n- 1)"), "fence"),
+        (FLOW_PAGE.replace("```\n\n- 1)", "   ```\n\n- 1)"), "fence"),
+        (
+            FLOW_PAGE.replace("flowchart LR\n", 'flowchart LR; LongName["0"] --> T\n'),
+            "'LongName'",
+        ),
+        (
+            FLOW_PAGE.replace('subgraph M1["Machine"]', 'subgraph M1["Machine"]; LongName'),
+            "'LongName'",
+        ),
+        (
+            FLOW_PAGE.replace("  end\n", "    direction TB; LongName\n  end\n"),
+            "'LongName'",
+        ),
+        (
+            FLOW_PAGE.replace('"4) Staged?"', '"3) Staged?"').replace(
+                "- 4) Staged", "- 4b) Staged"
+            ),
+            "3 is drawn twice",
+        ),
+        (
+            FLOW_PAGE.replace('"4) Staged?"', '"0) Staged?"').replace("- 4) Staged", "- 0) Staged"),
+            "0",
+        ),
+        (
+            SEQUENCE_PAGE.replace("CC->>H: 3)", "CC->>Proxy: 3)"),
+            "'Proxy'",
+        ),
     ],
 )
 def test_a_number_left_unexplained_or_explained_but_not_drawn_is_reported(

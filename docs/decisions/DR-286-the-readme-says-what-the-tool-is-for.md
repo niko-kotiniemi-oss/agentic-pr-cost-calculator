@@ -34,4 +34,4 @@ This covers what the README says about the tool's purpose. How the README opens,
 
 ## What reversing it would change
 
-How hard it is to reverse: reversible. R279 and its scenarios, the README's section and T285's answer would change. Nothing that adopters configure or depend on changes, so the change would not be a breaking one for adopters.
+How hard it is to reverse: reversible. R279 and its scenarios, the README's section and T284's answer would change. Nothing that adopters configure or depend on changes, so the change would not be a breaking one for adopters.
