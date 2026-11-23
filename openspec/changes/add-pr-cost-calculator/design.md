@@ -431,6 +431,24 @@ Until this change only some pages were held to printable ASCII: the records, the
 
 **What it does not do.** It reads no commit message and no pull request's text, which tasks 1.9 and 1.14 check for private references, and whose characters B-025 proposes to check. It lists no keys of a skill's front matter, of OpenSpec's configuration or of the vendored plugin's manifest, though a key such as `allowed-tools` widens what a skill may do, a `context`, an `operations` or a `references` in the configuration steers OpenSpec's skills, and a key such as `hooks` or `mcpServers` in the manifest makes a session run more; the owner's review of each update and of each change to the configuration holds that, and a test of the keys is left to a later change (T265, B-026). It runs this repository's checks on Linux alone, as every job of CI does, so whether they pass on Windows and macOS, the scripts and the session's start hooks among them, is left to a later change, as the owner chose on 2026-11-21 (B-027).
 
+### 24. The README says what the tool is for, how it works lists what crosses its boundary, and every diagram numbers its parts
+
+*Records:* DR-285, DR-286, DR-287, DR-288, DR-289, DR-290, DR-291, DR-292, DR-293.
+
+Backlog item B-006 asks for records on what the project takes from elsewhere, for the README to say what the tool is for and which uses to avoid, for a section of the page on how the tool works that lists everything incoming and outgoing, each with its record, and for diagrams. Before this change, what crosses the tool's boundary was spread over the records whose boundary field faces incoming or outgoing, the page on how the tool works held nine diagrams and the threat model one, and the README and the feature pages held none.
+
+**What comes in (DR-285, DR-287).** The repository is public and independent, and anyone can copy it, so nothing comes in from a repository or tool outside it but what a record of its own names, pins and checks, and its tests are built here. Vulnerabilities in what comes in are found by Renovate from OSV's database and GitHub's Dependabot alerts, and in the repository's own code by private reporting, the threat model and each pull request's security review.
+
+**What goes out (DR-288).** An adopter takes only what a release names, the hook file, the reusable workflow at the release's commit and the plugin's zip, and never needs to clone the repository.
+
+**The README (R279, DR-286).** After its section on what the tool will do, the README says what the tool is for and lists the uses to avoid, each linking the record or requirement that gives its reason. It holds no diagram: R200 keeps the README free of any block that GitHub draws (T151), so it links to the overview of the page on how the tool works instead (the owner, 2026-11-23).
+
+**What crosses the boundary (R280).** The page on how the tool works gains a section with two tables, what comes in and what goes out, each row a thing that crosses with the records that decide it. A test reads every record's boundary and status, and fails on an open incoming or outgoing record that the table of its direction does not cite, on one cited in the other table and on a citation that does not resolve (T284).
+
+**Diagrams (R281, DR-289 to DR-293).** Each feature page gains one diagram of what no other diagram draws, mostly its decisions; the page on how the tool works opens with its overview and gains a diagram of each connection to an outside system with its credential; the threat model's diagram of how data moves gains the report's git fetches. Every diagram numbers its parts as `1)` and is followed by a list that explains each number once and cites the requirement that states what the part does, and a test fails on a number drawn and not explained, or explained and not drawn (T283). Whether the drawing is right is for review (DR-251).
+
+**What it does not do.** It adds no diagram to the README, changes no behaviour of the tool, and leaves the short start and what it says about opting in (R198, R199) to task 4.4, which builds them once a release exists.
+
 ## Risks / Trade-offs
 
 - [Claude Code changes its transcript format] -> The parser keeps to the fields it needs, refuses unknown shapes with a count instead of guessing, and its fixtures carry every shape seen in each kind of transcript, so a change shows up as a failing test. A call whose two final lines disagree, or whose usage block gives a cache-write split that disagrees with its total, is refused. A call with a usage field that the parser does not know is recorded and counted as R43 and R95 give it, because the new field can carry a charge that the entry leaves out.

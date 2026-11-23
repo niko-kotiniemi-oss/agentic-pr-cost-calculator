@@ -2,7 +2,7 @@
 
 What could go wrong with the tool, for the people who use it and for this repository, and what answers each threat. Every change revisits this file (see `CLAUDE.md`).
 
-It was written for the first change, `add-pr-cost-calculator`, before any code, so the answers are requirements and tasks rather than code. It holds 282 threats across 9 trust boundaries. T38 to T69 were found by the design-stage review, T70 to T78 by the design-stage review of the decision records in `docs/decisions/`, T79 to T81 by the implementation-stage review of those records and their checks, T82 to T100 by the design-stage review of the assumptions, the glossary and the golden set, T101 by the implementation-stage review of the assumptions, T102 and T103 by the implementation-stage review of the glossary, T104 to T116 at the design of the revision of consent, the store and the ledger's format, T117 and T118 by the design-stage review of that revision, T119 to T122 by the review of that revision after its approval, T123 with the owner's answer to a question that the check of that review's fixes raised, T124 to T126 by the design-stage review of the test of the specs' form, T127 by the implementation-stage review of that test, T128 to T135 at the design of the plugin that brings capture to a project's cloud threads, T136 to T142 by the design-stage review of that plugin, T143 by its implementation-stage review, T144 by its security review, T145 to T147 at the design of the README's short start, T148 to T156 by the design-stage review of that short start, T157 and T158 by its implementation-stage review, T159 to T162 at the design of the roadmap, T163 to T165 by the design-stage review of the roadmap, T166 to T168 at the design of the backlog, T169 by the design-stage review of the backlog, T170 at the design of the guide, T171 to T174 by the design-stage review of the guide, T175 and T176 by the design-stage review of one opt-in for every agent, T177 to T182 by the second design-stage review of the guide, T183 by the final review of its build, T184 by its implementation-stage review, T185 to T189 at the design of the walking skeleton and T190 to T194 by its design-stage review, and T195 to T197 at the design of the specs' citation sweep, T198 to T200 by its design-stage review and T201 to T205 by its implementation-stage review, T206 to T215 by the design-stage review of the risk register and T216 to T222 by its implementation-stage review, and T223 to T236 by the design-stage reviews of the context files and T237 by their implementation-stage reviews, and T238 to T241 at the design of the check of Renovate's proposals, T242 to T245 by its design-stage review and T246 by its implementation-stage review, and T247 to T249 at the design of the two fields on every record and T250 by its design-stage review, and T251 to T256 at the design of the conventions, T257 to T265 by its design-stage reviews, T266 at its revision for Windows, T267 to T269 by that revision's design-stage review, T270 at its build, T271 to T276 by its implementation-stage review, T277 and T278 by its review lanes and T279 to T282 by its second review; they follow T37, each under a heading for its boundary, so that the numbers stay in order, and a threat that a change removes keeps its ID out of use (see Retired IDs). Where an answer can be a scenario in a spec, it is one, so that an acceptance test holds it. `tests/test_threat_model.py` checks that every citation below names a scenario, task, decision, decision record or file that exists.
+It was written for the first change, `add-pr-cost-calculator`, before any code, so the answers are requirements and tasks rather than code. It holds 285 threats across 9 trust boundaries. T38 to T69 were found by the design-stage review, T70 to T78 by the design-stage review of the decision records in `docs/decisions/`, T79 to T81 by the implementation-stage review of those records and their checks, T82 to T100 by the design-stage review of the assumptions, the glossary and the golden set, T101 by the implementation-stage review of the assumptions, T102 and T103 by the implementation-stage review of the glossary, T104 to T116 at the design of the revision of consent, the store and the ledger's format, T117 and T118 by the design-stage review of that revision, T119 to T122 by the review of that revision after its approval, T123 with the owner's answer to a question that the check of that review's fixes raised, T124 to T126 by the design-stage review of the test of the specs' form, T127 by the implementation-stage review of that test, T128 to T135 at the design of the plugin that brings capture to a project's cloud threads, T136 to T142 by the design-stage review of that plugin, T143 by its implementation-stage review, T144 by its security review, T145 to T147 at the design of the README's short start, T148 to T156 by the design-stage review of that short start, T157 and T158 by its implementation-stage review, T159 to T162 at the design of the roadmap, T163 to T165 by the design-stage review of the roadmap, T166 to T168 at the design of the backlog, T169 by the design-stage review of the backlog, T170 at the design of the guide, T171 to T174 by the design-stage review of the guide, T175 and T176 by the design-stage review of one opt-in for every agent, T177 to T182 by the second design-stage review of the guide, T183 by the final review of its build, T184 by its implementation-stage review, T185 to T189 at the design of the walking skeleton and T190 to T194 by its design-stage review, and T195 to T197 at the design of the specs' citation sweep, T198 to T200 by its design-stage review and T201 to T205 by its implementation-stage review, T206 to T215 by the design-stage review of the risk register and T216 to T222 by its implementation-stage review, and T223 to T236 by the design-stage reviews of the context files and T237 by their implementation-stage reviews, and T238 to T241 at the design of the check of Renovate's proposals, T242 to T245 by its design-stage review and T246 by its implementation-stage review, and T247 to T249 at the design of the two fields on every record and T250 by its design-stage review, and T251 to T256 at the design of the conventions, T257 to T265 by its design-stage reviews, T266 at its revision for Windows, T267 to T269 by that revision's design-stage review, T270 at its build, T271 to T276 by its implementation-stage review, T277 and T278 by its review lanes and T279 to T282 by its second review, and T283 to T285 at the design of the scope and visual documentation; they follow T37, each under a heading for its boundary, so that the numbers stay in order, and a threat that a change removes keeps its ID out of use (see Retired IDs). Where an answer can be a scenario in a spec, it is one, so that an acceptance test holds it. `tests/test_threat_model.py` checks that every citation below names a scenario, task, decision, decision record or file that exists.
 
 ## How it was built
 
@@ -4424,6 +4424,51 @@ The trust boundaries:
 - **Residual:** a variable that a later version of git reads for how it reads a path would reach the check until the sync drops it too, and the check fails, rather than compare no mode, where no git repository holds the copy.
 - **Held by:** `project-standards`: "A vendored file that git's index gives another mode fails CI"; `project-standards`: "The sync reads and writes no repository that a person's git variables name"; DR-284; `add-pr-cost-calculator` task 1.52
 
+## Boundary 6, continued: found at the design of the scope and visual documentation
+
+### T283. A diagram draws what its spec does not state
+
+- **Kind:** reliability
+- **Impact:** 2 (medium)
+- **Likelihood:** 2 (possible)
+- **Risk:** 4
+- **Raw impact:** 2 (medium)
+- **Raw likelihood:** 3 (likely)
+- **Raw risk:** 6
+- **What could happen:** a diagram on a feature page or on the page on how the tool works draws a step, a decision or a connection that no requirement states, or draws one otherwise than its requirement does, so that an adopter or a contributor who reads the drawing rather than the spec takes the tool to do what it does not, while the specs are the single source of what it does (DR-232).
+- **Answer:** each diagram numbers its parts and is followed by a list that explains each number once and cites the requirement that states what the part does where one does, and a test fails on a number drawn and not explained or explained and not drawn (R281, DR-293); whether the drawing says what its requirement says is for review, as a rule about prose is (DR-251).
+- **Residual:** a part that cites the right requirement and still draws it otherwise, which review reads.
+- **Held by:** `project-standards`: "A number left unexplained, or explained but not drawn, fails a test"; DR-293; DR-251
+
+### T284. The tables of what comes in and what goes out fall behind the records
+
+- **Kind:** reliability
+- **Impact:** 2 (medium)
+- **Likelihood:** 1 (unlikely)
+- **Risk:** 2
+- **Raw impact:** 2 (medium)
+- **Raw likelihood:** 3 (likely)
+- **Raw risk:** 6
+- **What could happen:** a later change adds a record whose boundary is incoming, such as one that takes in a new tool, or outgoing, such as one that changes what adopters copy, and leaves the page on how the tool works without it, so that an adopter who reads that page to learn what crosses the tool's boundary misses it.
+- **Answer:** a test fails on an open record whose boundary is incoming or outgoing that the table of its direction does not cite, on a record cited in the table of the other direction, and on a citation of a record that does not exist or is closed (R280).
+- **Residual:** a row that cites the right record and describes what crosses otherwise than the record does, which review reads.
+- **Held by:** `project-standards`: "A record left out of the section, or cited in the wrong table, fails a test"; DR-285; DR-288
+
+### T285. The README's uses to avoid drop a use or give no reason for one
+
+- **Kind:** reliability
+- **Impact:** 2 (medium)
+- **Likelihood:** 1 (unlikely)
+- **Risk:** 2
+- **Raw impact:** 2 (medium)
+- **Raw likelihood:** 2 (possible)
+- **Raw risk:** 4
+- **What could happen:** the README's section on what the tool is for and which uses to avoid is moved below its list of documents, where an adopter reading from the top no longer meets it before adopting the tool, or a use to avoid loses the record that gives its reason, so that an adopter uses the tool as a bill, to watch people, or in a way that publishes usage that they meant to keep private.
+- **Answer:** a test fails on a README that holds no such section, holds it out of its place, or lists a use that links no accepted record or requirement (R279, DR-286).
+- **Residual:** a use dropped from the list by a pull request, which the owner's review of the diff reads (A15).
+- **Held by:** `project-standards`: "A section on uses that is missing, out of place or unsupported fails a test"; DR-286
+- **Assumptions:** A15
+
 ## Risk matrix
 
 Generated from the ratings above. Each cell lists the threats whose impact and likelihood it names.
@@ -4431,7 +4476,7 @@ Generated from the ratings above. Each cell lists the threats whose impact and l
 | Impact \ Likelihood | 1 unlikely | 2 possible | 3 likely |
 |---|---|---|---|
 | 3 high | T1, T12, T14, T15, T23, T24, T28, T29, T35, T43, T46, T58, T59, T63, T64, T66, T67, T68, T73, T77, T81, T82, T83, T92, T93, T94, T95, T103, T107, T108, T119, T125, T133, T138, T140, T141, T142, T144, T147, T148, T150, T151, T160, T163, T164, T165, T167, T169, T174, T175, T177, T178, T180, T183, T184, T186, T187, T188, T190, T192, T210, T211, T212, T213, T214, T217, T219, T225, T226, T227, T229, T230, T231, T233, T234, T237, T240, T251, T252, T253, T254, T256, T257, T258, T259, T260, T261, T263, T264, T265, T270, T271, T279 | T2, T32, T33, T34, T61, T62, T65, T132, T137, T232 | |
-| 2 medium | T4, T6, T11, T13, T18, T25, T26, T38, T41, T42, T53, T55, T56, T57, T60, T69, T70, T76, T78, T79, T80, T84, T85, T86, T87, T88, T89, T90, T91, T97, T98, T99, T100, T101, T102, T104, T105, T109, T112, T115, T124, T126, T127, T135, T139, T146, T149, T152, T153, T155, T156, T157, T162, T172, T173, T179, T181, T182, T185, T189, T191, T193, T194, T195, T196, T197, T198, T199, T202, T203, T204, T206, T207, T215, T216, T220, T221, T223, T228, T235, T236, T238, T239, T245, T247, T248, T250, T266, T268, T269, T280 | T3, T9, T10, T17, T19, T20, T21, T22, T27, T30, T39, T40, T44, T45, T47, T48, T49, T50, T51, T52, T54, T71, T72, T74, T75, T96, T111, T116, T120, T121, T122, T123, T129, T130, T131, T134, T136, T143, T145, T154, T158, T159, T161, T166, T168, T170, T171, T176, T200, T201, T208, T209, T222, T224, T241, T242, T249 | T7, T8, T16, T128 |
+| 2 medium | T4, T6, T11, T13, T18, T25, T26, T38, T41, T42, T53, T55, T56, T57, T60, T69, T70, T76, T78, T79, T80, T84, T85, T86, T87, T88, T89, T90, T91, T97, T98, T99, T100, T101, T102, T104, T105, T109, T112, T115, T124, T126, T127, T135, T139, T146, T149, T152, T153, T155, T156, T157, T162, T172, T173, T179, T181, T182, T185, T189, T191, T193, T194, T195, T196, T197, T198, T199, T202, T203, T204, T206, T207, T215, T216, T220, T221, T223, T228, T235, T236, T238, T239, T245, T247, T248, T250, T266, T268, T269, T280, T284, T285 | T3, T9, T10, T17, T19, T20, T21, T22, T27, T30, T39, T40, T44, T45, T47, T48, T49, T50, T51, T52, T54, T71, T72, T74, T75, T96, T111, T116, T120, T121, T122, T123, T129, T130, T131, T134, T136, T143, T145, T154, T158, T159, T161, T166, T168, T170, T171, T176, T200, T201, T208, T209, T222, T224, T241, T242, T249, T283 | T7, T8, T16, T128 |
 | 1 low | T113, T218, T243, T244, T246, T262, T272, T273, T274, T275, T276, T277, T278, T281, T282 | T31, T36, T37, T110, T114, T118, T255, T267 | T5, T106, T117, T205 |
 
 The threats with a risk of 6 or more:

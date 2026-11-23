@@ -290,6 +290,9 @@ The capability names the spec that holds the requirement. Each capability is one
 | R276 | non-functional | `project-standards` | A checkout writes line feeds whatever `core.autocrlf` says, and the checks read Windows line endings as git stages them |
 | R277 | non-functional | `project-standards` | Every tracked path is one that Windows can write |
 | R278 | non-functional | `project-standards` | What CI's commands print reaches the log as printable ASCII |
+| R279 | non-functional | `project-standards` | The README says what the tool is for and which uses to avoid |
+| R280 | non-functional | `project-standards` | How it works lists everything that comes in and goes out, each with its records |
+| R281 | non-functional | `project-standards` | A diagram numbers its parts and explains each below it, a page with diagrams opens with its overview, and the README links to it |
 
 IDs are stable: a requirement keeps its ID while it exists, and a new one takes the next free number, so the rows follow the order in which requirements were added rather than the order of the specs. A requirement that a later change removes leaves the table, and its ID is listed below with the change that removed it, never to be used again.
 
