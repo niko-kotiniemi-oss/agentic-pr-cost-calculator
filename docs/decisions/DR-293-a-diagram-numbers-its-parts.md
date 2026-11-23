@@ -6,7 +6,7 @@
 - **Status:** accepted
 - **Decided by:** the owner, 2026-10-27
 - **Requirements:** R281
-- **Threats:** T283
+- **Threats:** T283, T286, T289
 - **Replaces:** none
 - **Closed by:** none
 
@@ -16,7 +16,7 @@ The owner gave five rules for diagrams on 2026-10-27, to be kept as one record e
 
 ## Decision
 
-A diagram's parts have short names and numbers, such as `1)`, and a list right after the diagram explains each number once, citing the requirement that states what the part does where one does.
+A diagram's parts have short names and numbers, each in a label in double quotes that opens with its number and `)`, such as `A["1) Capture step"]`, and a list right after the diagram explains each number once, citing the requirement that states what the part does where one does. Each node and participant has an identifier of at most three letters or digits, so that nearly all of a diagram's text is text that GitHub shows.
 
 ## Alternatives
 
@@ -24,7 +24,8 @@ None were recorded when this was decided.
 
 ## Consequences
 
-- A test fails on a number that a diagram carries and the list does not explain, on one explained and not drawn, and on a diagram that numbers nothing (R281; T283).
+- A test fails on a number that a diagram carries and the list does not explain, on one explained and not drawn, on a diagram that numbers nothing, on a number outside a quoted label and on a longer identifier (R281; T283, T286, T289).
+- Whether GitHub draws each diagram is checked by looking at it on GitHub at the build (T286).
 - Each part cites its requirement, so that review can compare what a diagram draws with what the specs hold (DR-232).
 
 ## Scope

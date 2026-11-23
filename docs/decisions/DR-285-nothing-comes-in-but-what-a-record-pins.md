@@ -6,17 +6,17 @@
 - **Status:** accepted
 - **Decided by:** the owner, 2026-10-27 and 2026-11-23
 - **Requirements:** R280
-- **Threats:** T284
+- **Threats:** T285, T287, T288
 - **Replaces:** none
 - **Closed by:** none
 
 ## Context
 
-The repository is public and independent, and anyone can copy it (the owner, 2026-11-23). On 2026-10-27 the owner asked that nothing come into it from other repositories or tools, and that its tests be built here instead. Some things do come in from outside, each by a record of its own: the vendored Superpowers (DR-041), OpenSpec (DR-042), the GitHub actions that its workflows run (DR-068) and the development tools that CI installs (DR-126).
+The repository is public and independent, and anyone can copy it (the owner, 2026-11-23). On 2026-10-27 the owner asked that nothing come into it from other repositories or tools, and that its tests be built here instead. Some things do come in from outside, each by a record of its own: the vendored Superpowers (DR-041), OpenSpec (DR-042), the GitHub actions that its workflows run (DR-068), the development tools that CI installs (DR-126), and contributions from other people's forks, under the contributor licence agreement (DR-244). Some of these were not pinned to an exact version when this was decided, as its design-stage review found: CI's newest Python, `3.x`, on purpose (DR-026), Renovate's preset `config:best-practices`, which Renovate expands when it runs (DR-265), the development tools' own dependencies, whose hashes wait for task 1.8 (DR-126), Claude Code's review commands (DR-093, DR-262), and the runner image `ubuntu-latest`, which no record named.
 
 ## Decision
 
-No code, test, check, skill or text comes into this repository from another repository or tool, except what a record of its own names, pins to an exact version or commit, and has CI check. A check that resembles one kept elsewhere is written here anew, with tests of its own. The page on how the tool works lists each thing that comes in, with the records that decide it (R280).
+No code, test, check, skill or text comes into this repository from another repository or tool, except what a record of its own names. Each such thing is pinned to an exact version or commit, or a record says why it is not, and CI checks what it can of it. A check that resembles one kept elsewhere is written here anew, with tests of its own. The page on how the tool works lists each thing that comes in, how it is pinned or that it is not, and the records that decide it (R280). This record names the runner image `ubuntu-latest` as not pinned: GitHub updates it, and every workflow that runs on it holds a read-only token (DR-067).
 
 ## Alternatives
 
@@ -25,7 +25,8 @@ No code, test, check, skill or text comes into this repository from another repo
 
 ## Consequences
 
-- An addition that would bring in a new tool or repository needs a record of its own, and the table of what comes in on the page on how the tool works cites it, which a test holds (R280; T284).
+- An addition that would bring in a new tool or repository needs a record of its own, and the tables of what comes in on the page on how the tool works cite it, which a test holds from the records' side (R280; T285); an input brought in with no record is left to review, as `CLAUDE.md` asks of agents (T288).
+- An input that is not pinned can change what CI checks without a change here (T287).
 - The tests of this repository are written in this repository, from its specs.
 
 ## Scope

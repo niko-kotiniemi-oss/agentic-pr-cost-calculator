@@ -2436,47 +2436,47 @@ A tracked file with the extension of an image, a PDF or a video SHALL be one tha
 
 ### Requirement: The README says what the tool is for and which uses to avoid
 
-The README SHALL hold, after its section on what the tool does and before its documentation's list, a section that says what the tool is for and lists the uses to avoid, each with a link to the decision record or requirement that gives the reason, so that an adopter knows before adopting it where its figure or its records would mislead or expose someone. A test SHALL fail otherwise.
+The README SHALL hold, after its section on what the tool will do and before its list of documents, a section that says what the tool is for and lists the uses to avoid, each citing by ID the requirement that states the behaviour behind it, or for a choice the accepted record that makes it, other than this requirement and its record, and a short start SHALL link that section before its first step, so that an adopter meets the uses to avoid before adopting. A test SHALL fail otherwise.
 
 #### Scenario: The README's section on uses passes
 
-- **WHEN** the README holds, after its section on what the tool does and before its documentation's list, a section that says what the tool is for and lists the uses to avoid, each linking an accepted decision record or a requirement
+- **WHEN** the README holds, after its section on what the tool will do and before its list of documents, a section that says what the tool is for and lists the uses to avoid, each citing a requirement or an accepted decision record that exists, and its short start, where it holds one, links that section before its first step
 - **THEN** the test passes it
 
 #### Scenario: A section on uses that is missing, out of place or unsupported fails a test
 
-- **WHEN** the README holds no such section, holds it after its documentation's list or before its section on what the tool does, or lists a use to avoid that links no decision record or requirement, or links one that does not exist or is closed
+- **WHEN** the README holds no such section, holds it before its section on what the tool will do or after its list of documents, lists a use to avoid that cites no requirement or decision record, cites one that does not exist or is closed, or cites only R279, DR-286 or the README itself, or its short start links the section only after a step that opts anyone in or turns the tool on, or not at all
 - **THEN** a test fails and names the section, or the line and what it lacks
 
 ### Requirement: How it works lists everything that comes in and goes out, each with its records
 
-`docs/how-it-works.md` SHALL hold a section that lists, in one table for what comes in and one for what goes out, each thing that crosses the tool's boundary, what crosses and the decision records that decide it, so that every open record whose boundary is incoming or outgoing is cited in the table of its direction, and every record cited there exists and faces that direction. A test SHALL fail otherwise.
+`docs/how-it-works.md` SHALL hold, after its section on inputs and outputs, a section with three tables, what the tool takes in when it runs, what this repository takes in to be built and checked, and what goes out to adopters, each row a thing that crosses, how it is pinned or that it is not, and the records that decide it, so that every open record whose boundary is incoming is cited in one of the first two tables and every open outgoing one in the third. A test SHALL fail otherwise.
 
 #### Scenario: A complete section passes
 
-- **WHEN** every decision record that is not closed and whose boundary is incoming is cited in the table of what comes in, every such record whose boundary is outgoing in the table of what goes out, and every record cited in either exists and faces its table's direction
+- **WHEN** every decision record that is not closed and whose boundary is incoming is cited in the table of what the tool takes in or of what this repository takes in, every such record whose boundary is outgoing in the table of what goes out, every row says how what it names is pinned or that it is not, and every record cited in any of them exists and is open, whatever its boundary
 - **THEN** the test passes
 
 #### Scenario: A record left out of the section, or cited in the wrong table, fails a test
 
-- **WHEN** an open record whose boundary is incoming or outgoing is cited in neither table, a record is cited in the table of the other direction, or a citation names a record that does not exist or is closed
-- **THEN** a test fails and names the record and the table
+- **WHEN** an open record whose boundary is incoming is cited in neither table of what comes in, an open outgoing record is not cited in the table of what goes out, a row gives no word on how what it names is pinned, the section stands before the section on inputs and outputs, or a citation names a record that does not exist or is closed
+- **THEN** a test fails and names the record or the row, and the table
 
-### Requirement: A diagram numbers its parts and explains each below it, a page with diagrams opens with its overview, and the README links to it
+### Requirement: A diagram numbers its parts and explains each below it, and the README links the overview of how it works
 
-Each Mermaid diagram on a page that this repository writes SHALL number its parts, as `1)`, and be followed by a list that explains each number once, citing the requirement that states what the part does where one does, each feature page and `docs/how-it-works.md` SHALL hold a diagram, the first an overview of the page's subject, and the README SHALL link to the overview of `docs/how-it-works.md`. Tests SHALL fail otherwise.
+Each Mermaid diagram on a page that this repository writes SHALL number its parts in quoted labels that open with the number and `)`, give each node and participant an ID of at most three letters or digits, and be followed by a list explaining each number once, citing the requirement for what the part does; each feature page and `docs/how-it-works.md`, whose first section holds its overview, SHALL hold one, and the README SHALL link that page without a fragment. Tests SHALL fail otherwise.
 
 #### Scenario: A numbered and explained diagram passes
 
-- **WHEN** a Mermaid diagram's parts carry the numbers 1 to n, and the list right after the diagram explains each of those numbers once and no other
+- **WHEN** a Mermaid diagram's parts carry the numbers 1 to n, each in a label in double quotes that opens with its number and `)`, such as `A["1) Capture step"]`, each identifier is at most three letters or digits, and the list right after the diagram explains each of those numbers once and no other
 - **THEN** the test passes it
 
 #### Scenario: A number left unexplained, or explained but not drawn, fails a test
 
-- **WHEN** a diagram carries a number that the list after it does not explain, the list explains a number that the diagram does not carry, explains one twice, or the numbers skip one, or a diagram carries no number
-- **THEN** a test fails and names the file, the diagram's line and the number
+- **WHEN** a diagram carries a number that the list after it does not explain, the list explains a number that the diagram does not carry, explains one twice, or the numbers skip one, a diagram carries no number, a number stands in a label that no double quotes hold, or an identifier of a node or a participant is longer than three characters or holds other than letters and digits
+- **THEN** a test fails and names the file, the diagram's line and the number or the identifier
 
 #### Scenario: A page without its diagram fails a test
 
-- **WHEN** a feature page or `docs/how-it-works.md` holds no Mermaid diagram, or its first diagram comes after a section that holds another diagram's detail rather than under the page's opening or its first section, or the README holds no link to the heading of the overview of `docs/how-it-works.md`
+- **WHEN** one of the feature pages in `docs/features/`, which are its files other than its `README.md`, or `docs/how-it-works.md` holds no Mermaid diagram, the first section of `docs/how-it-works.md` holds no diagram, or the README holds no link to `docs/how-it-works.md` without a fragment
 - **THEN** a test fails and names the page

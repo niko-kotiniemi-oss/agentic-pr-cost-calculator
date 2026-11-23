@@ -16,7 +16,7 @@ The owner gave five rules for diagrams on 2026-10-27, to be kept as one record e
 
 ## Decision
 
-A page that holds diagrams opens with one simple overview diagram of its subject, and its sections add the detailed ones.
+A page that holds diagrams gives, as its first diagram, one simple overview of its subject, and its sections add the detailed ones. The page on how the tool works holds its overview in its first section. The threat model's first diagram, after the section that says how it was built, is its overview of how data moves.
 
 ## Alternatives
 
@@ -24,7 +24,7 @@ None were recorded when this was decided.
 
 ## Consequences
 
-- The page on how the tool works moves its overview to its opening, and a test fails on a page whose first diagram is not near its top (R281).
+- The page on how the tool works moves its overview into its first section, which a test holds (R281); whether a page's first diagram is an overview is left to review (DR-251).
 
 ## Scope
 

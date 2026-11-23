@@ -6,13 +6,13 @@
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`, as the owner asked on 2026-10-27
 - **Requirements:** none
-- **Threats:** none
+- **Threats:** T28
 - **Replaces:** none
 - **Closed by:** none
 
 ## Context
 
-The owner asked on 2026-10-27 for a record of how vulnerabilities are found. The tool itself uses Python's standard library alone (DR-023), so what it depends on from outside is the repository's development tools, OpenSpec, the vendored Superpowers and the GitHub actions that its workflows run. `renovate.json` sets `osvVulnerabilityAlerts`, with which Renovate reads OSV's database, and `vulnerabilityAlerts`, with which it acts on the alerts that GitHub gives the repository once Dependabot alerts are on, a setting that the owner keeps.
+The owner asked on 2026-10-27 for a record of how vulnerabilities are found. The tool itself uses Python's standard library alone (DR-023), so what it depends on from outside is the repository's development tools, OpenSpec, the vendored Superpowers and the GitHub actions that its workflows run. `renovate.json` sets `osvVulnerabilityAlerts`, with which Renovate reads OSV's database, and `vulnerabilityAlerts`, with which it acts on the alerts that GitHub gives the repository once Dependabot alerts are on, a setting that the owner keeps and confirmed on 2026-11-23 as on.
 
 ## Decision
 
