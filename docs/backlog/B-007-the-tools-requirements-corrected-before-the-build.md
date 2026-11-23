@@ -1,7 +1,7 @@
 # B-007: The tool's requirements, corrected before the build
 
 - **Status:** Planned
-- **Last changed:** 2026-11-21
+- **Last changed:** 2026-11-23
 - **Brief:** The change's requirements, corrected with what the items above find, before any of them is built. It also settles how the comment shows a cost, the prices' rules, a ledger and a price table that fit more than one provider, and the points that earlier reviews left open.
 - **Rests on:** R18, R21, R97, R122, B-001, B-002, B-021, DR-234
 - **Issue:** 18
@@ -22,3 +22,4 @@ The change is revised before it is built. It takes the design fixes from the ass
 - From earlier reviews: the sentence on prices in R30, R57 against R113, the points stated only in scenarios of R13, R20, R25 and R69, the requirement ranges, R81 and R109, the residual risk of T4, the Python command on Windows, a security advisory for every security fix, and the copies of the oldest Python that its test does not read.
 - From the sweep of B-022, with the owner's answer of 2026-11-18: each clause that `docs/evidence/B-022-mapping.md` lists for B-007 as the pull request that delivers B-022 merged it, which a page states and no scenario holds or a scenario contradicts, and whether it becomes an obligation (DR-252).
 - From the revision of the conventions for Windows, with the owner's answer of 2026-11-21: which line endings capture writes into a ledger file, since Python on Windows writes a carriage return before each line feed unless it is told otherwise, as the walking skeleton's code does, and how the report reads them; and a ledger file that git refuses to add where its setting `safecrlf` is on, which the design leaves to a line that the adopter adds to their own attributes.
+- From the threat review against what was built of the conventions, with the owner's answer of 2026-11-23: this repository's own attributes, where the test of line endings refuses the line that the design gives an adopter whose git has `safecrlf` on, which gives each file under `.pr-cost/` the attribute `-text`, for the day that task 7.1 turns the tool on here.
