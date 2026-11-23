@@ -155,7 +155,7 @@ WORDS = r"[a-z0-9]+(?:-[a-z0-9]+)*"
 FILE_NAME = re.compile(rf"DR-({NUMBER})-{WORDS}\.md")
 # Files that keep history, and so may name a closed record: the records, their index, the
 # changelog, the archived changes, and the mapping of B-022, whose quotes are what the
-# default branch held before that sweep.
+# default branch held before that sweep, with each arrow written as `->`.
 HISTORY = re.compile(
     rf"docs/decisions/(?:README|DR-{NUMBER}-{WORDS})\.md|CHANGELOG\.md"
     r"|openspec/changes/archive/[0-9]{4}-[0-9]{2}-[0-9]{2}-[a-z0-9-]+/.+"

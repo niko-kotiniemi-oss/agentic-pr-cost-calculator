@@ -45,14 +45,14 @@ The assumptions about GitHub: this repository's settings there, and its workflow
 
 ## A8. Workflows and required checks run when the design expects them to.
 
-- **Rests on it:** R33, R129, T28, T35, T65, T70, T76, DR-043, DR-072, DR-119, DR-243
+- **Rests on it:** R33, R129, T28, T35, T65, T70, T76, DR-043, DR-072, DR-119, DR-243, DR-283
 - **If it is wrong:** A failed, cancelled or skipped job might not block a merge, so the `ci` check would not stand for the jobs before it (T28, T35). A change of a pull request's base, title or body that sends no event, or whose event carries stale text, would go unchecked until the next event (T70, T65).
 - **Fact:** A required check that never runs never reports, so a pull request that requires it waits for good.
   - **Relied on:** DR-043, DR-072
   - **Checked:** not yet: none will, since no test may reach GitHub
 - **Fact:** A job with `if: always()` runs even when a job that it needs has failed, so a last job that fails unless each job it needs succeeded can stand for all of them as the one required check.
-  - **Relied on:** T28, T35, DR-043, DR-072
-  - **Checked:** not yet: none will, since no test may reach GitHub; `add-pr-cost-calculator` task 1.7 tests only what this repository does with it
+  - **Relied on:** T28, T35, DR-043, DR-072, DR-283
+  - **Checked:** not yet: none will, since no test may reach GitHub; `add-pr-cost-calculator` task 1.7 and `add-pr-cost-calculator` task 1.54 test only what this repository does with it
 - **Fact:** GitHub runs a pull request's CI again when the pull request is pushed to, not when its base branch moves on.
   - **Relied on:** T76, DR-119
   - **Checked:** not yet: none will, since no test may reach GitHub
