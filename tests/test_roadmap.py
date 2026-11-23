@@ -165,12 +165,19 @@ HIDING = (
     ("|", "|, with which Markdown builds a table, whose cells past its header's it hides"),
 )
 
-# With these, git reads no global or system configuration. A test plants the global one
+# With these, git reads no global or system configuration, and no attributes or ignore file of
+# the person's own, which git reads from `$XDG_CONFIG_HOME/git/`, or `~/.config/git/`, whatever
+# GIT_CONFIG_GLOBAL names, unless its configuration names others. A test plants the global one
 # in HOME; the system one is where git was built to look, such as /etc/gitconfig, which
 # no test writes, so no test sees GIT_CONFIG_NOSYSTEM dropped.
 GIT_ENVIRONMENT = {
     "GIT_CONFIG_GLOBAL": os.devnull,
     "GIT_CONFIG_NOSYSTEM": "1",
+    "GIT_CONFIG_COUNT": "2",
+    "GIT_CONFIG_KEY_0": "core.attributesFile",
+    "GIT_CONFIG_VALUE_0": os.devnull,
+    "GIT_CONFIG_KEY_1": "core.excludesFile",
+    "GIT_CONFIG_VALUE_1": os.devnull,
 }
 
 
@@ -185,9 +192,9 @@ def isolated_environment(root: Path) -> dict[str, str]:
     return {
         **session_free_environment(),
         **GIT_ENVIRONMENT,
-        "GIT_CONFIG_COUNT": "1",
-        "GIT_CONFIG_KEY_0": "safe.directory",
-        "GIT_CONFIG_VALUE_0": str(root),
+        "GIT_CONFIG_COUNT": "3",
+        "GIT_CONFIG_KEY_2": "safe.directory",
+        "GIT_CONFIG_VALUE_2": str(root),
     }
 
 
@@ -856,6 +863,67 @@ def planted(root: Path, name: str, old: str, new: str) -> Path:
     text = TREE[name]
     assert text.count(old) == 1, old
     return make_tree(root, {name: text.replace(old, new)})
+
+
+# A person's own attributes and ignore file, which git reads from `$XDG_CONFIG_HOME/git/`, or
+# from `~/.config/git/` where that variable is not set, whatever `GIT_CONFIG_GLOBAL` names,
+# unless git's configuration names other files.
+PERSONAL_FILES = {"attributes": "* export-subst\n", "ignore": "*.md\n"}
+
+
+def git_environments(root: Path) -> dict[str, dict[str, str]]:
+    """Each environment in which the tests run git, by the name that holds it. The modules
+    that hold the others import this one, so they are imported only once it is."""
+    import test_glossary
+    import test_rewording
+    import test_sweep_evidence
+
+    return {
+        "isolated_environment": isolated_environment(root),
+        "GIT_ENVIRONMENT": {**session_free_environment(), **GIT_ENVIRONMENT},
+        "test_glossary.GIT_ENVIRONMENT": dict(test_glossary.GIT_ENVIRONMENT),
+        "test_rewording.GIT_ENVIRONMENT": {**os.environ, **test_rewording.GIT_ENVIRONMENT},
+        "test_sweep_evidence.GIT_ENVIRONMENT": {
+            **os.environ,
+            **test_sweep_evidence.GIT_ENVIRONMENT,
+        },
+    }
+
+
+@pytest.mark.parametrize(
+    "name",
+    [
+        "isolated_environment",
+        "GIT_ENVIRONMENT",
+        "test_glossary.GIT_ENVIRONMENT",
+        "test_rewording.GIT_ENVIRONMENT",
+        "test_sweep_evidence.GIT_ENVIRONMENT",
+    ],
+)
+def test_git_in_the_tests_reads_no_attributes_or_ignore_file_of_the_person_s(
+    tmp_path: Path, name: str
+) -> None:
+    home = tmp_path / "home"
+    (home / "git").mkdir(parents=True)
+    for file, text in PERSONAL_FILES.items():
+        (home / "git" / file).write_text(text, encoding="utf-8")
+    root = tmp_path / "repository"
+    root.mkdir()
+    (root / "page.md").write_text("Text.\n", encoding="utf-8")
+
+    def asked(environment: dict[str, str], *args: str) -> subprocess.CompletedProcess[bytes]:
+        given = {**environment, "XDG_CONFIG_HOME": str(home)}
+        return subprocess.run(["git", *args], cwd=root, capture_output=True, env=given)
+
+    unisolated = {**session_free_environment(), "GIT_CONFIG_NOSYSTEM": "1"}
+    unisolated["GIT_CONFIG_GLOBAL"] = os.devnull
+    assert asked(unisolated, "init", "-q").returncode == 0
+    # Git reads both files where nothing else names them.
+    assert b"export-subst: set" in asked(unisolated, "check-attr", "-a", "--", "page.md").stdout
+    assert asked(unisolated, "check-ignore", "-q", "--", "page.md").returncode == 0
+    environment = git_environments(root)[name]
+    assert asked(environment, "check-attr", "-a", "--", "page.md").stdout == b""
+    assert asked(environment, "check-ignore", "-q", "--", "page.md").returncode == 1
 
 
 def test_a_complete_tree_has_no_problem(tmp_path: Path) -> None:

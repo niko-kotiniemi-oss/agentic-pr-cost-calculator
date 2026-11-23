@@ -12,13 +12,18 @@ ruff, mypy, pytest and `diff` do, carries a hidden character into a log that a s
 reads (T264). The filter exits with the command's status, with 128 and the signal's number
 where a signal stopped the command, and with 127 where it could not start it. It reads until
 each process that holds its pipe ends, so a process that the command leaves running in the
-background with its output on the pipe keeps the step open until that process ends.
+background with its output on the pipe keeps the step open until that process ends. It
+passes SIGINT and SIGTERM, with which the runner stops a step that it cancels, on to the
+command, as they would reach bash where it ran the step alone, and reads on until the
+command ends. One step of the job `ci` runs outside the filter and fails where the filter
+loses a command's exit status, which would let every other step pass.
 """
 
 from __future__ import annotations
 
 import codecs
 import os
+import signal
 import subprocess
 import sys
 from collections.abc import Callable, Iterable, Iterator
@@ -80,6 +85,8 @@ def main(argv: list[str]) -> int:
             )
         )
         return NOT_STARTED
+    for number in (signal.SIGINT, signal.SIGTERM):
+        signal.signal(number, lambda received, _: child.send_signal(received))
     assert child.stdout is not None
     with child.stdout:
         relay(reads(child.stdout.fileno()), write)

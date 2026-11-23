@@ -67,6 +67,7 @@ import time
 from pathlib import Path
 
 import pytest
+import test_roadmap
 import wording
 from conventions import written_by_others
 from wording import (
@@ -102,8 +103,7 @@ def test_each_term_is_defined_once() -> None:
 
 GIT_ENVIRONMENT = {
     **os.environ,
-    "GIT_CONFIG_GLOBAL": os.devnull,
-    "GIT_CONFIG_NOSYSTEM": "1",
+    **test_roadmap.GIT_ENVIRONMENT,
     "GIT_AUTHOR_NAME": "Test",
     "GIT_AUTHOR_EMAIL": "test@example.com",
     "GIT_COMMITTER_NAME": "Test",

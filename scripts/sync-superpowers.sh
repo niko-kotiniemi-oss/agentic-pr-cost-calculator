@@ -19,6 +19,10 @@ for variable in $(git rev-parse --local-env-vars); do
     *) unset "$variable" ;;
   esac
 done
+# Git lists none of the variables that change how it reads a path, such as
+# GIT_LITERAL_PATHSPECS, which would have the check read no mode from git's
+# index, so the sync drops each, and git reads every path as the name it is.
+unset GIT_LITERAL_PATHSPECS GIT_GLOB_PATHSPECS GIT_NOGLOB_PATHSPECS GIT_ICASE_PATHSPECS
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 DEST="${ROOT}/vendor/superpowers"
@@ -89,7 +93,10 @@ fi
 # own attributes.
 materialise() {
   local into="$1" path entry mode oid perm
-  git init -q "${work}/src"
+  # In the object format of upstream's commit ids, SHA-1's, whatever format git
+  # gives a new repository, as GIT_DEFAULT_HASH can: git fetches nothing from a
+  # repository of another format.
+  git init -q --object-format=sha1 "${work}/src"
   git -C "${work}/src" fetch -q --depth 1 "$URL" "$SHA"
   for path in "${PATHS[@]}"; do
     git -C "${work}/src" cat-file -e "${SHA}:${path}" 2>/dev/null || {
@@ -192,11 +199,13 @@ if [ "${1:-}" = "--check" ]; then
 else
   # The refresh writes the whole copy apart, and replaces the vendored paths
   # only then, so that one that stops, on what the pinned commit gives or on a
-  # fetch that fails, leaves the vendored copy as it was.
+  # fetch that fails, leaves the vendored copy as it was. It names each path
+  # whole, as it moves it, and in no replacement of a substitution, where bash
+  # 5.2 reads each `&`, as a clone below a folder named `R&D` holds one.
   copy="${work}/copy"
   materialise "$copy"
-  rm -rf "${PATHS[@]/#/${DEST}/}"
   for path in "${PATHS[@]}"; do
+    rm -rf "${DEST}/${path}"
     case "$path" in */*) mkdir -p "${DEST}/${path%/*}" ;; esac
     mv "${copy}/${path}" "${DEST}/${path}"
   done

@@ -14,9 +14,12 @@ out the lock at the root alone, by its path, and the mode that git's index
 gives each with the mode that the commit gives it. It stops on a link in the
 copy, on a path that git's checkout refuses on Windows or macOS and on a pinned
 file that holds a carriage return, leaves the copy as it was where a refresh
-stops, reads and writes no repository that a person's git variables name, and
-says how to write the copy again where a vendored file holds a carriage return,
-which the commit's do not (R275, R276, DR-275, DR-281).
+stops, reads and writes no repository that a person's git variables name,
+reads each path as the name that it is whatever they say of how git reads one,
+works whatever object format git gives a new repository, replaces each vendored
+path wherever the clone lies, and says how to write the copy again where a
+vendored file holds a carriage return, which the commit's do not (R275, R276,
+DR-275, DR-281).
 
 These tests run the real script against a local upstream, never the network,
 with no git variable of the session's and no global or system configuration
@@ -33,8 +36,13 @@ from dataclasses import dataclass
 from pathlib import Path
 
 import pytest
-from conventions import NO_WINDOWS_LINE_ENDINGS
-from test_roadmap import GIT_ENVIRONMENT, saved_with_windows_line_endings, session_free_environment
+from conventions import NO_WINDOWS_LINE_ENDINGS, tracked_entries, written_by_others
+from test_roadmap import (
+    GIT_ENVIRONMENT,
+    isolated_environment,
+    saved_with_windows_line_endings,
+    session_free_environment,
+)
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = ROOT / "scripts" / "sync-superpowers.sh"
@@ -273,6 +281,7 @@ CONDITIONS = (
     "a template's info/attributes",
     "a lock with Windows line endings",
     "upstream's own attributes",
+    "a default object format of SHA-256",
 )
 
 
@@ -280,7 +289,8 @@ def prepared(tmp_path: Path, case: str) -> tuple[World, dict[str, str], str]:
     """A world, the environment that the sync runs in and how its lock's lines end, for the
     case: a global configuration that sets `core.autocrlf` to `true`, one whose template
     gives each new clone a `.git/info/attributes` that holds `* eol=crlf`, a lock whose
-    lines end in CRLF, or an upstream whose own attributes `git archive` would follow."""
+    lines end in CRLF, an upstream whose own attributes `git archive` would follow, or a
+    git that gives a new repository SHA-256's object format, where upstream's is SHA-1's."""
     world = build_world(
         tmp_path, UPSTREAM_ATTRIBUTES if case == "upstream's own attributes" else None
     )
@@ -293,6 +303,8 @@ def prepared(tmp_path: Path, case: str) -> tuple[World, dict[str, str], str]:
         (template / "info" / "attributes").write_bytes(b"* eol=crlf\n")
         configuration.write_bytes(f"[init]\n\ttemplateDir = {template}\n".encode())
     environment = {"GIT_CONFIG_GLOBAL": str(configuration)} if configuration.exists() else {}
+    if case == "a default object format of SHA-256":
+        environment["GIT_DEFAULT_HASH"] = "sha256"
     return world, environment, "\r\n" if case == "a lock with Windows line endings" else "\n"
 
 
@@ -585,6 +597,32 @@ def test_a_refresh_that_stops_leaves_the_vendored_copy_as_it_was(
     assert vendored(world) == before
 
 
+# R275: a refresh replaces each vendored path wherever the clone lies, below a folder whose name
+# holds `&` too, which bash 5.2 reads in the replacement of a substitution as the text matched.
+
+
+def test_a_refresh_below_a_folder_whose_name_holds_an_ampersand_replaces_each_vendored_path(
+    tmp_path: Path,
+) -> None:
+    (tmp_path / "R&D").mkdir()
+    world = build_world(tmp_path / "R&D")
+    # A copy where the folder's name without its `&` would lead, which no refresh may touch.
+    decoy = tmp_path / "RD" / "repo" / "vendor" / "superpowers"
+    for path in VENDORED:
+        (decoy / path).parent.mkdir(parents=True, exist_ok=True)
+        (decoy / path).write_bytes(b"A decoy's.\n")
+    before = files_below(tmp_path / "RD")
+    assert sync(world, world.tagged, "v1.0.0").returncode == 0
+    # An edit that the second refresh must write over, in a copy whose paths are all there.
+    (world.repo / "vendor" / "superpowers" / "skills/a/SKILL.md").write_bytes(b"Edited.\n")
+    done = sync(world, world.tagged, "v1.0.0")
+    assert done.returncode == 0, done.stderr
+    assert vendored(world) == released(world)
+    assert files_below(tmp_path / "RD") == before
+    checked = sync(world, world.tagged, "v1.0.0", "--check")
+    assert checked.returncode == 0, checked.stderr
+
+
 def files_below(folder: Path) -> dict[str, tuple[int, bytes]]:
     """Each file below the folder by its path, with its mode and its bytes."""
     return {
@@ -632,14 +670,24 @@ def test_a_link_in_the_vendored_copy_stops_the_sync_before_it_reads_or_writes(
 
 
 # R275: the sync reads and writes no repository but its own and this one, whatever git
-# variables of the person's name another.
+# variables of the person's name another, and reads each path as the name that it is,
+# whatever they say of how git reads one.
 
+# The variables that change how git reads a path, which git does not list among those that
+# name a repository.
+PATHSPEC_VARIABLES = (
+    "GIT_LITERAL_PATHSPECS",
+    "GIT_GLOB_PATHSPECS",
+    "GIT_NOGLOB_PATHSPECS",
+    "GIT_ICASE_PATHSPECS",
+)
 NAMINGS = (
     "GIT_DIR",
     "GIT_DIR and GIT_WORK_TREE",
     "GIT_INDEX_FILE",
     "GIT_OBJECT_DIRECTORY",
     "GIT_COMMON_DIR",
+    *PATHSPEC_VARIABLES,
 )
 
 
@@ -655,7 +703,8 @@ def another_repository(tmp_path: Path) -> Path:
 
 
 def naming(other: Path, case: str) -> dict[str, str]:
-    """The git variables that name the other repository, or a part of it, for the case."""
+    """The git variables that name the other repository, or a part of it, for the case, or
+    the one that changes how git reads a path."""
     dot = other / ".git"
     return {
         "GIT_DIR": {"GIT_DIR": str(dot)},
@@ -663,6 +712,7 @@ def naming(other: Path, case: str) -> dict[str, str]:
         "GIT_INDEX_FILE": {"GIT_INDEX_FILE": str(dot / "index")},
         "GIT_OBJECT_DIRECTORY": {"GIT_OBJECT_DIRECTORY": str(dot / "objects")},
         "GIT_COMMON_DIR": {"GIT_COMMON_DIR": str(dot)},
+        **{variable: {variable: "1"} for variable in PATHSPEC_VARIABLES},
     }[case]
 
 
@@ -702,23 +752,26 @@ def test_the_sync_keeps_the_configuration_that_git_s_variables_give(
 
 
 # R275: the check compares the mode that git's index gives each vendored file with the mode
-# that the pinned commit gives it.
+# that the pinned commit gives it, whatever a variable of the person's says of how git reads
+# a path.
 
 
+@pytest.mark.parametrize("variable", [None, *PATHSPEC_VARIABLES])
 @pytest.mark.parametrize(
     ("path", "change", "staged", "given"),
     [("hooks/run-hook.cmd", "-x", "100644", "100755"), ("LICENSE", "+x", "100755", "100644")],
     ids=["an executable file staged as not executable", "a file staged as executable"],
 )
 def test_a_vendored_file_that_git_s_index_gives_another_mode_fails_the_check(
-    world: World, path: str, change: str, staged: str, given: str
+    world: World, path: str, change: str, staged: str, given: str, variable: str | None
 ) -> None:
+    environment = {variable: "1"} if variable else {}
     assert sync(world, world.tagged, "v1.0.0").returncode == 0
     git("add", "--", "vendor/superpowers", cwd=world.repo)
-    passed = sync(world, world.tagged, "v1.0.0", "--check")
+    passed = sync(world, world.tagged, "v1.0.0", "--check", environment=environment)
     assert passed.returncode == 0, passed.stderr
     git("update-index", f"--chmod={change}", "--", f"vendor/superpowers/{path}", cwd=world.repo)
-    failed = sync(world, world.tagged, "v1.0.0", "--check")
+    failed = sync(world, world.tagged, "v1.0.0", "--check", environment=environment)
     assert failed.returncode == 1
     assert "DIFFERS" in failed.stderr
     named = f"vendor/superpowers/{path}"
@@ -824,3 +877,23 @@ def test_the_editors_configuration_leaves_the_vendored_files_as_upstream_wrote_t
     for path in ("vendor/superpowers/LICENSE", "vendor/superpowers/skills/a/SKILL.md"):
         assert editor_settings(path)["end_of_line"] == "unset"
         assert editor_settings(path)["charset"] == "unset"
+
+
+def test_the_editors_configuration_unsets_its_settings_only_for_the_files_that_others_write() -> (
+    None
+):
+    """Every property that `.editorconfig` gives is unset for each file that others write, and
+    none for a file that this repository writes, such as one of its own under `vendor/`, which
+    the checks read, so that an editor writes it as they expect (R268, DR-274)."""
+    own = ["vendor/notes.md", "vendor/tool.py", "vendor/tool.sh", ".claude/skills/a/SKILL.md"]
+    tracked = [entry.path for entry in tracked_entries(ROOT, isolated_environment(ROOT))]
+    paths = [*tracked, *own, "vendor/superpowers/b/SKILL.md", ".claude/skills/openspec-b/a.md"]
+    assert any(map(written_by_others, paths)) and not all(map(written_by_others, paths))
+    for path in paths:
+        given = editor_settings(path)
+        if written_by_others(path):
+            assert set(given.values()) == {"unset"}, path
+        else:
+            assert "unset" not in given.values(), path
+            kept = (given["charset"], given["end_of_line"], given["insert_final_newline"])
+            assert kept == ("utf-8", "lf", "true"), path

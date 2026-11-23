@@ -14,7 +14,8 @@ Like the tool, it runs on Python 3.11 and later with the standard library alone.
 Usage: python scripts/windows_line_endings.py [root]
 
 Exit 0 when it saved each such file so, 1 when it examined no Windows line endings, and 2
-when git cannot list the tracked files or root lies below the top of its working tree.
+when git cannot list the tracked files, root lies below the top of its working tree, or the
+working tree cannot open a tracked path, which it names before it saves anything.
 """
 
 from __future__ import annotations
@@ -28,6 +29,7 @@ from conventions import (
     EXECUTABLE,
     FILE,
     NO_WINDOWS_LINE_ENDINGS,
+    UNOPENED,
     UnlistedError,
     in_working_tree,
     is_script,
@@ -39,6 +41,10 @@ from conventions import (
 
 # A line feed that no carriage return comes right before.
 BARE_LINE_FEED = re.compile(rb"(?<!\r)\n")
+
+
+class UnopenedError(Exception):
+    """Raised, before anything is saved, where the working tree cannot open a tracked path."""
 
 
 def below_the_top(root: Path) -> str:
@@ -62,7 +68,8 @@ def save(root: Path) -> list[str]:
     """Each file that it saved with a carriage return before each line feed, by its tracked
     path, reading the working tree as the test of characters reads it, through no link.
     Raises UnlistedError when git cannot list the tracked files, as where root is no folder,
-    or where root lies below the top of its working tree."""
+    or where root lies below the top of its working tree, and UnopenedError, with a line for
+    each, where the working tree cannot open a tracked path."""
     entries = tracked_entries(root)
     prefix = below_the_top(root)
     if prefix:
@@ -71,19 +78,25 @@ def save(root: Path) -> list[str]:
             f" {shown_path(prefix)}, where git would give each path from that folder"
         )
     folders: dict[str, str] = {}
-    saved = []
+    chosen: dict[str, bytes] = {}
+    unopened = []
     for entry in entries:
         if entry.mode not in (FILE, EXECUTABLE) or written_by_others(entry.path):
             continue
         held = in_working_tree(root, entry.path, folders)
+        if held is not None and held[0] == "unreadable":
+            unopened.append(f"{shown_path(entry.path)}, in the working tree, {UNOPENED}")
         if held is None or held[0] != "file":
             continue
         data = held[1]
         if b"\n" not in data or is_script(entry.path, data, entry.mode == EXECUTABLE):
             continue
-        (root / entry.path).write_bytes(BARE_LINE_FEED.sub(b"\r\n", data))
-        saved.append(entry.path)
-    return saved
+        chosen[entry.path] = data
+    if unopened:
+        raise UnopenedError("\n".join(f"windows-line-endings: {line}" for line in unopened))
+    for path, data in chosen.items():
+        (root / path).write_bytes(BARE_LINE_FEED.sub(b"\r\n", data))
+    return list(chosen)
 
 
 def main(argv: list[str]) -> int:
@@ -92,6 +105,9 @@ def main(argv: list[str]) -> int:
         saved = save(root)
     except UnlistedError as error:
         print(f"windows-line-endings: {error}", file=sys.stderr)
+        return 2
+    except UnopenedError as error:
+        print(error, file=sys.stderr)
         return 2
     if not saved:
         print(f"windows-line-endings: {NO_WINDOWS_LINE_ENDINGS}", file=sys.stderr)

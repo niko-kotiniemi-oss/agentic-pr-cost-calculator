@@ -77,6 +77,7 @@ Each check is shown to fail on a git repository into which its defect is planted
 
 from __future__ import annotations
 
+import builtins
 import codecs
 import functools
 import html.entities
@@ -90,6 +91,7 @@ import shutil
 import subprocess
 import sys
 import tarfile
+import tempfile
 import tomllib
 import unicodedata
 from collections import defaultdict
@@ -104,6 +106,7 @@ from conventions import (
     EXECUTABLE,
     FILE,
     NO_WINDOWS_LINE_ENDINGS,
+    UNOPENED,
     Entry,
     in_working_tree,
     is_script,
@@ -277,25 +280,64 @@ AUTOLINK = re.compile(
 # nothing but spaces and tabs after it.
 ANGLE = re.compile(r"<[^<>\n]*>")
 EMPTY_TEXT = re.compile(r"(?:^|[^\\])(?:\\\\)*\[[ \t]*\Z")
-# The extensions with which GitHub's markup library renders a markup other than Markdown, as
-# its README listed them on 2026-11-22 (R273).
+# The extensions that GitHub's language list, Linguist, gives the languages that GitHub's
+# markup library renders other than as Markdown, as its `languages.yml` and the library's
+# `markups.rb` gave them on 2026-11-23 (R273).
 OTHER_MARKUPS = re.compile(
-    r"\.(?:textile|rdoc|org|creole|mediawiki|wiki|rst|asciidoc|adoc|asc|pod)\Z", re.IGNORECASE
+    r"\.(?:textile|rdoc|org|creole|mediawiki|wiki|wikitext|re?st(?:\.txt)?|asciidoc|adoc|asc"
+    r"|pod6?)\Z",
+    re.IGNORECASE,
 )
+# The Emacs and the Vim modeline with which Linguist gives a file the language that it names
+# ahead of the file's name, as its `modeline.rb` wrote them on 2026-11-23, the lines at a
+# file's start and at its end where it looks for one, and what it takes to end a line (R273).
+EMACS_MODELINE = re.compile(
+    r"-\*-(?:[ \t]*(?=[^:;\s]+[ \t]*-\*-)|(?:.*?[ \t;]|(?<=-\*-))[ \t]*mode[ \t]*:[ \t]*)"
+    r"([^:;\s]+)(?=[ \t;]|(?<![-*])-\*-).*?-\*-",
+    re.IGNORECASE | re.ASCII,
+)
+VIM_MODELINE = re.compile(
+    r"(?:(?:^|[ \t])(?:vi|Vi(?=m))(?:m[<=>]?[0-9]+|m)?|[ \t]ex)"
+    r"(?=:(?=[ \t]*set?[ \t][^\r\n:]+:)|:(?![ \t]*set?[ \t]))"
+    r"(?:(?:[ \t]*:[ \t]*|[ \t])\w*(?:[ \t]*=(?:[^\\\s]|\\.)*)?)*"
+    r"[ \t:](?:filetype|ft|syntax)[ \t]*=(\w+)(?=$|\s|:)",
+    re.ASCII,
+)
+MODELINE_LINES = 5
+LINE_BREAK = re.compile(r"\r\n|\r|\n")
 # What the reading takes to open code, and GitHub, on a line that it reads as raw HTML, not.
 RAW_CODE = re.compile(r"`|~{3,}")
 TAG = re.compile(r"</?[A-Za-z][A-Za-z0-9-]*")
 DECLARATION = re.compile(r"<![A-Za-z]")
 REFERENCE = re.compile(r"&(?:#[0-9]{1,7}|#[Xx][0-9A-Fa-f]{1,6}|([A-Za-z][A-Za-z0-9]*));")
 ESCAPED_BACKTICK = re.compile(r"(?<!\\)(?:\\\\)*\\`")
+# An opening bracket that no backslash escapes and that only spaces, tabs and a backslash
+# follow to the end of its line, where it can open a link whose text is only a line break; a
+# web address that GitHub links where it finds one, by its scheme or by `www.`, up to a space
+# or a `<`; a definition's label, which GitHub reads before code, up to its `]:`; and the run
+# that opens a fence (R273).
+BRACKET_AT_END = re.compile(r"(?:^|[^\\])(?:\\\\)*(\[)[ \t]*\\?\Z")
+WEB_ADDRESS_AT = re.compile(r"(?<![A-Za-z])(?i:https?|ftp)://[^\s<]*|(?<![^\s*_~(])www\.[^\s<]*")
+LABEL = re.compile(r"\[(?:[^\\\[\]]|\\.)*\]:", re.DOTALL)
+FENCE_RUN = re.compile(r"`{3,}|~{3,}")
 # A row of a table's delimiter, and what may open a row inside a quote or a list item.
 DELIMITER_CELL = re.compile(r"[ \t]*:?-+:?[ \t]*")
 CONTAINER = re.compile(r"^(?:[ \t>]|(?:[-*+]|\d{1,9}[.)])[ \t])*")
-# What a Mermaid block may not hold: an entity code, which it shows as the character that it
-# names, a comment or directive, and the statements that give text that the drawing does
-# not show or change how it shows what it does.
+# The diagrams whose comments and statements the check of Mermaid blocks reads, a flowchart,
+# which `graph` also opens, and a sequence diagram, and the word that opens a diagram; what
+# a block may not hold beside: an entity code, which it shows as the character that it
+# names, a named character reference, which a browser reads with or without its `;`, shape
+# data, and the statements, in any case and at a line's start or after a `;`, that give
+# text that the drawing does not show or change how it shows what it does (R273).
+MERMAID_TYPES = frozenset({"flowchart", "graph", "sequenceDiagram"})
+MERMAID_TYPE = re.compile(r"[ \t]*([^ \t;]*)")
 ENTITY_CODE = re.compile(r"#[A-Za-z0-9_]+;")
-MERMAID_STATEMENT = re.compile(r"^[ \t]*(accTitle|accDescr|click|style|classDef|linkStyle)\b")
+NAMED_REFERENCE = re.compile(r"&([A-Za-z][A-Za-z0-9]*;?)")
+SHAPE = re.compile(r"@\{")
+MERMAID_STATEMENT = re.compile(
+    r"(?:^|;)[ \t]*(accTitle|accDescr|click|style|classDef|linkStyle|links?|callback)\b",
+    re.IGNORECASE,
+)
 
 COMMENT = "an HTML comment, which GitHub hides"
 HIDES = ", which GitHub hides"
@@ -328,6 +370,32 @@ OPEN_RUN = (
     "a run of backticks that its line leaves open, which GitHub may pair with one on a later line"
 )
 PAGES_READ_NOTHING = "the check of pages read no Markdown file that this repository writes"
+QUOTED_FENCE = "a fence inside a quote, whose block the test does not read"
+OPEN_BRACKET = (
+    "an opening bracket that ends its line, which can open a link whose text is only a line"
+    " break, which GitHub shows as nothing"
+)
+DESTINATION = (
+    "a link whose destination holds a backtick, which GitHub reads as part of the link where"
+    " the test may read code"
+)
+WEB_ADDRESS = (
+    "a web address that holds a backtick, which GitHub shows as a link where the test may read code"
+)
+SPLIT_SPAN = (
+    "a code span that holds a pipe that no backslash escapes, on a line of a table, whose cells"
+    " GitHub splits before it reads code"
+)
+OTHER_DIAGRAM = (
+    ", other than a flowchart or a sequence diagram, the two whose comments and statements the"
+    " test reads"
+)
+HASH = ", which can start a comment that the drawing hides"
+SHAPE_DATA = ", which opens shape data that can give an image or an icon or change how a node shows"
+MODELINE = (
+    "an Emacs or a Vim modeline, which can name a language in which GitHub renders the file"
+    " otherwise than the test of pages reads it"
+)
 # The marks that fail wherever they stand on a line read as prose.
 PLAIN = {"$": DOLLAR, "]:": DEFINITION, "![": IMAGE}
 # The attributes that set line endings, the only ones that the repository may give (R274).
@@ -409,7 +477,7 @@ def blobs(root: Path, oids: Iterable[str]) -> dict[str, bytes | None]:
     """Each object's bytes, read through one `git cat-file --batch`, or None for one that
     this clone lacks. Git fetches none: in a partial clone, where it would fetch a missing
     object from the clone's remote, it stops at it instead, and the objects after it are
-    read again."""
+    read again. Git reads each object itself, not the one that a replace ref gives."""
     found: dict[str, bytes | None] = {}
     pending = list(dict.fromkeys(oids))
     while pending:
@@ -418,7 +486,7 @@ def blobs(root: Path, oids: Iterable[str]) -> dict[str, bytes | None]:
             "cat-file",
             "--batch",
             stdin="".join(f"{oid}\n" for oid in pending).encode("ascii"),
-            extra={"GIT_NO_LAZY_FETCH": "1"},
+            extra={"GIT_NO_LAZY_FETCH": "1", "GIT_NO_REPLACE_OBJECTS": "1"},
         )
         output, at, read = done.stdout, 0, 0
         for oid in pending:
@@ -568,16 +636,25 @@ def strings_of(value: object) -> Iterator[str]:
             yield from strings_of(item)
 
 
+def every_pair(pairs: list[tuple[str, object]]) -> list[object]:
+    """A JSON object as each of its keys and values in turn, so that the value of a key that
+    it gives again is read too, where a dict keeps only the last."""
+    return [item for pair in pairs for item in pair]
+
+
 def loaded_strings(kind: str, text: str) -> list[tuple[int, str]]:
     """Each string of a YAML, JSON or TOML file as its loader decodes it, keys among them,
-    with its line where YAML gives one, and else 0."""
+    and every value of a key that JSON gives again, with its line where YAML gives one, and
+    else 0."""
     if kind == "YAML":
         return [
             (node.start_mark.line + 1, str(node.value))
             for document in yaml.compose_all(text, Loader=yaml.SafeLoader)
             for node in scalars(document, set())
         ]
-    value = json.loads(text) if kind == "JSON" else tomllib.loads(text)
+    value = (
+        json.loads(text, object_pairs_hook=every_pair) if kind == "JSON" else tomllib.loads(text)
+    )
     return [(0, string) for string in strings_of(value)]
 
 
@@ -692,6 +769,8 @@ def version_problems(
         return link_problems(entry.path, data, where)
     if kind == "under a link":
         return [f"{name}{where} lies in a folder that is a link, which the test does not follow"]
+    if kind == "unreadable":
+        return [f"{name}{where} {UNOPENED}"]
     if kind != "file":
         return [f"{name}{where} is neither a file nor a link, which the test cannot read"]
     try:
@@ -976,12 +1055,16 @@ def line_problems(seen: str, raw: str, folds: bool) -> list[tuple[int, str]]:
     raw HTML, a character reference that GitHub knows, `$`, a link or footnote definition, an
     image, a link that may give a title, the end of the line among what may follow its
     destination since a title may start there, a link without text, other than an image's,
-    which is named as an image, a backtick that a backslash escapes, which the reading
-    takes to open or close code, and an autolink that holds a backtick, read on the raw line
-    where its bracket lies outside code, since GitHub shows a link where the reading may
-    pair the backtick with a later one (R273)."""
+    which is named as an image, and an opening bracket that ends the line, which can open a
+    link whose text is only a line break. Read on the raw line where its start lies outside
+    code, since GitHub reads a link before code and the reading may pair the backtick with a
+    later one: a link's destination that holds a backtick, which is named rather than a
+    title, a backtick that a backslash escapes, which the reading takes to open or close
+    code, and an autolink or a web address, other than in a destination, that holds a
+    backtick (R273)."""
     found: list[tuple[int, str]] = []
     angles: set[int] = set()
+    destinations: list[range] = []
     for mark in MARK.finditer(seen):
         at, token = mark.start(), mark.group()
         what = PLAIN.get(token, "")
@@ -996,12 +1079,19 @@ def line_problems(seen: str, raw: str, folds: bool) -> list[tuple[int, str]]:
             start, end = destination(seen, at)
             if start is not None:
                 angles.add(start)
-            if not seen[end:].lstrip(" \t").startswith(")"):
+            reach = destination(raw, at)[1]
+            destinations.append(range(at + 2, reach))
+            if "`" in raw[at + 2 : reach]:
+                what = DESTINATION
+            elif not seen[end:].lstrip(" \t").startswith(")"):
                 what = TITLE
             elif EMPTY_TEXT.search(seen[:at]) and not seen[:at].rstrip(" \t").endswith("!["):
                 what = NO_TEXT
         if what:
             found.append((at + 1, what))
+    bracket = BRACKET_AT_END.search(seen)
+    if bracket and not seen[: bracket.start(1)].endswith("!"):
+        found.append((bracket.start(1) + 1, OPEN_BRACKET))
     found += [
         (escape.end() - 1, BACKSLASHED)
         for escape in ESCAPED_BACKTICK.finditer(raw)
@@ -1011,6 +1101,13 @@ def line_problems(seen: str, raw: str, folds: bool) -> list[tuple[int, str]]:
         (link.start() + 1, AUTOLINKED)
         for link in AUTOLINK.finditer(raw)
         if "`" in link.group() and seen[link.start()] == "<"
+    ]
+    found += [
+        (address.start() + 1, WEB_ADDRESS)
+        for address in WEB_ADDRESS_AT.finditer(raw)
+        if "`" in address.group()
+        and seen[address.start()] == raw[address.start()]
+        and not any(address.start() in reached for reached in destinations)
     ]
     return found
 
@@ -1043,11 +1140,14 @@ def cells_of(line: str) -> list[str]:
     return cells
 
 
-def table_problems(lines: list[str], fenced: set[int]) -> list[tuple[int, str]]:
+def table_problems(lines: list[str], fenced: set[int]) -> list[tuple[int, int, str]]:
     """Each row of a table, by its line, that holds more cells than the table's header, whose
-    cells past the header's GitHub hides (R273). A table is a line of cells and a line of
-    delimiters with as many, outside code, and its rows run up to a blank line or a fence."""
-    found: list[tuple[int, str]] = []
+    cells past the header's GitHub hides, and each code span on a line of a table, by its
+    line and column, that holds a pipe that no backslash escapes, since GitHub splits the
+    line into cells before it reads code, while the reading takes what lies between the
+    span's backticks for code (R273). A table is a line of cells and a line of delimiters with
+    as many, outside code, and its rows run up to a blank line or a fence."""
+    found: list[tuple[int, int, str]] = []
     taken: set[int] = set()
     for number in range(2, len(lines) + 1):
         line, above = lines[number - 1], lines[number - 2]
@@ -1071,48 +1171,177 @@ def table_problems(lines: list[str], fenced: set[int]) -> list[tuple[int, str]]:
                 found.append(
                     (
                         row,
+                        0,
                         f"a table row of {held} cells under a header of {len(header)}, whose"
                         " cells past the header's GitHub hides",
                     )
                 )
             row += 1
         taken.update(range(number - 1, row))
+        found += [
+            (line, start + 1, SPLIT_SPAN)
+            for line in range(number - 1, row)
+            for start, end in code_spans(lines[line - 1])[0]
+            if CELL_BORDER.search(lines[line - 1][start:end])
+        ]
     return found
+
+
+def mermaid_type(lines: list[str], held: list[int]) -> tuple[int, int, str] | None:
+    """The diagram that a Mermaid block draws, where it is other than a flowchart or a
+    sequence diagram, by the line and column of the word that opens it, the first line
+    that is not blank, that opens with no `%` and that lies after the block's front matter,
+    named as it is written (R273)."""
+    rest = [number for number in held if lines[number - 1].strip(" \t")]
+    if rest and lines[rest[0] - 1].strip(" \t") == "---":
+        ends = [at for at, number in enumerate(rest) if lines[number - 1].strip(" \t") == "---"]
+        rest = rest[ends[1] + 1 :] if len(ends) > 1 else []
+    first = next(
+        (number for number in rest if not lines[number - 1].lstrip(" \t").startswith("%")), None
+    )
+    if first is None:
+        return None
+    line = lines[first - 1]
+    kind = MERMAID_TYPE.match(line)
+    assert kind is not None
+    if kind[1] in MERMAID_TYPES:
+        return None
+    word = line.split()[0]
+    return (
+        first,
+        line.index(word) + 1,
+        f"a Mermaid block that draws {shown(word)}{OTHER_DIAGRAM}",
+    )
+
+
+def read_reference(name: str) -> str:
+    """The longest start of a name, its `;` among it, that HTML gives a character reference,
+    as a browser reads the reference that opens with it, or nothing."""
+    return next(
+        (name[:end] for end in range(len(name), 0, -1) if name[:end] in html.entities.html5), ""
+    )
 
 
 def mermaid_problems(lines: list[str], block: Block) -> list[tuple[int, int, str]]:
     """What a Mermaid block holds that the drawing hides or shows otherwise, by its line and
-    column: front matter and a statement, either of which gives text that the drawing does
-    not show or changes how it shows it, an entity code, a comment or a directive, and raw
-    HTML, an autolink among it (R273)."""
+    column: a diagram other than a flowchart or a sequence diagram, front matter and a
+    statement, either of which gives text that the drawing does not show or changes how it
+    shows it, each `#`, as the entity code that it opens or as one that can open a comment,
+    the first `%` of a line, which opens a comment or a directive that can hide the rest of
+    the line, a named character reference, shape data, and raw HTML, an autolink among it
+    (R273)."""
     found: list[tuple[int, int, str]] = []
     first = next((number for number in block.held if lines[number - 1].strip(" \t")), None)
     if first is not None and lines[first - 1].strip(" \t") == "---":
         column = lines[first - 1].index("-") + 1
         found.append((first, column, f"front matter{IN_MERMAID}{MERMAID_HIDES}"))
+    kind = mermaid_type(lines, list(block.held))
+    if kind:
+        found.append(kind)
     for number in block.held:
         line = lines[number - 1]
-        statement = MERMAID_STATEMENT.match(line)
-        if statement:
-            found.append(
-                (number, statement.start(1) + 1, f"{statement[1]}{IN_MERMAID}{MERMAID_HIDES}")
-            )
         found += [
-            (
-                number,
-                code.start() + 1,
-                f"the entity code {shown(code.group())}{IN_MERMAID}{ENTITY_NAMES}",
-            )
-            for code in ENTITY_CODE.finditer(line)
+            (number, statement.start(1) + 1, f"{statement[1]}{IN_MERMAID}{MERMAID_HIDES}")
+            for statement in MERMAID_STATEMENT.finditer(line)
         ]
-        comment = line.find("%%")
+        for mark in re.finditer("#", line):
+            code = ENTITY_CODE.match(line, mark.start())
+            what = (
+                f"the entity code {shown(code.group())}{IN_MERMAID}{ENTITY_NAMES}"
+                if code
+                else f"#{IN_MERMAID}{HASH}"
+            )
+            found.append((number, mark.start() + 1, what))
+        comment = line.find("%")
         if comment >= 0:
-            found.append((number, comment + 1, f"%%{IN_MERMAID}{DIRECTIVE}"))
+            sign = "%%" if line.startswith("%%", comment) else "%"
+            found.append((number, comment + 1, f"{sign}{IN_MERMAID}{DIRECTIVE}"))
+        for reference in NAMED_REFERENCE.finditer(line):
+            read = read_reference(reference[1])
+            if read:
+                found.append(
+                    (
+                        number,
+                        reference.start() + 1,
+                        f"the character reference {shown('&' + read)}{IN_MERMAID}{ENTITY_NAMES}",
+                    )
+                )
+        found += [
+            (number, data.start() + 1, f"@{{{IN_MERMAID}{SHAPE_DATA}")
+            for data in SHAPE.finditer(line)
+        ]
         for opening in re.finditer("<", line):
             element = markup(line, opening.start(), folds=False, autolinks=False)
             if element:
                 found.append((number, opening.start() + 1, f"{element[0]}{IN_MERMAID}{element[1]}"))
     return found
+
+
+def quoted_fences(lines: list[str], passed: set[int]) -> list[tuple[int, int, str]]:
+    """Each run that would open or close a fence after the marks of a quote, by its line and
+    column, on a line that it is not passed, such as one of the reading's fenced blocks or
+    one that GitHub reads as raw HTML, where the check of raw HTML names the run: GitHub
+    opens a fenced block inside a quote, and may draw it, while the reading takes no fence
+    after a quote's mark and reads the block's lines as prose, so that the test cannot read
+    it as a block (R273, T90)."""
+    found: list[tuple[int, int, str]] = []
+    for number, line in enumerate(lines, 1):
+        marks = CONTAINER.match(line)
+        assert marks is not None
+        if number not in passed and ">" in marks.group() and FENCE_RUN.match(line, marks.end()):
+            found.append((number, marks.end() + 1, QUOTED_FENCE))
+    return found
+
+
+def definition_problems(
+    lines: list[str], view: list[str], fenced: set[int]
+) -> list[tuple[int, int, str]]:
+    """Each link or footnote definition that the reading hides, by the line and column of its
+    `]:`, whose label opens a line's text after the marks of quotes and list items, read on
+    the raw lines of its paragraph as GitHub reads a definition, before code, so that a
+    backtick in its label opens no code span (R273)."""
+    found: list[tuple[int, int, str]] = []
+    for number, line in enumerate(lines, 1):
+        marks = CONTAINER.match(line)
+        assert marks is not None
+        if number in fenced or not line.startswith("[", marks.end()):
+            continue
+        end = number
+        while (
+            end < len(lines)
+            and end + 1 not in fenced
+            and CONTAINER.sub("", lines[end], count=1).strip(" \t")
+        ):
+            end += 1
+        text = "\n".join([line[marks.end() :], *lines[number:end]])
+        label = LABEL.match(text)
+        if not label:
+            continue
+        at = label.end() - 2
+        row = number + text.count("\n", 0, at)
+        column = at - text.rfind("\n", 0, at) if row > number else marks.end() + at + 1
+        if view[row - 1][column - 1 : column + 1] != "]:":
+            found.append((row, column, DEFINITION))
+    return found
+
+
+def modeline_problems(path: str, text: str, where: str) -> list[str]:
+    """Each line among a file's first five and its last five, as Linguist splits a file into
+    lines, that holds an Emacs or a Vim modeline, with which Linguist gives the file the
+    language that it names whatever the file's name, so that GitHub may render the file as
+    Markdown, which the test of pages does not read it as, or in another markup (R273)."""
+    lines = LINE_BREAK.split(text)
+    if not lines[-1]:
+        lines.pop()
+    window = {
+        *range(min(MODELINE_LINES, len(lines))),
+        *range(max(len(lines) - MODELINE_LINES, 0), len(lines)),
+    }
+    return [
+        f"{shown_path(path)}:{number + 1}{where} holds {MODELINE}"
+        for number in sorted(window)
+        if EMACS_MODELINE.search(lines[number]) or VIM_MODELINE.search(lines[number])
+    ]
 
 
 def without_comments(text: str) -> tuple[str, tuple[int, int] | None, set[int]]:
@@ -1187,7 +1416,7 @@ def page_text_problems(path: str, text: str, where: str = "") -> list[str]:
         elif language == "mermaid":
             found += mermaid_problems(lines, block)
     fenced = block_lines(blocks)
-    found += [(row, 0, what) for row, what in table_problems(lines, fenced)]
+    found += table_problems(lines, fenced)
     read_to = min((line for line, _ in stopped), default=len(lines) + 1)
     found += [
         (number, column, OPEN_RUN)
@@ -1195,10 +1424,12 @@ def page_text_problems(path: str, text: str, where: str = "") -> list[str]:
         if number not in fenced
         for column in open_runs(raw)
     ]
+    found += quoted_fences(lines[: read_to - 1], fenced | raw_html)
     for number, (seen, raw) in enumerate(zip(view, lines, strict=True), 1):
         found += [
             (number, column, what) for column, what in line_problems(seen, raw, path == README)
         ]
+    found += definition_problems(lines[: read_to - 1], view, fenced)
     problems = [
         (line, column, f"{name}:{line}{f':{column}' if column else ''}{where} holds {what}")
         for line, column, what in found
@@ -1208,11 +1439,12 @@ def page_text_problems(path: str, text: str, where: str = "") -> list[str]:
 
 
 def page_problems(root: Path) -> list[str]:
-    """Each page that this repository writes in a markup other than Markdown, and what each
-    Markdown file that it writes holds that GitHub hides or shows otherwise, as git's index
-    holds it and as the working tree holds it, where it differs (R272, R273). A version that
-    is no file of UTF-8 text, and an object that this clone lacks, it leaves to the test of
-    characters, which names each."""
+    """Each page that this repository writes in a markup other than Markdown, each file that
+    it writes whose modeline can give it a markup, and what each Markdown file that it writes
+    holds that GitHub hides or shows otherwise, each as git's index holds it and as the
+    working tree holds it, where it differs (R272, R273). A version that is no file of UTF-8
+    text, and an object that this clone lacks, it leaves to the test of characters, which
+    names each."""
     markdown = markdown_files(root)
     entries = [
         entry
@@ -1224,12 +1456,12 @@ def page_problems(root: Path) -> list[str]:
         for entry in entries
         if OTHER_MARKUPS.search(entry.path)
     ]
-    pages = [entry for entry in entries if entry.path in markdown]
-    contents = blobs(root, (entry.oid for entry in pages))
+    contents = blobs(root, (entry.oid for entry in entries))
+    modelines: list[str] = []
     problems: list[str] = []
     folders: dict[str, str] = {}
     read = 0
-    for entry in pages:
+    for entry in entries:
         indexed = contents.get(entry.oid)
         if indexed is None:
             continue
@@ -1241,9 +1473,11 @@ def page_problems(root: Path) -> list[str]:
                 text = data.decode("utf-8")
             except UnicodeDecodeError:
                 continue
-            read += 1
-            problems += page_text_problems(entry.path, text, where)
-    return others + (problems if read else [PAGES_READ_NOTHING])
+            modelines += modeline_problems(entry.path, text, where)
+            if entry.path in markdown:
+                read += 1
+                problems += page_text_problems(entry.path, text, where)
+    return others + modelines + (problems if read else [PAGES_READ_NOTHING])
 
 
 def attribute_line_problems(root: Path) -> list[str]:
@@ -1844,6 +2078,7 @@ LOADED = [
     ("a.json", '{"\\u200b": 1}\n', 0, "JSON", 0x200B),
     ("a.JSON", '["\\ud83d\\ude00"]\n', 0, "JSON", 0x1F600),
     ("a.json", '{"a": "\\r"}\n', 0, "JSON", 0x0D),
+    ("a.json", '{"a": "\\u202e", "a": "b"}\n', 0, "JSON", 0x202E),
     ("pyproject.toml", 'a = "\\u202E"\n', 0, "TOML", 0x202E),
     ("a.toml", '"\\U000E0041" = 1\n', 0, "TOML", 0xE0041),
 ]
@@ -1928,6 +2163,22 @@ def test_a_character_that_only_git_s_index_holds_fails(tmp_path: Path) -> None:
     clone = cloned(source, tmp_path / "clone", {})
     assert (clone / "page.md").read_bytes().isascii()
     assert character_problems(clone) == [
+        f"page.md:2:3{IN_INDEX} holds {named(chr(0x202E))}{NOT_ASCII}"
+    ]
+
+
+def test_a_replace_ref_hides_no_object_from_the_test(tmp_path: Path) -> None:
+    # Git reads a replace ref's object in place of the one that it replaces, here a clean
+    # file's, while the working tree holds the clean text, so that only git's own object
+    # holds the character.
+    root = plant(tmp_path, {"page.md": planted_line(chr(0x202E)), "clean.md": planted_line("")})
+    staged, clean = (
+        git(root, "rev-parse", f":{name}").stdout.decode("ascii").strip()
+        for name in ("page.md", "clean.md")
+    )
+    git(root, "replace", staged, clean).check_returncode()
+    (root / "page.md").write_text(planted_line(""), encoding="utf-8")
+    assert character_problems(root) == [
         f"page.md:2:3{IN_INDEX} holds {named(chr(0x202E))}{NOT_ASCII}"
     ]
 
@@ -2034,6 +2285,66 @@ def test_a_file_in_a_folder_that_the_working_tree_holds_as_a_link_is_not_read_th
     assert character_problems(root) == [
         f"docs/page.md{IN_TREE} lies in a folder that is a link, which the test does not follow"
     ]
+
+
+# R272: a path that the working tree cannot open is named, and stops nothing.
+
+# A path whose name is longer than the 255 bytes that common file systems give a part of one.
+TOO_LONG = "docs/" + chr(0xFE0F) * 86 + ".md"
+
+
+def unopenable(root: Path) -> Path:
+    """The repository at root, whose working tree holds a folder `docs`, with git's index
+    tracking a path there that the working tree cannot open, staged by its object id, as a
+    mixed `git reset` or `git update-index --cacheinfo` stages one that no checkout writes."""
+    done = git(root, "hash-object", "-w", "--stdin", stdin=planted_line("").encode("ascii"))
+    done.check_returncode()
+    oid = done.stdout.decode("ascii").strip()
+    git(root, "update-index", "--add", "--cacheinfo", f"{FILE},{oid},{TOO_LONG}").check_returncode()
+    return root
+
+
+@pytest.mark.parametrize(
+    "path", [TOO_LONG, f"docs/{'x' * 256}/page.md"], ids=["its name", "a folder on its way"]
+)
+def test_a_path_that_the_working_tree_cannot_open_is_read_as_one(tmp_path: Path, path: str) -> None:
+    (tmp_path / "docs").mkdir()
+    assert in_working_tree(tmp_path, path, {}) == ("unreadable", b"")
+
+
+@pytest.mark.parametrize("call", ["os.open", "os.readlink", "open"])
+def test_a_file_or_a_link_that_the_system_will_not_open_is_read_as_one(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, call: str
+) -> None:
+    (tmp_path / "page.md").write_bytes(b"Text.\n")
+    (tmp_path / "link.md").symlink_to("page.md")
+    owner, name = (os, call[3:]) if call.startswith("os.") else (builtins, call)
+    real = getattr(owner, name)
+
+    def refused(path: Any, *args: Any, **kwargs: Any) -> Any:
+        if isinstance(path, int) or Path(path).name in ("page.md", "link.md"):
+            raise PermissionError(13, "Permission denied")
+        return real(path, *args, **kwargs)
+
+    if owner is os:
+        monkeypatch.setattr(os, name, refused)
+    else:
+        monkeypatch.setattr(conventions, name, refused, raising=False)
+    path = "link.md" if call == "os.readlink" else "page.md"
+    assert in_working_tree(tmp_path, path, {}) == ("unreadable", b"")
+
+
+def test_a_path_that_the_working_tree_cannot_open_is_named(tmp_path: Path) -> None:
+    root = unopenable(plant(tmp_path, {"docs/page.md": "Printable.\n"}))
+    name = shown_path(TOO_LONG)
+    assert character_problems(root) == [
+        f"the path {name} holds a character other than printable ASCII but the space",
+        f"{name}{IN_TREE} {UNOPENED}",
+    ]
+    # The other checks that read the working tree leave it to the test of characters.
+    assert page_problems(root) == []
+    assert attribute_line_problems(root) == []
+    assert python_files(root) == []
 
 
 def test_a_check_of_characters_that_reads_no_file_fails(tmp_path: Path) -> None:
@@ -2566,6 +2877,7 @@ OUTSIDE_CODE = {
     "footnote-definition": ("[^1]: A note.", "]:", DEFINITION),
     "image": ("An ![image](a.png) here.", "![", IMAGE),
     "image-without-text": ("An ![ ](a.png) here.", "![", IMAGE),
+    "image-split-by-a-line-break": ("An ![\n](a.png) here.", "![", IMAGE),
     "double-quoted-title": ('A [link](a.md "A title") here.', "](", TITLE),
     "single-quoted-title": ("A [link](a.md 'A title') here.", "](", TITLE),
     "parenthesised-title": ("A [link](a.md (A title)) here.", "](", TITLE),
@@ -2579,6 +2891,29 @@ OUTSIDE_CODE = {
     "autolinked-backtick": ("A <`@x.y> <!-- hidden --> ` word.", "<", AUTOLINKED),
     "autolinked-backtick-in-an-item": ("- A <`@x.y> <!-- hidden --> ` word.", "<", AUTOLINKED),
     "autolinked-backtick-in-a-quote": ("> A <`@x.y> <!-- hidden --> ` word.", "<", AUTOLINKED),
+    "link-split-by-a-line-break": ("See [\n](https://example.invalid) here.", "[", OPEN_BRACKET),
+    "link-split-after-spaces": ("See [ \t\n \t](a.md) here.", "[", OPEN_BRACKET),
+    "link-split-by-a-hard-break": ("See [\\\n](a.md) here.", "[", OPEN_BRACKET),
+    "link-split-in-an-item": ("- See [\n  ](a.md) here.", "[", OPEN_BRACKET),
+    "link-split-in-a-quote": ("> See [\n> ](a.md) here.", "[", OPEN_BRACKET),
+    "definition-with-a-backtick": ('[a`]: /url "a hidden title`"', "]:", DEFINITION),
+    "footnote-with-a-backtick": ("[^a`]: a hidden note`", "]:", DEFINITION),
+    "definition-with-a-backtick-in-an-item": ('- [a`]: /url "hidden`"', "]:", DEFINITION),
+    "definition-with-a-backtick-in-a-quote": ('> [a`]: /url "hidden`"', "]:", DEFINITION),
+    "destination-with-a-backtick": ("See [a](page.md#a`b) <!-- hidden --> `).", "](", DESTINATION),
+    "destination-with-a-backtick-in-an-item": ("- [a](a.md#a`b) <!-- x --> `).", "](", DESTINATION),
+    "destination-with-a-backtick-in-a-quote": ("> [a](a.md#a`b) <!-- x --> `).", "](", DESTINATION),
+    "web-address-with-a-backtick": (
+        "See https://a.example/a`b <!-- x --> ` here.",
+        "h",
+        WEB_ADDRESS,
+    ),
+    "www-address-with-a-backtick": ("See www.example.com/a`b <!-- x --> ` here.", "w", WEB_ADDRESS),
+    "web-address-in-a-destination": (
+        "See [a](https://a.example/a`b) <!-- x --> `).",
+        "](",
+        DESTINATION,
+    ),
 }
 
 
@@ -2658,6 +2993,148 @@ def test_a_table_row_in_a_quote_is_read_as_github_reads_it(tmp_path: Path, table
     ]
 
 
+def test_a_definition_whose_label_a_line_breaks_is_read_as_github_reads_it(tmp_path: Path) -> None:
+    """GitHub reads a definition, whose label may hold a line break, before it reads code, so
+    a backtick in its label opens no code span (R273)."""
+    root = plant(tmp_path, {"docs/a.md": page('[a\nb`]: /url "hidden`"\n\nText.')})
+    assert page_problems(root) == [f"docs/a.md:4:3 holds {DEFINITION}"]
+
+
+@pytest.mark.parametrize(
+    "body",
+    [
+        "`[a]: b` is code.",
+        "Text [a`]: b` in a paragraph, where no definition starts.",
+        "[a](b.md) and [c\nd](e.md) are links, and [f] is text.",
+        "- [ ] A task, and [g]",
+        "[a\n\nb`]: c` is code, as a blank line ends the paragraph that a label may cross.",
+        "[a\n```\nb]: c\n```",
+    ],
+)
+def test_a_definition_in_code_or_a_bracket_that_opens_none_passes(
+    tmp_path: Path, body: str
+) -> None:
+    assert page_problems(plant(tmp_path, {"docs/a.md": page(body)})) == []
+
+
+def test_the_first_of_two_destinations_that_hide_what_lies_between_them_is_named(
+    tmp_path: Path,
+) -> None:
+    """Two such destinations hide what lies between them with no stray backtick, the second
+    among it, so the test names the first, and the rest once the first is mended (R273)."""
+    body = "See [a](a.md#a`b) <!-- hidden --> [b](b.md#c`d)."
+    assert page_problems(plant(tmp_path, {"docs/a.md": page(body)})) == [
+        f"docs/a.md:3:7 holds {DESTINATION}"
+    ]
+
+
+@pytest.mark.parametrize(
+    "body",
+    [
+        "A [link](a.md#a-b), https://example.com/a-b and www.example.com/c show as written.",
+        "Code ``[a](b.md#c`d)`` and `https://example.com/a` show as code.",
+        "Text awww.example.com/a`b` and xhttps://a.example/a`b` hold code: GitHub links neither.",
+        "A link [`code`](a.md) holds code in its text.",
+    ],
+)
+def test_a_link_or_a_web_address_without_a_backtick_or_in_code_passes(
+    tmp_path: Path, body: str
+) -> None:
+    assert page_problems(plant(tmp_path, {"docs/a.md": page(body)})) == []
+
+
+@pytest.mark.parametrize(
+    ("table", "line", "column"),
+    [
+        ("| A | B | C |\n|---|---|---|\n| `x | <!-- hidden --> y` | z |\n", 5, 3),
+        ("| `x | <!-- hidden --> y` |\n|---|---|\n| 1 | 2 |\n", 3, 3),
+        ("A | B | C\n--|---|--\n`x | &#x202E; y` | z\n", 5, 1),
+        ("> | A | B | C |\n> |---|---|---|\n> | `x | ![a](b.png) y` | z |\n", 5, 5),
+        ("| A | B | C | D |\n|---|---|---|---|\n| `x | $5 | y` | z |\n", 5, 3),
+    ],
+    ids=["a row", "the header", "no leading pipe", "a quote", "three cells apart"],
+)
+def test_a_code_span_that_a_table_s_cells_split_fails(
+    tmp_path: Path, table: str, line: int, column: int
+) -> None:
+    """GitHub splits a table's row into cells before it reads code, so a backtick in one cell
+    pairs with none in a later one, while the reading pairs them and takes what lies between
+    for code (R273)."""
+    root = plant(tmp_path, {"docs/table.md": page(table)})
+    assert page_problems(root) == [f"docs/table.md:{line}:{column} holds {SPLIT_SPAN}"]
+
+
+@pytest.mark.parametrize(
+    "body",
+    [
+        "| A | B |\n|---|---|\n| `a \\| b` | c |\n",
+        "Run `a | b` in a paragraph, which no table holds.",
+        "| A |\n|---|\n\nAfter the table, `a | b`.",
+    ],
+)
+def test_a_code_span_that_holds_an_escaped_pipe_or_lies_outside_a_table_passes(
+    tmp_path: Path, body: str
+) -> None:
+    assert page_problems(plant(tmp_path, {"docs/table.md": page(body)})) == []
+
+
+@pytest.mark.parametrize(
+    ("body", "problems"),
+    [
+        (
+            '> ~~~mermaid\n> flowchart LR\n>   click A "https://example.com" "hidden"\n> ~~~',
+            [(3, 3), (6, 3)],
+        ),
+        ("> ~~~math\n> x^2\n> ~~~", [(3, 3), (5, 3)]),
+        ("> ~~~python title=hidden\n> x = 1\n> ~~~", [(3, 3), (5, 3)]),
+        ("- > ~~~mermaid\n  > flowchart LR\n  > ~~~", [(3, 5), (5, 5)]),
+        ("> - ~~~mermaid\n>   flowchart LR\n>   ~~~", [(3, 5), (5, 5)]),
+        (">~~~\n>x\n>~~~", [(3, 2), (5, 2)]),
+    ],
+    ids=["mermaid", "math", "an info string", "a quote in an item", "an item in a quote", "tight"],
+)
+def test_a_fence_inside_a_quote_fails(
+    tmp_path: Path, body: str, problems: list[tuple[int, int]]
+) -> None:
+    """GitHub opens a fenced block inside a quote and draws it, while the reading, as the
+    test of words reads it, takes no fence after a quote's mark (R273, T90)."""
+    root = plant(tmp_path, {"docs/a.md": page(body)})
+    assert page_problems(root) == [
+        f"docs/a.md:{line}:{column} holds {QUOTED_FENCE}" for line, column in problems
+    ]
+
+
+def test_a_quoted_fence_of_backticks_is_also_named_as_a_run_that_its_line_leaves_open(
+    tmp_path: Path,
+) -> None:
+    root = plant(tmp_path, {"docs/a.md": page("> ```math\n> x^2\n> ```")})
+    assert page_problems(root) == [
+        f"docs/a.md:3:3 holds {OPEN_RUN}",
+        f"docs/a.md:3:3 holds {QUOTED_FENCE}",
+        f"docs/a.md:5:3 holds {OPEN_RUN}",
+        f"docs/a.md:5:3 holds {QUOTED_FENCE}",
+    ]
+
+
+@pytest.mark.parametrize(
+    "body", ["> A quote of ~~~ within its text.", "~~~\n> ~~~ in a fenced block\n~~~"]
+)
+def test_a_fence_that_no_quote_opens_passes(tmp_path: Path, body: str) -> None:
+    assert page_problems(plant(tmp_path, {"docs/a.md": page(body)})) == []
+
+
+def test_a_run_that_opens_no_fence_outside_a_quote_is_named_only_as_a_run_left_open(
+    tmp_path: Path,
+) -> None:
+    """A run of backticks whose line also holds a backtick after it opens no fence, for GitHub
+    as for the reading, which reads the line as prose (R273)."""
+    root = plant(tmp_path, {"docs/a.md": page("```a`b c")})
+    assert page_problems(root) == [
+        f"docs/a.md:3:1 holds {OPEN_RUN}",
+        f"docs/a.md:3:5 holds {OPEN_RUN}",
+    ]
+
+
 DRAWN_BLOCKS = [
     ("```math\nx^2\n```", "docs/a.md:3 holds a fenced block that GitHub draws as math"),
     ("~~~ MATH\nx^2\n~~~", "docs/a.md:3 holds a fenced block that GitHub draws as math"),
@@ -2711,9 +3188,72 @@ DRAWN_BLOCKS = [
             "accTitle: hidden",
             "accDescr: hidden",
             'click A "https://example.com" "hidden"',
-            "style A color:#fff",
+            "style A color:red",
             "classDef hidden display:none",
-            "linkStyle 0 stroke:#fff",
+            "linkStyle 0 stroke:red",
+        )
+    ),
+    *(
+        (
+            f"```mermaid\n{kind}\n  {line}\n```",
+            f"docs/a.md:5:{column} holds {word}{IN_MERMAID}{MERMAID_HIDES}",
+        )
+        for kind, line, column, word in (
+            ("flowchart LR", 'A --> B; click A "https://example.com" "hidden"', 12, "click"),
+            ("flowchart LR", "A-->B;style A fill:red", 9, "style"),
+            ("flowchart LR", "A --> B ; accTitle: hidden", 13, "accTitle"),
+            ("flowchart LR", 'Click A "https://example.com" "hidden"', 3, "Click"),
+            ("flowchart LR", "callback A hidden", 3, "callback"),
+            ("sequenceDiagram", "ACCTITLE: hidden", 3, "ACCTITLE"),
+            ("sequenceDiagram", "link Alice: Dashboard @ https://example.com", 3, "link"),
+            ("sequenceDiagram", 'links Alice: {"Dashboard": "https://example.com"}', 3, "links"),
+        )
+    ),
+    (
+        "```mermaid\nsequenceDiagram\n  # hidden\n  Alice->>Bob: Hi\n```",
+        f"docs/a.md:5:3 holds #{IN_MERMAID}{HASH}",
+    ),
+    (
+        "```mermaid\nsequenceDiagram\n  Alice->>Bob: Shown # hidden\n```",
+        f"docs/a.md:5:22 holds #{IN_MERMAID}{HASH}",
+    ),
+    (
+        "```mermaid\nsequenceDiagram\n  % hidden\n  Alice->>Bob: Hi\n```",
+        f"docs/a.md:5:3 holds %{IN_MERMAID}{DIRECTIVE}",
+    ),
+    *(
+        (
+            f'```mermaid\nflowchart LR\n  A["a{written}b"] --> B\n```',
+            f"docs/a.md:5:7 holds the character reference {read}{IN_MERMAID}{ENTITY_NAMES}",
+        )
+        for written, read in (
+            ("&rlm;", "&rlm;"),
+            ("&ZeroWidthSpace;", "&ZeroWidthSpace;"),
+            ("&nbsp;", "&nbsp;"),
+            ("&amp;", "&amp;"),
+            # A browser reads a name that HTML gives without its `;` by the longest such.
+            ("&shy", "&shy"),
+            ("&notit;", "&not"),
+        )
+    ),
+    (
+        '```mermaid\nflowchart LR\n  A@{ img: "https://example.com/a.png", label: "A" }\n```',
+        f"docs/a.md:5:4 holds @{{{IN_MERMAID}{SHAPE_DATA}",
+    ),
+    *(
+        (
+            f"```mermaid\n{kind}\n  A --> B\n```",
+            f"docs/a.md:4:1 holds a Mermaid block that draws {kind.split()[0]}{OTHER_DIAGRAM}",
+        )
+        for kind in (
+            "stateDiagram-v2",
+            "classDiagram",
+            "journey",
+            "gantt",
+            "railroad",
+            "eventmodeling",
+            "flowchart-elk LR",
+            "Flowchart LR",
         )
     ),
 ]
@@ -2724,8 +3264,17 @@ def test_a_drawn_block_that_can_hide_text_fails(tmp_path: Path, block: str, prob
     assert page_problems(plant(tmp_path, {"docs/a.md": page(block)})) == [problem]
 
 
-def test_a_mermaid_block_in_plain_text_passes(tmp_path: Path) -> None:
-    block = "```mermaid\nflowchart LR\n  A[The tool, in #1 place] -->|reads| B[A file]\n```"
+@pytest.mark.parametrize(
+    "block",
+    [
+        "```mermaid\nflowchart LR\n  A[The tool, in first place] -->|reads| B[A file]\n```",
+        "```mermaid\n\ngraph TD\n  A & B --> C[R and D]\n```",
+        "```mermaid\nsequenceDiagram\n  Alice->>Bob: Hello; Bob-->>Alice: Hi\n```",
+        "```mermaid\n```",
+    ],
+    ids=["a flowchart", "a graph", "a sequence diagram", "an empty block"],
+)
+def test_a_mermaid_block_in_plain_text_passes(tmp_path: Path, block: str) -> None:
     assert page_problems(plant(tmp_path, {"docs/a.md": page(block)})) == []
 
 
@@ -2924,9 +3473,9 @@ def test_code_after_a_comment_within_a_line_after_a_fold_s_blank_line_or_in_code
     assert page_problems(plant(tmp_path, {path: text})) == []
 
 
-# The extensions of the markups other than Markdown that GitHub's markup library renders, as
-# its README listed them on 2026-11-22, written out here so that one that the check leaves
-# out fails.
+# The extensions that GitHub's language list, Linguist, gives the languages that GitHub's
+# markup library renders other than as Markdown, as its `languages.yml` gave them on
+# 2026-11-23, written out here so that one that the check leaves out fails.
 OTHER_MARKUP_EXTENSIONS = (
     "textile",
     "rdoc",
@@ -2934,15 +3483,22 @@ OTHER_MARKUP_EXTENSIONS = (
     "creole",
     "mediawiki",
     "wiki",
+    "wikitext",
     "rst",
+    "rest",
+    "rst.txt",
+    "rest.txt",
     "asciidoc",
     "adoc",
     "asc",
     "pod",
+    "pod6",
 )
 
 
-@pytest.mark.parametrize("extension", [*OTHER_MARKUP_EXTENSIONS, "RST", "Adoc"])
+@pytest.mark.parametrize(
+    "extension", [*OTHER_MARKUP_EXTENSIONS, "RST", "Adoc", "REST", "Rst.Txt", "WIKITEXT", "Pod6"]
+)
 def test_a_page_in_a_markup_other_than_markdown_fails(tmp_path: Path, extension: str) -> None:
     files = {f"docs/notes.{extension}": "Notes.\n", "docs/page.md": "Text.\n"}
     assert page_problems(plant(tmp_path, files)) == [f"docs/notes.{extension}{OTHER_MARKUP}"]
@@ -2966,6 +3522,57 @@ def test_a_file_that_only_names_another_markup_or_that_others_write_passes(
         "vendor/superpowers/docs/notes.rst": "Notes.\n",
     }
     assert page_problems(plant(tmp_path, files)) == []
+
+
+# A file of twelve lines that holds a line on the line given, or on none.
+def twelve_lines(line: str, at: int = 0) -> str:
+    return "".join(f"{line if number == at else f'Line {number}.'}\n" for number in range(1, 13))
+
+
+MODELINES = [
+    "-*- mode: org -*-",
+    "# -*- mode: markdown -*-",
+    "-*-rst-*-",
+    "-*- foo: bar; mode: rst; -*-",
+    "vim: set ft=markdown:",
+    "# vim: ft=rst",
+    "vi: syntax=org",
+    " ex: filetype=textile",
+    "Vim: set filetype=markdown:",
+    "vim700: ft=rst",
+]
+
+
+@pytest.mark.parametrize("modeline", MODELINES)
+@pytest.mark.parametrize(
+    ("path", "at"),
+    [("docs/notes.txt", 1), ("scripts/tool.py", 5), ("docs/notes.txt", 8), ("docs/page.md", 12)],
+)
+def test_a_modeline_in_the_first_or_last_five_lines_of_a_file_fails(
+    tmp_path: Path, modeline: str, path: str, at: int
+) -> None:
+    """GitHub's language list, Linguist, reads a modeline in a file's first or last five lines
+    before its name, and GitHub's markup library renders the file in the language that it
+    names, so a modeline can have GitHub render any file as Markdown, which the test of pages
+    does not read, or a page in another markup (R273)."""
+    root = plant(tmp_path, {path: twelve_lines(modeline, at)})
+    assert page_problems(root)[0] == f"{path}:{at} holds {MODELINE}"
+
+
+@pytest.mark.parametrize(
+    "files",
+    [
+        {"docs/notes.txt": twelve_lines("vim: set ft=markdown:", 6)},
+        {"docs/notes.txt": twelve_lines("-*- mode: org -*-", 7)},
+        {"vendor/superpowers/notes.txt": "vim: set ft=markdown:\n"},
+        {"docs/notes.txt": "A line about vim and its file types.\n"},
+    ],
+    ids=["the sixth line", "the seventh line", "a file that others write", "no modeline"],
+)
+def test_a_modeline_outside_those_lines_or_in_a_file_that_others_write_passes(
+    tmp_path: Path, files: dict[str, str]
+) -> None:
+    assert page_problems(plant(tmp_path, {**files, "docs/page.md": "Text.\n"})) == []
 
 
 def test_a_page_that_others_write_or_a_file_that_is_no_page_is_not_read(tmp_path: Path) -> None:
@@ -3159,8 +3766,13 @@ def test_a_person_s_own_attributes_are_not_read_as_the_repository_s(
         "* export-subst linguist-generated\n", encoding="utf-8"
     )
     monkeypatch.setenv("XDG_CONFIG_HOME", str(home))
-    plain = git(root, "check-attr", "-a", "--", "docs/page.md").stdout.decode("utf-8")
-    assert "ident: set" in plain and "export-subst: set" in plain, "git reads neither file"
+    # The tests' own runs of git read no attributes file of the person's, so this one names
+    # the planted file.
+    personal = f"core.attributesFile={home / 'git' / 'attributes'}"
+    plain = git(root, "-c", personal, "check-attr", "-a", "--", "docs/page.md")
+    assert "ident: set" in plain.stdout.decode() and "export-subst: set" in plain.stdout.decode(), (
+        "git reads neither file"
+    )
     assert other_attribute_problems(root) == []
     assert attribute_problems(root, ["docs/page.md"]) == []
 
@@ -3852,7 +4464,8 @@ def windows_job_problems(doc: Mapping[str, Any]) -> list[str]:
 
 # The keys that let a job or a step of CI be skipped, or fail while its job passes, so that a
 # merge, which waits for the job `ci` alone, would pass where a check did not run or failed,
-# with what each lets happen. The job `ci` runs whatever the others give, by its `if`.
+# with what each lets happen. The job `ci` runs whatever the others give, by its `if`, which
+# the test of the job `ci` holds to `always()`.
 SKIPPING = {"if": "is skipped", "continue-on-error": "fails"}
 
 
@@ -3944,6 +4557,129 @@ def test_a_job_or_a_step_that_a_merge_could_pass_without_is_named(
 
 def test_no_job_or_step_of_ci_may_be_skipped_or_fail_while_a_merge_passes() -> None:
     assert skipping_problems(ci_workflow()) == []
+
+
+# The condition with which the job `ci` runs where a job that it needs failed or was skipped,
+# without which GitHub skips it and reports it as passing, the expression that gives its last
+# step the results of the jobs that it needs, the results that a job can give, and the shell
+# that a step takes where its workflow gives none, GitHub's own for `bash` (R276).
+ALWAYS = "always()"
+RESULTS = "${{ toJSON(needs.*.result) }}"
+OUTCOMES = ("success", "failure", "cancelled", "skipped")
+GITHUB_BASH = "bash --noprofile --norc -eo pipefail {0}"
+
+
+def step_passes(doc: Mapping[str, Any], script: str, root: Path) -> bool:
+    """Whether a step's script exits 0, run at root under the shell that its workflow's
+    defaults give it, or GitHub's own for `bash`."""
+    shell = ((doc.get("defaults") or {}).get("run") or {}).get("shell") or GITHUB_BASH
+    with tempfile.TemporaryDirectory() as folder:
+        path = Path(folder) / "step"
+        path.write_text(script, encoding="utf-8")
+        command = shlex.split(shell.replace("{0}", str(path)))
+        return subprocess.run(command, cwd=root, capture_output=True, check=False).returncode == 0
+
+
+def merge_check_problems(doc: Mapping[str, Any], root: Path = ROOT) -> list[str]:
+    """What lets the job `ci` pass where a job that it needs did not succeed: an `if` other
+    than `always()`, and a last step that reads no result of the jobs that it needs, or that
+    passes where one gives other than success, or fails where each succeeded, run with a
+    success beside each result that a job can give (R276)."""
+    job = (doc.get("jobs") or {}).get(MERGE_CHECK) or {}
+    problems = [] if job.get("if") == ALWAYS else [NOT_ALWAYS]
+    steps = job.get("steps") or []
+    script = str(steps[-1].get("run", "")) if steps else ""
+    if RESULTS not in script:
+        return [
+            *problems,
+            f"the last step of the job `{MERGE_CHECK}` reads no result of the jobs that it needs",
+        ]
+    for outcome in OUTCOMES:
+        results = json.dumps(["success", outcome], indent=2)
+        if step_passes(doc, script.replace(RESULTS, results), root) != (outcome == "success"):
+            problems.append(SKIPPED.format("fails" if outcome == "success" else "passes", outcome))
+    return problems
+
+
+# The last step of a job `ci`: one that fails unless each job that it needs succeeded, one
+# that fails only where one failed, one that never fails and one that always does.
+READ_RESULTS = f"results='{RESULTS}'\n"
+EVERY_RESULT = (
+    READ_RESULTS + "python3 -I -c 'import json, sys; sys.exit(set(json.loads(sys.argv[1])) "
+    '- {"success"} != set())\' "$results"\n'
+)
+SKIPPED = "the last step of the job `ci` {} where the jobs that it needs give success and {}"
+NOT_ALWAYS = (
+    "the job `ci` sets no `if: always()`, so GitHub skips it where a job that it needs fails,"
+    " and reports it as passing"
+)
+
+
+@pytest.mark.parametrize(
+    ("job", "problems"),
+    [
+        ({"if": "always()", "steps": [{"run": EVERY_RESULT}]}, []),
+        ({"steps": [{"run": EVERY_RESULT}]}, [NOT_ALWAYS]),
+        ({"if": "success()", "steps": [{"run": EVERY_RESULT}]}, [NOT_ALWAYS]),
+        (
+            {
+                "if": "always()",
+                "steps": [{"run": READ_RESULTS + '! grep -q failure <<< "$results"\n'}],
+            },
+            [SKIPPED.format("passes", "cancelled"), SKIPPED.format("passes", "skipped")],
+        ),
+        (
+            {"if": "always()", "steps": [{"run": READ_RESULTS + 'echo "$results"\n'}]},
+            [SKIPPED.format("passes", outcome) for outcome in OUTCOMES[1:]],
+        ),
+        (
+            {"if": "always()", "steps": [{"run": READ_RESULTS + "exit 1\n"}]},
+            [SKIPPED.format("fails", "success")],
+        ),
+        (
+            {"if": "always()", "steps": [{"run": EVERY_RESULT}, {"run": "exit 0"}]},
+            ["the last step of the job `ci` reads no result of the jobs that it needs"],
+        ),
+        (
+            {"if": "always()", "steps": []},
+            ["the last step of the job `ci` reads no result of the jobs that it needs"],
+        ),
+    ],
+    ids=[
+        "as CI gives it",
+        "no condition",
+        "another condition",
+        "a check of failures alone",
+        "no check",
+        "a check that always fails",
+        "a last step that reads no result",
+        "no step",
+    ],
+)
+def test_a_job_ci_that_could_pass_where_a_job_that_it_needs_did_not_succeed_is_named(
+    tmp_path: Path, job: dict[str, Any], problems: list[str]
+) -> None:
+    assert merge_check_problems({"jobs": {MERGE_CHECK: job}}, tmp_path) == problems
+
+
+def test_the_last_step_of_the_job_ci_runs_under_the_shell_that_its_workflow_gives(
+    tmp_path: Path,
+) -> None:
+    """A check that a command follows passes where the shell runs on after a command fails,
+    and fails where it stops, as GitHub's own for `bash` does."""
+    job = {"if": ALWAYS, "steps": [{"run": EVERY_RESULT + 'echo "checked"\n'}]}
+    doc = {
+        "defaults": {"run": {"shell": "bash --noprofile --norc {0}"}},
+        "jobs": {MERGE_CHECK: job},
+    }
+    assert merge_check_problems(doc, tmp_path) == [
+        SKIPPED.format("passes", outcome) for outcome in OUTCOMES[1:]
+    ]
+    assert merge_check_problems({"jobs": {MERGE_CHECK: job}}, tmp_path) == []
+
+
+def test_the_job_ci_fails_unless_each_job_that_it_needs_succeeded() -> None:
+    assert merge_check_problems(ci_workflow()) == []
 
 
 @pytest.mark.parametrize(
@@ -4155,6 +4891,14 @@ def test_the_job_writes_into_no_folder_that_the_working_tree_holds_as_a_link(
     assert (root / "notes" / "kept.md").read_bytes() == b"Kept.\r\n"
 
 
+def test_the_job_that_cannot_open_a_tracked_path_says_so_and_saves_nothing(tmp_path: Path) -> None:
+    root = unopenable(plant(tmp_path, {"docs/page.md": "Text.\n"}))
+    done = run_the_job(root)
+    assert (done.returncode, done.stdout) == (2, "")
+    assert done.stderr == f"windows-line-endings: {shown_path(TOO_LONG)}{IN_TREE} {UNOPENED}\n"
+    assert (root / "docs" / "page.md").read_bytes() == b"Text.\n"
+
+
 def test_the_job_refuses_a_root_below_the_top_of_its_working_tree(tmp_path: Path) -> None:
     """Below the top, git gives each path from the root that it is given, which the files
     that others write do not match, so that the job would rewrite vendored files (R276)."""
@@ -4277,10 +5021,18 @@ def written_again(clone: Path, path: str) -> None:
     )
 
 
+# Git's own setting, and one that stops `git add` where staging would change a file's line
+# endings.
+SAFE_CRLF = [None, "true"]
+
+
+@pytest.mark.parametrize("safe", SAFE_CRLF, ids=["by default", "with core.safecrlf true"])
 def test_a_clone_made_before_the_attributes_is_told_to_write_each_script_again(
-    tmp_path: Path,
+    tmp_path: Path, safe: str | None
 ) -> None:
     clone = clone_made_before_the_attributes(tmp_path)
+    if safe is not None:
+        git(clone, "config", "core.safecrlf", safe).check_returncode()
     problems = character_problems(clone)
     assert [problem for problem in problems if problem.endswith(CHECK_OUT_AGAIN)] == [
         f"{path}{IN_TREE}{CHECK_OUT_AGAIN}" for path in CLONED_SCRIPTS
@@ -4292,8 +5044,13 @@ def test_a_clone_made_before_the_attributes_is_told_to_write_each_script_again(
     assert git(clone, "status", "--porcelain").stdout == b""
 
 
-def test_the_way_back_keeps_an_edit_of_a_script_that_is_not_staged(tmp_path: Path) -> None:
+@pytest.mark.parametrize("safe", SAFE_CRLF, ids=["by default", "with core.safecrlf true"])
+def test_the_way_back_keeps_an_edit_of_a_script_that_is_not_staged(
+    tmp_path: Path, safe: str | None
+) -> None:
     clone = clone_made_before_the_attributes(tmp_path)
+    if safe is not None:
+        git(clone, "config", "core.safecrlf", safe).check_returncode()
     script = clone / "scripts" / "start.sh"
     # An edit saved as an editor on Windows saves it, with a carriage return before each line
     # feed, and not staged.
@@ -4498,7 +5255,10 @@ def test_everything_that_a_failing_run_of_the_test_of_characters_prints_is_print
         "vendor/superpowers/a.md": "\U000e0041\ufe0f\n",
         ".gitattributes": "tag\U000e0069\U000e0067.md answer=\U000e0041\x1b eol=\U000e0041\x1b\n",
     }
+    files["docs/page.md"] = "Printable.\n"
     planted = plant(tmp_path / "planted", files, links={"link.md": "to\u202e\U000e0041\n\x1b.md"})
+    # A path that the working tree cannot open, whose name is too long for the file system.
+    unopenable(planted)
     test = tmp_path / "test_planted.py"
     test.write_text(PLANTED_TEST.format(root=str(planted)), encoding="ascii")
     done = subprocess.run(
@@ -4519,6 +5279,7 @@ def test_everything_that_a_failing_run_of_the_test_of_characters_prints_is_print
     assert b"tagU+E0069U+E0067.md has text: unspecified and eol: U+E0041U+001B, not" in printed
     assert b"has the part tagU+E0069U+E0067~1., which ends in a dot that Windows drops" in printed
     assert b"the path tagU+E0069U+E0067~1./aux.md holds a `~`" in printed
+    assert f"{shown_path(TOO_LONG)}{IN_TREE} {UNOPENED}".encode("ascii") in printed
     beyond = sorted({byte for byte in printed if not 0x20 <= byte <= 0x7E and byte != 0x0A})
     assert not beyond, f"the run printed the bytes {beyond}"
 

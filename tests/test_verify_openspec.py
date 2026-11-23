@@ -192,16 +192,21 @@ def test_skills_that_differ_from_what_git_holds_still_fail(repo: Path) -> None:
     assert SKILL in done.stderr
 
 
+@pytest.mark.parametrize("refresh", [None, "false"], ids=["by default", "with no refresh"])
 def test_a_skill_that_differs_from_git_s_record_only_in_its_size_on_disk_passes(
-    repo: Path,
+    repo: Path, refresh: str | None
 ) -> None:
     """A clone that checked the skills out with Windows line endings before the attributes
     keeps them so, and git's index records the size of each such copy, so that once the CLI
     writes a skill again with line feeds, `git status` takes it for changed without reading
-    it, though git would commit it unchanged. The skills are compared by content (R276)."""
+    it, though git would commit it unchanged. The skills are compared by content, whatever
+    the clone's `diff.autoRefreshIndex` says (R276)."""
     (repo / ".gitattributes").write_text("* text=auto eol=lf\n", encoding="utf-8")
     for args in (["add", "--", ".gitattributes"], ["commit", "-q", "-m", "Attributes"]):
         subprocess.run(["git", *args], cwd=repo, check=True, env=environment())
+    if refresh is not None:
+        setting = ["git", "config", "diff.autoRefreshIndex", refresh]
+        subprocess.run(setting, cwd=repo, check=True, env=environment())
     (repo / SKILL).write_bytes(b"generated\r\n")
     subprocess.run(["git", "update-index", "--", SKILL], cwd=repo, check=True, env=environment())
     status = ["git", "status", "--porcelain", "--", SKILL]
@@ -210,6 +215,29 @@ def test_a_skill_that_differs_from_git_s_record_only_in_its_size_on_disk_passes(
     assert done.returncode == PAST_THE_COMPARISONS, done.stderr
     assert (repo / SKILL).read_bytes() == b"generated\n"
     assert subprocess.run(status, cwd=repo, capture_output=True, env=environment()).stdout
+
+
+def test_a_replace_ref_hides_no_change_to_a_skill(repo: Path) -> None:
+    """Git reads a replace ref's object in place of the one that it replaces, so a ref that
+    gave the skill's object what the CLI writes would hide a change: the comparison reads
+    git's own objects (R276)."""
+
+    def git(*args: str, stdin: bytes = b"") -> str:
+        done = subprocess.run(
+            ["git", *args], cwd=repo, input=stdin, capture_output=True, env=environment()
+        )
+        assert done.returncode == 0, done.stderr
+        return done.stdout.decode("ascii").strip()
+
+    git(
+        "replace",
+        git("rev-parse", f":{SKILL}"),
+        git("hash-object", "-w", "--stdin", stdin=b"another text\n"),
+    )
+    done = run(repo, FAKE_SKILL="another text")
+    assert done.returncode == 1, done.stderr
+    assert "the generated skills differ from what the pinned CLI writes" in done.stderr
+    assert f"M\t{SKILL}" in done.stderr
 
 
 @pytest.mark.parametrize(

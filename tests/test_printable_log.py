@@ -10,6 +10,7 @@ print what a test chooses and on ruff, and read every workflow that this reposit
 from __future__ import annotations
 
 import select
+import shlex
 import signal
 import subprocess
 import sys
@@ -21,6 +22,7 @@ import conventions
 import printable_log
 import pytest
 from printable_log import relay
+from test_conventions import MERGE_CHECK
 from test_repository import load_workflow, workflows
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -33,6 +35,23 @@ CHECKOUT = "actions/checkout@"
 # and what the filter writes for it.
 HIDDEN = "".join(chr(0xE0000 + ord(letter)) for letter in "OBEY")
 HIDDEN_SHOWN = "U+E004FU+E0042U+E0045U+E0059"
+# GitHub's own shell for `bash`, and the one step that runs under it rather than through the
+# filter, word for word: a step of the job `ci` that fails where the filter loses a command's
+# exit status, or the signal that stopped it, which would let every other step pass, the
+# job `ci` among them, whatever their commands did, and that writes nothing of the filter's
+# to the log (R278).
+GITHUB_BASH = "bash --noprofile --norc -eo pipefail {0}"
+OBSERVER_SHELL = "bash"
+OBSERVER = (
+    "status=0\n"
+    "python3 -I scripts/printable_log.py bash -c 'exit 3' > /dev/null 2>&1 || status=$?\n"
+    'echo "The filter gave $status for a command that exits with 3."\n'
+    '[ "$status" -eq 3 ]\n'
+    "status=0\n"
+    "python3 -I scripts/printable_log.py bash -c 'kill -TERM $$' > /dev/null 2>&1 || status=$?\n"
+    'echo "The filter gave $status for a command that SIGTERM stops."\n'
+    '[ "$status" -eq 143 ]\n'
+)
 
 
 def test_the_filter_shows_text_as_the_checks_show_it() -> None:
@@ -162,6 +181,48 @@ def test_a_command_that_a_signal_stops_exits_with_128_and_the_signal_s_number(
     assert (run.returncode, run.stderr) == (128 + int(stop), b"")
 
 
+@pytest.mark.parametrize("stop", [signal.SIGINT, signal.SIGTERM], ids=["SIGINT", "SIGTERM"])
+def test_a_signal_that_stops_the_step_reaches_the_command_and_the_filter_ends_as_it_does(
+    stop: signal.Signals,
+) -> None:
+    """The runner stops a step that it cancels by a signal to the step's process, the
+    filter's: the filter passes it on to the command, writes what the command prints until it
+    ends, and exits with the command's status, with nothing of its own (R278)."""
+    code = (
+        "import signal, sys, time\n"
+        "def stop(number, frame):\n"
+        f"    print('stopped by', number, {HIDDEN!r}, flush=True)\n"
+        "    sys.exit(3)\n"
+        f"signal.signal({int(stop)}, stop)\n"
+        "print('started', flush=True)\n"
+        "time.sleep(60)\n"
+    )
+    command = [sys.executable, "-I", str(FILTER), sys.executable, "-I", "-c", code]
+    with subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE) as run:
+        assert run.stdout is not None
+        assert run.stdout.readline() == b"started\n"
+        run.send_signal(stop)
+        output, errors = run.communicate(timeout=30)
+    assert (run.returncode, output, errors) == (
+        3,
+        f"stopped by {int(stop)} {HIDDEN_SHOWN}\n".encode(),
+        b"",
+    )
+
+
+def test_a_signal_that_stops_the_command_it_passes_on_ends_the_step_with_128_and_its_number() -> (
+    None
+):
+    code = "import time\nprint('started', flush=True)\ntime.sleep(60)\n"
+    command = [sys.executable, "-I", str(FILTER), sys.executable, "-I", "-c", code]
+    with subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE) as run:
+        assert run.stdout is not None
+        assert run.stdout.readline() == b"started\n"
+        run.send_signal(signal.SIGTERM)
+        output, errors = run.communicate(timeout=30)
+    assert (run.returncode, output, errors) == (128 + signal.SIGTERM, b"", b"")
+
+
 @pytest.mark.parametrize(
     ("executable", "error"),
     [(False, "FileNotFoundError"), (True, "PermissionError")],
@@ -207,9 +268,9 @@ def test_a_path_that_ruff_quotes_as_it_is_reaches_the_log_by_its_code_points(
 
 def shell_problems(name: str, doc: Mapping[Any, Any]) -> list[str]:
     """What lets a command of a workflow print to the log otherwise than through the filter:
-    defaults that give its steps another shell, a job or a step that gives one of its own, and
-    a command that a job runs before it checks out the repository, which holds the filter
-    (R278)."""
+    defaults that give its steps another shell, a job or a step that gives one of its own,
+    but the step of the job `ci` that checks the filter from outside it, and a command that a
+    job runs before it checks out the repository, which holds the filter (R278)."""
     problems = []
     if ((doc.get("defaults") or {}).get("run") or {}).get("shell") != SHELL:
         problems.append(f"`{name}` does not give its steps the filter's shell")
@@ -220,13 +281,122 @@ def shell_problems(name: str, doc: Mapping[Any, Any]) -> list[str]:
         checked_out = False
         for number, step in enumerate(job.get("steps") or [], 1):
             checked_out = checked_out or str(step.get("uses", "")).startswith(CHECKOUT)
-            if "shell" in step:
+            if "shell" in step and not observes(job_name, step):
                 problems.append(f"{where}, step {number}, gives a shell of its own")
             if "run" in step and not checked_out:
                 problems.append(
                     f"{where}, step {number}, runs a command before the job checks out the filter"
                 )
     return problems
+
+
+def observes(job_name: str, step: Mapping[Any, Any]) -> bool:
+    """Whether a step is the one that checks the filter from outside it, in the job `ci`, as
+    the test gives it word for word (R278)."""
+    return job_name == MERGE_CHECK and dict(step) == {"shell": OBSERVER_SHELL, "run": OBSERVER}
+
+
+def observer_problems(doc: Mapping[Any, Any]) -> list[str]:
+    """Where the job `ci` holds no step that checks the filter from outside it (R278)."""
+    steps = ((doc.get("jobs") or {}).get(MERGE_CHECK) or {}).get("steps") or []
+    if any(observes(MERGE_CHECK, step) for step in steps):
+        return []
+    return [f"the job `{MERGE_CHECK}` holds no step that checks the filter from outside it"]
+
+
+def observed(root: Path, source: str) -> int:
+    """What the step that checks the filter exits with, run as GitHub runs it in a checkout
+    whose filter holds the source given."""
+    (root / "scripts").mkdir()
+    (root / "scripts" / "printable_log.py").write_text(source, encoding="utf-8")
+    script = root / "step"
+    script.write_text(OBSERVER, encoding="utf-8")
+    command = shlex.split(GITHUB_BASH.replace("{0}", str(script)))
+    return subprocess.run(command, cwd=root, capture_output=True, check=False).returncode
+
+
+def test_the_step_that_checks_the_filter_passes_the_filter(tmp_path: Path) -> None:
+    assert observed(tmp_path, FILTER.read_text(encoding="utf-8")) == 0
+
+
+@pytest.mark.parametrize(
+    ("old", "new"),
+    [
+        ("    sys.exit(main(sys.argv[1:]))\n", "    main(sys.argv[1:])\n"),
+        ("    return 128 - status if status < 0 else status\n", "    return max(status, 0)\n"),
+        ("    return 128 - status if status < 0 else status\n", "    return 1 if status else 0\n"),
+        ("    return 128 - status if status < 0 else status\n", "    return 0\n"),
+    ],
+    ids=["the status dropped", "a signal's status dropped", "each failure made 1", "always 0"],
+)
+def test_the_step_that_checks_the_filter_fails_a_filter_that_loses_the_status(
+    tmp_path: Path, old: str, new: str
+) -> None:
+    source = FILTER.read_text(encoding="utf-8")
+    assert source.count(old) == 1
+    assert observed(tmp_path, source.replace(old, new)) == 1
+
+
+def ci_with(*steps: dict[str, Any], job: str = MERGE_CHECK) -> dict[str, Any]:
+    """A workflow whose one job, the job `ci` unless another is given, checks out the
+    repository and then takes the steps given."""
+    return {
+        "defaults": {"run": {"shell": SHELL}},
+        "jobs": {job: {"steps": [{"uses": f"{CHECKOUT}0123"}, *steps]}},
+    }
+
+
+OBSERVING = {"shell": OBSERVER_SHELL, "run": OBSERVER}
+
+
+@pytest.mark.parametrize(
+    ("doc", "shells", "observers"),
+    [
+        (ci_with(OBSERVING, {"run": "pytest"}), [], []),
+        (
+            ci_with({"run": "pytest"}),
+            [],
+            [f"the job `{MERGE_CHECK}` holds no step that checks the filter from outside it"],
+        ),
+        (
+            ci_with({"shell": OBSERVER_SHELL, "run": OBSERVER + "true\n"}),
+            ["`w.yml`, job `ci`, step 2, gives a shell of its own"],
+            [f"the job `{MERGE_CHECK}` holds no step that checks the filter from outside it"],
+        ),
+        (
+            ci_with({"shell": "sh", "run": OBSERVER}),
+            ["`w.yml`, job `ci`, step 2, gives a shell of its own"],
+            [f"the job `{MERGE_CHECK}` holds no step that checks the filter from outside it"],
+        ),
+        (
+            ci_with({**OBSERVING, "env": {"BASH_ENV": "a.sh"}}),
+            ["`w.yml`, job `ci`, step 2, gives a shell of its own"],
+            [f"the job `{MERGE_CHECK}` holds no step that checks the filter from outside it"],
+        ),
+        (
+            ci_with(OBSERVING, job="python"),
+            ["`w.yml`, job `python`, step 2, gives a shell of its own"],
+            [f"the job `{MERGE_CHECK}` holds no step that checks the filter from outside it"],
+        ),
+    ],
+    ids=[
+        "as CI gives it",
+        "no such step",
+        "another script",
+        "another shell",
+        "another key",
+        "another job",
+    ],
+)
+def test_only_the_step_of_the_job_ci_that_checks_the_filter_runs_outside_it(
+    doc: dict[str, Any], shells: list[str], observers: list[str]
+) -> None:
+    assert (shell_problems("w.yml", doc), observer_problems(doc)) == (shells, observers)
+
+
+def test_ci_checks_the_filter_from_outside_it() -> None:
+    path = ROOT / ".github" / "workflows" / "ci.yml"
+    assert observer_problems(load_workflow(path.read_text(encoding="utf-8"))) == []
 
 
 def planted(**changes: Any) -> dict[str, Any]:

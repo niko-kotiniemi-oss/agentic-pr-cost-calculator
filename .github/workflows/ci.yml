@@ -21,7 +21,8 @@ defaults:
     # quotes a planted path as it is writes no hidden character into the log
     # (R278). The filter reads until each process that holds its pipe ends, so a
     # step that starts a process in the background sends that process's output
-    # elsewhere, or waits for it.
+    # elsewhere, or waits for it. One step of the job `ci` runs outside it, to
+    # check it.
     shell: python3 -I scripts/printable_log.py bash --noprofile --norc -eo pipefail {0}
 
 # Declared rather than inherited, so what these jobs can do is readable here.
@@ -110,7 +111,9 @@ jobs:
       - run: scripts/sync-superpowers.sh --check
 
   # The one check a ruleset needs to require: it passes only when every job
-  # above passed.
+  # above passed. GitHub skips a job whose needed job failed, and reports it as
+  # passing, unless its `if` uses a status function, so it runs `always()`, and
+  # its last step reads what each job gave (R276).
   ci:
     if: always()
     needs: [python, openspec, vendor, windows-line-endings]
@@ -120,8 +123,25 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           persist-credentials: false
+      # The one step that runs outside the filter, under GitHub's own shell for
+      # bash: it fails where the filter loses a command's exit status, or the
+      # signal that stopped it, which would let every other step, and this job,
+      # pass whatever their commands did. It writes nothing of the filter's to
+      # the log (R278).
+      - shell: bash
+        run: |
+          status=0
+          python3 -I scripts/printable_log.py bash -c 'exit 3' > /dev/null 2>&1 || status=$?
+          echo "The filter gave $status for a command that exits with 3."
+          [ "$status" -eq 3 ]
+          status=0
+          python3 -I scripts/printable_log.py bash -c 'kill -TERM $$' > /dev/null 2>&1 || status=$?
+          echo "The filter gave $status for a command that SIGTERM stops."
+          [ "$status" -eq 143 ]
       - run: |
-          set -euo pipefail
           results='${{ toJSON(needs.*.result) }}'
           echo "$results"
-          [ "$(echo "$results" | jq -r 'map(select(. != "success")) | length')" -eq 0 ]
+          python3 -I -c '
+          import json, sys
+          sys.exit(any(result != "success" for result in json.loads(sys.argv[1])))
+          ' "$results"

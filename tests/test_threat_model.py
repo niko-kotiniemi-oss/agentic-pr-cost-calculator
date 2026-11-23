@@ -150,7 +150,7 @@ def citation_problems(ident: str, held: str, found: Index, root: Path) -> tuple[
             problems.append(f"{ident} cites DR-{number}, which is not a decision record")
     for path in cited.paths:
         target = (root / path).resolve()
-        if root.resolve() not in target.parents or not target.exists():
+        if root.resolve() not in target.parents or not target.is_file():
             problems.append(f"{ident} cites `{path}`, which is not a file in this repository")
     return problems, len(cited)
 
@@ -568,6 +568,7 @@ def test_an_accepted_risk_with_its_reason_cites_nothing(tmp_path: Path) -> None:
         ("DR-01", "cites nothing and is not accepted"),
         ("`docs/absent.md`", "cites `docs/absent.md`, which is not a file in this repository"),
         ("`../outside.md`", "cites `../outside.md`, which is not a file in this repository"),
+        ("`docs/decisions`", "cites `docs/decisions`, which is not a file in this repository"),
         ("the hook, somehow", "cites nothing and is not accepted"),
         ("accepted", "is accepted without a reason"),
     ],

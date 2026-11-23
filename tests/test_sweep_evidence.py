@@ -10,17 +10,16 @@ repository of its own and sees it reported, or a complete mapping pass.
 
 from __future__ import annotations
 
-import os
 import subprocess
 from collections.abc import Mapping
 from pathlib import Path
 
 import pytest
+import test_roadmap
 from sweep_evidence import MAPPING, cited, holds, main, normal, short, units
 
 GIT_ENVIRONMENT = {
-    "GIT_CONFIG_GLOBAL": os.devnull,
-    "GIT_CONFIG_NOSYSTEM": "1",
+    **test_roadmap.GIT_ENVIRONMENT,
     "GIT_AUTHOR_NAME": "Test",
     "GIT_AUTHOR_EMAIL": "test@example.invalid",
     "GIT_COMMITTER_NAME": "Test",

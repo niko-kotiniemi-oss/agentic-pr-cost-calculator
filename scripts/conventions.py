@@ -39,6 +39,11 @@ NAMELESS = "(no name in Python's Unicode database)"
 NO_WINDOWS_LINE_ENDINGS = "examined no Windows line endings"
 # The modes with which git's index tracks a file and an executable file.
 FILE, EXECUTABLE = "100644", "100755"
+# What a check says of a tracked path that the working tree cannot open (R272).
+UNOPENED = (
+    "cannot be opened, as where a part of its name is too long for the file system or a folder"
+    " on its way cannot be searched"
+)
 
 
 class Entry(NamedTuple):
@@ -113,11 +118,15 @@ def tracked_entries(root: Path, environment: Mapping[str, str] | None = None) ->
 
 
 def kind_of(path: Path) -> str:
-    """What a path of the working tree is, read without following a link."""
+    """What a path of the working tree is, read without following a link, or `unreadable`
+    where the system cannot say, as where a part of its name is too long for the file system
+    or a folder on its way cannot be searched."""
     try:
         mode = os.lstat(path).st_mode
     except (FileNotFoundError, NotADirectoryError):
         return "missing"
+    except OSError:
+        return "unreadable"
     if stat.S_ISLNK(mode):
         return "link"
     if stat.S_ISDIR(mode):
@@ -127,9 +136,10 @@ def kind_of(path: Path) -> str:
 
 def in_working_tree(root: Path, path: str, folders: dict[str, str]) -> tuple[str, bytes] | None:
     """What the working tree holds at a tracked path, as a kind and its bytes: a file's, a
-    link's path, or nothing for anything else or for a path that lies in a folder that is a
-    link; or None where it holds nothing. It follows no link, and opens a file only once it
-    knows the file to be one; folders keeps the kind of each folder that it read (R272)."""
+    link's path, or nothing for anything else, for a path that lies in a folder that is a
+    link and for one that the working tree cannot open, which is `unreadable`; or None where
+    it holds nothing. It follows no link, and opens a file only once it knows the file to be
+    one; folders keeps the kind of each folder that it read (R272)."""
     parts = path.split("/")
     for depth in range(1, len(parts)):
         folder = "/".join(parts[:depth])
@@ -137,25 +147,30 @@ def in_working_tree(root: Path, path: str, folders: dict[str, str]) -> tuple[str
             folders[folder] = kind_of(root / folder)
         if folders[folder] == "link":
             return ("under a link", b"")
+        if folders[folder] == "unreadable":
+            return ("unreadable", b"")
         if folders[folder] != "folder":
             return None
     full = root / path
     kind = kind_of(full)
     if kind == "missing":
         return None
-    if kind == "link":
-        return ("link", os.fsencode(os.readlink(full)))
-    if kind != "file":
-        return ("other", b"")
-    flags = os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0) | getattr(os, "O_NONBLOCK", 0)
-    descriptor = os.open(full, flags)
+    if kind not in ("link", "file"):
+        return ("other" if kind != "unreadable" else kind, b"")
     try:
-        if not stat.S_ISREG(os.fstat(descriptor).st_mode):
-            return ("other", b"")
-        with open(descriptor, "rb", closefd=False) as file:
-            return ("file", file.read())
-    finally:
-        os.close(descriptor)
+        if kind == "link":
+            return ("link", os.fsencode(os.readlink(full)))
+        flags = os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0) | getattr(os, "O_NONBLOCK", 0)
+        descriptor = os.open(full, flags)
+        try:
+            if not stat.S_ISREG(os.fstat(descriptor).st_mode):
+                return ("other", b"")
+            with open(descriptor, "rb", closefd=False) as file:
+                return ("file", file.read())
+        finally:
+            os.close(descriptor)
+    except OSError:
+        return ("unreadable", b"")
 
 
 def recorded_executable(file: Path) -> bool:
