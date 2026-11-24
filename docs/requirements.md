@@ -29,7 +29,7 @@ The capability names the spec that holds the requirement. Each capability is one
 | R15 | functional | `pricing` | Every token type is priced at its own rate |
 | R16 | functional | `pricing` | Price modifiers are applied |
 | R17 | behavioural | `pricing` | An unknown model is reported, not guessed |
-| R18 | functional | `ci-minutes` | CI minutes are billed per job, rounded up |
+| R18 | functional | `ci-minutes` | Each job attempt's minutes are rounded up to a whole minute |
 | R19 | functional | `switch-and-opt-in` | One file turns the tool on or off, and a pull request cannot turn off its own report |
 | R20 | functional | `report-comment` | A merged pull request gets one report comment |
 | R21 | behavioural | `report-comment` | The comment shows only what the report computed |
@@ -293,6 +293,17 @@ The capability names the spec that holds the requirement. Each capability is one
 | R279 | non-functional | `project-standards` | The README says what the tool is for and which uses to avoid |
 | R280 | non-functional | `project-standards` | How it works lists everything that comes in and goes out, each with its records |
 | R281 | non-functional | `project-standards` | A diagram numbers its parts and explains each below it, and the README links the overview of how it works |
+| R282 | functional | `report-comment` | The comment ends with a note on subscriptions |
+| R283 | functional | `report-comment` | The comment opens with a brief summary and keeps the detail in a collapsed section |
+| R284 | functional | `report-comment` | Each cost is shown to the cent in the summary and to four decimals in the detail |
+| R285 | functional | `report-comment` | The comment holds its figures in a block that a program can read |
+| R286 | behavioural | `report-comment` | The comment and the job summary hold no dollar sign and no tilde outside inline code |
+| R287 | functional | `pricing` | A model that the price table lists without a price is counted under its name |
+| R288 | behavioural | `pricing` | The price table states one currency |
+| R289 | functional | `pricing` | A call is priced by its provider and its model |
+| R290 | functional | `ledger` | Each entry names its UTC day, its agent and its provider |
+| R291 | non-functional | `project-standards` | Each acceptance test names an expected error of its own |
+| R292 | non-functional | `project-standards` | Every transcript fixture fits the kept shape, and every recorded response is dated |
 
 IDs are stable: a requirement keeps its ID while it exists, and a new one takes the next free number, so the rows follow the order in which requirements were added rather than the order of the specs. A requirement that a later change removes leaves the table, and its ID is listed below with the change that removed it, never to be used again.
 

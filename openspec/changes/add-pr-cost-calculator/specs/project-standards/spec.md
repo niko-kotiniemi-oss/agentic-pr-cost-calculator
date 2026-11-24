@@ -2490,3 +2490,36 @@ Each Mermaid diagram on a page that this repository writes SHALL number its part
 
 - **WHEN** a page that this repository writes holds a Mermaid block in a fence other than three backticks at the start of a line, opening it or closing it, such as a fence of tildes, of more backticks, or one indented under a list item or inside a quote, or an item of the list after a diagram cites no requirement by its ID
 - **THEN** a test fails and names the file and the line
+
+### Requirement: Each acceptance test names an expected error of its own
+
+Each acceptance test that is marked as an expected failure SHALL name as its expected error one that only the missing code of its own scenario raises, never an assertion of the comparison it makes and never an error that a missing part of another scenario raises, so that a test cannot pass, or keep failing, for another test's reason. A test SHALL fail on an acceptance test that names no expected error, or one that another acceptance test of another capability names.
+
+#### Scenario: An acceptance test with no expected error fails a test
+
+- **WHEN** an acceptance test is marked as an expected failure without naming the error it expects, or names `AssertionError` or a base class of every error
+- **THEN** a test fails and names the acceptance test
+
+#### Scenario: Two capabilities' acceptance tests that expect one error fail a test
+
+- **WHEN** an acceptance test of `report-comment` and one of `usage-capture` name the same expected error
+- **THEN** a test fails and names both
+
+### Requirement: Every transcript fixture fits the kept shape, and every recorded response is dated
+
+Each transcript fixture under `tests/` SHALL hold, on each line, only the field names, at the paths and with the JSON types, that the transcript shape kept from the walking skeleton's run gives for its kind of line, unless the fixture names the scenario that it departs from the shape for. Each recorded response of a service's API under `tests/` SHALL give, in a field of its own, the UTC day on which it was recorded or written from the service's documentation, and the page it follows.
+
+#### Scenario: A fixture with a field that the kept shape does not hold fails a test
+
+- **WHEN** a transcript fixture holds a line with a field, a path or a type that the kept shape does not give for that kind of line, and names no scenario that it departs from the shape for
+- **THEN** a test fails and names the fixture, the line and the field
+
+#### Scenario: A fixture that departs from the shape for its scenario passes
+
+- **WHEN** a transcript fixture holds a usage field that capture does not know, and names the scenario "A usage field the step does not know is counted" in `usage-capture`
+- **THEN** the test passes it
+
+#### Scenario: A recorded response without its day fails a test
+
+- **WHEN** a recorded response under `tests/` gives no day on which it was recorded, or a day after the one the test runs
+- **THEN** a test fails and names the file

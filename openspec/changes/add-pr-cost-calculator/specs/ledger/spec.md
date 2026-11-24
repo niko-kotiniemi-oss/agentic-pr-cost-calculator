@@ -63,6 +63,25 @@ Every version of the ledger format SHALL name a call by the same id, the SHA-256
 - **WHEN** a pull request adds an entry, in one version of the ledger format, for a call that a ledger file of another version, which the default branch held before the merge, already holds
 - **THEN** that entry is not counted
 
+### Requirement: Each entry names its UTC day, its agent and its provider
+
+Each ledger entry SHALL give its call's UTC day in a field named `utc_day`, as a date with no time; the agent that made the call, which in this version is always Claude Code; and the provider that the price table lists for the call's model, or `unknown` where the table lists the model under more than one provider and the call's lines do not tell which, so that a later agent or provider needs no new ledger format.
+
+#### Scenario: An entry's day is named as UTC
+
+- **WHEN** a run of the capture step writes an entry
+- **THEN** the entry gives its day in the field `utc_day`, and no other field of the entry holds a date
+
+#### Scenario: An entry names its agent and its provider
+
+- **WHEN** Claude Code makes a call whose model the price table lists under one provider
+- **THEN** its entry names Claude Code as its agent and that provider as its provider
+
+#### Scenario: A provider that capture cannot tell is recorded as unknown
+
+- **WHEN** a call's model is a name that the price table lists under more than one provider, and nothing in the call's lines tells which
+- **THEN** its entry's provider is `unknown`
+
 ### Requirement: A model name or attribute value the price table does not list is recorded as unknown
 
 A call's model name and each of its price attribute values (see "Usage is recorded per model call" in `usage-capture`) SHALL be recorded only when the price table that the capture step ships with lists that name or value, so that the name of a private gateway, a custom model or an alias is not published. Any other value SHALL be recorded as `unknown`.

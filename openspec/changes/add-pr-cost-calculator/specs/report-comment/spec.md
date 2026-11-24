@@ -27,6 +27,81 @@ The report's comment (see "A merged pull request gets one report comment") SHALL
 - **WHEN** the report posts its comment
 - **THEN** the comment says that the figure is an API-equivalent estimate and not a bill, that it counts the usage the pull request's commits carry and the CI runs on those commits, and that it does not count the model calls that Claude Code makes for its own tools without writing them to the transcript, and names the price table's date and the tool's version
 
+### Requirement: The comment ends with a note on subscriptions
+
+The comment SHALL end by saying that a subscription may include this usage, so that the figure is what the same usage would cost through the API.
+
+#### Scenario: The comment ends with the note on subscriptions
+
+- **WHEN** the report posts its comment
+- **THEN** its last line of prose says that a subscription may include this usage, and that the figure is what the same usage would cost through the API
+
+### Requirement: The comment opens with a brief summary and keeps the detail in a collapsed section
+
+The comment SHALL open with a brief summary that gives, for each model, its input, output and cached tokens and its cost, then the CI cost and the total, and that says whenever any figure is a lower bound or anything was not counted. Every other figure that this capability and `ledger` give SHALL be in one collapsed section after it, which shows, for each model and token type, the tokens, the rate, the currency and the cost.
+
+#### Scenario: The summary gives each model's tokens and cost
+
+- **WHEN** a pull request's ledger files hold calls of two models and CI runs
+- **THEN** the comment opens with one line for each model, giving its input, output and cached tokens and its cost, then the CI cost and the total, before any collapsed section
+
+#### Scenario: The detail gives each token type's rate
+
+- **WHEN** a pull request's ledger files hold calls of one model with input, output, cache-write and cache-read tokens
+- **THEN** the collapsed section gives, for each of those token types, its tokens, its rate, the price table's currency and its cost
+
+#### Scenario: The summary says what the collapsed section counts as missing
+
+- **WHEN** the comment's collapsed section gives a count of refused lines, of calls read without a stop reason or of unpriced calls, or a flag of calls left out
+- **THEN** the summary says, outside the collapsed section, that the figure is a lower bound or that something was not counted, and that the detail says what
+
+### Requirement: Each cost is shown to the cent in the summary and to four decimals in the detail
+
+Each cost SHALL be shown in the price table's currency, written as its code, to two decimals in the summary and to four in the collapsed section, each rounded half up from its own exact cost, never summed from rounded figures. A cost above zero that rounds to zero SHALL be shown as under the smallest amount at that precision, and the comment SHALL say that a total can differ from the sum of its shown parts in the last digit.
+
+#### Scenario: A summary cost is rounded half up to the cent
+
+- **WHEN** a model's exact cost is 1.235 in the price table's currency, `USD`
+- **THEN** the summary shows it as `USD 1.24`, and the collapsed section shows it as `USD 1.2350`
+
+#### Scenario: A total is rounded from its exact cost
+
+- **WHEN** two models' exact costs are 0.004 and 0.004
+- **THEN** the summary shows each as under `USD 0.01` and the total as `USD 0.01`, and the comment says that a total can differ from the sum of its shown parts
+
+#### Scenario: A cost of zero is shown as zero
+
+- **WHEN** a pull request's CI runs used no minutes and its ledger files hold no calls
+- **THEN** the summary shows the CI cost and the total as `USD 0.00`, not as under `USD 0.01`
+
+#### Scenario: A range is rounded at each end
+
+- **WHEN** a cost is a range because the source did not give a cache lifetime (see "Every token type is priced at its own rate" in `pricing`)
+- **THEN** each end of the range is rounded half up from its own exact cost at the precision where it is shown
+
+### Requirement: The comment holds its figures in a block that a program can read
+
+The collapsed section SHALL end with a fenced JSON block that holds the version of its own form and every figure and count that the comment shows, each figure as the text that the comment shows, so that a program reads exactly what a reader sees. The block's form SHALL be published, with a JSON Schema, as the ledger format is.
+
+#### Scenario: The block holds what the comment shows
+
+- **WHEN** the report posts its comment
+- **THEN** each figure and count in the block is the text that the comment shows for it, and the block holds none that the comment does not show
+
+#### Scenario: The block validates against its published schema
+
+- **WHEN** the block of any comment that the golden set holds is checked against the published schema of its form's version
+- **THEN** it validates
+
+### Requirement: The comment and the job summary hold no dollar sign and no tilde outside inline code
+
+The comment and the report's job summary SHALL hold no dollar sign and no tilde outside inline code, so that GitHub shows no amount as a formula or as struck through.
+
+#### Scenario: No amount is read as a formula or struck through
+
+- **WHEN** the report posts a comment and writes its job summary for a pull request with costs in every part
+- **THEN** neither holds a dollar sign or a tilde outside inline code, and each currency is written as its code
+
 ### Requirement: The comment counts refused calls and calls that may leave the token cost low
 
 The report's comment (see "A merged pull request gets one report comment") SHALL give the number of calls that capture refused; the number of calls that capture read without a stop reason, and, when there are any, that the token cost is a lower bound; and the number of calls whose usage held a field that capture does not know, and, when there are any, that the token cost may be low.

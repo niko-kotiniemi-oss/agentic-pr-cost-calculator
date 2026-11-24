@@ -102,9 +102,46 @@ A call with a recorded attribute whose value the price table does not price, or 
 
 ### Requirement: An unknown model is reported, not guessed
 
-A ledger entry whose model is `unknown`, because the capture step's price table did not list it, or whose model has no price, SHALL be counted in tokens and left out of the cost. The report SHALL name the model, or say that it is unknown, and say that its cost is missing.
+A ledger entry whose model is `unknown`, because the capture step's price table did not list it, or whose model has no price on its day, SHALL be counted in tokens and left out of the cost. The report SHALL name the model, or say that it is unknown, and say that its cost is missing.
 
 #### Scenario: A new model has no price yet
 
 - **WHEN** a pull request's ledger files hold calls recorded with the model `unknown`, because the capture step's price table did not list their model
 - **THEN** the report shows those calls' tokens, and says that their model is unknown and their cost is missing
+
+### Requirement: A model that the price table lists without a price is counted under its name
+
+The price table SHALL be able to list a model with no price, such as a self-hosted one, so that capture records its name and the report counts its tokens under that name, leaves it out of the cost and says that it has no price, which the comment tells apart from an unknown model.
+
+#### Scenario: A listed model with no price is counted under its name
+
+- **WHEN** a pull request's ledger files hold calls of a model that the price table lists with no price
+- **THEN** the report shows those calls' tokens under the model's name, says that the model has no price, and leaves them out of the cost without calling the model unknown
+
+### Requirement: The price table states one currency
+
+The price table SHALL state the one currency of all its prices, by its ISO 4217 code, and the report SHALL write each cost in it. The tool's checks SHALL fail on a price table that states no currency or more than one.
+
+#### Scenario: Every cost is in the table's currency
+
+- **WHEN** the price table states its currency as `USD`
+- **THEN** every cost that the comment and the job summary show is written with `USD`
+
+#### Scenario: A table without one currency fails the checks
+
+- **WHEN** a price table states no currency, or gives a price in a currency other than the one it states
+- **THEN** the checks fail, naming the table
+
+### Requirement: A call is priced by its provider and its model
+
+Each price row SHALL name the provider that sells the model's use, such as Anthropic's API, Amazon Bedrock or Google Vertex AI, beside the model, and a call SHALL be priced by the row whose provider and model are its entry's. An entry whose provider is `unknown`, or whose provider and model no row names, SHALL be counted in tokens, left out of the cost and named, as an unknown model is.
+
+#### Scenario: Two providers of one model are priced apart
+
+- **WHEN** the price table gives one model different rates for two providers, and a pull request has a call of that model through each
+- **THEN** each call is priced at its own provider's rate
+
+#### Scenario: An unknown provider is named, not guessed
+
+- **WHEN** a call's entry gives the provider `unknown`
+- **THEN** the report shows that call's tokens, leaves it out of the cost, and says that its provider is unknown

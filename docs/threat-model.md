@@ -2,7 +2,7 @@
 
 What could go wrong with the tool, for the people who use it and for this repository, and what answers each threat. Every change revisits this file (see `CLAUDE.md`).
 
-It was written for the first change, `add-pr-cost-calculator`, before any code, so the answers are requirements and tasks rather than code. It holds 289 threats across 9 trust boundaries. T38 to T69 were found by the design-stage review, T70 to T78 by the design-stage review of the decision records in `docs/decisions/`, T79 to T81 by the implementation-stage review of those records and their checks, T82 to T100 by the design-stage review of the assumptions, the glossary and the golden set, T101 by the implementation-stage review of the assumptions, T102 and T103 by the implementation-stage review of the glossary, T104 to T116 at the design of the revision of consent, the store and the ledger's format, T117 and T118 by the design-stage review of that revision, T119 to T122 by the review of that revision after its approval, T123 with the owner's answer to a question that the check of that review's fixes raised, T124 to T126 by the design-stage review of the test of the specs' form, T127 by the implementation-stage review of that test, T128 to T135 at the design of the plugin that brings capture to a project's cloud threads, T136 to T142 by the design-stage review of that plugin, T143 by its implementation-stage review, T144 by its security review, T145 to T147 at the design of the README's short start, T148 to T156 by the design-stage review of that short start, T157 and T158 by its implementation-stage review, T159 to T162 at the design of the roadmap, T163 to T165 by the design-stage review of the roadmap, T166 to T168 at the design of the backlog, T169 by the design-stage review of the backlog, T170 at the design of the guide, T171 to T174 by the design-stage review of the guide, T175 and T176 by the design-stage review of one opt-in for every agent, T177 to T182 by the second design-stage review of the guide, T183 by the final review of its build, T184 by its implementation-stage review, T185 to T189 at the design of the walking skeleton and T190 to T194 by its design-stage review, and T195 to T197 at the design of the specs' citation sweep, T198 to T200 by its design-stage review and T201 to T205 by its implementation-stage review, T206 to T215 by the design-stage review of the risk register and T216 to T222 by its implementation-stage review, and T223 to T236 by the design-stage reviews of the context files and T237 by their implementation-stage reviews, and T238 to T241 at the design of the check of Renovate's proposals, T242 to T245 by its design-stage review and T246 by its implementation-stage review, and T247 to T249 at the design of the two fields on every record and T250 by its design-stage review, and T251 to T256 at the design of the conventions, T257 to T265 by its design-stage reviews, T266 at its revision for Windows, T267 to T269 by that revision's design-stage review, T270 at its build, T271 to T276 by its implementation-stage review, T277 and T278 by its review lanes and T279 to T282 by its second review, and T283 to T285 at the design of the scope and visual documentation and T286 to T289 by its design-stage review; they follow T37, each under a heading for its boundary, so that the numbers stay in order, and a threat that a change removes keeps its ID out of use (see Retired IDs). Where an answer can be a scenario in a spec, it is one, so that an acceptance test holds it. `tests/test_threat_model.py` checks that every citation below names a scenario, task, decision, decision record or file that exists.
+It was written for the first change, `add-pr-cost-calculator`, before any code, so the answers are requirements and tasks rather than code. It holds 293 threats across 9 trust boundaries. T38 to T69 were found by the design-stage review, T70 to T78 by the design-stage review of the decision records in `docs/decisions/`, T79 to T81 by the implementation-stage review of those records and their checks, T82 to T100 by the design-stage review of the assumptions, the glossary and the golden set, T101 by the implementation-stage review of the assumptions, T102 and T103 by the implementation-stage review of the glossary, T104 to T116 at the design of the revision of consent, the store and the ledger's format, T117 and T118 by the design-stage review of that revision, T119 to T122 by the review of that revision after its approval, T123 with the owner's answer to a question that the check of that review's fixes raised, T124 to T126 by the design-stage review of the test of the specs' form, T127 by the implementation-stage review of that test, T128 to T135 at the design of the plugin that brings capture to a project's cloud threads, T136 to T142 by the design-stage review of that plugin, T143 by its implementation-stage review, T144 by its security review, T145 to T147 at the design of the README's short start, T148 to T156 by the design-stage review of that short start, T157 and T158 by its implementation-stage review, T159 to T162 at the design of the roadmap, T163 to T165 by the design-stage review of the roadmap, T166 to T168 at the design of the backlog, T169 by the design-stage review of the backlog, T170 at the design of the guide, T171 to T174 by the design-stage review of the guide, T175 and T176 by the design-stage review of one opt-in for every agent, T177 to T182 by the second design-stage review of the guide, T183 by the final review of its build, T184 by its implementation-stage review, T185 to T189 at the design of the walking skeleton and T190 to T194 by its design-stage review, and T195 to T197 at the design of the specs' citation sweep, T198 to T200 by its design-stage review and T201 to T205 by its implementation-stage review, T206 to T215 by the design-stage review of the risk register and T216 to T222 by its implementation-stage review, and T223 to T236 by the design-stage reviews of the context files and T237 by their implementation-stage reviews, and T238 to T241 at the design of the check of Renovate's proposals, T242 to T245 by its design-stage review and T246 by its implementation-stage review, and T247 to T249 at the design of the two fields on every record and T250 by its design-stage review, and T251 to T256 at the design of the conventions, T257 to T265 by its design-stage reviews, T266 at its revision for Windows, T267 to T269 by that revision's design-stage review, T270 at its build, T271 to T276 by its implementation-stage review, T277 and T278 by its review lanes and T279 to T282 by its second review, and T283 to T285 at the design of the scope and visual documentation and T286 to T289 by its design-stage review, and T290 to T293 at the design of the first part of the requirements corrected before the build; they follow T37, each under a heading for its boundary, so that the numbers stay in order, and a threat that a change removes keeps its ID out of use (see Retired IDs). Where an answer can be a scenario in a spec, it is one, so that an acceptance test holds it. `tests/test_threat_model.py` checks that every citation below names a scenario, task, decision, decision record or file that exists.
 
 ## How it was built
 
@@ -4555,6 +4555,66 @@ The trust boundaries:
 - **Residual:** an identifier of up to three characters, which holds no instruction.
 - **Held by:** `project-standards`: "A number left unexplained, or explained but not drawn, fails a test"; `project-standards`: "A diagram in a fence that the checks do not read, or an explanation that cites no requirement, fails a test"; DR-293
 
+## Boundary 5, continued: found at the design of the requirements corrected before the build
+
+### T290. The collapsed section hides that the figure is incomplete
+
+- **Kind:** reliability
+- **Impact:** 2 (medium)
+- **Likelihood:** 1 (unlikely)
+- **Risk:** 2
+- **Raw impact:** 2 (medium)
+- **Raw likelihood:** 3 (likely)
+- **Raw risk:** 6
+- **What could happen:** the comment moves every count of what it did not count, and every note that a figure is a lower bound, into a collapsed section that most readers never open, so that a reader takes a lower bound for the whole cost.
+- **Answer:** the brief summary says, outside the collapsed section, whenever a figure is a lower bound or something was not counted, and that the detail says what (R283, DR-294).
+- **Residual:** a reader who reads the summary's line and does not open the detail knows that the figure is incomplete, but not by how much, which no count could say for calls left out (DR-200).
+- **Held by:** `report-comment`: "The summary says what the collapsed section counts as missing"; DR-294
+
+### T291. The block for programs says other than the comment shows
+
+- **Kind:** tampering
+- **Impact:** 2 (medium)
+- **Likelihood:** 1 (unlikely)
+- **Risk:** 2
+- **Raw impact:** 2 (medium)
+- **Raw likelihood:** 2 (possible)
+- **Raw risk:** 4
+- **What could happen:** the comment's JSON block holds a figure or a count that the comment's text does not show, or shows otherwise, through a defect of the report, or because someone who can edit the comment later edits the block alone, so that the export command (B-008) writes a cost that no reader saw.
+- **Answer:** each figure in the block is the text that the comment shows for it, and the block holds none that the comment does not show, which the golden set holds for every session; the block's form is published with a schema (R285, DR-296).
+- **Residual:** a comment edited after the report posted it, by someone with the access to edit it, which the export command's own change threat-models when it reads the block.
+- **Held by:** `report-comment`: "The block holds what the comment shows"; `report-comment`: "The block validates against its published schema"; DR-296
+
+### T292. Rounding hides a cost or makes a total disagree with its parts unexplained
+
+- **Kind:** reliability
+- **Impact:** 1 (low)
+- **Likelihood:** 1 (unlikely)
+- **Risk:** 1
+- **Raw impact:** 2 (medium)
+- **Raw likelihood:** 3 (likely)
+- **Raw risk:** 6
+- **What could happen:** a cost above zero rounds to zero and reads as free, or a total rounded from its exact cost differs from the sum of its rounded parts, and a reader takes either as an error of the tool, or a figure depends on the order in which binary floating-point costs were added.
+- **Answer:** each figure is rounded half up from its own exact cost, computed in decimal arithmetic and rounded only when written; a cost above zero that rounds to zero is shown as under the smallest amount at its precision, a cost of zero as zero, and the comment says that a total can differ from the sum of its shown parts in the last digit (R284, DR-295).
+- **Residual:** a total and the sum of its shown parts can differ in the last digit, as the comment says.
+- **Held by:** `report-comment`: "A summary cost is rounded half up to the cent"; `report-comment`: "A total is rounded from its exact cost"; `report-comment`: "A cost of zero is shown as zero"; `report-comment`: "A range is rounded at each end"; DR-295
+
+## Boundary 3, continued: found at the design of the requirements corrected before the build
+
+### T293. A call is priced at another provider's rate
+
+- **Kind:** reliability
+- **Impact:** 2 (medium)
+- **Likelihood:** 1 (unlikely)
+- **Risk:** 2
+- **Raw impact:** 2 (medium)
+- **Raw likelihood:** 2 (possible)
+- **Raw risk:** 4
+- **What could happen:** one model is sold by more than one provider at different rates, and a call made through one is priced at another's rate, because the entry names no provider or the report picks a row by the model alone.
+- **Answer:** each price row names its provider, a call is priced by the row whose provider and model are its entry's, and an entry whose provider is `unknown`, which capture writes where the table lists its model under more than one provider and the call's lines do not tell which, is counted in tokens, left out of the cost and named (R289, R290, DR-302).
+- **Residual:** whether Claude Code's transcript tells a call's provider is not known until task 1.1 checks it; until it does, a model that the table lists under one provider takes that provider, which is wrong for a call made through a provider that the table does not list for it.
+- **Held by:** `pricing`: "Two providers of one model are priced apart"; `pricing`: "An unknown provider is named, not guessed"; `ledger`: "A provider that capture cannot tell is recorded as unknown"; DR-302
+
 ## Risk matrix
 
 Generated from the ratings above. Each cell lists the threats whose impact and likelihood it names.
@@ -4562,8 +4622,8 @@ Generated from the ratings above. Each cell lists the threats whose impact and l
 | Impact \ Likelihood | 1 unlikely | 2 possible | 3 likely |
 |---|---|---|---|
 | 3 high | T1, T12, T14, T15, T23, T24, T28, T29, T35, T43, T46, T58, T59, T63, T64, T66, T67, T68, T73, T77, T81, T82, T83, T92, T93, T94, T95, T103, T107, T108, T119, T125, T133, T138, T140, T141, T142, T144, T147, T148, T150, T151, T160, T163, T164, T165, T167, T169, T174, T175, T177, T178, T180, T183, T184, T186, T187, T188, T190, T192, T210, T211, T212, T213, T214, T217, T219, T225, T226, T227, T229, T230, T231, T233, T234, T237, T240, T251, T252, T253, T254, T256, T257, T258, T259, T260, T261, T263, T264, T265, T270, T271, T279, T286, T288, T289 | T2, T32, T33, T34, T61, T62, T65, T132, T137, T232 | |
-| 2 medium | T4, T6, T11, T13, T18, T25, T26, T38, T41, T42, T53, T55, T56, T57, T60, T69, T70, T76, T78, T79, T80, T84, T85, T86, T87, T88, T89, T90, T91, T97, T98, T99, T100, T101, T102, T104, T105, T109, T112, T115, T124, T126, T127, T135, T139, T146, T149, T152, T153, T155, T156, T157, T162, T172, T173, T179, T181, T182, T185, T189, T191, T193, T194, T195, T196, T197, T198, T199, T202, T203, T204, T206, T207, T215, T216, T220, T221, T223, T228, T235, T236, T238, T239, T245, T247, T248, T250, T266, T268, T269, T280, T284, T287 | T3, T9, T10, T17, T19, T20, T21, T22, T27, T30, T39, T40, T44, T45, T47, T48, T49, T50, T51, T52, T54, T71, T72, T74, T75, T96, T111, T116, T120, T121, T122, T123, T129, T130, T131, T134, T136, T143, T145, T154, T158, T159, T161, T166, T168, T170, T171, T176, T200, T201, T208, T209, T222, T224, T241, T242, T249, T283, T285 | T7, T8, T16, T128 |
-| 1 low | T113, T218, T243, T244, T246, T262, T272, T273, T274, T275, T276, T277, T278, T281, T282 | T31, T36, T37, T110, T114, T118, T255, T267 | T5, T106, T117, T205 |
+| 2 medium | T4, T6, T11, T13, T18, T25, T26, T38, T41, T42, T53, T55, T56, T57, T60, T69, T70, T76, T78, T79, T80, T84, T85, T86, T87, T88, T89, T90, T91, T97, T98, T99, T100, T101, T102, T104, T105, T109, T112, T115, T124, T126, T127, T135, T139, T146, T149, T152, T153, T155, T156, T157, T162, T172, T173, T179, T181, T182, T185, T189, T191, T193, T194, T195, T196, T197, T198, T199, T202, T203, T204, T206, T207, T215, T216, T220, T221, T223, T228, T235, T236, T238, T239, T245, T247, T248, T250, T266, T268, T269, T280, T284, T287, T290, T291, T293 | T3, T9, T10, T17, T19, T20, T21, T22, T27, T30, T39, T40, T44, T45, T47, T48, T49, T50, T51, T52, T54, T71, T72, T74, T75, T96, T111, T116, T120, T121, T122, T123, T129, T130, T131, T134, T136, T143, T145, T154, T158, T159, T161, T166, T168, T170, T171, T176, T200, T201, T208, T209, T222, T224, T241, T242, T249, T283, T285 | T7, T8, T16, T128 |
+| 1 low | T113, T218, T243, T244, T246, T262, T272, T273, T274, T275, T276, T277, T278, T281, T282, T292 | T31, T36, T37, T110, T114, T118, T255, T267 | T5, T106, T117, T205 |
 
 The threats with a risk of 6 or more:
 

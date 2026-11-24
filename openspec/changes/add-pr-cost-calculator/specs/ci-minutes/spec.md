@@ -1,10 +1,10 @@
 ## Purpose
 
-Add the cost of the GitHub Actions minutes that a pull request's own commits used, counted for every job attempt and rounded up per job.
+Add the cost of the GitHub Actions minutes that a pull request's own commits used, counted for every job attempt and rounded up per attempt.
 
 ## ADDED Requirements
 
-### Requirement: CI minutes are billed per job, rounded up
+### Requirement: Each job attempt's minutes are rounded up to a whole minute
 
 Each attempt's minutes (see "Every job attempt of the pull request's own runs is counted") SHALL be its duration rounded up to a whole minute, priced at the rate for its runner type on its UTC day (see "Prices are dated" in `pricing`).
 
@@ -12,6 +12,11 @@ Each attempt's minutes (see "Every job attempt of the pull request's own runs is
 
 - **WHEN** a job ran for 61 seconds on a standard Linux runner
 - **THEN** it counts as two minutes at that runner's rate
+
+#### Scenario: Each attempt of a re-run job is rounded up on its own
+
+- **WHEN** a job ran twice, each attempt for 61 seconds on a standard Linux runner
+- **THEN** it counts as four minutes, two for each attempt, not as three for the two attempts added together
 
 #### Scenario: A job's minutes are priced at its day's rate
 
