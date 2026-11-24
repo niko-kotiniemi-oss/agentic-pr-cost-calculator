@@ -220,14 +220,44 @@ When a push that gets no comment, with the tool on before or after it, removes o
 
 ### Requirement: A ledger file's lines end in a line feed alone
 
-The capture step SHALL end every line of a ledger file with a line feed alone, on every system, and the report SHALL refuse a ledger line that ends otherwise, such as with a carriage return before its line feed, and count it as refused. The README SHALL give adopters whose git has `core.safecrlf` on the attribute line `.pr-cost/** -text`.
+The capture step SHALL end every line of a ledger file with a line feed alone, on every system. The report SHALL split each ledger file's bytes on 0x0A before it decodes them, for added files and the default branch's alike, and SHALL take a line that holds 0x0D anywhere, or a last line that no 0x0A ends, as breaking the format, so a first line makes its file refused. The README SHALL give every adopter `.pr-cost/** -text -filter -linguist-generated` as the last line of the root `.gitattributes`.
 
 #### Scenario: Capture on Windows writes line feeds alone
 
 - **WHEN** the capture step writes a ledger file under Python on Windows
 - **THEN** every line of the file ends with a line feed and holds no carriage return
 
-#### Scenario: A ledger line that ends in CRLF is refused
+#### Scenario: A ledger file whose lines end in CRLF is refused
 
 - **WHEN** a pull request adds a ledger file whose lines end with a carriage return and a line feed
-- **THEN** the report counts each such line as refused, and counts none of its entries
+- **THEN** the report counts the file as a refused file, as one whose first line breaks its version's rules, and counts none of its entries
+
+#### Scenario: A later line that ends in CRLF is refused alone
+
+- **WHEN** a pull request adds a ledger file whose first line ends in a line feed alone, and one of whose later lines ends with a carriage return and a line feed
+- **THEN** the report counts that line as refused, and counts the file's other lines
+
+#### Scenario: A ledger file whose lines end in a lone CR is refused
+
+- **WHEN** a pull request adds a ledger file whose lines end with a carriage return alone, or a line that holds one before its end
+- **THEN** the report reads each part between line feeds as one line, refuses each that holds a carriage return, and counts it as refused
+
+#### Scenario: A last line without a line feed is refused
+
+- **WHEN** a ledger file that a pull request adds ends in a line that no line feed ends
+- **THEN** the report counts that line as refused, and counts the file's other lines
+
+#### Scenario: A line that holds U+2028 or U+0085 is one line
+
+- **WHEN** a ledger line that ends in a line feed holds U+2028 or U+0085 inside a JSON string
+- **THEN** the report reads it as one line, and does not split it
+
+#### Scenario: The default branch's ledger files are split the same way
+
+- **WHEN** the default branch held, before the merge, a ledger file with a line that holds a carriage return, and a pull request adds one that holds the same call in a valid line
+- **THEN** the report skips the default branch's line and counts the pull request's call once
+
+#### Scenario: The README gives every adopter the attribute line
+
+- **WHEN** the README does not give `.pr-cost/** -text -filter -linguist-generated`, or does not say to make it the last line of the root `.gitattributes`
+- **THEN** a test fails and names what is missing

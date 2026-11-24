@@ -5,7 +5,7 @@
 - **Reversibility:** reversible
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`
-- **Requirements:** R298
+- **Requirements:** R298, R316
 - **Threats:** T65, T319
 - **Replaces:** none
 - **Closed by:** none
@@ -16,7 +16,7 @@ CI checks a pull request's title and body against the private patterns, but only
 
 ## Decision
 
-`.claude/settings.json` registers a hook that runs before each tool call that opens or edits a pull request, an issue, a comment or a review on GitHub, and before each Bash command that runs `gh`, and blocks the call, naming the pattern and quoting none of the text, when its input matches a private pattern or name hash that pull request text is checked against, or holds a link to a Claude session, project or thread. It blocks a call whose input it cannot read (R298).
+`.claude/settings.json` registers, with `onFailure` set to `block`, a hook that runs before each Bash command and each `mcp__*` tool call, and blocks the call, naming the pattern and quoting none of the text, when any string of its input, at any depth, matches a private pattern or name hash that pull request text is checked against, or holds a link to, or an identifier of, a Claude session, project or thread. It blocks a call whose input it cannot read, or on any error of its own (R298). It also checks the files that a command names for what it posts, the messages of commits and tags and of the commits that a push sends, and blocks a `gh` command whose text comes from an expansion that it cannot resolve (R316).
 
 ## Alternatives
 
@@ -24,8 +24,9 @@ CI checks a pull request's title and body against the private patterns, but only
 
 ## Consequences
 
-- A project's cloud thread runs none of the hooks that the repository's settings register (A61), so there the rule in `CLAUDE.md` and CI hold alone.
-- A tool that the hook's matcher does not name is not checked.
+- A project's cloud thread, and a cloud session with several repositories, runs none of the hooks that the repository's settings register (A61), so there the rule in `CLAUDE.md` and CI hold alone.
+- A browser tool that types into a page is not read, and every Bash command and `mcp__*` call meets the hook, which the build keeps quick.
+- The hook uses the private patterns that task 1.14 moves into one shared module, so task 1.62 builds it after task 1.14.
 
 ## Scope
 

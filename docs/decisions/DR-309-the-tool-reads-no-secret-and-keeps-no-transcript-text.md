@@ -5,7 +5,7 @@
 - **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the owner, 2026-10-27
-- **Requirements:** R301
+- **Requirements:** R301, R310
 - **Threats:** T312
 - **Replaces:** none
 - **Closed by:** none
@@ -16,7 +16,7 @@ A transcript holds what a session said and saw, which can include passwords, tok
 
 ## Decision
 
-The capture step reads from a transcript only the fields that it records or needs to tell a call, and keeps, prints, logs and sends none of its other text. Neither the capture step nor the report reads a password, a token or a key, but the report's own token, from the environment, a file or git's configuration. A test plants a secret in a transcript, in the environment and in git's configuration, and fails when anything that the tool writes holds it (R301).
+The capture step reads from a transcript only the fields that it records or needs to tell a call, and keeps, prints, logs and sends none of its other text. Neither the capture step nor the report reads a password, a token or a key, but the report's own token and the `origin` remote's URL, of which capture keeps only the owner and name, from the environment, a file or git's configuration. Each git command that the step starts gets only `PATH`, the variables that name the person's home and configuration folders, the locale's and those that the system needs to start a program (R310). A test plants a secret in a transcript, in the environment and in git's configuration, and fails when anything that the tool writes holds it (R301).
 
 ## Alternatives
 

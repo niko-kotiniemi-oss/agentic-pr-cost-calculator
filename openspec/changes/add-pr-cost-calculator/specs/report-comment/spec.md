@@ -292,7 +292,7 @@ When a ledger file that the merge adds names, on its first line, a later release
 
 ### Requirement: The comment shows only what the report computed
 
-The comment, the report's job summary and what the report writes to its log SHALL hold only numbers, the report's own fixed text, and the model, provider, attribute, runner and agent names and the currency code that the price table or the ledger format lists, shown as code in the comment and the job summary.
+The comment, the report's job summary and what the report writes to its log SHALL hold only numbers, the report's own fixed text, and the model, provider, attribute, runner and agent names, the activity types and the currency code that the price table or the ledger format lists, shown as code in the comment and the job summary.
 
 #### Scenario: A runner label with markup is not shown
 
@@ -310,7 +310,7 @@ The comment, the report's job summary and what the report writes to its log SHAL
 
 ### Requirement: A ledger line naming a model, provider, attribute value or agent that the price table or its format does not list is refused
 
-A ledger line that names a model, a provider or an attribute value that the price table does not list, other than `unknown`, or an agent that its ledger format's version does not name, SHALL be refused.
+A ledger line that names a model, a provider or an attribute value that the price table does not list, other than `unknown`, or an agent or an activity type that its ledger format's version does not name, SHALL be refused.
 
 #### Scenario: A name with markup is not shown as written
 
@@ -321,6 +321,11 @@ A ledger line that names a model, a provider or an attribute value that the pric
 
 - **WHEN** a ledger line names a provider with a link, an image, an @-mention or a workflow command in it
 - **THEN** the line is refused and counted as refused, and none of that text is in the comment, the job summary or the log
+
+#### Scenario: An activity type that the line's format does not name is refused
+
+- **WHEN** a ledger line that a pull request adds gives an activity type that its format's version does not name, holding markup
+- **THEN** the line is refused and counted as refused, and none of its text is in the comment, the job summary or the log
 
 #### Scenario: An agent that the line's format does not name is refused
 
@@ -412,10 +417,20 @@ The report SHALL run only the tool's own code, from the commit at which the call
 - **WHEN** the report runs, whether it succeeds or fails
 - **THEN** none of its log, its job summary and its comment contains the token
 
+
+### Requirement: The report's workflow gives event data to commands only through the environment
+
+The reusable workflow and each composite action that it uses SHALL hold no `${{` in a `run:` or in an input that an action runs as code, SHALL write no value that comes from the event or from `inputs` to `$GITHUB_ENV`, `$GITHUB_OUTPUT` or `$GITHUB_PATH`, and SHALL give such a value to a command only through `env:`, never as an argument, the report reading it from its environment or the event file. A test SHALL fail and name the step otherwise, and fail when it reads no step.
+
 #### Scenario: Event data reaches the report's commands only through the environment
 
-- **WHEN** the reusable workflow's steps use a value from the event, such as a branch's name, a pull request's title or a commit's message
-- **THEN** each value reaches a `run:` command only through `env:`, no `${{` expression that reads the event stands inside a `run:`, and a test fails and names the step otherwise
+- **WHEN** the reusable workflow or a composite action that it uses holds any `${{` in a `run:`, such as `github.head_ref`, `github['event']`, `toJSON(github)`, an input or a step's output, or in an input that an action runs as code, writes a value from the event or from `inputs` to `$GITHUB_ENV`, `$GITHUB_OUTPUT` or `$GITHUB_PATH`, or passes one as an argument
+- **THEN** a test fails and names the step
+
+#### Scenario: A check of the workflow that reads no step fails
+
+- **WHEN** the test of the reusable workflow's steps finds no step to read
+- **THEN** it fails, and says that it read no step
 
 ### Requirement: The report runs only for the push that a merge makes to the default branch
 
@@ -548,7 +563,7 @@ A refused ledger line SHALL NOT be counted as an entry, it SHALL be counted as r
 
 ### Requirement: The comment says when the ledger files may be hidden in the pull request's diff
 
-When the merged commit's attributes, as git reads them at that commit, give a ledger file that the pull request adds `linguist-generated`, `-diff` or `binary`, the comment SHALL say that GitHub may hide the ledger files in the pull request's diff, so that a reviewer may not have seen them, and SHALL quote nothing from any attributes file.
+When `git check-attr --source`, at the merged commit or at the pull request's head and reading no global, system or `info` attributes, gives a ledger file that the pull request adds `linguist-generated`, `-diff`, `binary`, a `diff` driver or a `filter`, by its name or through a macro, the comment SHALL say that GitHub may hide the ledger files in the pull request's diff, or show a pointer in their place, so that a reviewer may not have seen them, and SHALL quote nothing from any attributes file.
 
 #### Scenario: A ledger marked as generated is named
 
@@ -557,5 +572,25 @@ When the merged commit's attributes, as git reads them at that commit, give a le
 
 #### Scenario: A ledger with no such attribute is not named
 
-- **WHEN** no attributes file gives a ledger file that the pull request adds `linguist-generated`, `-diff` or `binary`, or one gives it `-linguist-generated`
+- **WHEN** no attributes file gives a ledger file that the pull request adds `linguist-generated`, `-diff`, `binary`, a `diff` driver or a `filter`, or one gives it `-linguist-generated`
 - **THEN** the comment says nothing about the diff hiding the ledger files
+
+#### Scenario: An attribute set only at the pull request's head is named
+
+- **WHEN** the pull request's head gives `.pr-cost/**` the attribute `-diff`, and its last push removes that line, so that the merged commit gives none
+- **THEN** the comment says that GitHub may hide the ledger files in the pull request's diff
+
+#### Scenario: A macro that sets `linguist-generated` is named
+
+- **WHEN** the merged commit's root `.gitattributes` defines a macro that sets `linguist-generated`, and gives it to `.pr-cost/**`
+- **THEN** the comment says that GitHub may hide the ledger files in the pull request's diff
+
+#### Scenario: Attributes from outside the repository change nothing
+
+- **WHEN** the runner's global attributes file, its system attributes file and the clone's `info/attributes` give `.pr-cost/**` the attribute `binary`, and the repository's own attributes give it none
+- **THEN** the comment says nothing about the diff hiding the ledger files
+
+#### Scenario: A ledger file stored as an LFS pointer is named and refused
+
+- **WHEN** the merged commit's `.gitattributes` gives `*.jsonl` the attributes `filter=lfs diff=lfs merge=lfs -text`, and a ledger file that the pull request adds is a Git LFS pointer
+- **THEN** the comment says that GitHub may show a pointer in the ledger files' place, and counts that file as a refused file, using none of its text

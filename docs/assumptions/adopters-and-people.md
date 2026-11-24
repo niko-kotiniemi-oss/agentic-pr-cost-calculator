@@ -4,7 +4,7 @@ The assumptions about the teams that adopt the tool, the people who opt in, and 
 
 ## A13. Adopters' git setup leaves the ledger alone.
 
-- **Rests on it:** R50, R86, T8, T10, T43, DR-034, DR-035, DR-037, DR-129, DR-136
+- **Rests on it:** R50, R86, R306, T8, T10, T43, T316, T323, DR-034, DR-035, DR-037, DR-129, DR-136, DR-313
 - **If it is wrong:** A git hook that refuses the ledger file would fail the agent's whole commit, and push agents toward `--no-verify` (T43, T10). A filter, an encoding or the sparse index on the ledger path would keep calls from reaching a commit, or let git delete ledger files from the branch (T8, T10).
 - **Fact:** Adopters leave `.pr-cost/` out of their own git hooks, such as secret scanners, so that no git hook refuses a ledger file.
   - **Relied on:** T10, T43, DR-035, DR-136
@@ -15,8 +15,8 @@ The assumptions about the teams that adopt the tool, the people who opt in, and 
 - **Fact:** Agents in adopting repositories stop at a failing git hook instead of retrying with `--no-verify` or changing the git hook's configuration.
   - **Relied on:** T10, T43, DR-136
   - **Checked:** not yet: none will, since no test may reach what adopters and people do
-- **Fact:** Adopters give the ledger path no filter, such as Git LFS, and no working-tree encoding, and add a `.pr-cost/** -text` line to `.gitattributes` where git's `core.safecrlf` is on.
-  - **Relied on:** R50, R86, T8, DR-034, DR-129
+- **Fact:** Adopters give the ledger path no filter, such as Git LFS, and no working-tree encoding, and add `.pr-cost/** -text -filter -linguist-generated` as the last line of the root `.gitattributes`, as the README tells every adopter.
+  - **Relied on:** R50, R86, R306, T8, T316, T323, DR-034, DR-129, DR-313
   - **Checked:** not yet: none will, since no test may reach what adopters and people do
 - **Fact:** Adopters keep git's sparse index off in every worktree while the tool is on, and give no command `--sparse-index`.
   - **Relied on:** R50, T8, T10, DR-037, DR-129
@@ -103,7 +103,7 @@ The assumptions about the teams that adopt the tool, the people who opt in, and 
 
 ## A16. Agents follow the repository's rules.
 
-- **Rests on it:** R26, R33, R99, R204, T32, T33, T34, T35, T55, T62, T64, T65, T66, T67, T73, T77, T93, T95, T150, T158, T159, T164, T166, T172, T173, T174, T179, T181, T185, T196, T223, T224, T225, T227, T229, T232, T233, T234, T235, T236, T264, T288, DR-026, DR-069, DR-070, DR-081, DR-083, DR-111, DR-134, DR-144, DR-145, DR-146, DR-214, DR-227, DR-243, DR-244, DR-252, DR-258, DR-259, DR-260, DR-262, DR-263, DR-264, DR-265, DR-285
+- **Rests on it:** R26, R33, R99, R204, T32, T33, T34, T35, T55, T62, T64, T65, T66, T67, T73, T77, T93, T95, T150, T158, T159, T164, T166, T172, T173, T174, T179, T181, T185, T196, T223, T224, T225, T227, T229, T232, T233, T234, T235, T236, T264, T288, T328, DR-026, DR-069, DR-070, DR-081, DR-083, DR-111, DR-134, DR-144, DR-145, DR-146, DR-214, DR-227, DR-243, DR-244, DR-252, DR-258, DR-259, DR-260, DR-262, DR-263, DR-264, DR-265, DR-285
 - **If it is wrong:** A dashboard approval, a changed setting or a tag made by an agent would count as the owner's decision (T64, T67), text that anyone can write could steer an agent with the owner's credentials (T33, T73), an untrusted branch's hooks could run with credentials that can push here (T34, T66), private references could reach public text (T32, T65), and an agent that followed the README's short start could opt the owner in where their sessions reach another repository beside this one (T150), an adopter's agent that set the tool up from the README could opt in the person who asked it (T158), an agent that read the roadmap or a gap on the guide could start an item that nobody asked for, or take the text of an issue that it names as an instruction (T159, T164), an agent could cut a page down to citations that do not hold its clauses (T173), an agent could set the opt-in for the walking skeleton's run (T172, T174), and an agent could follow a principle of the guide that its own branch rewrote, or drop a skill's step where an entry differs from it (T179, T181). An agent could also work in a folder without its rules, or by a folder file that its own branch changed (T223, T224, T235), take the text of another repository's files, a memory, a subagent's report or an instruction file that the root does not name as a rule (T225, T232, T234, T236), move a rule out of the root to meet its limits (T227), stage a file that no commit should take (T32), post a vulnerability in released code before its fix (T229), and leave a tool's session link in public text from a session that works here without the root (T233).
 - **Fact:** Agent sessions never create, move or delete a tag or a release, never approve an item on Renovate's dependency dashboard, and never change a repository setting, a ruleset or a secret; only the owner does these, and only the owner decides when the oldest supported Python rises.
   - **Relied on:** R26, T62, T64, T67, DR-111, DR-134, DR-144
@@ -133,7 +133,7 @@ The assumptions about the teams that adopt the tool, the people who opt in, and 
   - **Relied on:** T32, DR-263
   - **Checked:** not yet: none will, since no test may reach what adopters and people do
 - **Fact:** Agents working here post each review lane's findings and their resolutions on the pull request under one index, never post a finding of a vulnerability in released code, which they tell the owner instead, as `SECURITY.md` asks, and defer no finding of a vulnerability to an issue, fixing it in the change or telling the owner.
-  - **Relied on:** T229, DR-262
+  - **Relied on:** T229, T328, DR-262
   - **Checked:** not yet: none will, since no test may reach what adopters and people do
 - **Fact:** Whoever writes a figure in prose, a commit message or pull request text computes it in the same session rather than recalling it.
   - **Relied on:** DR-083

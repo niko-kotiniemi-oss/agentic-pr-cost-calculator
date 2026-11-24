@@ -5,8 +5,8 @@
 - **Reversibility:** reversible
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`, as the owner asked on 2026-11-12
-- **Requirements:** R299
-- **Threats:** T132, T137, T320
+- **Requirements:** R299, R317
+- **Threats:** T132, T137, T320, T327
 - **Replaces:** none
 - **Closed by:** none
 
@@ -16,7 +16,7 @@ A pull request that changes the vendor check or a marketplace check together wit
 
 ## Decision
 
-When a pull request changes `vendor/` or the marketplace's root file or plugin folder, CI also runs the base commit's own vendor check and marketplace checks over the pull request's tree, from a checkout of the base commit that reads that tree only as data, runs none of its code, and holds no secret and no token that can write, and fails when either check fails (R299).
+CI runs, on every pull request, a job that, where the pull request changes `vendor/` or the marketplace's root file or plugin folder, runs the base commit's own vendor check and marketplace checks over the merge commit that GitHub tests, holding no secret and no token that can write, and fails when either check fails, and that otherwise passes, saying in its log what it compared (R299). The job runs only programs from the base commit's checkout or the runner, its shell included, never with the pull request's tree as its working directory or on a search path; reads that tree from git's objects alone, with no checkout, attributes or submodule, failing on a link or a gitlink under a checked path; and fails where the pull request's lock names another repository or other vendored paths than the base's, ignoring `SYNC_REMOTE_BASE` (R317).
 
 ## Alternatives
 
@@ -26,6 +26,7 @@ When a pull request changes `vendor/` or the marketplace's root file or plugin f
 
 - A pull request that changes a check reaches the default branch only through the owner's review, and checks only the pull requests after it.
 - The job reads the pull request's tree through git, which the design threat-models (T320).
+- The base's sync script finds its tree from its own location, so the build gives it a way to read another tree; the marketplace half holds only once task 6.9 builds the marketplace's checks.
 
 ## Scope
 

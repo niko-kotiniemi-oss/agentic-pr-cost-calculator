@@ -16,7 +16,7 @@ The capture step must fetch nothing that a partial clone lacks. `GIT_NO_LAZY_FET
 
 ## Decision
 
-Every git command that the capture step runs also runs with `-c protocol.allow=never`, so that git refuses every transport and cannot fetch a missing object on any version, and the git floor stays at 2.43 (R111). On git 2.43.0, a partial clone's missing blob stayed missing and git exited with an error, as the evidence of 2026-11-24 records.
+Every git command that the capture step runs also runs with `-c protocol.allow=never`, and with `-c protocol.<name>.allow=never` for `file`, `git`, `ssh`, `http`, `https` and `ext` and for each protocol that a `protocol.<name>.allow` key of git's configuration names, since such a key, set to `always` in the repository's or the person's configuration, overrides `protocol.allow` on the command line; so git refuses each transport that it knows by those names, and the git floor stays at 2.43 (R111). On git 2.43.0, a partial clone's missing blob stayed missing and git exited with an error, as the evidence of 2026-11-24 records.
 
 ## Alternatives
 
@@ -26,6 +26,7 @@ Every git command that the capture step runs also runs with `-c protocol.allow=n
 ## Consequences
 
 - A git command that would need a missing object fails, and the step skips that file, as it skips one whose blob the clone lacks (R45).
+- A transport that git knows by a name that neither the list nor the configuration gives is not refused by name; `GIT_ALLOW_PROTOCOL`, which would also widen what git allows, is one of the session's `GIT_` variables, which the step does not pass to git.
 
 ## Scope
 

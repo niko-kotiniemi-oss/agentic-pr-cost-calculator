@@ -86,13 +86,13 @@ The assumptions about Claude Code: what its transcripts hold, when its hooks run
 
 ## A3. Hooks get enough time to finish, and every adopter's Claude Code has the hook events and the condition that the tool registers.
 
-- **Rests on it:** R7, R10, R11, R13, R44, R87, R90, R181, T8, T10, T13, T14, T19, T42, T130, T194, DR-014, DR-030, DR-036, DR-127, DR-172, DR-197, DR-206
+- **Rests on it:** R7, R10, R11, R13, R44, R87, R90, R181, R298, T8, T10, T13, T14, T19, T42, T130, T194, T319, DR-014, DR-030, DR-036, DR-127, DR-172, DR-197, DR-206, DR-315
 - **If it is wrong:** Runs cut short would leave calls unrecorded, stores torn and ledger files staged, for the design's whole-file writes and take-backs to absorb (T42, T8, T10), and a run that blocked its command would stall the agent (T14). A Claude Code that lacks an event or the condition would skip it, and calls would wait or never be recorded, with nothing to say why (T8). If the plugin's runs and the hook file's did not run side by side as the design expects, two copies in one session would still share the store, each run within its own budget (T130).
 - **Fact:** Claude Code runs the hooks that match an event in parallel.
   - **Relied on:** R10, R11, R181, T13, T130, T194, DR-036, DR-127, DR-206
   - **Checked:** documented: <https://code.claude.com/docs/en/hooks>, read 2026-11-01
 - **Fact:** A command hook's default timeout is 600 seconds on `PreToolUse`, `PostToolUse` and `Stop`, and a `PreToolUse` command hook that times out does not block the tool call unless it sets `onFailure` to `block`.
-  - **Relied on:** R13, R90, T14, T42, DR-036
+  - **Relied on:** R13, R90, R298, T14, T42, T319, DR-036, DR-315
   - **Checked:** documented: <https://code.claude.com/docs/en/hooks>, read 2026-11-01
 - **Fact:** `SessionEnd` hooks share a budget of 1.5 seconds, which Claude Code raises to match a longer `timeout` that the settings give a hook, up to 60 seconds.
   - **Relied on:** R87, R90, T8, T10, DR-014
@@ -109,7 +109,7 @@ The assumptions about Claude Code: what its transcripts hold, when its hooks run
 
 ## A4. A hook's input gives the directories, the paths and the command text that capture needs, and a hook that exits with success and prints nothing steers nothing.
 
-- **Rests on it:** R3, R13, R43, R49, R51, R54, R55, R76, R82, R89, T2, T6, T8, T10, T14, T39, T44, T46, DR-007, DR-013, DR-031, DR-057, DR-128, DR-135, DR-187, DR-188
+- **Rests on it:** R3, R13, R43, R49, R51, R54, R55, R76, R82, R89, R298, R307, R308, T2, T6, T8, T10, T14, T39, T44, T46, T317, T319, T322, DR-007, DR-013, DR-031, DR-057, DR-128, DR-135, DR-187, DR-188, DR-314, DR-315
 - **If it is wrong:** Capture could stage a ledger file in the wrong worktree, where no commit takes it, or fail to match a later run to its command, so ledger files wait or are staged twice (T10, T8). If a quiet success could still steer the agent, or a failure could stop the session, the hook could stall or redirect the agent's work (T14), and if the project directory named another folder, calls could be judged against the wrong repository (T2).
 - **Fact:** A hook's input gives as `cwd` the directory Claude is working in: a worktree's root after Claude enters the worktree, and the new directory after Claude runs `cd`.
   - **Relied on:** R49, T10, DR-013
@@ -121,10 +121,10 @@ The assumptions about Claude Code: what its transcripts hold, when its hooks run
   - **Relied on:** R89, T14, DR-031
   - **Checked:** documented: <https://code.claude.com/docs/en/hooks>, read 2026-11-01
 - **Fact:** No one sees the standard error of a hook that succeeds, so only the ledger and the comment can show what the step refused or did not know.
-  - **Relied on:** R43, R89, T6, T39, DR-031, DR-135
+  - **Relied on:** R43, R89, R308, T6, T39, T322, DR-031, DR-135
   - **Checked:** not yet: none will, since no test may reach Claude Code; the walking skeleton's run on 2026-11-17 could not tell, since capture wrote nothing to standard error, though nothing from it reached the agent's view
 - **Fact:** A hook that exits with success and prints nothing on standard output does not steer the agent, while exit 2, or JSON on standard output, can block a call or send Claude back to work. A hook that fails otherwise lets the command and the session go on, unless it sets `onFailure` to `block`.
-  - **Relied on:** R13, T14, DR-031
+  - **Relied on:** R13, R298, T14, T319, DR-031, DR-315
   - **Checked:** documented: <https://code.claude.com/docs/en/hooks>, read 2026-11-01
 - **Fact:** A command hook runs in the current directory, or, where that no longer exists, in the first that still exists of the directory the session started in, the project root, the home directory and the system's temporary directory.
   - **Relied on:** R54, R76, T46, DR-188
@@ -135,6 +135,9 @@ The assumptions about Claude Code: what its transcripts hold, when its hooks run
 - **Fact:** Claude Code runs a hook's command with `sh -c` on macOS and Linux, in Git Bash on Windows, or in PowerShell where Git Bash is not installed, and in a PowerShell command rewrites `${CLAUDE_PROJECT_DIR}` into PowerShell's `${env:NAME}` form.
   - **Relied on:** R13, T14, DR-007, DR-031
   - **Checked:** documented: <https://code.claude.com/docs/en/hooks>, read 2026-11-01
+- **Fact:** Where Git Bash is not installed, Claude Code runs a hook's command in PowerShell, and its documentation does not say whether that is Windows PowerShell 5.1 or PowerShell 7; a hook may name its shell as `bash` or `powershell`.
+  - **Relied on:** R307, T317, DR-314
+  - **Checked:** documented: <https://code.claude.com/docs/en/hooks>, read 2026-11-24
 
 ## A5. What a session loads comes from its settings and the branch it starts on, and a project's settings cannot set the variables that name a person's home folder or the `XDG_*` variables.
 
@@ -314,7 +317,7 @@ The assumptions about Claude Code: what its transcripts hold, when its hooks run
 
 ## A70. A project's cloud thread starts in a folder that holds each of its clones directly inside it, and its machine pauses after a turn and resumes with its files.
 
-- **Rests on it:** R180, R185, T120, T128, T131, T193, T232, T233, DR-197, DR-198, DR-199
+- **Rests on it:** R180, R185, R308, T120, T128, T131, T193, T232, T233, T322, DR-197, DR-198, DR-199, DR-307
 - **If it is wrong:** If a thread's clones lay deeper in its folder, a plugin's start run would meet none of them, so a thread's first calls in a clone would be left out and flagged for consent until a run met that clone (R180, DR-198). If more of a thread's calls named its folder than the design expects, its figure would be lower still (T128). If a pause rebuilt the machine instead of resuming it, every pause would lose the calls that wait for a commit (T131), and if a resume changed what the fingerprint of the opt-in's files holds, every pause would end the session's interval and drop those calls, with a flag for consent (T120). If a thread started elsewhere than in a folder above its clones, which clones' context files load at its start, and so how far another repository's rules reach work here, would differ from what the threat model says (T232, T233).
 - **Fact:** A cloud session with several repositories starts in a folder above its clones.
   - **Relied on:** R180, T193, DR-198
@@ -340,6 +343,9 @@ The assumptions about Claude Code: what its transcripts hold, when its hooks run
 - **Fact:** A resumed machine keeps the device and inode numbers, sizes and modification times of the person's global git configuration files, so that a pause and a resume change nothing that the fingerprint of the opt-in's files holds.
   - **Relied on:** T120, T131
   - **Checked:** not yet: `add-pr-cost-calculator` task 7.2 checks it; the walking skeleton's run on 2026-11-17 could not tell, since it did not read those details of the files
+- **Fact:** A cloud session's clone has an `origin` remote whose URL, as git gives it without the session's `GIT_` variables, is an address on `github.com` that names the repository.
+  - **Relied on:** R308, T322, DR-307
+  - **Checked:** not yet: `add-pr-cost-calculator` task 7.2 checks it; a cloud session on 2026-11-24 gave such an address
 
 ## A71. A line in a cloud environment's setup script reaches the global git configuration of each new session in that environment, and an organization can share an environment with its members.
 

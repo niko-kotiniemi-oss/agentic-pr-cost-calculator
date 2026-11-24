@@ -5,8 +5,8 @@
 - **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the owner, 2026-11-12
-- **Requirements:** R296
-- **Threats:** T313
+- **Requirements:** R296, R308, R309
+- **Threats:** T313, T322
 - **Replaces:** none
 - **Closed by:** none
 
@@ -16,7 +16,7 @@ A fork copies the repository's files, its configuration among them, so a fork of
 
 ## Decision
 
-The configuration file names the repository that it turns the tool on in, as `owner/name`. Capture records nothing where that name differs from the one that the clone's `origin` remote gives, read from git's configuration with no network, and the report posts no comment where it differs from the repository that the workflow runs in, and says so in its job summary (R296). A fork's owner turns the tool on there by naming the fork.
+The configuration file names the repository that it turns the tool on in, as `owner/name`, under the key `repository`, which a file that enables the tool must hold in GitHub's form, compared with the case of ASCII letters alone folded (R296). Capture records nothing where that name differs from the one that the clone's `origin` remote gives, read as `git remote get-url origin` gives it, offline and without the session's `GIT_` variables, on `github.com`, and says so once a session on standard error (R308). The report posts no comment where it differs from the repository that the workflow runs in, unless GitHub gives the configured name that repository's id, as after a rename or a transfer, and quotes neither name (R309). A fork's owner turns the tool on there by naming the fork.
 
 ## Alternatives
 
@@ -25,9 +25,10 @@ The configuration file names the repository that it turns the tool on in, as `ow
 
 ## Consequences
 
-- A repository that is renamed turns the tool off until its configuration names it again, and the report's job summary says why.
+- After a rename or a transfer, the report still posts its comment and says that the configuration gives an earlier name, while a clone whose `origin` gives the name that the configuration does not records nothing until one of them is updated, which the README tells adopters to do.
 - A contributor who works in a clone of their fork records nothing there, so their usage from a fork is not counted, as the owner chose.
-- The configuration's new key is part of the public surface (R122).
+- The configuration's new key, `repository`, is part of the public surface (R122), and ships in the first release.
+- A GitHub Enterprise Server records nothing, as the tool is for GitHub.com alone (DR-006).
 
 ## Scope
 

@@ -16,16 +16,18 @@ A Windows machine may give Python only as `python` or through the `py` launcher,
 
 ## Decision
 
-The registered command and the plugin's command start the capture step with the first of `python3`, `python` and `py -3` that starts a Python, trying each only where the one before it is missing or starts no Python, and start nothing that installs Python. The step's own check refuses a Python older than 3.11 (R307).
+The registered command and the plugin's command try `python3`, `python` and `py -3` in turn, each with `-I` and `PYTHON_MANAGER_AUTOMATIC_INSTALL` set to `false`, first as a probe that exits with a code that only a Python 3.11 or later gives, and start the capture step once, with the first that passes, and no other Python after it, in `sh`, Git Bash, PowerShell 7 and Windows PowerShell 5.1 alike (R307). The design gives the form for each shell.
 
 ## Alternatives
 
 - `python3` alone: it records nothing on many Windows machines.
-- `py -3` first: on a machine with no Python the install manager's launcher would install one.
+- `py -3` first, or any order alone: Python's documentation says that, with no runtime installed, any launch command of the install manager, its `python3` and `python` among them, tries to install one, so the order does not stop an install, and the setting is given to each candidate.
+- Moving on whenever a candidate fails: a step that started and then failed would run again under the next Python.
 
 ## Consequences
 
-- The command's form is part of the public surface (R122), and a change to it reaches adopters as a release.
+- The command's form is part of the public surface (R122), and a change to it reaches adopters as a release, so it is run in each shell on the Windows runner before the first release.
+- Each hook run starts a Python twice, once for the probe.
 
 ## Scope
 

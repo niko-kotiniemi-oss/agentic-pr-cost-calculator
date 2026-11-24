@@ -16,11 +16,12 @@ Python on Windows writes a carriage return before each line feed unless it is to
 
 ## Decision
 
-The capture step ends every line of a ledger file with a line feed alone, on every system, and the report refuses a ledger line that ends otherwise and counts it as refused. The README gives adopters whose git has `core.safecrlf` on the attribute line `.pr-cost/** -text`, and this repository's own attributes get it when task 7.1 turns the tool on here (R306).
+The capture step ends every line of a ledger file with a line feed alone, on every system. The report splits each ledger file's bytes on line feeds before it decodes them, for the files that a pull request adds and those that the default branch held alike, and takes a line that holds a carriage return anywhere, or a last line that no line feed ends, as breaking the format, so that such a first line makes its file refused. The README gives every adopter `.pr-cost/** -text -filter -linguist-generated` as the last line of the root `.gitattributes`, since a later line would rank above it, and this repository's own attributes get it when task 7.1 turns the tool on here (R306).
 
 ## Alternatives
 
 - Reading both endings: two forms of one file would make a ledger line's bytes depend on where it was written.
+- Splitting decoded text as Python's `splitlines` does: it also splits on a lone carriage return, U+0085 and U+2028, so the count of lines would depend on what a line holds.
 
 ## Consequences
 

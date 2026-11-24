@@ -98,17 +98,12 @@ The release workflow SHALL refuse a tag whose guide, `docs/patterns.md`, does no
 
 ### Requirement: Versions are semantic, and their numbers say what an adopter must do
 
-The version SHALL raise its major number for a change that existing adopters must act on, which is any change to the public surface (see "The public surface is kept in a manifest"). It SHALL raise its minor number for a change that adds behaviour without breaking any part of that surface, and its patch number for a fix alone. A version that a refused tag gave SHALL NOT be released. A changelog entry that lists a breaking change SHALL come with a raised major number and a `### Breaking` section.
+The version SHALL raise its major number for a change that existing adopters must act on, which is any change to the public surface (see "The public surface is kept in a manifest"). It SHALL raise its minor number for a change that adds behaviour without breaking any part of that surface, and its patch number for a fix alone. A changelog entry that lists a breaking change SHALL come with a raised major number and a `### Breaking` section.
 
 #### Scenario: A breaking change raises the major version
 
 - **WHEN** the changelog entry for a release lists a breaking change and the release does not raise the major number over the previous release
 - **THEN** no release is published and the workflow says why
-
-#### Scenario: A version that a refused tag gave is not released
-
-- **WHEN** a tag `v1.2.0` is pushed after the release workflow refused an earlier tag `v1.2.0`, which was then deleted
-- **THEN** no release is published, and the workflow says that the version was refused before
 
 ### Requirement: The public surface is kept in a manifest
 
@@ -456,14 +451,47 @@ A workflow SHALL run every day and on demand, with a token that only reads, and 
 
 ### Requirement: Each security fix ships as a release with a security advisory
 
-Each fix of a vulnerability in released code SHALL ship in a release whose changelog entry, under `### Security`, names the repository security advisory that describes it by its `GHSA-` identifier, and that advisory SHALL name the affected releases and the commit that fixes it. The release workflow SHALL publish no release whose changelog entry holds a line under `### Security` that names no advisory.
+Each fix of a vulnerability in released code SHALL reach the default branch without a public pull request, through the temporary private fork of its repository security advisory, with an entry under `### Security` in the changelog that the owner writes, and SHALL ship in a release, after which the owner publishes the advisory, which SHALL name the affected releases and the commit that fixes it. The release workflow SHALL publish no release whose `### Security` entry names no advisory.
 
 #### Scenario: A security line that names no advisory stops the release
 
-- **WHEN** a tag's changelog entry holds a line under `### Security` that names no `GHSA-` identifier
-- **THEN** the release workflow publishes no release, and names the line
+- **WHEN** a tag's changelog entry holds an entry under `### Security` that names no `GHSA-` identifier
+- **THEN** the release workflow publishes no release, and names the entry
 
 #### Scenario: A security line that names its advisory passes
 
-- **WHEN** each line under `### Security` in a tag's changelog entry names a `GHSA-` identifier
+- **WHEN** each entry under `### Security` in a tag's changelog entry gives its advisory's identifier in full, in text that the release page shows, linked to this repository's advisory page
 - **THEN** the release workflow's check of the security lines passes
+
+### Requirement: A security entry names its advisory in full, and is checked before the tag
+
+Each entry under `### Security` SHALL give, in text that the release page shows, its advisory's identifier in full, `GHSA-` and three groups of four lowercase letters or digits joined by `-`, linked to this repository's page of that advisory. The release workflow, and CI on each pull request that changes the changelog's `## [Unreleased]` section, SHALL fail and name the entry otherwise.
+
+#### Scenario: A malformed advisory identifier stops the release and fails CI
+
+- **WHEN** an entry under `### Security` gives `GHSA-TODO`, an identifier of another form, or an identifier linked to another repository's advisory page
+- **THEN** the release workflow publishes no release and names the entry, and CI on a pull request that adds that entry under `## [Unreleased]` fails and names it
+
+#### Scenario: An identifier only in a link's address stops the release
+
+- **WHEN** an entry under `### Security` holds its advisory's identifier only in a link's address, while the link's text shows something else
+- **THEN** the release workflow publishes no release, and names the entry
+
+#### Scenario: A pull request that leaves the Unreleased section alone is not checked for it
+
+- **WHEN** a pull request changes no line of the changelog's `## [Unreleased]` section
+- **THEN** the check of the security entries passes on it
+
+### Requirement: A version that a refused tag gave is never released
+
+The changelog on the default branch SHALL keep, for each version whose tag the release workflow refused, a heading that gives that version and `[REFUSED]`, which the owner adds when the tag is deleted, and the release workflow SHALL publish no release of a version that the default branch's changelog marks so. The workflow SHALL say whether it refused a tag, and a run that fails without refusing one SHALL spend no version.
+
+#### Scenario: A version that a refused tag gave is not released
+
+- **WHEN** the default branch's changelog gives `## [1.2.0] [REFUSED]`, after the release workflow refused a tag `v1.2.0` that was then deleted, and a tag `v1.2.0` is pushed again
+- **THEN** no release is published, and the workflow says that the version was refused before
+
+#### Scenario: A run that failed without a refusal spends no version
+
+- **WHEN** a run for a tag `v1.2.0` fails because its runner failed, without the workflow refusing the tag, and the tag is pushed again
+- **THEN** the workflow checks the tag as it checks any other, and says nothing of a refusal

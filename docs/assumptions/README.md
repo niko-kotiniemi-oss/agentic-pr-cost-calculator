@@ -83,10 +83,10 @@ The list puts first the assumptions behind the threats of highest impact, then, 
 - **A64.** GitHub bills job minutes from job times. Impact 2, risk 4. Page: [GitHub](github.md).
 - **A59.** The development tools support Python 3.11, and report code that needs a newer Python. Impact 2, risk 2. Page: [Python, the development tools and prices](python-tools-and-prices.md).
 - **A60.** Adopters' machines and runners meet the floors, and their policies allow the workflow. Impact 2, risk 2. Page: [Adopters and people](adopters-and-people.md).
+- **A66.** Later Pythons keep what the tool uses, on every system that adopters use, and each version gets security fixes until its end of life. Impact 2, risk 2. Page: [Python, the development tools and prices](python-tools-and-prices.md).
 - **A62.** A repository opened in Claude Code can already run any hook its own settings register, including one that changes a person's git configuration. Impact 2, risk 4. Page: [Claude Code](claude-code.md).
 - **A63.** git can be kept offline and from asking for credentials. Impact 2, risk 4. Page: [git](git.md).
 - **A65.** Telemetry stays off where its switches say. Impact 1, risk 2. Page: [Python, the development tools and prices](python-tools-and-prices.md).
-- **A66.** Later Pythons keep what the tool uses, on every system that adopters use, and each version gets security fixes until its end of life. No threat. Page: [Python, the development tools and prices](python-tools-and-prices.md).
 - **A67.** The licences allow what is kept here. No threat. Page: [Python, the development tools and prices](python-tools-and-prices.md).
 - **A68.** Other agents and review apps will expose their usage later. No threat. Page: [Adopters and people](adopters-and-people.md).
 

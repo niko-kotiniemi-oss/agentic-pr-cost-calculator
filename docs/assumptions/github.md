@@ -65,7 +65,7 @@ The assumptions about GitHub: this repository's settings there, and its workflow
 
 ## A9. GitHub shows text as the checks expect, and text posted on GitHub is public at once.
 
-- **Rests on it:** R21, R33, R97, R98, R128, R134, R176, R198, R200, R210, R273, R283, R286, R293, T26, T52, T61, T65, T73, T79, T81, T125, T126, T145, T147, T151, T165, T224, T226, T257, T299, T300, DR-044, DR-108, DR-152, DR-195, DR-213, DR-227, DR-243, DR-244, DR-276, DR-279, DR-303
+- **Rests on it:** R21, R33, R97, R98, R128, R134, R176, R198, R200, R210, R273, R283, R286, R293, R302, T16, T26, T52, T61, T65, T73, T79, T81, T125, T126, T145, T147, T151, T165, T224, T226, T257, T299, T300, T323, DR-044, DR-108, DR-152, DR-195, DR-213, DR-227, DR-243, DR-244, DR-276, DR-279, DR-303
 - **If it is wrong:** Text shown as code could still render as a link, an image or a mention, and a log line could be read as a workflow command (T26, T52). A decision record could read one way to a reviewer and another way to an agent, or be collapsed and merged unread (T73, T79, T81), and a bug report opened without the form would never meet its privacy checkbox (T61, T65). A spec could read one way to its reviewers and another to an agent (T125), and the check of the specs' form could print a line that CI reads as a command (T126). The README's detail could show in full, so that its short start no longer comes first, or stay out of a reader's reach (T145), and if GitHub showed an HTML comment, or a drawn code block's text, as the raw file holds it, the README's test that refuses them would refuse more than it needs to (T151), and so would the roadmap's (T165). If GitHub showed the root's README on the repository's page where the `.github` folder holds one, the README's test that refuses such a file would refuse more than it needs to (R198, T147). A change to a context file could be hidden from the owner's review, or its text read one way by the owner and another by an agent (T224, T226).
 - **Fact:** GitHub shows text inside inline code in a comment or a job summary as code, never as a link, an image or a mention.
   - **Relied on:** R21, T26, T52, DR-044
@@ -100,8 +100,8 @@ The assumptions about GitHub: this repository's settings there, and its workflow
 - **Fact:** A spec kept to the text that DR-195 allows shows on GitHub every word that OpenSpec and an agent read in the raw file.
   - **Relied on:** R176, T125, DR-195
   - **Checked:** not yet: none will, since no test may reach GitHub
-- **Fact:** Only the `binary`, `diff` and `linguist-generated` attributes, set in the repository's own attribute files, make git show a record's diff as binary or GitHub hide it.
-  - **Relied on:** R134, T81, T224, DR-108
+- **Fact:** Only the `binary`, `diff`, `filter` and `linguist-generated` attributes, set in the repository's own attribute files, make git show a file's diff as binary or GitHub hide it or show a pointer in its place.
+  - **Relied on:** R134, R302, T16, T81, T224, T323, DR-108
   - **Checked:** not yet: none will, since no test may reach GitHub
 - **Fact:** Text posted on GitHub, such as a pull request's or an issue's, is public the moment it is posted, before any check can read it.
   - **Relied on:** R33, T61, T65, DR-243, DR-244
@@ -112,7 +112,7 @@ The assumptions about GitHub: this repository's settings there, and its workflow
 
 ## A27. Tags and releases can be protected from change.
 
-- **Rests on it:** R27, R28, R68, R72, R189, T23, T28, T29, T64, T67, T69, T132, T133, T139, DR-061, DR-073, DR-074, DR-097, DR-144, DR-161, DR-209
+- **Rests on it:** R27, R28, R68, R72, R189, R297, R315, T23, T28, T29, T64, T67, T69, T132, T133, T139, T325, DR-061, DR-073, DR-074, DR-097, DR-144, DR-161, DR-209
 - **If it is wrong:** An identity with `contents: write`, such as an agent session acting as the owner's account, could publish a release on an unreviewed commit, or change one after adopters took it (T67, T64, T28). A tag named like the default branch could pass the report's check of the event (T23, T29), and the bill of materials could list parts that a release's archive does not hold (T69). A release could be published before its files are attached, or its zip replaced after people checked it (T139, T133).
 - **Fact:** A push of a tag has a `github.ref` that begins `refs/tags/`, while its `github.ref_name` is the tag's name alone, so a tag named like the default branch shares the branch's `github.ref_name` but not its `github.ref`.
   - **Relied on:** R68, T23, T29, DR-061
@@ -131,6 +131,9 @@ The assumptions about GitHub: this repository's settings there, and its workflow
   - **Checked:** not yet: none will, since no test may reach GitHub; `add-pr-cost-calculator` task 6.3 tests only the order of the workflow's calls, against recorded responses
 - **Fact:** GitHub's source archive of a release holds the vendored and generated parts.
   - **Relied on:** R28, R72, T69, DR-097
+  - **Checked:** not yet: none will, since no test may reach GitHub
+- **Fact:** GitHub attests each release published while immutable releases are on, and `gh release verify` and `gh release verify-asset` check that attestation for the repository that `--repo` names.
+  - **Relied on:** R297, R315, T325
   - **Checked:** not yet: none will, since no test may reach GitHub
 
 ## A18. A merge into the default branch makes one push, and that push starts the adopter's calling workflow.
@@ -212,10 +215,10 @@ The assumptions about GitHub: this repository's settings there, and its workflow
 
 ## A26. Runs for a pull request from a fork get no secrets, and run the code that its author chose.
 
-- **Rests on it:** R27, R34, R68, R201, T37, T58, T63, T95, T147, DR-018, DR-068, DR-078, DR-122, DR-156, DR-215, DR-244
+- **Rests on it:** R27, R34, R68, R201, T37, T58, T63, T95, T147, T320, DR-018, DR-068, DR-078, DR-122, DR-156, DR-215, DR-244
 - **If it is wrong:** A secret added later could be read by a fork's pull request (T37), and pull requests from forks would get no report if their merge's push ran elsewhere. If GitHub did not run an action pinned to a commit that only a fork holds, or serve one under this repository's address, the defences against such commits, the README's refusal of a commit's ID among them, would be more than needed (T58, T63, T147), and if it served under a repository's address nothing else that others write, the README's test would refuse more addresses there than it needs to (R201, T147).
 - **Fact:** Apart from `GITHUB_TOKEN`, GitHub passes no secrets to a run that a pull request from a fork triggers.
-  - **Relied on:** T37, DR-078
+  - **Relied on:** T37, T320, DR-078
   - **Checked:** documented: <https://github.com/github/docs/blob/33b1f4a6fec2d9b6fd3d374afa56bcd9f0875b57/data/reusables/actions/forked-secrets.md>, read 2026-11-01
 - **Fact:** A pull request from a fork runs this repository's CI with code that its author chose.
   - **Relied on:** T37, DR-078, DR-244
@@ -232,7 +235,7 @@ The assumptions about GitHub: this repository's settings there, and its workflow
 
 ## A28. GitHub, and this repository's place on it, stay as they are.
 
-- **Rests on it:** R24, R34, T63, T142, T147, T148, DR-068, DR-090, DR-092, DR-096, DR-118, DR-132, DR-147, DR-157, DR-203, DR-217, DR-243
+- **Rests on it:** R24, R34, R308, R309, T63, T142, T147, T148, T313, T322, DR-068, DR-090, DR-092, DR-096, DR-118, DR-132, DR-147, DR-157, DR-203, DR-217, DR-243, DR-307
 - **If it is wrong:** The check of pins could not tell a tagged commit from one that only a fork holds (T63). A change in GitHub's API would skew the report in adopters' CI while every test passes, and a repository made private or renamed would break the adopters who call its workflow, and would leave the people who added the marketplace, and the README's addresses, on an address that someone else can take (T142, T147, T148).
 - **Fact:** CI can read the source of each action and container image that a workflow uses, to list the tags that name a pin.
   - **Relied on:** R34, T63, DR-068
@@ -249,16 +252,19 @@ The assumptions about GitHub: this repository's settings there, and its workflow
 - **Fact:** When an account or a repository on GitHub is renamed, its old address leads to the new one only until someone takes the old name, and then leads to theirs.
   - **Relied on:** T142, T147, T148, DR-203
   - **Checked:** not yet: none will, since no test may reach GitHub
+- **Fact:** After a repository is renamed or transferred, GitHub keeps serving its old name to git and to its API, whose answer gives the repository's id, until someone takes the old name.
+  - **Relied on:** R308, R309, T313, T322, DR-307
+  - **Checked:** not yet: none will, since no test may reach GitHub
 
 ## A35. GitHub enforces the permissions a workflow declares, gives runs from forks a read-only token, and gives a reusable workflow its caller's event, as its documentation says.
 
-- **Rests on it:** R24, R68, T23, T24, T29, T37, DR-005, DR-016, DR-018, DR-061, DR-063, DR-067, DR-078, DR-132, DR-244
+- **Rests on it:** R24, R68, T23, T24, T29, T37, T320, DR-005, DR-016, DR-018, DR-061, DR-063, DR-067, DR-078, DR-132, DR-244
 - **If it is wrong:** A token could hold more than the report declares, as through an adopter's broad grant (T24, T29), a fork's pull request could write through CI (T37), and the report's own check of the event would read the wrong event, so it could refuse every merge or let another event through (T23).
 - **Fact:** GitHub enforces the permissions that a workflow declares, setting each one that it does not declare to `none`, and a reusable workflow can narrow, but not widen, the permissions that its caller passes it.
   - **Relied on:** R24, T24, T29, DR-016, DR-063, DR-132
   - **Checked:** documented: <https://github.com/github/docs/blob/33b1f4a6fec2d9b6fd3d374afa56bcd9f0875b57/data/reusables/actions/github-token-scope-descriptions.md>, <https://github.com/github/docs/blob/33b1f4a6fec2d9b6fd3d374afa56bcd9f0875b57/content/actions/reference/workflows-and-actions/reusing-workflow-configurations.md>, read 2026-11-01
 - **Fact:** A workflow run for a pull request from a fork gets a `GITHUB_TOKEN` with read-only permissions.
-  - **Relied on:** T37, DR-018, DR-067, DR-078, DR-244
+  - **Relied on:** T37, T320, DR-018, DR-067, DR-078, DR-244
   - **Checked:** documented: <https://github.com/github/docs/blob/33b1f4a6fec2d9b6fd3d374afa56bcd9f0875b57/data/reusables/developer-site/pull_request_forked_repos_link.md>, read 2026-11-01
 - **Fact:** A reusable workflow's `github` context is always its caller's, so it names the event that triggered the caller.
   - **Relied on:** R68, T23, T29, DR-005, DR-061, DR-132

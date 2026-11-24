@@ -5,8 +5,8 @@
 - **Reversibility:** reversible
 - **Status:** accepted
 - **Decided by:** the owner, 2026-11-24
-- **Requirements:** R303
-- **Threats:** T318
+- **Requirements:** R303, R318
+- **Threats:** T318, T328
 - **Replaces:** none
 - **Closed by:** none
 
@@ -16,7 +16,7 @@
 
 ## Decision
 
-Each fix of a vulnerability in released code ships in a release whose changelog entry, under `### Security`, names the repository security advisory that describes it by its `GHSA-` identifier, and that advisory names the affected releases and the commit that fixes it. The release workflow publishes no release whose changelog has a line under `### Security` that names no advisory (R303).
+Each fix of a vulnerability in released code reaches the default branch without a public pull request, through the temporary private fork of its repository security advisory, with an entry under `### Security` that the owner writes, and ships in a release, after which the owner publishes the advisory, which names the affected releases and the commit that fixes it (R303). Each entry gives the advisory's identifier in full, in text that the release page shows, linked to this repository's advisory page, and the release workflow, and CI on each pull request that changes the changelog's `## [Unreleased]` section, fail and name an entry that does not (R318).
 
 ## Alternatives
 
@@ -26,7 +26,8 @@ Each fix of a vulnerability in released code ships in a release whose changelog 
 ## Consequences
 
 - The owner writes and publishes each advisory; an agent never posts a finding of a vulnerability in released code.
-- The check reads the changelog only, so whether the advisory exists and says what it should rests on the owner.
+- The check reads the changelog only, so whether the advisory exists and says what it should rests on the owner, and a fix filed under another section, or under none, is not caught.
+- How the path through the temporary private fork meets the ruleset's required `ci` check is checked by the owner at the first security fix.
 
 ## Scope
 

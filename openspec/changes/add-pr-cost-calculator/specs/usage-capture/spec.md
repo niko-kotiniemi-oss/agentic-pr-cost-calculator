@@ -174,7 +174,7 @@ The capture step SHALL read each of the branch's ledger files by the version tha
 
 ### Requirement: The capture step's git commands stay offline
 
-Every git command that the step runs SHALL run with `GIT_NO_LAZY_FETCH=1`, `GIT_TERMINAL_PROMPT=0` and `-c protocol.allow=never`, so that none of them fetches what the clone lacks, on any git version, asks for credentials or opens a network connection.
+Every git command that the step runs SHALL run with `GIT_NO_LAZY_FETCH=1`, `GIT_TERMINAL_PROMPT=0`, `-c protocol.allow=never`, and `-c protocol.<name>.allow=never` for `file`, `git`, `ssh`, `http`, `https` and `ext` and for each other protocol that a `protocol.<name>.allow` key of git's configuration names, read without the session's `GIT_` variables, so that none of them fetches what the clone lacks, asks for credentials or opens a network connection.
 
 #### Scenario: Capture fetches no ledger file that its clone lacks
 
@@ -185,6 +185,11 @@ Every git command that the step runs SHALL run with `GIT_NO_LAZY_FETCH=1`, `GIT_
 
 - **WHEN** the step runs under git 2.43.0 to 2.43.3 or 2.44.0, which do not read `GIT_NO_LAZY_FETCH`, in a partial clone whose branch holds a ledger file whose blob the clone has not fetched
 - **THEN** no git command that the step runs fetches that blob or opens a network connection, the command that would read it fails, and the step still records the session's calls
+
+#### Scenario: A protocol allowed in git's configuration still fetches nothing
+
+- **WHEN** the repository's or the person's global git configuration sets `protocol.file.allow` or `protocol.https.allow` to `always`, in a partial clone whose branch holds a ledger file whose blob the clone has not fetched, under git 2.43.0 to 2.43.3 or 2.44.0
+- **THEN** no git command that the step runs fetches that blob or opens a network connection, and the step still records the session's calls
 
 ### Requirement: Only calls made from this repository are recorded
 
@@ -418,7 +423,7 @@ Calls recorded while no branch was checked out SHALL go only to a commit made wh
 
 ### Requirement: Capture keeps what it records inside the git common directory
 
-Apart from staging a ledger file, taking it back and putting it back, as the requirements from "A ledger file is staged only for a commit whose branch and contents the step can tell" to "A put-back is tried once, and in no other case" say, the step SHALL keep what it records inside the repository's git common directory, and SHALL NOT change the working tree or the index.
+Apart from staging a ledger file, taking it back and putting it back, as the requirements from "A ledger file is staged only for a commit whose branch and contents the step can tell" to "A put-back is tried once, and in no other case" say, and its commit before a push and the taking back of that commit, the step SHALL keep what it records inside the repository's git common directory, and SHALL NOT change the working tree or the index.
 
 #### Scenario: A turn's end leaves the working tree alone
 
@@ -1272,7 +1277,7 @@ When a run leaves out a call made here as made outside every interval when both 
 
 ### Requirement: The capture step keeps no transcript text and reads no secret
 
-The capture step SHALL read from a transcript only the fields that it records or needs to tell a call, and SHALL keep, print, log and send none of a transcript's other text. Neither the capture step nor the report SHALL read a password, a token or a key, but the report's own token, from the environment, a file or git's configuration. A test SHALL plant a secret in a transcript, in the environment and in git's configuration, and fail when anything that the tool writes holds it.
+The capture step SHALL read from a transcript only the fields that it records or needs to tell a call, and SHALL keep, print, log and send none of its other text. Neither the capture step nor the report SHALL read a password, a token or a key from the environment, a file or git's configuration, but the report's own token and the `origin` remote's URL, of which capture SHALL keep only the owner and name. A test SHALL plant a secret in each and fail when anything that the tool writes holds it.
 
 #### Scenario: A secret in a transcript reaches nothing that the tool writes
 
@@ -1281,12 +1286,21 @@ The capture step SHALL read from a transcript only the fields that it records or
 
 #### Scenario: A secret in the environment or git's configuration is not read
 
-- **WHEN** the environment holds `ANTHROPIC_API_KEY`, `GH_TOKEN` and `AWS_SECRET_ACCESS_KEY`, and git's configuration holds a credential helper's stored token
-- **THEN** the capture step reads none of them, and nothing that it writes holds any of them
+- **WHEN** the environment holds `ANTHROPIC_API_KEY`, `GH_TOKEN` and `AWS_SECRET_ACCESS_KEY`, and git's configuration holds an `http.https://github.com/.extraheader` that carries a token and a `url.<base>.insteadOf` whose base carries one
+- **THEN** no git command that the capture step starts gets any of those variables, and nothing that the step writes holds any of those values
+
+### Requirement: Capture's git commands get only the environment they need
+
+Each git command that the capture step starts SHALL get an environment that holds only `PATH`, the variables that name the person's home and configuration folders, the locale's variables, and those that the system needs to start a program, such as `SYSTEMROOT` on Windows, so that no other variable of the session reaches git or a program that git starts.
+
+#### Scenario: A git command that the step starts gets no secret of the session
+
+- **WHEN** the session's environment holds `ANTHROPIC_API_KEY`, `GH_TOKEN`, `AWS_SECRET_ACCESS_KEY` and a variable of another name that carries a token, and the step starts git commands
+- **THEN** no git command that it starts has any of them in its environment, and each still reads the person's global git configuration
 
 ### Requirement: Before a push, calls that no commit carries go into a commit of their own
 
-The run before the agent's `git push` SHALL, where calls recorded on the branch checked out there wait for a commit, the index is free and holds nothing staged, and no rebase, merge, cherry-pick or bisect is in progress, write them into a ledger file and commit only that file, with git's configured identity and a message that says so, running no hook and starting no program that git's configuration names; where the configuration asks for signed commits, it SHALL commit nothing.
+Before a push that "Only a push of the checked-out branch gets the step's commit" names, a run SHALL, where calls recorded on that branch wait for a commit, the index is free and holds nothing staged, and no rebase, merge, cherry-pick or bisect is in progress, write them into a ledger file and commit only that file, with a message that says so, as "The step's own commit runs nothing and guesses no identity" says; where the configuration asks for signed commits, it SHALL commit nothing.
 
 #### Scenario: Calls after the last commit reach the push
 
@@ -1308,19 +1322,76 @@ The run before the agent's `git push` SHALL, where calls recorded on the branch 
 - **WHEN** git's configuration sets `commit.gpgsign` to `true` where the agent runs `git push`
 - **THEN** no commit is made, no signing program is started, and the calls wait for the next commit
 
-#### Scenario: The step's own commit runs no hook
+### Requirement: Only a push of the checked-out branch gets the step's commit
 
-- **WHEN** the repository has `pre-commit`, `commit-msg` and `post-commit` hooks, and a run commits the waiting calls before a push
-- **THEN** none of those hooks runs
+The step SHALL commit before a push only for a top-level `git push`, run in the foreground, that is the only git command of its input and pushes the checked-out branch, named by its name or by `HEAD`, or by a bare `git push` that git's configuration, read offline, sends to a branch of the same name; never for `--dry-run`, `--tags`, `--delete`, `--all`, `--mirror` or a refspec whose source is another ref or a commit, nor with no branch checked out.
 
 #### Scenario: A push of another branch makes no commit
 
 - **WHEN** the agent runs `git push origin other` while another branch is checked out
 - **THEN** no commit is made
 
+#### Scenario: A commit and a push in one input make no commit of the step's
+
+- **WHEN** calls wait, and the agent runs `git add f && git commit -m x && git push` alone
+- **THEN** the step makes no commit of its own, and the agent's commit holds at most one ledger file
+
+#### Scenario: A push that sends nothing of the checked-out branch makes no commit
+
+- **WHEN** calls wait, and the agent runs `git push --dry-run`, `git push --tags`, `git push --delete origin b`, `git push --mirror`, `git push origin other:main` or `git push origin <hash>:main`
+- **THEN** no commit is made, and the calls wait
+
+#### Scenario: A push in another form makes no commit
+
+- **WHEN** calls wait, and the agent pushes through `git -C dir push`, `git -c k=v push`, an alias, a command in the background or in a pipeline, or `gh pr create`
+- **THEN** no commit is made, and the calls wait
+
+#### Scenario: A bare push to a branch of another name makes no commit
+
+- **WHEN** calls wait, the checked-out branch's upstream is a branch of another name, and the agent runs `git push` alone
+- **THEN** no commit is made, and the calls wait
+
+#### Scenario: A push with no branch checked out makes no commit
+
+- **WHEN** calls wait, no branch is checked out, and the agent runs `git push origin HEAD:main`
+- **THEN** no commit is made, and the calls wait
+
+### Requirement: The step's own commit runs nothing and guesses no identity
+
+The step's commit before a push SHALL run with `core.hooksPath` set to an empty folder outside every repository, `core.fsmonitor=false`, `gc.auto=0`, `maintenance.auto=false` and `user.useConfigOnly=true`, so that it runs no hook that `git add`, `git commit` or a ref's update can run, starts no program that git's configuration names, and takes no identity that git would make from the user's and the host's names; where git's configuration gives no identity, it SHALL commit nothing.
+
+#### Scenario: The step's own commit runs no hook
+
+- **WHEN** the repository has `pre-commit`, `prepare-commit-msg`, `commit-msg`, `post-commit`, `reference-transaction` and `post-index-change` hooks, in its hooks folder and in a folder that `core.hooksPath` names, sets `core.fsmonitor` to a program, and has reached the thresholds of `gc.auto` and `maintenance.auto`, and a run commits the waiting calls before a push
+- **THEN** none of those hooks runs, the `core.fsmonitor` program is not started, and no `gc` or maintenance is started
+
+#### Scenario: A clone with no configured identity gets no commit
+
+- **WHEN** neither the repository's nor the person's git configuration gives `user.name` and `user.email`, and the agent runs `git push` with calls waiting
+- **THEN** no commit is made, nothing names the user's or the host's name, and the calls wait
+
+### Requirement: A commit of the step's whose push did not run is taken back
+
+Where the step committed before a push, and its next run finds the push's command over with no remote-tracking ref holding that commit, as after a refusal at a permission prompt, while the branch's tip is that commit and the index matches it, the run SHALL move the branch back to its parent by a compare-and-swap of the ref, take the ledger file back and return the calls to waiting. A run whose commit or take-back fails SHALL leave HEAD, the index and the working tree as they were.
+
+#### Scenario: A push refused at a permission prompt leaves no commit of the step's
+
+- **WHEN** the step commits before a `git push` that is then refused at a permission prompt, and the session's next git command runs
+- **THEN** the branch is back at the agent's last commit, the index and the working tree hold no ledger file of the step's, and the calls wait for the next commit
+
+#### Scenario: A commit of the step's that the agent built on stays
+
+- **WHEN** the step commits before a `git push` that is then refused, and the agent commits on top of it before the step next runs
+- **THEN** the step's commit stays, and the calls stay noted as taken
+
+#### Scenario: A commit that git cannot make leaves everything as it was
+
+- **WHEN** the step's commit before a push fails, as in a partial clone that lacks a tree that the commit needs offline, where `core.safecrlf` refuses the ledger file, or where another command holds the index's lock or moves the branch while the run works
+- **THEN** HEAD, the index and the working tree are as they were before the run, and the calls wait
+
 ### Requirement: The registered command finds a Python on each system and installs none
 
-The registered command and the plugin's command SHALL start the capture step with the first of `python3`, `python` and `py -3` that starts a Python, trying each only where the one before it is missing or starts no Python, such as Windows' stub that opens the Microsoft Store, and SHALL start nothing that installs Python. The step's own check (see "The capture step does nothing below its floors") SHALL refuse a Python older than 3.11.
+The registered command and the plugin's command SHALL try `python3`, `python` and `py -3` in turn, each with `-I` and `PYTHON_MANAGER_AUTOMATIC_INSTALL` set to `false`, first as a probe that exits with a code that only a Python 3.11 or later gives, and SHALL start the capture step once, with the first that passes it, and no other Python after it. They SHALL start nothing that installs Python, in `sh`, Git Bash, PowerShell 7 and Windows PowerShell 5.1 alike.
 
 #### Scenario: A Windows machine with only the `py` launcher records
 
@@ -1329,10 +1400,25 @@ The registered command and the plugin's command SHALL start the capture step wit
 
 #### Scenario: No command installs Python
 
-- **WHEN** no Python is installed, and the Python install manager would install one on a launch command
+- **WHEN** no Python is installed, and the Python install manager would install one on a launch command, its `python3` and `python` among them
 - **THEN** the command starts no install, exits with success and prints nothing on standard output
 
 #### Scenario: The step runs once a turn
 
-- **WHEN** the first command that the registered command tries starts the step, and the step exits
+- **WHEN** the first command that the registered command tries passes the probe and starts the step, and the step exits
 - **THEN** the command tries no other Python
+
+#### Scenario: A step that fails after it started is not started again
+
+- **WHEN** the step, started under a Python 3.11 or later, exits with an error, is killed at its timeout or crashes
+- **THEN** the command starts no other Python, and exits with success
+
+#### Scenario: An old Python gives way to a newer one
+
+- **WHEN** `python3` is missing, `python` is Python 2.7 or Python 3.10, and `py -3` gives Python 3.12
+- **THEN** the command starts the step once, with `py -3`, and the step records the session's calls
+
+#### Scenario: The command runs in every shell that Claude Code may use
+
+- **WHEN** the registered command and the plugin's command run under `sh`, Git Bash, PowerShell 7 and Windows PowerShell 5.1 on the Windows runner, with Python only through the `py` launcher, and with no Python
+- **THEN** in each shell the step runs once where a Python 3.11 or later is found, nothing is installed, and the command exits with success and prints nothing on standard output
