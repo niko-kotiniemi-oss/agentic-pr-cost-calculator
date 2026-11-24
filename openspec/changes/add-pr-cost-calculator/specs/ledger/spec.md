@@ -125,6 +125,11 @@ Each ledger file SHALL be a new regular file with a random name, in the ledger f
 - **WHEN** capture adds calls to a branch that already has ledger files
 - **THEN** it writes a new file, and leaves every other ledger file unchanged
 
+#### Scenario: A ledger file's name carries nothing of its calls or its session
+
+- **WHEN** capture writes a ledger file in each of two clones of one repository, for the same calls of the same transcript, on a branch of the same name
+- **THEN** the two files' names differ, and neither holds a call's message id or its SHA-256 hash
+
 #### Scenario: A symbolic link in the ledger path is refused
 
 - **WHEN** a folder on the ledger file's path below the repository root is a symbolic link
@@ -212,3 +217,17 @@ When a push that gets no comment, with the tool on before or after it, removes o
 
 - **WHEN** a push to the default branch that merges no pull request, or more than one, removes or changes ledger files that the default branch held before it, with the tool on
 - **THEN** no comment is posted, and the job summary says how many ledger files the push removed or changed
+
+### Requirement: A ledger file's lines end in a line feed alone
+
+The capture step SHALL end every line of a ledger file with a line feed alone, on every system, and the report SHALL refuse a ledger line that ends otherwise, such as with a carriage return before its line feed, and count it as refused. The README SHALL give adopters whose git has `core.safecrlf` on the attribute line `.pr-cost/** -text`.
+
+#### Scenario: Capture on Windows writes line feeds alone
+
+- **WHEN** the capture step writes a ledger file under Python on Windows
+- **THEN** every line of the file ends with a line feed and holds no carriage return
+
+#### Scenario: A ledger line that ends in CRLF is refused
+
+- **WHEN** a pull request adds a ledger file whose lines end with a carriage return and a line feed
+- **THEN** the report counts each such line as refused, and counts none of its entries

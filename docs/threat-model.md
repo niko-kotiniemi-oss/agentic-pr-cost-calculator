@@ -2,7 +2,7 @@
 
 What could go wrong with the tool, for the people who use it and for this repository, and what answers each threat. Every change revisits this file (see `CLAUDE.md`).
 
-It was written for the first change, `add-pr-cost-calculator`, before any code, so the answers are requirements and tasks rather than code. It holds 311 threats across 9 trust boundaries. T38 to T69 were found by the design-stage review, T70 to T78 by the design-stage review of the decision records in `docs/decisions/`, T79 to T81 by the implementation-stage review of those records and their checks, T82 to T100 by the design-stage review of the assumptions, the glossary and the golden set, T101 by the implementation-stage review of the assumptions, T102 and T103 by the implementation-stage review of the glossary, T104 to T116 at the design of the revision of consent, the store and the ledger's format, T117 and T118 by the design-stage review of that revision, T119 to T122 by the review of that revision after its approval, T123 with the owner's answer to a question that the check of that review's fixes raised, T124 to T126 by the design-stage review of the test of the specs' form, T127 by the implementation-stage review of that test, T128 to T135 at the design of the plugin that brings capture to a project's cloud threads, T136 to T142 by the design-stage review of that plugin, T143 by its implementation-stage review, T144 by its security review, T145 to T147 at the design of the README's short start, T148 to T156 by the design-stage review of that short start, T157 and T158 by its implementation-stage review, T159 to T162 at the design of the roadmap, T163 to T165 by the design-stage review of the roadmap, T166 to T168 at the design of the backlog, T169 by the design-stage review of the backlog, T170 at the design of the guide, T171 to T174 by the design-stage review of the guide, T175 and T176 by the design-stage review of one opt-in for every agent, T177 to T182 by the second design-stage review of the guide, T183 by the final review of its build, T184 by its implementation-stage review, T185 to T189 at the design of the walking skeleton and T190 to T194 by its design-stage review, and T195 to T197 at the design of the specs' citation sweep, T198 to T200 by its design-stage review and T201 to T205 by its implementation-stage review, T206 to T215 by the design-stage review of the risk register and T216 to T222 by its implementation-stage review, and T223 to T236 by the design-stage reviews of the context files and T237 by their implementation-stage reviews, and T238 to T241 at the design of the check of Renovate's proposals, T242 to T245 by its design-stage review and T246 by its implementation-stage review, and T247 to T249 at the design of the two fields on every record and T250 by its design-stage review, and T251 to T256 at the design of the conventions, T257 to T265 by its design-stage reviews, T266 at its revision for Windows, T267 to T269 by that revision's design-stage review, T270 at its build, T271 to T276 by its implementation-stage review, T277 and T278 by its review lanes and T279 to T282 by its second review, and T283 to T285 at the design of the scope and visual documentation and T286 to T289 by its design-stage review, and T290 to T293 at the design of the first part of the requirements corrected before the build and T294 to T311 by its design-stage review; they follow T37, each under a heading for its boundary, so that the numbers stay in order, and a threat that a change removes keeps its ID out of use (see Retired IDs). Where an answer can be a scenario in a spec, it is one, so that an acceptance test holds it. `tests/test_threat_model.py` checks that every citation below names a scenario, task, decision, decision record or file that exists.
+It was written for the first change, `add-pr-cost-calculator`, before any code, so the answers are requirements and tasks rather than code. It holds 320 threats across 9 trust boundaries. T38 to T69 were found by the design-stage review, T70 to T78 by the design-stage review of the decision records in `docs/decisions/`, T79 to T81 by the implementation-stage review of those records and their checks, T82 to T100 by the design-stage review of the assumptions, the glossary and the golden set, T101 by the implementation-stage review of the assumptions, T102 and T103 by the implementation-stage review of the glossary, T104 to T116 at the design of the revision of consent, the store and the ledger's format, T117 and T118 by the design-stage review of that revision, T119 to T122 by the review of that revision after its approval, T123 with the owner's answer to a question that the check of that review's fixes raised, T124 to T126 by the design-stage review of the test of the specs' form, T127 by the implementation-stage review of that test, T128 to T135 at the design of the plugin that brings capture to a project's cloud threads, T136 to T142 by the design-stage review of that plugin, T143 by its implementation-stage review, T144 by its security review, T145 to T147 at the design of the README's short start, T148 to T156 by the design-stage review of that short start, T157 and T158 by its implementation-stage review, T159 to T162 at the design of the roadmap, T163 to T165 by the design-stage review of the roadmap, T166 to T168 at the design of the backlog, T169 by the design-stage review of the backlog, T170 at the design of the guide, T171 to T174 by the design-stage review of the guide, T175 and T176 by the design-stage review of one opt-in for every agent, T177 to T182 by the second design-stage review of the guide, T183 by the final review of its build, T184 by its implementation-stage review, T185 to T189 at the design of the walking skeleton and T190 to T194 by its design-stage review, and T195 to T197 at the design of the specs' citation sweep, T198 to T200 by its design-stage review and T201 to T205 by its implementation-stage review, T206 to T215 by the design-stage review of the risk register and T216 to T222 by its implementation-stage review, and T223 to T236 by the design-stage reviews of the context files and T237 by their implementation-stage reviews, and T238 to T241 at the design of the check of Renovate's proposals, T242 to T245 by its design-stage review and T246 by its implementation-stage review, and T247 to T249 at the design of the two fields on every record and T250 by its design-stage review, and T251 to T256 at the design of the conventions, T257 to T265 by its design-stage reviews, T266 at its revision for Windows, T267 to T269 by that revision's design-stage review, T270 at its build, T271 to T276 by its implementation-stage review, T277 and T278 by its review lanes and T279 to T282 by its second review, and T283 to T285 at the design of the scope and visual documentation and T286 to T289 by its design-stage review, and T290 to T293 at the design of the first part of the requirements corrected before the build and T294 to T311 by its design-stage review; they follow T37, each under a heading for its boundary, so that the numbers stay in order, and a threat that a change removes keeps its ID out of use (see Retired IDs). Where an answer can be a scenario in a spec, it is one, so that an acceptance test holds it. `tests/test_threat_model.py` checks that every citation below names a scenario, task, decision, decision record or file that exists.
 
 ## How it was built
 
@@ -201,7 +201,7 @@ The trust boundaries:
 - **Answer:** capture runs before and after each of the agent's Bash commands that the hook's condition `Bash(git *)` matches, and when a turn, a subagent, a failed turn or the session ends (R7). It stages for a `git commit` in the repository that holds the session's project directory, or, for a run of the plugin, in the repository where the commit runs, which that run works on first (R76, R180, T19), in each form of a commit that R8, R48, R79, R80 and R84 state. So each commit it stages for carries the calls recorded on its branch up to that moment, including those of the turn that commits (R81). A call that one run missed is recorded by a later one (R42), and neither an ignore rule nor a sparse checkout can drop the ledger file (R50).
 - **Residual:** some calls reach no commit, and the README names these cases. They are the calls made after the agent's last commit on a branch that capture staged for, such as pushing and opening the pull request, and the call that runs that commit when that commit's run cannot yet read it as over, and any call that that run leaves unread at its time budget; calls recorded on a branch that gets no later commit, in a worktree where nobody commits or that Claude Code removes, or while no branch is checked out, as during a rebase that stops at a conflict; and calls whose only later commits were made in a way that capture does not stage for: by `git merge`, `git cherry-pick` or `git rebase --continue`, by a script, an API or Claude Code's PowerShell tool, which is on by default on Windows for claude.ai and Console accounts, in the background, in a pipeline, a subshell or a group, joined to another command by `||` or behind a wrapper such as `timeout`, after another command in the same input, with a message that another command writes or that a here-document whose delimiter is not quoted holds, by git written in a form that the hook's condition does not match, such as by its path or through an alias, or while a repository's own git hook refused the ledger file. In a repository whose attributes give the ledger path a filter or a working-tree encoding, or where git refuses to add the file, no call reaches a commit. Once a run has found a commit holding a ledger file, its calls are not staged again in that run's clone, however the file leaves the branch, so in that clone the calls of a commit that is reverted, reset away in any mode but `--soft` or split in an interactive rebase are not counted, even when its changes are committed again, unless the file itself is committed again, as a squash made with a mixed `git reset` and `git add -A` commits it, except where a sparse checkout leaves `.pr-cost/` out, or an ignore rule matches it while it is untracked, as after a reset without `-N`. After a take-back, a `git stash` made before the run that puts the file back, or a mixed `git reset` back to the commit that took the file once a run has found another commit checked out, leaves the file deleted in the working tree, so that in that clone a `git commit -a` removes it, with its calls, and after a mixed `git reset` without `-N` in the commit's own command, a `git reset --soft` back to that commit leaves it deleted in the index as well, so that in that clone any next commit removes it, with its calls. Checking out or restoring from the index the path of a ledger file that has an intent-to-add index entry writes empty content over the file, so that its calls are lost, as the design's risks say. A damaged index, which git 2.43 can write in a cone-mode `git sparse-checkout` command that runs with the sparse index on or is given `--sparse-index` while any file has an intent-to-add index entry, or, with the sparse index on, in a squash made with `git reset -N` of commits that add a file that the sparse checkout leaves out, can make the next commit delete ledger files from the branch, with their calls, as the design's risks say. The comment counts what the pull request's commits carry. A subagent that never finishes leaves its last call unread when that call gives no stop reason. The design leaves commits made through the PowerShell tool out of this change. A session that runs none of the hooks that the repository's own settings register, and does not have the plugin, records none of its calls. By Claude Code's documentation the sessions that run none of them are every cloud thread of a project, every cloud session with several repositories, and an interactive session whose folder the person has not trusted (A61), and a project's cloud threads run the plugin when the person adds it (DR-197). A run of the plugin that works on several repositories spends one time budget on them, the commit's repository first, so the calls that it leaves unread in the others wait for a later run there.
 - **Held by:** `usage-capture`: "A one-turn session's commit carries its calls"; `usage-capture`: "A commit carries the calls that another session recorded on its branch"; `usage-capture`: "A commit that stages its own files carries a ledger file"; `usage-capture`: "A commit of all changes with nothing staged carries a ledger file"; `usage-capture`: "A turn that ends in an API error is still recorded"; `usage-capture`: "A call still being written is recorded later"; `usage-capture`: "A commit with git's own options is still a commit"; `usage-capture`: "A dry-run option that a later option undoes is still a commit"; `usage-capture`: "An ignored ledger path is still committed"; `usage-capture`: "A sparse checkout still commits the ledger file"; `usage-capture`: "A commit message from a here-document still carries a ledger file"; `usage-capture`: "A squash with a plain reset keeps its ledger files"; `usage-capture`: "A soft reset back to a commit that its own command reset away leaves its ledger file out"; `usage-capture`: "The plugin records a session in a repository that registers no hook"; `usage-capture`: "The run before a git command in another repository records that repository's calls first"; DR-007; DR-010; DR-012; DR-013; DR-014; DR-030; DR-032; DR-034; DR-037; DR-055; DR-107; DR-128; DR-129; DR-130; DR-172; DR-197; `add-pr-cost-calculator` task 4.4; `usage-capture`: "A run from another directory works on this repository"
-- **Further answer:** Before a git push that the hook's condition matches, a run that holds calls recorded on the checked-out branch that no commit carries makes a commit that holds only the ledger file, so that the push carries them, as the record that replaces DR-010 weighs, with what a commit that the step makes on its own costs the person; B-007
+- **Further answer:** before a push, the step commits the calls that no commit carries in a commit that holds only the ledger file, so that the push carries them (R305); `usage-capture`: "Calls after the last commit reach the push"
 - **Assumptions:** A1, A3, A4, A6, A10, A11, A13, A37, A38, A39, A40, A41, A42, A43, A46, A47, A61, A69
 
 ### T9. Usage that costs extra is priced as standard
@@ -317,8 +317,8 @@ The trust boundaries:
 - **Raw likelihood:** 3 (likely)
 - **Raw risk:** 6
 - **What could happen:** a contributor lowers or raises the reported cost by editing their ledger files: their entries, or a first line's counts, flags or version, as when a file states a version that the report does not read, so that it is refused.
-- **Answer:** none in the tool. A pull request's ledger files are in its diff, where a reviewer sees them, and the comment words each flag as what the ledger files say, and counts each refused file.
-- **Held by:** DR-002; DR-010; DR-066; DR-181; DR-200; accepted: a pull request's ledger files are reviewed like any other file in it, and the report's figure is an estimate, not a bill.; DR-257
+- **Answer:** none in the tool. A pull request's ledger files are in its diff, where a reviewer sees them, the comment words each flag as what the ledger files say, and counts each refused file, and it says when the merged commit's attributes may hide the ledger files in the diff (R302). An edited provider is an edited count of the same kind, which the acceptance covers, as the owner confirmed on 2026-11-24.
+- **Held by:** DR-002; DR-010; DR-066; DR-181; DR-200; accepted: a pull request's ledger files are reviewed like any other file in it, and the report's figure is an estimate, not a bill.; `report-comment`: "A ledger marked as generated is named"; DR-257
 - **Acceptance:** DR-257: the owner accepts it, since nothing that the report trusts signs the ledger, so only a reviewer of the diff sees an edited count, and the figure is an estimate, not a bill.
 - **Assumptions:** A44, A45
 
@@ -753,9 +753,9 @@ The trust boundaries:
 - **Raw likelihood:** 2 (possible)
 - **Raw risk:** 4
 - **What could happen:** in a partial clone whose sparse checkout leaves `.pr-cost/` out, a ledger blob is not local, and git fetches it from the remote when the step reads it. The hook would go to the network, which it must not, and could wait on a credential helper or a slow remote until its budget is spent. A network guard inside the Python process does not see a connection that a git subprocess makes.
-- **Answer:** no git command that the step runs can fetch what the clone lacks (R111), and the step skips a ledger file whose blob the clone lacks, as it skips an oversized one (R45).
-- **Residual:** git's own source names `GIT_NO_LAZY_FETCH` in no file at v2.43.0 to v2.43.3 or at v2.44.0, and reads it at v2.43.4, v2.44.1 and v2.45.0, so on a plain git 2.43.0 to 2.43.3 or 2.44.0, which the floor admits, the variable does nothing and this answer does not hold until the floor or the step's check changes (T86).
-- **Held by:** `usage-capture`: "Capture fetches no ledger file that its clone lacks"; `usage-capture`: "Capture skips a ledger file whose blob its clone lacks"; `project-standards`: "The hook opens no connection"; DR-060; `add-pr-cost-calculator` task 2.1
+- **Answer:** no git command that the step runs can fetch what the clone lacks, since each runs with `GIT_NO_LAZY_FETCH=1` and `-c protocol.allow=never` (R111, DR-310), and the step skips a ledger file whose blob the clone lacks, as it skips an oversized one (R45).
+- **Residual:** git's own source names `GIT_NO_LAZY_FETCH` in no file at v2.43.0 to v2.43.3 or at v2.44.0, so on those versions only `-c protocol.allow=never` keeps the step offline, which git 2.43.0 was seen to honour on 2026-11-24 (DR-310).
+- **Held by:** `usage-capture`: "Capture fetches no ledger file that its clone lacks"; `usage-capture`: "Capture skips a ledger file whose blob its clone lacks"; `project-standards`: "The hook opens no connection"; `usage-capture`: "A git that ignores `GIT_NO_LAZY_FETCH` still fetches nothing"; DR-060; DR-310; `add-pr-cost-calculator` task 2.1
 - **Assumptions:** A11, A63
 
 ### T46. On Windows, a program planted in the current directory runs as git
@@ -1056,8 +1056,8 @@ The trust boundaries:
 - **What could happen:** tooling that opens pull requests can put a link to a session, project or thread, with its identifiers, into a pull request's public title or body, and the checks of tracked files and commit messages never read that text. An edit history keeps text that a later edit removes. Each review lane's findings and their resolutions, the index and an issue for each deferred finding are more such text (DR-262).
 - **Answer:** a CI job checks a pull request's title and body against the same private patterns and name hashes as tracked files (R33). `CLAUDE.md` says that no such link or identifier goes into a commit, a pull request's text, an issue or a comment here, whatever a tool adds.
 - **Residual:** issues and comments are not checked, and the check runs only after the text is public. The further answer's hook would not run in a project's cloud thread, which runs none of the hooks that the repository's settings register (A61).
-- **Held by:** `project-standards`: "A pull request body with a private reference fails CI"; `project-standards`: "An edited body is checked again"; DR-069; DR-070; DR-243; DR-262; `add-pr-cost-calculator` task 1.14; `CLAUDE.md`
-- **Further answer:** A PreToolUse hook that `.claude/settings.json` registers checks the text of each tool call that opens or edits a pull request, an issue or a comment against the same private patterns and name hashes as R33, and blocks the call before the text is posted, which a test holds with synthetic tool input with and without a session link; B-007
+- **Held by:** `project-standards`: "A pull request body with a private reference fails CI"; `project-standards`: "An edited body is checked again"; DR-069; DR-315; DR-070; DR-243; DR-262; `add-pr-cost-calculator` task 1.14; `CLAUDE.md`
+- **Further answer:** a hook that `.claude/settings.json` registers blocks an agent's tool call that would post a private reference or a session link to GitHub, before it is posted (R298, DR-315); `project-standards`: "A pull request's text with a session link is blocked before it is posted"
 - **Assumptions:** A6, A8, A9, A16, A61
 
 ### T66. A compromised development tool runs with the owner's credentials
@@ -1103,7 +1103,7 @@ The trust boundaries:
 - **Raw risk:** 6
 - **What could happen:** the job that holds `contents: write` installs a package, restores a cache that another workflow wrote, keeps the checkout's token, or passes a tag name or changelog text to a shell inside `${{ }}`, where git allows shell characters in tag names.
 - **Answer:** the release job alone holds `contents: write`, runs only for a pushed tag, checks the tag's form before any other step (R27), installs nothing, restores no cache, checks out without keeping credentials, runs only `python3 -I` on the tagged commit's standard-library scripts and actions pinned by commit, and passes event data only through `env:`. It needs a read-only job that runs the tests on the oldest and newest Python. Actions' default workflow permissions stay read-only as a backstop (see Settings the owner keeps).
-- **Held by:** `releases-and-compatibility`: "A tag that is not a semantic version stops the workflow first"; DR-067; DR-076; DR-148; `add-pr-cost-calculator` task 6.3
+- **Held by:** `releases-and-compatibility`: "A tag that is not a semantic version stops the workflow first"; `project-standards`: "A write permission granted to a whole workflow fails CI"; DR-067; DR-076; DR-148; `add-pr-cost-calculator` task 6.3
 - **Assumptions:** A7, A12, A15, A18, A20, A29
 
 ### T69. The bill of materials misstates what a release holds and runs
@@ -2103,8 +2103,8 @@ The trust boundaries:
 - **What could happen:** a person who adds this repository on claude.ai as a marketplace gets each new version of its plugin when they check for updates, or by itself once they turn on syncing, with nothing to accept once it has synced, and the plugin's hooks run in each of their sessions that loads it, with their credentials, in every repository where Claude works. Whoever could change what the marketplace serves, by merging a pull request that changes the marketplace's plugin folder or the root marketplace file, would run code on the machines of everyone who added it, before any release and without its checks.
 - **Answer:** the root marketplace file holds only the marketplace's name, its owner and one entry that names the tool's plugin and its folder, and CI fails when it holds anything else (R190, T140). The folder holds the plugin exactly as a published release's tag builds it, with that release's version in its manifest, and CI fails when it differs from what that tag's own build script builds or gives a version that no published release, found by its tag's full name in the default branch's first-parent history, has, or a lower one than at the base (R184, T137, T138). A pull request that adds, changes or removes the root file, or changes the folder, changes nothing else (R190), and the folder moves only after a release, in a pull request that the owner reviews and merges, while only an identity that agent sessions never hold can create a tag (T67). The README gives the zip first, each update of which is the person's own act after a check, and says how a marketplace's updates arrive and where a fixed release comes from (R187). The owner merges a pull request that changes the root file or the folder only when its diff changes nothing else, since its CI runs the checks as that pull request leaves them (T137). The README's short start says that the marketplace's updates need no approval (R198).
 - **Residual:** a release reaches every person who added the marketplace at their next update, with no check of their own, so a release that is itself compromised reaches them sooner than those who upload its zip (T28). A person who adds the marketplace gets each change that the default branch's root file and folder receive, which CI's checks and the owner's review hold, and a pull request that changes the folder together with those checks passes its own CI, so only the owner's review stops it (T137, T140).
-- **Held by:** `releases-and-compatibility`: "A marketplace folder that differs from its release fails CI"; `releases-and-compatibility`: "A marketplace folder is compared with what its tag's own build script builds"; `releases-and-compatibility`: "A submodule or a link in the marketplace folder fails CI"; `releases-and-compatibility`: "A marketplace folder whose version no published release has fails CI"; `releases-and-compatibility`: "A marketplace folder that moves back to an earlier release fails CI"; `releases-and-compatibility`: "The root marketplace file lists only the tool's plugin"; `releases-and-compatibility`: "A root marketplace entry that declares anything else fails CI"; `releases-and-compatibility`: "A pull request that changes the marketplace and anything else fails CI"; `project-standards`: "An attribute that hides the marketplace's diff fails CI"; `project-standards`: "The README gives the zip first and the marketplace second"; `project-standards`: "The README opens with its short start"; DR-148; DR-203; DR-204; DR-205; DR-212; `add-pr-cost-calculator` task 6.9; `add-pr-cost-calculator` task 6.10
-- **Further answer:** A pull request that changes the root marketplace file or the plugin folder is also checked by the marketplace's checks as its base commit holds them, run over the pull request's files read as data, by a means that runs none of its code and holds no secret and no write token, so that one that weakens a check and moves the folder together fails the base's check; B-007, whose design threat-models that means
+- **Held by:** `releases-and-compatibility`: "A marketplace folder that differs from its release fails CI"; `releases-and-compatibility`: "A marketplace folder is compared with what its tag's own build script builds"; `releases-and-compatibility`: "A submodule or a link in the marketplace folder fails CI"; `releases-and-compatibility`: "A marketplace folder whose version no published release has fails CI"; `releases-and-compatibility`: "A marketplace folder that moves back to an earlier release fails CI"; `releases-and-compatibility`: "The root marketplace file lists only the tool's plugin"; `releases-and-compatibility`: "A root marketplace entry that declares anything else fails CI"; `releases-and-compatibility`: "A pull request that changes the marketplace and anything else fails CI"; `project-standards`: "An attribute that hides the marketplace's diff fails CI"; `project-standards`: "The README gives the zip first and the marketplace second"; `project-standards`: "The README opens with its short start"; DR-148; DR-203; DR-204; DR-205; DR-212; `add-pr-cost-calculator` task 6.9; `add-pr-cost-calculator` task 6.10; DR-312
+- **Further answer:** CI also runs the base commit's own marketplace checks over a pull request's tree that changes the marketplace, from a job that runs none of its code and holds no secret and no token that can write (R299, DR-312); `project-standards`: "A pull request that weakens a check and changes what it checks fails CI"
 - **Assumptions:** A7, A15, A27, A72
 
 ### T133. A plugin zip that is not a release's is uploaded
@@ -2183,8 +2183,8 @@ The trust boundaries:
 - **What could happen:** CI runs a pull request's own copy of its scripts and tests (T71), so a pull request that changes the marketplace's plugin folder or the root marketplace file together with the check that compares them, the build script whose output the check compares the folder with, or the workflow that runs it, would pass its own CI, and once merged would reach everyone who added the marketplace before any release (T132).
 - **Answer:** the check compares the folder with what the release tag's own build script builds, never with the pull request's build (R184), and fails a pull request that changes the marketplace together with anything else (R190), so that a change to the check, the build script or the workflow comes in a pull request of its own, which the owner reviews as such. The checks are on the default branch before the root file comes back, in a pull request that changes no marketplace file, so that the pull request that brings the marketplace back is held by checks that it does not change. That check runs as the pull request leaves it, so the owner merges a pull request that changes the root file or the folder only when its diff changes nothing else, a rule that no change to CI undoes (A15).
 - **Residual:** one pull request that changes the check, the build script or the workflow together with the folder passes its own CI, and a pull request that changes only the check can weaken it, so that a later one that changes only the folder passes the weakened check, so both rest on the owner's review, as every change to a check does (T71).
-- **Held by:** `releases-and-compatibility`: "A marketplace folder is compared with what its tag's own build script builds"; `releases-and-compatibility`: "A pull request that changes the marketplace and anything else fails CI"; DR-204; `add-pr-cost-calculator` task 6.9; `add-pr-cost-calculator` task 6.10
-- **Further answer:** The check that fails a pull request that changes the marketplace together with anything else runs as the base commit holds it, over the pull request's changed paths read as data, by a means that runs none of its code and holds no secret and no write token, which a test of the workflow holds; B-007, whose design threat-models that means
+- **Held by:** `releases-and-compatibility`: "A marketplace folder is compared with what its tag's own build script builds"; `releases-and-compatibility`: "A pull request that changes the marketplace and anything else fails CI"; DR-204; `add-pr-cost-calculator` task 6.9; `add-pr-cost-calculator` task 6.10; DR-312
+- **Further answer:** CI also runs the base commit's own marketplace checks over a pull request's tree that changes the marketplace, from a job that runs none of its code and holds no secret and no token that can write (R299, DR-312); `project-standards`: "A pull request that weakens a check and changes what it checks fails CI"
 - **Assumptions:** A15
 
 ## Boundary 8, continued: found at the design-stage review of the plugin for cloud threads
@@ -4884,14 +4884,151 @@ T293 (Boundary 3) also concerns this boundary: the provider that capture reads f
 - **Residual:** a day earlier than the true one is not caught (T101).
 - **Held by:** `project-standards`: "A recorded response without its day fails a test"; `project-standards`: "A recorded response's page outside the listed hosts fails a test"; DR-305; `add-pr-cost-calculator` task 1.1
 
+## Boundary 1, continued: found at the design of the second part of the requirements corrected before the build
+
+### T312. A secret in a transcript, the environment or git's configuration reaches what the tool writes
+
+- **Kind:** information disclosure
+- **Impact:** 3 (high)
+- **Likelihood:** 1 (unlikely)
+- **Risk:** 3
+- **Raw impact:** 3 (high)
+- **Raw likelihood:** 2 (possible)
+- **Raw risk:** 6
+- **What could happen:** a transcript holds a token that a session printed, or the environment holds an API key, and the capture step reads it on the way to the counts and writes it into the store, standard error, a ledger file or a comment.
+- **Answer:** the capture step reads from a transcript only the fields that it records or needs to tell a call, and neither it nor the report reads a password, a token or a key but the report's own token; a test plants one in each place (R301, R4, DR-309).
+- **Residual:** a secret that a field the step records holds, such as a model's name, would be kept; R4 limits those fields to counts and names that the price table lists.
+- **Held by:** `usage-capture`: "A secret in a transcript reaches nothing that the tool writes"; `usage-capture`: "A secret in the environment or git's configuration is not read"; DR-309
+
+## Boundary 2, continued: found at the design of the second part of the requirements corrected before the build
+
+### T313. A fork that copies the configuration records and reports usage that its owner never turned on
+
+- **Kind:** information disclosure
+- **Impact:** 2 (medium)
+- **Likelihood:** 1 (unlikely)
+- **Risk:** 2
+- **Raw impact:** 2 (medium)
+- **Raw likelihood:** 3 (likely)
+- **Raw risk:** 6
+- **What could happen:** a fork copies the repository's configuration, so its owner's and its contributors' sessions are recorded there and its merges are reported, though its owner never chose the tool.
+- **Answer:** the configuration names its repository, and capture records nothing, and the report posts no comment, where that name is not the clone's `origin` or the workflow's repository (R296, DR-307).
+- **Residual:** a person who points a fork's clone's `origin` at the repository that it was forked from records there, by their own opt-in. A renamed repository records nothing until its configuration names it, which the report's job summary says.
+- **Held by:** `switch-and-opt-in`: "A fork that copies the configuration records nothing"; `switch-and-opt-in`: "A merge in a fork whose configuration names another repository gets no comment"; `switch-and-opt-in`: "A renamed repository is off until its configuration names it"; `switch-and-opt-in`: "Each form of a remote's URL gives its repository's name"; DR-307
+
+### T314. The step's own commit before a push changes the person's history in a way that they did not ask for
+
+- **Kind:** tampering, reliability
+- **Impact:** 2 (medium)
+- **Likelihood:** 2 (possible)
+- **Risk:** 4
+- **Raw impact:** 2 (medium)
+- **Raw likelihood:** 3 (likely)
+- **Raw risk:** 6
+- **What could happen:** before a push, the step commits the waiting calls, and that commit runs the repository's hooks, starts a signing program, takes the person's staged changes, lands on a branch that is not pushed, or is refused by a rule that asks for signed commits.
+- **Answer:** the step commits only where the index is free and holds nothing staged, no rebase, merge, cherry-pick or bisect is in progress and the push names the checked-out branch; it runs no hook, starts no program that git's configuration names, and commits nothing where the configuration asks for signed commits (R305).
+- **Residual:** the person's history holds a small commit that they did not type, which the README says. A push that names a commit rather than a branch does not carry it, and its calls wait.
+- **Held by:** `usage-capture`: "Calls after the last commit reach the push"; `usage-capture`: "A push with staged changes makes no commit"; `usage-capture`: "A clone that signs its commits gets no commit"; `usage-capture`: "The step's own commit runs no hook"; `usage-capture`: "A push of another branch makes no commit"
+
+## Boundary 3, continued: found at the design of the second part of the requirements corrected before the build
+
+### T315. A name that the tool gives git is read as an option
+
+- **Kind:** tampering
+- **Impact:** 3 (high)
+- **Likelihood:** 1 (unlikely)
+- **Risk:** 3
+- **Raw impact:** 3 (high)
+- **Raw likelihood:** 2 (possible)
+- **Raw risk:** 6
+- **What could happen:** a branch, a path or a remote named like an option, such as `--output=x` or `-c core.pager=x`, reaches a git command that the tool starts, which reads it as an option and writes a file or runs a program.
+- **Answer:** every git command that the tool starts gives each name only after `--end-of-options` or `--`, which a property test holds (R300).
+- **Residual:** none known.
+- **Held by:** `project-standards`: "A ref or a path named like an option stays a name"; `project-standards`: "A property test drives every git command with names that look like options"
+
+### T316. A ledger file written on Windows ends its lines in CRLF and is refused
+
+- **Kind:** reliability
+- **Impact:** 2 (medium)
+- **Likelihood:** 1 (unlikely)
+- **Risk:** 2
+- **Raw impact:** 2 (medium)
+- **Raw likelihood:** 3 (likely)
+- **Raw risk:** 6
+- **What could happen:** Python on Windows writes a carriage return before each line feed, so every line of a ledger file written there is refused, and the person's usage is lost.
+- **Answer:** the capture step ends every line with a line feed alone on every system, and the report refuses only a line that ends otherwise, which it counts (R306, DR-313).
+- **Residual:** a ledger file that someone edits by hand with an editor that writes CRLF is refused, which the comment counts.
+- **Held by:** `ledger`: "Capture on Windows writes line feeds alone"; `ledger`: "A ledger line that ends in CRLF is refused"; DR-313
+
+## Boundary 6, continued: found at the design of the second part of the requirements corrected before the build
+
+### T317. The registered command installs Python, or starts none, on an adopter's machine
+
+- **Kind:** reliability
+- **Impact:** 2 (medium)
+- **Likelihood:** 2 (possible)
+- **Risk:** 4
+- **Raw impact:** 2 (medium)
+- **Raw likelihood:** 3 (likely)
+- **Raw risk:** 6
+- **What could happen:** on Windows, `python3` is the stub that opens the Microsoft Store, so the command records nothing; or the command reaches a launcher that installs a Python when none is installed.
+- **Answer:** the command tries `python3`, `python` and `py -3` in turn, each only where the one before it is missing or starts no Python, and starts nothing that installs Python (R307, DR-314).
+- **Residual:** which commands each Windows installer gives is checked against Python's documentation at the build, and on a real machine only by B-027.
+- **Held by:** `usage-capture`: "A Windows machine with only the `py` launcher records"; `usage-capture`: "No command installs Python"; `usage-capture`: "The step runs once a turn"; DR-314
+
+### T318. A security fix reaches adopters with nothing that tells them to update
+
+- **Kind:** information disclosure
+- **Impact:** 2 (medium)
+- **Likelihood:** 2 (possible)
+- **Risk:** 4
+- **Raw impact:** 2 (medium)
+- **Raw likelihood:** 3 (likely)
+- **Raw risk:** 6
+- **What could happen:** a fix of a vulnerability ships in a release whose text says nothing of it, so adopters who pinned an earlier release keep the vulnerable code.
+- **Answer:** each security fix ships in a release whose changelog names its advisory, and the release workflow publishes no release whose security line names none (R303, DR-311).
+- **Residual:** whether the advisory says what it should rests on the owner, who writes it.
+- **Held by:** `releases-and-compatibility`: "A security line that names no advisory stops the release"; DR-311
+
+## Boundary 7, continued: found at the design of the second part of the requirements corrected before the build
+
+### T319. Private text reaches GitHub by a way that the hook does not see
+
+- **Kind:** information disclosure
+- **Impact:** 2 (medium)
+- **Likelihood:** 2 (possible)
+- **Risk:** 4
+- **Raw impact:** 2 (medium)
+- **Raw likelihood:** 3 (likely)
+- **Raw risk:** 6
+- **What could happen:** an agent posts a session link or a private reference through a tool that the hook's matcher does not name, from a cloud thread, which runs no hook that the repository's settings register, or through a command that the hook does not read.
+- **Answer:** the hook checks each tool call that opens or edits a pull request, an issue, a comment or a review, and each Bash command that runs `gh`, and blocks one whose input it cannot read (R298, DR-315); CI still checks a pull request's text (R33).
+- **Residual:** a cloud thread runs no repository hook (A61), and text that a person types on GitHub is not checked before it is posted.
+- **Held by:** `project-standards`: "A pull request's text with a session link is blocked before it is posted"; `project-standards`: "A comment with a private reference is blocked before it is posted"; `project-standards`: "A call whose input the hook cannot read is blocked"; DR-315
+- **Assumptions:** A61
+
+### T320. The base commit's checks, run for a pull request, run that pull request's code or hold a token that can write
+
+- **Kind:** elevation of privilege
+- **Impact:** 3 (high)
+- **Likelihood:** 1 (unlikely)
+- **Risk:** 3
+- **Raw impact:** 3 (high)
+- **Raw likelihood:** 2 (possible)
+- **Raw risk:** 6
+- **What could happen:** the job that runs the base commit's checks over a pull request's tree runs on `pull_request_target`, imports a module, reads a configuration file or follows a link from the pull request's tree, and so runs its code with a token that can write.
+- **Answer:** the job runs on `pull_request` with only read permissions and no secret, checks out the base commit's scripts, and reads the pull request's tree only as data, running none of its code (R299, DR-312).
+- **Residual:** a flaw in git's own reading of a hostile tree reaches a job that holds only a read token.
+- **Held by:** `project-standards`: "A pull request that weakens a check and changes what it checks fails CI"; `project-standards`: "The base commit's checks run none of the pull request's code"; DR-312
+
 ## Risk matrix
 
 Generated from the ratings above. Each cell lists the threats whose impact and likelihood it names.
 
 | Impact \ Likelihood | 1 unlikely | 2 possible | 3 likely |
 |---|---|---|---|
-| 3 high | T1, T12, T14, T15, T23, T24, T28, T29, T35, T43, T46, T58, T59, T63, T64, T66, T67, T68, T73, T77, T81, T82, T83, T92, T93, T94, T95, T103, T107, T108, T119, T125, T133, T138, T140, T141, T142, T144, T147, T148, T150, T151, T160, T163, T164, T165, T167, T169, T174, T175, T177, T178, T180, T183, T184, T186, T187, T188, T190, T192, T210, T211, T212, T213, T214, T217, T219, T225, T226, T227, T229, T230, T231, T233, T234, T237, T240, T251, T252, T253, T254, T256, T257, T258, T259, T260, T261, T263, T264, T265, T270, T271, T279, T286, T288, T289, T294 | T2, T32, T33, T34, T61, T62, T65, T132, T137, T232 |  |
-| 2 medium | T4, T6, T11, T13, T18, T25, T26, T38, T41, T42, T53, T55, T56, T57, T60, T69, T70, T76, T78, T79, T80, T84, T85, T86, T87, T88, T89, T90, T91, T97, T98, T99, T100, T101, T102, T104, T105, T109, T112, T115, T124, T126, T127, T135, T139, T146, T149, T152, T153, T155, T156, T157, T162, T172, T173, T179, T181, T182, T185, T189, T191, T193, T194, T195, T196, T197, T198, T199, T202, T203, T204, T206, T207, T215, T216, T220, T221, T223, T228, T235, T236, T238, T239, T245, T247, T248, T250, T266, T268, T269, T280, T284, T287, T290, T292, T295, T296, T298, T299, T300, T302, T303, T304, T306, T307, T308, T309, T310 | T3, T9, T10, T17, T19, T20, T21, T22, T27, T30, T39, T40, T44, T45, T47, T48, T49, T50, T51, T52, T54, T71, T72, T74, T75, T96, T111, T116, T120, T121, T122, T123, T129, T130, T131, T134, T136, T143, T145, T154, T158, T159, T161, T166, T168, T170, T171, T176, T200, T201, T208, T209, T222, T224, T241, T242, T249, T283, T285, T291, T293, T305 | T7, T8, T16, T128 |
+| 3 high | T1, T12, T14, T15, T23, T24, T28, T29, T35, T43, T46, T58, T59, T63, T64, T66, T67, T68, T73, T77, T81, T82, T83, T92, T93, T94, T95, T103, T107, T108, T119, T125, T133, T138, T140, T141, T142, T144, T147, T148, T150, T151, T160, T163, T164, T165, T167, T169, T174, T175, T177, T178, T180, T183, T184, T186, T187, T188, T190, T192, T210, T211, T212, T213, T214, T217, T219, T225, T226, T227, T229, T230, T231, T233, T234, T237, T240, T251, T252, T253, T254, T256, T257, T258, T259, T260, T261, T263, T264, T265, T270, T271, T279, T286, T288, T289, T294, T312, T315, T320 | T2, T32, T33, T34, T61, T62, T65, T132, T137, T232 |  |
+| 2 medium | T4, T6, T11, T13, T18, T25, T26, T38, T41, T42, T53, T55, T56, T57, T60, T69, T70, T76, T78, T79, T80, T84, T85, T86, T87, T88, T89, T90, T91, T97, T98, T99, T100, T101, T102, T104, T105, T109, T112, T115, T124, T126, T127, T135, T139, T146, T149, T152, T153, T155, T156, T157, T162, T172, T173, T179, T181, T182, T185, T189, T191, T193, T194, T195, T196, T197, T198, T199, T202, T203, T204, T206, T207, T215, T216, T220, T221, T223, T228, T235, T236, T238, T239, T245, T247, T248, T250, T266, T268, T269, T280, T284, T287, T290, T292, T295, T296, T298, T299, T300, T302, T303, T304, T306, T307, T308, T309, T310, T313, T316 | T3, T9, T10, T17, T19, T20, T21, T22, T27, T30, T39, T40, T44, T45, T47, T48, T49, T50, T51, T52, T54, T71, T72, T74, T75, T96, T111, T116, T120, T121, T122, T123, T129, T130, T131, T134, T136, T143, T145, T154, T158, T159, T161, T166, T168, T170, T171, T176, T200, T201, T208, T209, T222, T224, T241, T242, T249, T283, T285, T291, T293, T305, T314, T317, T318, T319 | T7, T8, T16, T128 |
 | 1 low | T113, T218, T243, T244, T246, T262, T272, T273, T274, T275, T276, T277, T278, T281, T282, T297, T301, T311 | T31, T36, T37, T110, T114, T118, T255, T267 | T5, T106, T117, T205 |
 
 The threats with a risk of 6 or more:

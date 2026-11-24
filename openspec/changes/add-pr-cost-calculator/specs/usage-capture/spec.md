@@ -174,12 +174,17 @@ The capture step SHALL read each of the branch's ledger files by the version tha
 
 ### Requirement: The capture step's git commands stay offline
 
-Every git command that the step runs SHALL run with `GIT_NO_LAZY_FETCH=1` and `GIT_TERMINAL_PROMPT=0`, so that none of them fetches what the clone lacks, asks for credentials or opens a network connection.
+Every git command that the step runs SHALL run with `GIT_NO_LAZY_FETCH=1`, `GIT_TERMINAL_PROMPT=0` and `-c protocol.allow=never`, so that none of them fetches what the clone lacks, on any git version, asks for credentials or opens a network connection.
 
 #### Scenario: Capture fetches no ledger file that its clone lacks
 
 - **WHEN** the branch holds a ledger file whose blob a partial clone has not fetched
 - **THEN** capture reads nothing of that file, no git command that it runs fetches anything or opens a network connection, and it still records the session's calls
+
+#### Scenario: A git that ignores `GIT_NO_LAZY_FETCH` still fetches nothing
+
+- **WHEN** the step runs under git 2.43.0 to 2.43.3 or 2.44.0, which do not read `GIT_NO_LAZY_FETCH`, in a partial clone whose branch holds a ledger file whose blob the clone has not fetched
+- **THEN** no git command that the step runs fetches that blob or opens a network connection, the command that would read it fails, and the step still records the session's calls
 
 ### Requirement: Only calls made from this repository are recorded
 
@@ -207,7 +212,7 @@ The capture step SHALL record only the calls whose transcript line gives a worki
 
 ### Requirement: A call's repository is told by its working directory alone
 
-The capture step SHALL tell a call's repository and worktree by its line's working directory alone, as git finds them from that directory when a run reads the call (see "Git runs without the session's git variables"), never by what the call reads or writes, nor by the branch, and SHALL leave out a call whose line gives no working directory, or whose directory no longer exists or names no repository that git can tell.
+The capture step SHALL tell a call's repository and worktree by its line's working directory alone, as git finds them from that directory when a run reads the call (see "Git runs without the session's git variables"), never by what the call reads or writes, nor by the branch, and SHALL leave out a call whose line gives no working directory, or whose directory no longer exists or names no repository that git can tell. It SHALL never ask git to trust a folder.
 
 #### Scenario: A call whose working directory is gone is not recorded
 
@@ -238,6 +243,11 @@ The capture step SHALL tell a call's repository and worktree by its line's worki
 
 - **WHEN** the repository's folder is owned by another user than the one that a run runs as, and only the session's `GIT_` variables give a `safe.directory` setting that names it, through `GIT_CONFIG_COUNT` or in a file that `GIT_CONFIG_GLOBAL` names
 - **THEN** no call is recorded, no store is created, no ledger file is staged, and the run exits with success
+
+#### Scenario: A clone that git does not trust is not made trusted
+
+- **WHEN** the repository's folder is owned by another user than the one that a run runs as, and no `safe.directory` setting that git reads without the session's `GIT_` variables names it
+- **THEN** after the run no git configuration file holds a `safe.directory` setting that it did not hold before, no git command that the run starts is given one, and the run exits with success
 
 ### Requirement: Capture works on the repository that holds the project directory
 
@@ -724,6 +734,11 @@ After a take-back of a ledger file from a worktree (see "Each take-back is noted
 - **WHEN** a commit takes the ledger file after its command's result has returned and while a take-back of that file runs, as a commit that Claude Code moved to the background at its timeout can, and before the step next runs there with that commit checked out and the index free, nothing but a take-back removes the file from the index or the working tree, and no other commit is made in that worktree
 - **THEN** the file stays in that commit, and after that run the index and the working tree hold it as that commit does
 
+#### Scenario: A ledger file is put back in a sparse checkout
+
+- **WHEN** a sparse checkout leaves the ledger folder out, a commit takes the ledger file after its command's result has returned and while a take-back of that file runs, and the step next runs there with that commit checked out and the index free
+- **THEN** after that run the index and the working tree hold the file as that commit does
+
 #### Scenario: A ledger file comes back with a commit that its own command reset away
 
 - **WHEN** the agent runs `git commit && git reset HEAD~1` alone, for a commit that has a parent and for which the step staged a ledger file, and then, with that commit's parent still checked out, runs a mixed `git reset` alone, back to that commit, while no other git command holds the index
@@ -959,7 +974,7 @@ The registered command SHALL carry the SHA-256 of the hook file that the adopter
 
 ### Requirement: The capture step also comes as a Claude Code plugin
 
-The tool SHALL also ship the capture step as a Claude Code plugin, whose hooks SHALL run the same file, from the plugin's own folder, for the same events and with the same condition as the hook file's registration, through a command that names the plugin form, carries the file's SHA-256 and runs it only when it matches, with each CRLF taken as LF, exits with success and prints nothing on standard output in each shell that Claude Code runs a hook's command in.
+The tool SHALL also ship the capture step as a Claude Code plugin, whose hooks SHALL run the same file, from the plugin's own folder, for the same events and with the same condition and timeouts as the hook file's registration, through a command that names the plugin form, carries the file's SHA-256 and runs it only when it matches, with each CRLF taken as LF, exits with success and prints nothing on standard output in each shell that Claude Code runs a hook's command in.
 
 #### Scenario: The plugin records a session in a repository that registers no hook
 
@@ -1012,7 +1027,7 @@ The capture step SHALL write to standard error only its own words and numbers, n
 
 ### Requirement: The capture step finishes within a time budget
 
-The capture step SHALL finish within a time budget, leaving what it has not read for a later run, and a run of the plugin when a session ends SHALL finish within the budget that Claude Code gives a plugin's `SessionEnd` hooks, starting no git command that the rest of that budget cannot finish.
+The capture step SHALL finish within a time budget, leaving what it has not read for a later run, and a run of the plugin when a session ends SHALL finish within the budget that Claude Code gives a plugin's `SessionEnd` hooks, starting no git command that the rest of that budget cannot finish. Each run SHALL take back and put back what it can before it reads any transcript.
 
 #### Scenario: A long transcript does not hold up the session
 
@@ -1023,6 +1038,11 @@ The capture step SHALL finish within a time budget, leaving what it has not read
 
 - **WHEN** the step runs as the plugin when a session ends, finds a ledger file staged for a command of its session that is over, and reading the transcript would take longer than the budget that Claude Code gives a plugin's `SessionEnd` hooks
 - **THEN** it takes the file back before it reads any transcript, stops within that budget, and exits with success
+
+#### Scenario: Every run takes back and puts back before it reads a transcript
+
+- **WHEN** a run of the step, at any event, finds a ledger file to take back or one to put back, with the index free, and reading the transcript would take longer than its time budget
+- **THEN** it takes the file back, or puts it back, before it reads any transcript, and exits with success within the budget
 
 #### Scenario: A run at a session's end starts no take-back that its budget cannot finish
 
@@ -1073,7 +1093,7 @@ The store's note of a ledger file that a run staged SHALL hold only the file's p
 
 ### Requirement: The store keeps nothing past its retention window
 
-The step SHALL record no call whose day is more than the store's retention window, which its format documents, before the run's day. Each run that finds a store of a version that it knows, whatever the switches say, SHALL drop each waiting call, flag due and note of a taken call once its day is that old, and a session's notes once none of its runs came within the window; SHALL take back, as for a command that is over, a ledger file whose note is that old; and drop a take-back's note that old.
+The step SHALL record no call whose day is more than the store's retention window of 30 days before the run's day. Each run that finds a store of a version that it knows, whatever the switches say, SHALL drop each waiting call, flag due and note of a taken call once its day is that old, and a session's notes once none of its runs came within the window; SHALL take back, as for a command that is over, a ledger file whose note is that old; and drop a take-back's note that old.
 
 #### Scenario: A call older than the retention window is not recorded
 
@@ -1084,6 +1104,11 @@ The step SHALL record no call whose day is more than the store's retention windo
 
 - **WHEN** a recorded call has waited to be staged until its day is more than the retention window before a run's day
 - **THEN** after that run the store no longer holds it, and no ledger file that the step stages later holds it
+
+#### Scenario: The retention window is 30 days
+
+- **WHEN** a run's day is 30 days after the day of one waiting call and 31 days after that of another
+- **THEN** after that run the store still holds the first call, and no longer holds the second
 
 #### Scenario: A session's notes are dropped when it has not run within the retention window
 
@@ -1244,3 +1269,70 @@ When a run leaves out a call made here as made outside every interval when both 
 
 - **WHEN** a session's call gives a working directory outside this repository's folder that no longer exists, or that holds no repository, and the session then commits here
 - **THEN** no ledger file here says that calls were left out
+
+### Requirement: The capture step keeps no transcript text and reads no secret
+
+The capture step SHALL read from a transcript only the fields that it records or needs to tell a call, and SHALL keep, print, log and send none of a transcript's other text. Neither the capture step nor the report SHALL read a password, a token or a key, but the report's own token, from the environment, a file or git's configuration. A test SHALL plant a secret in a transcript, in the environment and in git's configuration, and fail when anything that the tool writes holds it.
+
+#### Scenario: A secret in a transcript reaches nothing that the tool writes
+
+- **WHEN** a transcript's message text, a tool's input and its result hold a planted token
+- **THEN** no ledger file, store, standard error, comment or job summary holds the token, or any part of the text around it
+
+#### Scenario: A secret in the environment or git's configuration is not read
+
+- **WHEN** the environment holds `ANTHROPIC_API_KEY`, `GH_TOKEN` and `AWS_SECRET_ACCESS_KEY`, and git's configuration holds a credential helper's stored token
+- **THEN** the capture step reads none of them, and nothing that it writes holds any of them
+
+### Requirement: Before a push, calls that no commit carries go into a commit of their own
+
+The run before the agent's `git push` SHALL, where calls recorded on the branch checked out there wait for a commit, the index is free and holds nothing staged, and no rebase, merge, cherry-pick or bisect is in progress, write them into a ledger file and commit only that file, with git's configured identity and a message that says so, running no hook and starting no program that git's configuration names; where the configuration asks for signed commits, it SHALL commit nothing.
+
+#### Scenario: Calls after the last commit reach the push
+
+- **WHEN** the agent makes model calls after its last commit on a branch, and then runs `git push` there with nothing staged
+- **THEN** before the push runs, the branch gains a commit that holds only a ledger file of those calls, and the push carries it
+
+#### Scenario: A push with no waiting call makes no commit
+
+- **WHEN** the agent runs `git push` on a branch whose recorded calls a ledger file already holds
+- **THEN** no commit is made
+
+#### Scenario: A push with staged changes makes no commit
+
+- **WHEN** the agent runs `git push` while the index holds a staged change
+- **THEN** no commit is made, and the calls wait for the next commit on that branch
+
+#### Scenario: A clone that signs its commits gets no commit
+
+- **WHEN** git's configuration sets `commit.gpgsign` to `true` where the agent runs `git push`
+- **THEN** no commit is made, no signing program is started, and the calls wait for the next commit
+
+#### Scenario: The step's own commit runs no hook
+
+- **WHEN** the repository has `pre-commit`, `commit-msg` and `post-commit` hooks, and a run commits the waiting calls before a push
+- **THEN** none of those hooks runs
+
+#### Scenario: A push of another branch makes no commit
+
+- **WHEN** the agent runs `git push origin other` while another branch is checked out
+- **THEN** no commit is made
+
+### Requirement: The registered command finds a Python on each system and installs none
+
+The registered command and the plugin's command SHALL start the capture step with the first of `python3`, `python` and `py -3` that starts a Python, trying each only where the one before it is missing or starts no Python, such as Windows' stub that opens the Microsoft Store, and SHALL start nothing that installs Python. The step's own check (see "The capture step does nothing below its floors") SHALL refuse a Python older than 3.11.
+
+#### Scenario: A Windows machine with only the `py` launcher records
+
+- **WHEN** a Windows machine has Python 3.11 or later only through the `py` launcher, and `python3` is Windows' stub that opens the Microsoft Store
+- **THEN** the command starts the step with `py -3`, and the step records the session's calls
+
+#### Scenario: No command installs Python
+
+- **WHEN** no Python is installed, and the Python install manager would install one on a launch command
+- **THEN** the command starts no install, exits with success and prints nothing on standard output
+
+#### Scenario: The step runs once a turn
+
+- **WHEN** the first command that the registered command tries starts the step, and the step exits
+- **THEN** the command tries no other Python

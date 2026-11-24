@@ -398,13 +398,13 @@ The assumptions about Claude Code: what its transcripts hold, when its hooks run
 
 ## A61. A session that starts in a repository's folder runs the hooks that the repository's settings register, once the folder is trusted, unless it is a cloud thread of a project or a cloud session with several repositories.
 
-- **Rests on it:** R7, T8, T65, DR-126, DR-172
+- **Rests on it:** R7, R298, T8, T65, T319, DR-126, DR-172, DR-315
 - **If it is wrong:** The calls of a session that starts in the repository's trusted folder and runs none of its hooks are never recorded, and the comment shows less than was used, with nothing to say why (T8). If a project's cloud thread ran the repository's hooks, the further answer to T65, a hook, would hold there too (T65).
 - **Fact:** A cloud session with one repository, outside a project's threads, reads that repository's `.claude/settings.json`, since the file is part of the clone and the session starts inside it.
   - **Relied on:** R7, T8, DR-172
   - **Checked:** documented: <https://code.claude.com/docs/en/settings>, read 2026-11-01
 - **Fact:** In a cloud thread of a project, none of a repository's `.claude/settings.json` hooks, permission rules or `env` apply, and a cloud session with several repositories reads only the `enabledPlugins` and `extraKnownMarketplaces` keys of each repository's file.
-  - **Relied on:** R7, T8, T65, DR-126, DR-172, `add-pr-cost-calculator` task 7.1
+  - **Relied on:** R7, R298, T8, T65, T319, DR-126, DR-172, DR-315, `add-pr-cost-calculator` task 7.1
   - **Checked:** documented: <https://code.claude.com/docs/en/settings>, read 2026-11-01
 - **Fact:** An interactive session holds back the hooks of every settings file until the person accepts the folder's workspace trust dialog, while a `-p` or SDK session treats the folder as trusted.
   - **Relied on:** R7, T8, DR-172

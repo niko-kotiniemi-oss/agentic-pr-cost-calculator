@@ -6,7 +6,7 @@ When a pull request merges with the tool on before its merge or after it, a work
 
 **Spec:** `report-comment`
 
-**Requirements:** R20, R94, R95, R157, R96, R65, R202, R193, R21, R97, R98, R23, R66, R67, R168, R24, R68, R69, R70, R35, R158, R102, R282, R283, R284, R285, R286, R293
+**Requirements:** R20, R94, R95, R157, R96, R65, R202, R193, R21, R97, R98, R23, R66, R67, R168, R24, R68, R69, R70, R35, R158, R102, R282, R283, R284, R285, R286, R293, R302
 
 ## Expected behaviour
 

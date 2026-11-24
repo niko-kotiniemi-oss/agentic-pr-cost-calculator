@@ -13,6 +13,16 @@ When a pull request merges with the tool on before its merge or after it, the re
 - **WHEN** a pull request with ledger files and CI runs merges
 - **THEN** one comment is posted with the token cost, the CI cost and their total
 
+#### Scenario: The comment gives the token cost by activity type
+
+- **WHEN** a pull request's ledger files hold calls of more than one activity type
+- **THEN** the comment gives the token cost of each activity type that they hold
+
+#### Scenario: Every figure follows from the ledger, the price table and the jobs API
+
+- **WHEN** the figures of a pull request's comment are worked out again from the ledger as the default branch holds it before and after the merge, the price table at the report's own commit and the jobs API's responses for the pull request's runs, as of the day the report ran
+- **THEN** each is the figure that the comment's block gives
+
 #### Scenario: A pull request without ledger files says so
 
 - **WHEN** a pull request that adds no ledger file merges
@@ -253,7 +263,7 @@ When `.claude/settings.json` or `.claude/settings.local.json` at the merged comm
 
 #### Scenario: A registration whose checksum is not the hook file's is named
 
-- **WHEN** the merged commit's `.claude/settings.json` registers the hook's command with the checksum of another release's hook file, as when a maintainer pins one release and copies the registration from the README of another
+- **WHEN** the merged commit's `.claude/settings.json` or `.claude/settings.local.json` registers the hook's command with the checksum of another release's hook file, as when a maintainer pins one release and copies the registration from the README of another
 - **THEN** the comment says that the hook's registration does not run the repository's hook file, and quotes nothing from either file
 
 #### Scenario: A registration whose checksum is the hook file's is not named
@@ -402,6 +412,11 @@ The report SHALL run only the tool's own code, from the commit at which the call
 - **WHEN** the report runs, whether it succeeds or fails
 - **THEN** none of its log, its job summary and its comment contains the token
 
+#### Scenario: Event data reaches the report's commands only through the environment
+
+- **WHEN** the reusable workflow's steps use a value from the event, such as a branch's name, a pull request's title or a commit's message
+- **THEN** each value reaches a `run:` command only through `env:`, no `${{` expression that reads the event stands inside a `run:`, and a test fails and names the step otherwise
+
 ### Requirement: The report runs only for the push that a merge makes to the default branch
 
 The report SHALL run only for a push that a merge makes to the default branch, and SHALL refuse every other event, including when the workflow that calls it was triggered by something else. It SHALL tell such a push by its event being `push` and its `github.ref` being `refs/heads/` followed by the default branch's name, so that neither another event that runs on the default branch nor a push of a tag named like the default branch passes.
@@ -530,3 +545,17 @@ A refused ledger line SHALL NOT be counted as an entry, it SHALL be counted as r
 
 - **WHEN** a ledger file that the pull request adds holds, among valid lines, a line that is not JSON or is not valid UTF-8
 - **THEN** that line is counted as refused, the valid lines are counted, and the comment is posted
+
+### Requirement: The comment says when the ledger files may be hidden in the pull request's diff
+
+When the merged commit's attributes, as git reads them at that commit, give a ledger file that the pull request adds `linguist-generated`, `-diff` or `binary`, the comment SHALL say that GitHub may hide the ledger files in the pull request's diff, so that a reviewer may not have seen them, and SHALL quote nothing from any attributes file.
+
+#### Scenario: A ledger marked as generated is named
+
+- **WHEN** the merged commit's `.gitattributes`, or one in a folder on the ledger path, gives `.pr-cost/**` the attribute `linguist-generated`
+- **THEN** the comment says that GitHub may hide the ledger files in the pull request's diff
+
+#### Scenario: A ledger with no such attribute is not named
+
+- **WHEN** no attributes file gives a ledger file that the pull request adds `linguist-generated`, `-diff` or `binary`, or one gives it `-linguist-generated`
+- **THEN** the comment says nothing about the diff hiding the ledger files

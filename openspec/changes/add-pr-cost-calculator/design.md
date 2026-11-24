@@ -473,6 +473,30 @@ The comment grows with the price table, so the largest comment that the table al
 
 **What it does not do.** It builds no part of the tool, and leaves to the second pull request of B-007 the fork rule, code scanning, the further answers of T8, T65, T132 and T137, the rules against script and argument injection, the secrets rule, the clauses that the specs sweep listed and the other postponed points.
 
+### 26. Forks, secrets, offline git, the checks that a pull request cannot weaken, usage that reaches a push, and the clauses that the specs sweep left
+
+*Records:* DR-307, DR-308, DR-309, DR-310, DR-311, DR-312, DR-313, DR-314, DR-315.
+
+This is the second pull request of backlog item B-007, which the owner chose on 2026-11-24 to deliver in two; decision 25 is the first. It settles security and capture, and brings every clause that the mapping of B-022 lists for B-007 into a scenario, as the owner chose on 2026-11-24.
+
+**Forks (R296, DR-307).** The configuration names its repository as `owner/name`. Capture compares it with the name that the clone's `origin` remote gives, read from git's configuration with no network, in each form that a GitHub address takes; the report compares it with the repository that the workflow runs in. A fork that copies the configuration records nothing and gets no comment until its owner names the fork, and a renamed repository is off until its configuration names it, which the report's job summary says.
+
+**Secrets (R301, DR-309).** The capture step reads from a transcript only the fields that it records or needs to tell a call, and neither it nor the report reads a password, a token or a key but the report's own token. A test plants one in a transcript, the environment and git's configuration.
+
+**Offline git (R111, DR-310).** Every git command that the capture step runs also runs with `-c protocol.allow=never`, so that no git version that the floor admits can fetch a missing object, and the floor stays at 2.43, as the owner chose on 2026-11-24.
+
+**Checks that a pull request cannot weaken (R299, DR-312, R298, DR-315, R300).** A pull request that changes the vendored copy or the marketplace is also checked by its base commit's own scripts, from a job on `pull_request` that reads the pull request's tree only as data, runs none of its code and holds no secret and no token that can write. A hook that `.claude/settings.json` registers blocks an agent's tool call that would post a private reference or a session link to GitHub. Every git command that the tool starts gives each name only after `--end-of-options` or `--`, which a property test holds, and the report's workflow passes event data only through `env:`.
+
+**Releases (R297, R303, DR-311, DR-308).** The README gives `gh release verify` and `gh release verify-asset`, which check the attestation that GitHub makes for each immutable release (DR-074). Each security fix ships in a release whose changelog names its advisory. GitHub's code scanning for Python runs in its default setup, a setting that the owner turns on.
+
+**Usage that reaches a push (R305).** Before the agent's `git push`, a run that finds calls waiting on the checked-out branch, with nothing staged and no operation in progress, commits them in a commit that holds only the ledger file, running no hook and starting no program that git's configuration names, and commits nothing where the configuration asks for signed commits. The owner chose this on 2026-11-24; the record that replaces DR-010 comes with the build, since closing DR-010 changes every page that cites it.
+
+**Line endings and Python on Windows (R306, DR-313, R307, DR-314).** Capture ends every ledger line with a line feed alone, and the report refuses a line that ends otherwise. The registered command tries `python3`, `python` and `py -3` in turn and starts nothing that installs Python, since the Python install manager's launchers install one when none is installed.
+
+**The swept clauses.** Each of the 49 clauses that the mapping of B-022 lists for B-007 becomes a scenario of the requirement it belongs to, or is shown to be held by one already; where a clause and a steering rule differ, the rule wins and the scenario says what holds.
+
+**What the build adds.** The record that replaces DR-010; the hook of R298 and its test; the repository checks of R299, R101 and R34; the small wording edits that earlier reviews left (R13, R20, R25, R30, R57 against R113, R69, R81 and R109, R119, the ranges of requirements, T4's residual, and the copies of the oldest Python); the bug form and `CONTRIBUTING.md` (R304); and the pages that these change.
+
 ## Risks / Trade-offs
 
 - [Claude Code changes its transcript format] -> The parser keeps to the fields it needs, refuses unknown shapes with a count instead of guessing, and its fixtures carry every shape seen in each kind of transcript, so a change shows up as a failing test. A call whose two final lines disagree, or whose usage block gives a cache-write split that disagrees with its total, is refused. A call with a usage field that the parser does not know is recorded and counted as R43 and R95 give it, because the new field can carry a charge that the entry leaves out.

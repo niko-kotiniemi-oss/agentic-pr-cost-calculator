@@ -30,6 +30,11 @@ The capture step SHALL record nothing unless the repository's configuration turn
 - **WHEN** the setup script of the cloud environment where a session runs has set `pr-cost.capture` to `true` in the global git configuration with `git config --global`, and the session makes calls in a repository that turns the tool on and then commits there
 - **THEN** that commit adds a ledger file that holds those calls
 
+#### Scenario: An organization's managed settings can opt a member in
+
+- **WHEN** the hook that the README gives for an organization's managed settings runs with `CLAUDE_CODE_REMOTE` set to `true`, while the global git configuration does not give `pr-cost.capture` as `true`, and after a later run of the step finds both switches on, the session makes calls in a repository that turns the tool on and commits there
+- **THEN** that commit adds a ledger file that holds those calls
+
 ### Requirement: Having the plugin opts no one in
 
 The plugin SHALL record nothing for a session whose opt-in is not on, however the plugin came to that session, such as when an organization turns it on or requires it for its members.
@@ -433,6 +438,11 @@ The switches (see "Capture runs only where the tool is on and the person has opt
 - **WHEN** the step has staged a ledger file for a `git commit` that is then refused at a permission prompt, the person then turns capture off, and the step's next run finds that command over while no other git command holds the index
 - **THEN** that run takes the file back, from the index and the working tree
 
+#### Scenario: A file taken back before capture is turned off is still put back
+
+- **WHEN** a take-back removes a ledger file while a commit that takes it is still running, the person then turns capture off, and the step's next run there finds that commit checked out and the index free
+- **THEN** that run puts the file back, and after it the index and the working tree hold the file as that commit does
+
 ### Requirement: One file turns the tool on or off, and a pull request cannot turn off its own report
 
 A repository SHALL turn the tool on by adding a configuration file that can be read as a valid configuration and enables the tool, and off by removing the file or disabling the tool in it. The report SHALL read the configuration from the default branch as it was before the merge and as it is after, only as a blob at each of those two commits and within the size bound that the configuration's format documents, and SHALL run when either turns the tool on.
@@ -451,6 +461,11 @@ A repository SHALL turn the tool on by adding a configuration file that can be r
 
 - **WHEN** the pull request that adds a configuration file that turns the tool on merges
 - **THEN** its report comment is posted
+
+#### Scenario: The report reads the configuration from git, not from a working tree
+
+- **WHEN** a pull request merges, the configuration file disables the tool at the default branch both before and after the merge, and the working tree where the report runs holds a configuration file that turns the tool on
+- **THEN** no comment is posted, and the job summary says that the configuration file after the merge disables the tool
 
 ### Requirement: Capture reads the configuration in the working tree
 
@@ -541,3 +556,37 @@ When a pull request changes the configuration file, the hook file at the path th
 
 - **WHEN** a pull request changes `.claude/settings.json`, or adds or changes `.claude/settings.local.json`
 - **THEN** its comment says that the pull request changed a project settings file that can register the hook
+
+### Requirement: The tool stays off in a repository that its configuration does not name
+
+The configuration file SHALL name, as `owner/name`, the repository that it turns the tool on in. The capture step SHALL record nothing where that name differs from the one that the URL of the clone's `origin` remote gives, read from git's configuration with no network, and the report SHALL post no comment where it differs from the repository that the workflow runs in, and SHALL say so in its job summary. Names SHALL be compared without regard to case.
+
+#### Scenario: A fork that copies the configuration records nothing
+
+- **WHEN** a person who has opted in commits in a clone whose `origin` remote is a fork, and the fork's configuration names the repository that it was forked from
+- **THEN** capture records nothing and stages no ledger file
+
+#### Scenario: A fork's owner turns the tool on by naming the fork
+
+- **WHEN** the fork's configuration names the fork, in a file whose lines end in CRLF
+- **THEN** capture records the person's calls there as in any repository that turns the tool on
+
+#### Scenario: A merge in a fork whose configuration names another repository gets no comment
+
+- **WHEN** a pull request merges in a fork whose configuration names the repository that it was forked from
+- **THEN** no comment is posted, the job summary says that the configuration names another repository, and the job succeeds
+
+#### Scenario: A renamed repository is off until its configuration names it
+
+- **WHEN** a repository is renamed and its configuration still gives the old name
+- **THEN** capture records nothing there, and the report posts no comment and says in its job summary that the configuration names another repository
+
+#### Scenario: Each form of a remote's URL gives its repository's name
+
+- **WHEN** the `origin` remote's URL is `https://github.com/Owner/Name`, `https://github.com/owner/name.git`, `git@github.com:owner/name.git` or `ssh://git@github.com/owner/name/`, or carries a user name and a token
+- **THEN** each gives the name `owner/name`, and no part of the URL is written into the store, a ledger file or standard error
+
+#### Scenario: A clone whose remote names no repository records nothing
+
+- **WHEN** the clone has no `origin` remote, or its URL is a local path or gives no owner and name
+- **THEN** capture records nothing and stages no ledger file

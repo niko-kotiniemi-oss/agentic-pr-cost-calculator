@@ -98,12 +98,17 @@ The release workflow SHALL refuse a tag whose guide, `docs/patterns.md`, does no
 
 ### Requirement: Versions are semantic, and their numbers say what an adopter must do
 
-The version SHALL raise its major number for a change that existing adopters must act on, which is any change to the public surface (see "The public surface is kept in a manifest"). It SHALL raise its minor number for a change that adds behaviour without breaking any part of that surface, and its patch number for a fix alone. A changelog entry that lists a breaking change SHALL come with a raised major number and a `### Breaking` section.
+The version SHALL raise its major number for a change that existing adopters must act on, which is any change to the public surface (see "The public surface is kept in a manifest"). It SHALL raise its minor number for a change that adds behaviour without breaking any part of that surface, and its patch number for a fix alone. A version that a refused tag gave SHALL NOT be released. A changelog entry that lists a breaking change SHALL come with a raised major number and a `### Breaking` section.
 
 #### Scenario: A breaking change raises the major version
 
 - **WHEN** the changelog entry for a release lists a breaking change and the release does not raise the major number over the previous release
 - **THEN** no release is published and the workflow says why
+
+#### Scenario: A version that a refused tag gave is not released
+
+- **WHEN** a tag `v1.2.0` is pushed after the release workflow refused an earlier tag `v1.2.0`, which was then deleted
+- **THEN** no release is published, and the workflow says that the version was refused before
 
 ### Requirement: The public surface is kept in a manifest
 
@@ -129,6 +134,11 @@ The public surface SHALL be the hook file's path and registration, the plugin's 
 - **WHEN** the surface manifest in the repository is read
 - **THEN** it names each key that the configuration's format documents, and the values that each takes, and no other key or value of the configuration
 
+#### Scenario: A configuration reader that differs from the manifest fails a test
+
+- **WHEN** the configuration's reader takes as valid a key or a value that the surface manifest does not name, or refuses a key or a value of the configuration that the manifest names
+- **THEN** a test fails
+
 #### Scenario: The surface manifest names each agent that the opt-in records
 
 - **WHEN** the surface manifest in the repository is read
@@ -151,6 +161,11 @@ Each release SHALL carry a CycloneDX JSON software bill of materials, written by
 
 - **WHEN** a release is published
 - **THEN** a CycloneDX JSON file is attached that names the tool, the release's version and commit, the tool's licence, FCL-1.0-MIT, the oldest supported Python, the hook file's checksum, the plugin zip's checksum, each action the reusable workflow uses, and the development-only components
+
+#### Scenario: The bill of materials is written from the tagged tree
+
+- **WHEN** the bill of materials is written for a tag while the working tree holds a file that the tagged tree does not, and a hook file that differs from the tagged one
+- **THEN** the bill of materials names nothing of that file and no path of the working tree, and gives the SHA-256 of the hook file as the tagged tree holds it
 
 ### Requirement: A release is not published when its bill of materials is missing or fails a check
 
@@ -209,6 +224,11 @@ The plugin that a commit builds SHALL have a manifest that holds no key but its 
 - **WHEN** the capture step in the plugin that a pull request's tree builds differs from the hook file by any byte
 - **THEN** CI fails, and no release is published from a tag where it differs
 
+#### Scenario: A plugin that declares only the allowed keys and command hooks passes
+
+- **WHEN** the plugin that a pull request's tree builds has a manifest that holds its name, version, description, author, licence and repository and no other key, hooks that are all command hooks, and the hook file, byte for byte, as its capture step
+- **THEN** these checks pass, and do not stop a release from a tag where this holds
+
 #### Scenario: A changed hook file is not compared with the marketplace's folder
 
 - **WHEN** a pull request changes the hook file, while the marketplace's plugin folder holds an earlier release's plugin, whose capture step is the earlier hook file
@@ -251,6 +271,11 @@ The folder that the root marketplace file names SHALL hold the plugin as a publi
 
 - **WHEN** the plugin's manifest in the marketplace's folder gives a version whose tag names no published release, as the tag of a release that the workflow refused does not, or that only a branch named like that tag gives
 - **THEN** CI fails, and reads no ref by the version's short name
+
+#### Scenario: A marketplace folder whose release's tag is off the default branch's first-parent history fails CI
+
+- **WHEN** the plugin's manifest in the marketplace's folder gives a version that a published release has, and that release's tag, read by its full name, names a commit that is not in the default branch's first-parent history, such as one from inside a merged pull request
+- **THEN** CI fails
 
 #### Scenario: A marketplace folder that moves back to an earlier release fails CI
 
@@ -428,3 +453,17 @@ A workflow SHALL run every day and on demand, with a token that only reads, and 
 
 - **WHEN** a package rule of Renovate's configuration sets a wait other than 14 days for minor or patch updates, or the workflow runs on no daily schedule, cannot be started by hand, runs on any other event, grants the workflow anything but `contents: read` or its job anything but `contents: read`, `pull-requests: read` and `issues: read`, gives its job no time limit of 15 minutes or less, or checks out the code keeping its credentials
 - **THEN** a test fails and names the difference
+
+### Requirement: Each security fix ships as a release with a security advisory
+
+Each fix of a vulnerability in released code SHALL ship in a release whose changelog entry, under `### Security`, names the repository security advisory that describes it by its `GHSA-` identifier, and that advisory SHALL name the affected releases and the commit that fixes it. The release workflow SHALL publish no release whose changelog entry holds a line under `### Security` that names no advisory.
+
+#### Scenario: A security line that names no advisory stops the release
+
+- **WHEN** a tag's changelog entry holds a line under `### Security` that names no `GHSA-` identifier
+- **THEN** the release workflow publishes no release, and names the line
+
+#### Scenario: A security line that names its advisory passes
+
+- **WHEN** each line under `### Security` in a tag's changelog entry names a `GHSA-` identifier
+- **THEN** the release workflow's check of the security lines passes
