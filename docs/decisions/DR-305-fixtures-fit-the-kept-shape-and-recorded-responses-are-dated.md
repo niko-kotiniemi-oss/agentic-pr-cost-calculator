@@ -6,7 +6,7 @@
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** R292
-- **Threats:** none
+- **Threats:** T310, T311
 - **Replaces:** none
 - **Closed by:** none
 
@@ -16,7 +16,7 @@ The tests meet Claude Code's transcripts and GitHub's API only through fixtures 
 
 ## Decision
 
-Each transcript fixture holds only the field names, at the paths and with the types, that the kept shape gives for its kind of line, unless it names the scenario that it departs from the shape for, and each recorded response gives the UTC day on which it was recorded or written and the page it follows (R292).
+Each transcript fixture holds only the fields, paths and types that the kept transcript shape gives for any line, which is one flat list with no kind of line, and under `message.usage` only the fields that `usage-capture` names, but for the paths that it names, each with an existing scenario that it departs for. Each recorded response has a file beside it giving the UTC day on which it was recorded or written, which of the two, and its page, on a host that the test lists, so that the response stays as the service sent it (R292).
 
 ## Alternatives
 
@@ -26,6 +26,8 @@ Each transcript fixture holds only the field names, at the paths and with the ty
 
 - A change to the kept shape shows which fixtures no longer fit it.
 - A recorded response's day tells a reader how old the behaviour that it holds is.
+- The Renovate check's recorded responses get their file in the same change, so the check does not fail on them.
+- A day earlier than the true one is not caught, as a fact's is not (T101).
 
 ## Scope
 

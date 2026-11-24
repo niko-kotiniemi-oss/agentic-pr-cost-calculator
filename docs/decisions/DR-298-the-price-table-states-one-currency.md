@@ -6,7 +6,7 @@
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`, as the owner asked on 2026-10-27
 - **Requirements:** R288
-- **Threats:** none
+- **Threats:** T298
 - **Replaces:** none
 - **Closed by:** none
 
@@ -16,7 +16,7 @@ On 2026-10-27 the owner asked that the price table state its currency, which no 
 
 ## Decision
 
-The price table states the one currency of all its prices, by its ISO 4217 code, `USD`, and every cost is written in it, by its code. The tool's checks fail on a table that states no currency or gives a price in another (R288).
+The model price table and the runner price table each state the one currency of all their prices, by its ISO 4217 code, `USD`, the same in both, and every cost is written in it, by its code. The tool's checks fail on a table that states no currency or more than one, and on two tables that state different ones (R288).
 
 ## Alternatives
 

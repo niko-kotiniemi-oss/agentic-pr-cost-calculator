@@ -304,6 +304,8 @@ The capability names the spec that holds the requirement. Each capability is one
 | R290 | functional | `ledger` | Each entry names its UTC day, its agent and its provider |
 | R291 | non-functional | `project-standards` | Each acceptance test names an expected error of its own |
 | R292 | non-functional | `project-standards` | Every transcript fixture fits the kept shape, and every recorded response is dated |
+| R293 | non-functional | `report-comment` | The comment stays under a size bound below the length that GitHub refuses |
+| R294 | functional | `pricing` | The price table states the day it was last checked |
 
 IDs are stable: a requirement keeps its ID while it exists, and a new one takes the next free number, so the rows follow the order in which requirements were added rather than the order of the specs. A requirement that a later change removes leaves the table, and its ID is listed below with the change that removed it, never to be used again.
 

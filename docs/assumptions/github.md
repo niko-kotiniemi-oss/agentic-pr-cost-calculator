@@ -317,7 +317,7 @@ The assumptions about GitHub: this repository's settings there, and its workflow
 
 - **Rests on it:** R18, R63, T27, DR-002, DR-020, DR-038, DR-110
 - **If it is wrong:** The CI figure would differ from what GitHub charges, in one direction in every report (T27).
-- **Fact:** GitHub charges each job its duration rounded up to a whole minute, at a rate per minute set by the runner type and the day.
+- **Fact:** GitHub charges each job attempt its duration rounded up to a whole minute, at a rate per minute set by the runner type and the day.
   - **Relied on:** R18, DR-038, DR-110
   - **Checked:** not yet: none will, since no test may reach GitHub
 - **Fact:** GitHub bills each job attempt by its duration rounded up to a whole minute, at a published per-minute list rate for its runner type, so job times reproduce the list-rate cost.

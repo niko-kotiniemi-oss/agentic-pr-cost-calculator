@@ -54,7 +54,7 @@ flowchart LR
 
 **Inputs:**
 
-- Claude Code's transcript lines, one JSON object per line: each assistant message's model, `usage` block (input, output, cache-write by lifetime, cache-read tokens), service tier, speed, inference region, server-side tool requests, the tools it called, and the working directory; and each line's time, its kind and the line that it names as its parent, which place a call inside or outside an interval.
+- Claude Code's transcript lines, one JSON object per line: each assistant message's model, `usage` block (input, output, cache-write by lifetime, cache-read tokens), service tier, speed, inference region, server-side tool requests, the tools it called, the working directory, and the provider where the lines name it; and each line's time, its kind and the line that it names as its parent, which place a call inside or outside an interval.
 - Claude Code's hook input: the hook event, the session's id, the transcript's path, `cwd`, and for Bash commands the command's text and `tool_use_id`.
 - `.pr-cost.json`; the person's opt-in, `pr-cost.capture`, from their two global configuration files, which the person writes, or the setup script of the cloud environment that they use, and each value of it that git reads in the repository, with the file that each comes from; and the device and inode numbers, size and modification times of the files that hold it.
 - The system's clock, read in UTC.
@@ -63,7 +63,7 @@ flowchart LR
 
 **Outputs:**
 
-- Ledger files: a first line that states the ledger format's version, the release of the capture step that wrote it, the count of refused calls and three flags for calls left out, for consent, for their age or because their repository could not be told, with no count; then one entry per call: UTC day in `utc_day`, agent, provider, model, a SHA-256 hash of the message id in a field whose name ends in `_id`, main agent or subagent, the token counts, the price attributes, the activity type, and marks for a call read without a stop reason or with a usage field that capture does not know (R2, R4, R6, R42, R43, R155, R156, R290).
+- Ledger files: a first line that states the ledger format's version, the release of the capture step that wrote it, the count of refused calls and three flags for calls left out, for consent, for their age or because their repository could not be told, with no count; then one entry per call: UTC day in `utc_day`, agent in `agent`, provider in `provider`, model, a SHA-256 hash of the message id in a field whose name ends in `_id`, main agent or subagent, the token counts, the price attributes, the activity type, and marks for a call read without a stop reason or with a usage field that capture does not know (R2, R4, R6, R42, R43, R155, R156, R290).
 - One comment per merged pull request, a brief summary followed by a collapsed section of the detail that ends with a JSON block of its figures for programs, and the report's job summary (R283, R285).
 - A GitHub release per version tag, with its bill of materials and the plugin's zip.
 
@@ -75,10 +75,10 @@ Everything that crosses the tool's boundary, in three tables, each row with how 
 
 | What | What crosses | How it is pinned | Records |
 |---|---|---|---|
-| Claude Code's transcripts | Each call's model, token counts, attributes and working directory, read while the session runs | Not pinned: Claude Code writes them, and capture reads them tolerantly, counting what it cannot read | DR-003, DR-007, DR-032, DR-033, DR-044, DR-057, DR-128, DR-135, DR-172, DR-178, DR-199 |
+| Claude Code's transcripts | Each call's model, token counts, attributes, working directory and, where its lines name it, provider, read while the session runs | Not pinned: Claude Code writes them, and capture reads them tolerantly, counting what it cannot read | DR-003, DR-007, DR-032, DR-033, DR-044, DR-057, DR-128, DR-135, DR-172, DR-178, DR-199, DR-302 |
 | Claude Code's hook input | The event, the session's id, the transcript's path and the directory | Not pinned: Claude Code gives it | DR-044, DR-172 |
 | The switch and the opt-in | `.pr-cost.json`, and `pr-cost.capture` in the person's git configuration | The repository's own file and the person's own setting, read strictly | DR-169, DR-021, DR-183 |
-| The price table | Dated rates and modifiers in one currency, by provider and model, a model with no price among them, each row added a few days after its price changes | Pinned with the tool's own commit | DR-020, DR-298, DR-299, DR-300 |
+| The price table | Dated rates and modifiers in one currency, by provider and model, with a default provider for a model listed under more than one and a model with no price among them, each row added a few days after its price changes, and the day the table was last checked | Pinned with the tool's own commit | DR-020, DR-298, DR-299, DR-300 |
 | GitHub | The push event, the pull request, its runs and job attempts, and the report's earlier comment | Not pinned: GitHub's API, read within a call budget and a time limit | DR-006, DR-008, DR-019, DR-038, DR-039, DR-051, DR-060, DR-061, DR-160, DR-217 |
 | Ledger files of a pull request | Token counts, written by whoever can push to its branch | Not pinned: read as untrusted data, in every earlier format | DR-040, DR-044, DR-066 |
 | Python | The standard library of the person's or the runner's Python | Not pinned: Python 3.11 or any later release | DR-023 |
@@ -127,7 +127,7 @@ token cost = input * rate(provider, model, input, d)
            + server-side tool requests * rate(provider, model, request type, d)
 ```
 
-`rate` is the latest row in `prices/models.json` for the entry's provider and model dated on or before *d* (R289), with every modifier that the table lists for the entry's attributes, combined as the table states (R14, R16). Where the transcript gave no cache lifetime, the cost is a range between the two lifetimes' rates (R15). An entry whose provider, model, attribute or day has no price, or whose model the table lists without a price, is counted in tokens and left out of the cost, and the comment names it (R14, R17, R61, R287, R289). Every rate is in the table's one currency, `USD` (R288).
+`rate` is the latest row in `prices/models.json` for the entry's provider and model dated on or before *d*, or, for a provider recorded as `unknown`, for its model's only or default provider, which the comment's detail says was taken from the table (R289), with every modifier that the table lists for the entry's attributes, combined as the table states (R14, R16). Where the transcript gave no cache lifetime, the cost is a range between the two lifetimes' rates (R15). An entry whose provider and model no row names, whose model, attribute or day has no price, or whose model the table lists without a price, is counted in tokens and left out of the cost, and the comment names it (R14, R17, R61, R287, R289). Every rate is in the table's one currency, `USD`, which the runner table states too (R288), and is read as an exact decimal (R284).
 
 For each attempt of each job of each counted run, each attempt rounded up on its own (R18):
 
@@ -141,7 +141,7 @@ The runs counted are those on the pull request's own commits that no push to the
 total = sum(token cost) + sum(CI cost)
 ```
 
-The comment splits the token cost by model, by token type and by activity type. Every figure can be recomputed from the ledger, the price table and the jobs API. Each figure is computed exactly and rounded half up only where it is written, to the cent in the comment's summary and to four decimals in its collapsed detail, so a total can differ from the sum of its shown parts in the last digit (R284).
+The comment splits the token cost by model, by token type and by activity type. Every figure can be recomputed from the ledger, the price table at the report's own commit and the jobs API; the comment gives the day the table was last checked, and says when a priced call came after it (R294). Each figure is computed exactly, in decimal arithmetic, and rounded half up only where it is written, to the cent in the comment's brief summary and to four decimals in its collapsed detail and the job summary, so a total can differ from the sum of its shown parts, by more than one cent where many parts each round up, as the comment says beside the total (R284).
 
 ## Flows
 

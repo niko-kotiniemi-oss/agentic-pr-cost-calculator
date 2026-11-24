@@ -27,7 +27,7 @@ The assumptions about Claude Code: what its transcripts hold, when its hooks run
 
 ## A2. A transcript line gives its call's model, usage, time and current directory, in fields whose meaning stays put.
 
-- **Rests on it:** R2, R3, R6, R14, R15, R16, R40, R41, R43, R61, R76, R77, R78, R94, R95, R108, R109, R144, R147, R165, T1, T2, T5, T6, T7, T9, T10, T17, T27, T38, T39, T82, T104, T108, T128, DR-002, DR-003, DR-012, DR-029, DR-032, DR-033, DR-052, DR-057, DR-092, DR-110, DR-135, DR-155, DR-168, DR-172, DR-199
+- **Rests on it:** R2, R3, R6, R14, R15, R16, R40, R41, R43, R61, R76, R77, R78, R94, R95, R108, R109, R144, R147, R165, R289, R290, T1, T2, T5, T6, T7, T9, T10, T17, T27, T38, T39, T82, T104, T108, T128, T293, DR-002, DR-003, DR-012, DR-029, DR-032, DR-033, DR-052, DR-057, DR-092, DR-110, DR-135, DR-155, DR-168, DR-172, DR-199, DR-302
 - **If it is wrong:** Calls would be refused, priced wrongly or under-counted, and the comment would show it only as a count, if at all (T39, T9, T27). A line's time out of step with the step's clock would place calls in or out of an interval when both switches were on (T38), and a line that named another directory, or none, would sort calls to the wrong repository, so work in another one could be published here (T2, T82).
 - **Fact:** Each assistant line in a transcript carries the model's name and a usage block with input, output, cache-write and cache-read token counts.
   - **Relied on:** R2, R15, T6, T39, DR-003, DR-033, DR-110, DR-172
@@ -38,6 +38,9 @@ The assumptions about Claude Code: what its transcripts hold, when its hooks run
 - **Fact:** A call's usage gives its service tier, speed, inference region and server-side tool requests, under field names the capture step can know in advance.
   - **Relied on:** R2, R16, R61, R77, T9
   - **Checked:** not yet: none will, since no test may reach Claude Code; the walking skeleton's run on 2026-11-17 saw all four, as `service_tier`, `speed`, `inference_geo` and `server_tool_use`
+- **Fact:** A call that Claude Code makes through Amazon Bedrock or Google Vertex AI is billed by that provider at its own rates, and its lines may or may not name the provider; a model's name alone does not tell which provider a call went to.
+  - **Relied on:** R289, R290, T293, DR-302
+  - **Checked:** not yet: `add-pr-cost-calculator` task 1.1 checks, from the kept transcript shape and Claude Code's documentation, whether the lines name it; none will check the bill, since no test may reach a provider
 - **Fact:** A call whose line gives no price attribute is billed at the standard rate, so an attribute that is not recorded adds nothing to the call's cost.
   - **Relied on:** R16, R61, T9
   - **Checked:** not yet: none will, since no test may reach Claude Code

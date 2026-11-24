@@ -16,7 +16,7 @@ On 2026-10-27 the owner asked that the price table be able to list a model with 
 
 ## Decision
 
-The price table can list a model with no price. Capture records its name, and the report counts its tokens under that name, leaves them out of the cost and says that the model has no price, which the comment tells apart from an unknown model (R287).
+The price table can list a model with no price, in a row that names its provider and effective date as any row does, so that a priced row added later for the same provider and model applies from its own date. Capture records its name, and the report counts its tokens under that name, leaves them out of the cost and says that the model has no price, which the comment tells apart from an unknown model (R287).
 
 ## Alternatives
 

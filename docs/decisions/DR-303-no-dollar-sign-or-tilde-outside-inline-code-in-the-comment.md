@@ -16,7 +16,7 @@ GitHub reads text between two dollar signs as a formula and text between tildes 
 
 ## Decision
 
-The comment and the report's job summary hold no dollar sign and no tilde outside inline code, and write each currency by its code (R286).
+The comment and the report's job summary hold no dollar sign and no tilde outside inline code and code blocks fenced with backticks, hold no code block fenced with tildes, and write each currency by its code (R286). GitHub renders no formula inside a fenced block, so the block for programs may name its schema with `$schema`.
 
 ## Alternatives
 

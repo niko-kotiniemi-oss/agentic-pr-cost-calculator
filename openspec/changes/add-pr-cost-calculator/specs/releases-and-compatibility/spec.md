@@ -107,7 +107,7 @@ The version SHALL raise its major number for a change that existing adopters mus
 
 ### Requirement: The public surface is kept in a manifest
 
-The public surface SHALL be the hook file's path and registration and the plugin's name and hooks, each by its events, matchers and command's form, not the checksum it carries; the marketplace's name, the opt-in key and the agents it records, the ledger path and format, the store's format and fingerprint, the configuration file and the keys and values its format documents, the reusable workflow's path, inputs and permissions, and the Python and git floors. The repository SHALL keep its manifest.
+The public surface SHALL be the hook file's path and registration, the plugin's name and hooks, each by its events, matchers and command's form, not its checksum; the marketplace's name, the opt-in key, the agents it records, the ledger path and format, the comment block's form and schema, the store's format and fingerprint, the configuration file, its documented keys and values, the reusable workflow's path, inputs and permissions, and the Python and git floors, in the repository's manifest.
 
 #### Scenario: The surface manifest names the whole public surface
 

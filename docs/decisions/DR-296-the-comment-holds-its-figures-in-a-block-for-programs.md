@@ -6,7 +6,7 @@
 - **Status:** accepted
 - **Decided by:** the owner, 2026-11-01
 - **Requirements:** R285
-- **Threats:** T291
+- **Threats:** T291, T303, T304, T305
 - **Replaces:** none
 - **Closed by:** none
 
@@ -16,7 +16,7 @@ On 2026-11-01 the owner asked how a pull request's cost is kept, and chose, from
 
 ## Decision
 
-The comment's collapsed section ends with a fenced JSON block that holds the version of its own form and every figure and count that the comment shows, each figure as the text that the comment shows. The block's form is published with a JSON Schema, as the ledger format is (R285).
+The comment's collapsed section ends with a fenced JSON block that holds the version of its own form, the currency in a field of its own, and every figure and count that the comment shows, written from the same values as the comment's text: each cost as its four-decimal figure, a cost under the smallest amount as zero with a flag, and a range as its two ends. The block's form is published with a JSON Schema, as the ledger format is, and says that a program reads the block only from the comment that carries the report's marker and that the report's identity posted (R285). The form and its schema are part of the public surface, and a released form's schema does not change (R122).
 
 ## Alternatives
 
@@ -26,7 +26,8 @@ The comment's collapsed section ends with a fenced JSON block that holds the ver
 ## Consequences
 
 - The golden set holds the block from the first build, so the command writes what the comment showed.
-- A block in a comment can be edited by anyone who can edit the comment, so the command reads it as data, which its own change threat-models.
+- A block in a comment can be edited by anyone who can edit the comment, and imitated in a comment of anyone's, so the command reads it only from the report's own comment and as data, which its own change threat-models.
+- A program can add the block's figures without parsing text such as "under" or a range.
 
 ## Scope
 

@@ -6,7 +6,7 @@
 - **Status:** accepted
 - **Decided by:** the owner, 2026-11-24
 - **Requirements:** R284
-- **Threats:** T292
+- **Threats:** T89, T292, T297, T301
 - **Replaces:** none
 - **Closed by:** none
 
@@ -16,7 +16,7 @@ The design left open how the comment shows a cost: the unit it names, the precis
 
 ## Decision
 
-Each cost is shown in the price table's currency, written as its code, to two decimals in the summary and to four in the collapsed section. Each figure, the total among them, is rounded half up from its own exact cost, never summed from rounded figures. A cost above zero that rounds to zero is shown as under the smallest amount at that precision, a cost of zero as zero, and the comment says that a total can differ from the sum of its shown parts in the last digit (R284).
+Each cost is shown in the price table's currency, written as its code, to two decimals in the brief summary and to four in the collapsed section and the job summary. Each figure, the total among them, is rounded half up from its own exact cost, never summed from rounded figures, and every cost is worked out from rates read as exact decimals, never in binary floating point. A cost above zero that rounds to zero is shown as under the smallest amount at that precision, a cost of zero as zero, and the brief summary says, beside the total, that a total can differ from the sum of its shown parts (R284).
 
 ## Alternatives
 
@@ -25,8 +25,9 @@ Each cost is shown in the price table's currency, written as its code, to two de
 
 ## Consequences
 
-- The report computes each cost exactly, in decimal arithmetic, and rounds only when it writes a figure, so a figure does not depend on the order in which costs were added.
-- A total can differ from the sum of its shown parts by one unit of its last digit, and the comment says so.
+- The report reads each rate as an exact decimal, computes each cost exactly, and rounds only when it writes a figure, so a figure does not depend on the order in which costs were added, and a half cent is not lost to a binary float: read as a float, a rate of 0.30 per million tokens prices 50000 tokens just under 0.015, which rounds down.
+- A total can differ from the sum of its shown parts by more than one unit of its last digit: four parts of 0.005 each show 0.01, and their total 0.02. The comment says that they can differ, with no bound.
+- The job summary shows each cost as the collapsed section does, so that the two never disagree.
 
 ## Scope
 

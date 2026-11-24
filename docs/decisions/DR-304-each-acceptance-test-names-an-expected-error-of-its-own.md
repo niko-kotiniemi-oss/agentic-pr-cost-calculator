@@ -6,7 +6,7 @@
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** R291
-- **Threats:** none
+- **Threats:** T309
 - **Replaces:** none
 - **Closed by:** none
 
@@ -16,7 +16,7 @@ Acceptance tests are written before their code and marked as expected failures (
 
 ## Decision
 
-Each acceptance test that is marked as an expected failure names as its expected error one that only the missing code of its own scenario raises, never an assertion of its comparison and never one that another capability's missing code raises, and a test fails otherwise (R291). The seam that they drive is the one that the walking skeleton built (DR-249).
+Each acceptance test is held back only by its expected-failure marker, which names an error class of the tool's package that only its capability's missing code raises: never `AssertionError`, a built-in error, an error raised from under `tests/`, or another capability's error or a base or subclass of it. The golden set's tests count as a capability of their own. A test that reads the collected tests after every hook has run fails otherwise, and on an acceptance test skipped or marked to fail by any other means (R291). The seam that they drive is the one that the walking skeleton built (DR-249).
 
 ## Alternatives
 
@@ -25,6 +25,7 @@ Each acceptance test that is marked as an expected failure names as its expected
 ## Consequences
 
 - Each capability's code raises an error of its own while it is unbuilt, which the build removes with the code that replaces it.
+- The rule is per capability, not per scenario, since a test can compare error classes across capabilities but cannot tell which scenario's missing code raised an error; two scenarios of one capability can share its error, and their own assertions tell them apart once the code is built.
 
 ## Scope
 

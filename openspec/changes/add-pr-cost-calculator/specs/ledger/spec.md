@@ -8,7 +8,7 @@ Scenarios below that run the capture step follow the conventions that `usage-cap
 
 ### Requirement: The ledger holds counts, never content
 
-A ledger file SHALL contain no prompt text, response text, code, file contents, tool name, tool input or output, file path, working directory, branch name, user name, session identifier, transcript path, `tool_use_id` or time of day, nor a hash of any of them. The only text a ledger file takes from the transcript SHALL be the model's name and the values of the price attributes (see "Usage is recorded per model call" in `usage-capture`).
+A ledger file SHALL contain no prompt text, response text, code, file contents, tool name, tool input or output, file path, working directory, branch name, user name, session identifier, transcript path, `tool_use_id` or time of day, nor a hash of any of them. The only text a ledger file takes from the transcript SHALL be the model's name, the values of the price attributes (see "Usage is recorded per model call" in `usage-capture`) and the provider's name, each only as the price table lists it.
 
 #### Scenario: Content in the transcript does not reach the ledger
 
@@ -17,7 +17,7 @@ A ledger file SHALL contain no prompt text, response text, code, file contents, 
 
 #### Scenario: A planted string never reaches the ledger
 
-- **WHEN** every text value in a transcript and in the hook's input, and the name of the branch checked out, is a distinct marker string, except the model names and price attribute values that the price table lists
+- **WHEN** every text value in a transcript and in the hook's input, and the name of the branch checked out, is a distinct marker string, except the model names, price attribute values and provider names that the price table lists
 - **THEN** no marker appears in any ledger file, whether in its contents or in its path, and neither does the SHA-256 hash of any marker but a message id
 
 #### Scenario: The store's notes never reach the ledger
@@ -65,7 +65,7 @@ Every version of the ledger format SHALL name a call by the same id, the SHA-256
 
 ### Requirement: Each entry names its UTC day, its agent and its provider
 
-Each ledger entry SHALL give its call's UTC day in a field named `utc_day`, as a date with no time; the agent that made the call, which in this version is always Claude Code; and the provider that the price table lists for the call's model, or `unknown` where the table lists the model under more than one provider and the call's lines do not tell which, so that a later agent or provider needs no new ledger format.
+Each ledger entry SHALL give its call's UTC day in `utc_day`, as a date with no time; its agent in `agent`, in this version always `claude-code`; and in `provider` the provider that the call's own lines name, as the capture step's price table names it, where that table lists it for the call's model, and `unknown` otherwise, never from the environment, the hook's input or settings, so that a later agent or provider needs no new ledger format.
 
 #### Scenario: An entry's day is named as UTC
 
@@ -74,17 +74,22 @@ Each ledger entry SHALL give its call's UTC day in a field named `utc_day`, as a
 
 #### Scenario: An entry names its agent and its provider
 
-- **WHEN** Claude Code makes a call whose model the price table lists under one provider
-- **THEN** its entry names Claude Code as its agent and that provider as its provider
+- **WHEN** Claude Code makes a call whose lines name a provider that the capture step's price table lists for the call's model
+- **THEN** its entry gives `claude-code` as its agent and that provider, as the price table names it, as its provider
 
 #### Scenario: A provider that capture cannot tell is recorded as unknown
 
-- **WHEN** a call's model is a name that the price table lists under more than one provider, and nothing in the call's lines tells which
+- **WHEN** nothing in a call's lines names its provider, or its model is recorded as `unknown`, or its lines name a provider that the capture step's price table does not list for its model
+- **THEN** its entry's provider is `unknown`, and nothing that the lines say of the provider, nor its hash, is in any ledger file
+
+#### Scenario: The environment does not decide a call's provider
+
+- **WHEN** the session's environment variables, the hook's input and Claude Code's settings name a provider, and the call's lines name none
 - **THEN** its entry's provider is `unknown`
 
 ### Requirement: A model name or attribute value the price table does not list is recorded as unknown
 
-A call's model name and each of its price attribute values (see "Usage is recorded per model call" in `usage-capture`) SHALL be recorded only when the price table that the capture step ships with lists that name or value, so that the name of a private gateway, a custom model or an alias is not published. Any other value SHALL be recorded as `unknown`.
+A call's model name, its provider and each of its price attribute values (see "Usage is recorded per model call" in `usage-capture`) SHALL be recorded only when the price table that the capture step ships with lists that name or value, so that the name of a private gateway, a custom model or an alias is not published. Any other value SHALL be recorded as `unknown`.
 
 #### Scenario: An unexpected model name is recorded as unknown
 
@@ -95,6 +100,11 @@ A call's model name and each of its price attribute values (see "Usage is record
 
 - **WHEN** a call's model name begins with `claude-` and is made only of lowercase letters, digits and hyphens, but the price table does not list it
 - **THEN** its entry's model is `unknown`
+
+#### Scenario: A provider that the price table does not list is recorded as unknown
+
+- **WHEN** a call's lines name a provider, an endpoint or a host that the price table does not list
+- **THEN** its entry's provider is `unknown`, and none of that text, nor its hash, is in any ledger file
 
 #### Scenario: An attribute value the price table does not list is recorded as unknown
 
