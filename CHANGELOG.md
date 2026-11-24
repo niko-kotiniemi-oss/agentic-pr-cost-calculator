@@ -8,6 +8,7 @@ A release's entry lists any breaking change under `### Breaking`, and the releas
 
 ### Added
 
+- How the report's comment shows a cost, settled before the build: a brief summary with the detail in a collapsed section, costs to the cent and to four decimals rounded from exact decimals, a block of the figures for programs, and a note on subscriptions; price tables in one currency, with each row's provider and models with no price; and ledger entries that name their UTC day, agent and provider.
 - The repository's foundations: the OpenSpec proposal for the tool, its threat model with a risk matrix, the requirements register, the feature pages, the page explaining how the tool works, and a record of each decision.
 - The assumptions that the tool's design rests on, in `docs/assumptions/`: what each one holds up, what would change if it were wrong, and how each of its facts is checked, with those about adopters' own setups among them.
 - A glossary, `docs/glossary.md`, giving each word that the pages use its meaning and the words to avoid for it, with a test that fails on a word to avoid in a page's prose, and the pages reworded to its terms.

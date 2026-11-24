@@ -357,8 +357,8 @@ flowchart LR
   E --> F["6) Adopters update"]
 ```
 
-- 1) Anthropic or GitHub publishes a new price (R14).
-- 2) A pull request adds a row with its effective date, dated after the existing ones, so that it reprices nothing earlier (R14).
+- 1) Anthropic, another provider or GitHub publishes a new price (R14, R289).
+- 2) A few days later, a pull request adds a row with its provider, its effective date, the day it is added and its source, dated after the newest row of its provider, model and price and at most 30 days before the day it is added, unless it names its reason, and updates the day the table was last checked (R14, R294, DR-299).
 - 3) Review and CI check it, since prices are read from the table in the repository and never fetched (R30).
 - 4) It merges to the default branch (R30).
 - 5) The next release names the commit in its text (R27).
