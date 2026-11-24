@@ -2744,12 +2744,22 @@ The hook of "An agent's text for GitHub is checked for private references before
 
 ### Requirement: A pull request that changes the vendored copy or the marketplace is also checked by its base commit's scripts
 
-CI SHALL run, on every pull request, a job that, where the pull request changes `vendor/` or the marketplace's root file or plugin folder, runs the base commit's own vendor check and marketplace checks over the merge commit that GitHub tests, holding no secret and no token that can write, and fails when either check fails, and that otherwise passes; either way, it SHALL say in its log what it compared, or that nothing in scope changed.
+CI SHALL run, on every pull request, from the base branch's own workflow on `pull_request_target`, a job that, where the pull request changes `vendor/` or the marketplace's root file or plugin folder, runs the base commit's own vendor check and marketplace checks over the merge commit that GitHub tests, and fails when either check fails or it cannot read that commit, and otherwise passes; either way, it SHALL say in its log what it compared, or that nothing in scope changed.
 
 #### Scenario: A pull request that weakens a check and changes what it checks fails CI
 
 - **WHEN** a pull request changes the vendor check so that it passes any vendored copy, and changes a vendored file
-- **THEN** the base commit's vendor check fails over the pull request's tree, and CI fails
+- **THEN** the base commit's vendor check fails over the pull request's tree, and the job's check fails
+
+#### Scenario: A pull request that changes the job's workflow does not change the run
+
+- **WHEN** a pull request changes or removes the workflow file that holds the job, or adds a workflow that would run in its place, together with a vendored file that the base's vendor check refuses
+- **THEN** the job runs as the base branch's workflow file gives it, and fails
+
+#### Scenario: A merge commit that cannot be read fails the job
+
+- **WHEN** GitHub gives no merge commit for the pull request, as where it conflicts with its base, or the job cannot fetch it
+- **THEN** the job fails and says so, and does not pass as though nothing in scope changed
 
 #### Scenario: The base commit's checks run none of the pull request's code
 
@@ -2759,11 +2769,11 @@ CI SHALL run, on every pull request, a job that, where the pull request changes 
 #### Scenario: A pull request that changes neither passes and says so
 
 - **WHEN** a pull request changes neither `vendor/` nor the marketplace's root file or plugin folder
-- **THEN** the job passes, says in its log that it compared nothing because nothing in scope changed, and `ci` passes
+- **THEN** the job passes, says in its log that it compared nothing because nothing in scope changed, and its check passes
 
 ### Requirement: The base commit's checks trust nothing that the pull request's tree holds
 
-The job that runs the base commit's checks over a pull request SHALL run only programs from the base's checkout or the runner, its shell included, the pull request's tree never its working directory or on a search path; SHALL read that tree from git's objects alone, with no checkout, attributes or submodule, failing on a link or a gitlink under a checked path; and SHALL fail where the tree's `UPSTREAM.lock` gives another `repo=` or `vendored_paths=` than the base's, ignoring `SYNC_REMOTE_BASE`.
+The base commit's checks' job SHALL run only programs from the base's checkout or the runner, its shell included, the pull request's tree never its working directory or on a search path; SHALL read that tree from git's objects alone, with no checkout, attributes or submodule, failing on a link or a gitlink under a checked path; SHALL restore and save no cache; and SHALL fail where the tree's `UPSTREAM.lock` gives another `repo=` or `vendored_paths=` than the base's, ignoring `SYNC_REMOTE_BASE`.
 
 #### Scenario: A pull request's script that a step would load by its path changes nothing
 
@@ -2779,6 +2789,25 @@ The job that runs the base commit's checks over a pull request SHALL run only pr
 
 - **WHEN** the pull request's tree holds a symbolic link or a gitlink under `vendor/` or the marketplace's plugin folder
 - **THEN** the base commit's checks fail and name it, and nothing is fetched for the gitlink
+
+#### Scenario: The base commit's checks share no cache with the base branch
+
+- **WHEN** the job's workflow restores or saves a cache, through `actions/cache` or a setup action's own cache
+- **THEN** a test of the workflows fails and names the step
+
+### Requirement: Only the base commit's checks run on `pull_request_target`, and no workflow on `workflow_run`
+
+No workflow here SHALL trigger on `workflow_run`, and only the workflow of the base commit's checks SHALL trigger on `pull_request_target`, granting only `contents: read` to itself and its job, reading no secret, checking out only the base's commit and giving the pull request's number and commits to a command only through `env:`. A test of the workflows SHALL fail on any other workflow that triggers on either event, and on that workflow where it holds otherwise.
+
+#### Scenario: Another workflow on `pull_request_target` fails a test
+
+- **WHEN** a workflow other than that of the base commit's checks triggers on `pull_request_target`, or any workflow triggers on `workflow_run`
+- **THEN** a test of the workflows fails and names the workflow and the event
+
+#### Scenario: The base commit's checks' workflow with a write permission or the pull request's checkout fails a test
+
+- **WHEN** the workflow of the base commit's checks grants a permission other than `contents: read`, names a secret, checks out the pull request's head or merge ref, or puts a `${{` expression of the event in a `run:`
+- **THEN** a test of the workflows fails and names the workflow and what it holds
 
 ### Requirement: A name that the tool gives git is never read as an option
 
