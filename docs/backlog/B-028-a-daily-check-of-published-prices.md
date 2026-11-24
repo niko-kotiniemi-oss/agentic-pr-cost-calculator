@@ -17,4 +17,4 @@ A routine checks the providers' published prices each day and opens a pull reque
 
 ## Postponed points
 
-- From the threat review at design of the first pull request of B-007 (boundary 7): the routine that DR-299 names has no item and no threat.
+None.

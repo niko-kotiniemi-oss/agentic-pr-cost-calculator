@@ -4,8 +4,8 @@
 - **Boundary:** outgoing
 - **Reversibility:** reversible with work
 - **Status:** accepted
-- **Decided by:** the owner, 2026-11-01
-- **Requirements:** R285
+- **Decided by:** the change `add-pr-cost-calculator`, as the owner asked on 2026-11-01
+- **Requirements:** R122, R285
 - **Threats:** T291, T303, T304, T305
 - **Replaces:** none
 - **Closed by:** none

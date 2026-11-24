@@ -65,7 +65,7 @@ Every version of the ledger format SHALL name a call by the same id, the SHA-256
 
 ### Requirement: Each entry names its UTC day, its agent and its provider
 
-Each ledger entry SHALL give its call's UTC day in `utc_day`, as a date with no time; its agent in `agent`, in this version always `claude-code`; and in `provider` the provider that the call's own lines name, as the capture step's price table names it, where that table lists it for the call's model, and `unknown` otherwise, never from the environment, the hook's input or settings, so that a later agent or provider needs no new ledger format.
+Each ledger entry SHALL give its call's UTC day in `utc_day`, as a date with no time; its agent in `agent`, in this version always `claude-code`; and in `provider` the provider that a metadata field of the call's lines names, where the capture step's price table lists it, and `unknown` otherwise, never from message content, tool data, the environment, the hook's input or settings, so that a later agent or provider needs no new ledger format.
 
 #### Scenario: An entry's day is named as UTC
 
@@ -79,15 +79,20 @@ Each ledger entry SHALL give its call's UTC day in `utc_day`, as a date with no 
 
 #### Scenario: A provider that capture cannot tell is recorded as unknown
 
-- **WHEN** nothing in a call's lines names its provider, or its model is recorded as `unknown`, or its lines name a provider that the capture step's price table does not list for its model
-- **THEN** its entry's provider is `unknown`, and nothing that the lines say of the provider, nor its hash, is in any ledger file
+- **WHEN** no metadata field of a call's lines names its provider, or its model is recorded as `unknown`
+- **THEN** its entry's provider is `unknown`
+
+#### Scenario: A provider named only in a call's content is not recorded
+
+- **WHEN** a provider's name that the price table lists appears only in a call's response text, its tool input or a tool's output
+- **THEN** its entry's provider is `unknown`
 
 #### Scenario: The environment does not decide a call's provider
 
 - **WHEN** the session's environment variables, the hook's input and Claude Code's settings name a provider, and the call's lines name none
 - **THEN** its entry's provider is `unknown`
 
-### Requirement: A model name or attribute value the price table does not list is recorded as unknown
+### Requirement: A model name, provider or attribute value the price table does not list is recorded as unknown
 
 A call's model name, its provider and each of its price attribute values (see "Usage is recorded per model call" in `usage-capture`) SHALL be recorded only when the price table that the capture step ships with lists that name or value, so that the name of a private gateway, a custom model or an alias is not published. Any other value SHALL be recorded as `unknown`.
 

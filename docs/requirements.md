@@ -88,7 +88,7 @@ The capability names the spec that holds the requirement. Each capability is one
 | R74 | non-functional | `project-standards` | Each proposal says how its outcome is validated |
 | R75 | functional | `usage-capture` | A subagent's calls are read from its own transcript |
 | R76 | functional | `usage-capture` | Capture works on the repository that holds the project directory |
-| R77 | non-functional | `ledger` | A model name or attribute value the price table does not list is recorded as unknown |
+| R77 | non-functional | `ledger` | A model name, provider or attribute value the price table does not list is recorded as unknown |
 | R78 | functional | `usage-capture` | A call goes only to a commit in its worktree, on the branch it was recorded on |
 | R79 | behavioural | `usage-capture` | Only git's commit subcommand counts as a commit |
 | R80 | behavioural | `usage-capture` | A commit is a dry run when a dry-run option is left in effect |
@@ -109,7 +109,7 @@ The capability names the spec that holds the requirement. Each capability is one
 | R95 | functional | `report-comment` | The comment counts refused calls and calls that may leave the token cost low |
 | R96 | functional | `report-comment` | A report run again updates only its own comment |
 | R97 | behavioural | `report-comment` | No text from the pull request or the jobs API is quoted |
-| R98 | behavioural | `report-comment` | A ledger line naming a model or attribute value that the price table does not list, other than the value unknown, is refused |
+| R98 | behavioural | `report-comment` | A ledger line naming a model, provider, attribute value or agent that the price table or its format does not list is refused |
 | R99 | non-functional | `releases-and-compatibility` | Every copy of the oldest supported Python agrees with its one source |
 | R100 | non-functional | `project-standards` | The register matches the specs, and every requirement is on a feature page |
 | R101 | non-functional | `project-standards` | Workflows are checked against the documented permissions, actions and images |
@@ -306,6 +306,7 @@ The capability names the spec that holds the requirement. Each capability is one
 | R292 | non-functional | `project-standards` | Every transcript fixture fits the kept shape, and every recorded response is dated |
 | R293 | non-functional | `report-comment` | The comment stays under a size bound below the length that GitHub refuses |
 | R294 | functional | `pricing` | The price table states the day it was last checked |
+| R295 | non-functional | `pricing` | Each price row gives the day it was added, and is added in order |
 
 IDs are stable: a requirement keeps its ID while it exists, and a new one takes the next free number, so the rows follow the order in which requirements were added rather than the order of the specs. A requirement that a later change removes leaves the table, and its ID is listed below with the change that removed it, never to be used again.
 

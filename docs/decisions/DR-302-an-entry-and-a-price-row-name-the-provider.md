@@ -5,7 +5,7 @@
 - **Reversibility:** reversible with work
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`, as the owner asked on 2026-11-14
-- **Requirements:** R4, R77, R98, R289, R290
+- **Requirements:** R2, R4, R77, R98, R289, R290
 - **Threats:** T1, T31, T293, T294, T295, T296
 - **Replaces:** none
 - **Closed by:** none
@@ -16,7 +16,7 @@ On 2026-11-14 the owner planned agents other than Claude Code (DR-234), and the 
 
 ## Decision
 
-Each ledger entry names, in `agent`, the agent that made its call, in this version always `claude-code`, and, in `provider`, the provider that the call's own lines name, as the capture step's price table names it, where that table lists it for the call's model, and `unknown` otherwise, never taken from the environment, the hook's input or settings (R290). A provider that the table does not list reaches no ledger file, as a model name does not (R4, R77), and the report refuses a line whose provider the table does not list or whose agent its format's version does not name (R98). Each price row names its provider beside its model, a model listed under more than one provider marks one as its default, and a call is priced by its own provider's row, or, when its provider is `unknown`, by its model's only or default provider's, which the comment's detail says was taken from the table (R289). No field records how a call was paid.
+Each ledger entry names, in `agent`, the agent that made its call, in this version always `claude-code`, and, in `provider`, the provider that a metadata field of the call's lines names, as the capture step's price table names it, where that table lists it, and `unknown` otherwise, never taken from message content, tool data, the environment, the hook's input or settings (R290). A provider that the table does not list reaches no ledger file, as a model name does not (R4, R77), and the report refuses a line whose provider the table does not list or whose agent its format's version does not name (R98). Each price row names its provider beside its model, and a call is priced by its own provider's row, or, when its provider is `unknown`, by its model's only provider on its day or by the one that a dated statement names as its default on that day, which the comment says was taken from the table (R289). A default is a dated statement, as a combination of modifiers is, so that adding a second provider's rows changes no row and reprices no earlier call. No field records how a call was paid.
 
 ## Alternatives
 

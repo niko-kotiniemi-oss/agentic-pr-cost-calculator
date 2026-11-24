@@ -78,7 +78,7 @@ Everything that crosses the tool's boundary, in three tables, each row with how 
 | Claude Code's transcripts | Each call's model, token counts, attributes, working directory and, where its lines name it, provider, read while the session runs | Not pinned: Claude Code writes them, and capture reads them tolerantly, counting what it cannot read | DR-003, DR-007, DR-032, DR-033, DR-044, DR-057, DR-128, DR-135, DR-172, DR-178, DR-199, DR-302 |
 | Claude Code's hook input | The event, the session's id, the transcript's path and the directory | Not pinned: Claude Code gives it | DR-044, DR-172 |
 | The switch and the opt-in | `.pr-cost.json`, and `pr-cost.capture` in the person's git configuration | The repository's own file and the person's own setting, read strictly | DR-169, DR-021, DR-183 |
-| The price table | Dated rates and modifiers in one currency, by provider and model, with a default provider for a model listed under more than one and a model with no price among them, each row added a few days after its price changes, and the day the table was last checked | Pinned with the tool's own commit | DR-020, DR-298, DR-299, DR-300 |
+| The price table | Dated rates and modifiers in one currency, by provider and model, with a default provider for a model listed under more than one and a model with no price among them, each row added a few days after its price changes, and the day the table was last checked | Pinned with the tool's own commit | DR-020, DR-298, DR-299, DR-300, DR-306 |
 | GitHub | The push event, the pull request, its runs and job attempts, and the report's earlier comment | Not pinned: GitHub's API, read within a call budget and a time limit | DR-006, DR-008, DR-019, DR-038, DR-039, DR-051, DR-060, DR-061, DR-160, DR-217 |
 | Ledger files of a pull request | Token counts, written by whoever can push to its branch | Not pinned: read as untrusted data, in every earlier format | DR-040, DR-044, DR-066 |
 | Python | The standard library of the person's or the runner's Python | Not pinned: Python 3.11 or any later release | DR-023 |
@@ -141,7 +141,7 @@ The runs counted are those on the pull request's own commits that no push to the
 total = sum(token cost) + sum(CI cost)
 ```
 
-The comment splits the token cost by model, by token type and by activity type. Every figure can be recomputed from the ledger, the price table at the report's own commit and the jobs API; the comment gives the day the table was last checked, and says when a priced call came after it (R294). Each figure is computed exactly, in decimal arithmetic, and rounded half up only where it is written, to the cent in the comment's brief summary and to four decimals in its collapsed detail and the job summary, so a total can differ from the sum of its shown parts, by more than one cent where many parts each round up, as the comment says beside the total (R284).
+The comment splits the token cost by model and provider, by token type and by activity type. Every figure can be recomputed from the ledger, the price table at the report's own commit and the jobs API; the comment gives the day the table was last checked, and says when a priced call came after it (R294). Each figure is computed exactly and rounded only where it is written, so a total can differ from the sum of its shown parts (R284).
 
 ## Flows
 
@@ -358,7 +358,7 @@ flowchart LR
 ```
 
 - 1) Anthropic, another provider or GitHub publishes a new price (R14, R289).
-- 2) A few days later, a pull request adds a row with its provider, its effective date, the day it is added and its source, dated after the newest row of its provider, model and price and at most 30 days before the day it is added, unless it names its reason, and updates the day the table was last checked (R14, R294, DR-299).
+- 2) A few days later, a pull request adds a row with its provider, its effective date, the day it is added and its source, dated after the newest row of its provider, model and price and at most 30 days before the day it is added, unless it names its reason, and updates the day the table was last checked (R14, R294, R295, DR-299).
 - 3) Review and CI check it, since prices are read from the table in the repository and never fetched (R30).
 - 4) It merges to the default branch (R30).
 - 5) The next release names the commit in its text (R27).

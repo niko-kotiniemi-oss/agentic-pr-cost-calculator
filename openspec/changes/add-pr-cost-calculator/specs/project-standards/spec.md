@@ -2493,7 +2493,7 @@ Each Mermaid diagram on a page that this repository writes SHALL number its part
 
 ### Requirement: Each acceptance test names an expected error of its own
 
-Each acceptance test SHALL be held back only by its expected-failure marker, naming an error class of the tool's package that only its capability's missing code raises, never `AssertionError`, a built-in error, an error raised from under `tests/`, or another capability's error or a base or subclass of it, so that no test passes, or keeps failing, for another's reason. The golden set's tests SHALL count as a capability of their own. A test SHALL fail on any acceptance test that breaks this.
+Each capability's acceptance test SHALL drive its capability's own entry point, which raises its capability's error class while unbuilt, and be held back only by a strict expected-failure marker naming that class: never `AssertionError`, a built-in error, one raised from under `tests/`, or another capability's error or its base or subclass. The golden set's tests SHALL name the error of a missing capture step or report. A test SHALL fail on any acceptance test that breaks this.
 
 #### Scenario: An acceptance test with no expected error fails a test
 
@@ -2502,7 +2502,7 @@ Each acceptance test SHALL be held back only by its expected-failure marker, nam
 
 #### Scenario: An acceptance test held back by other means fails a test
 
-- **WHEN** an acceptance test is skipped, or calls `pytest.xfail` or `pytest.skip` in its body, or is marked by `skipif`, by an expected failure with `run=False` or a condition, by `pytestmark` or by a conftest hook
+- **WHEN** an acceptance test is skipped, or calls `pytest.xfail` or `pytest.skip` in its body, or is marked by `skipif`, by an expected failure with `run=False`, `strict=False` or a condition, by `pytestmark` or by a conftest hook
 - **THEN** a test that reads the collected tests after every hook has run fails and names the acceptance test
 
 #### Scenario: An expected error raised from under tests fails a test

@@ -6,7 +6,7 @@
 - **Status:** accepted
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** R286
-- **Threats:** none
+- **Threats:** T300
 - **Replaces:** none
 - **Closed by:** none
 

@@ -144,7 +144,7 @@ The model price table and the runner price table SHALL each state the one curren
 
 ### Requirement: A call is priced by its provider and its model
 
-Each price row SHALL name its provider, such as Anthropic's API, Amazon Bedrock or Google Vertex AI, and a model listed under more than one SHALL mark one as its default. A call SHALL be priced by the row of its entry's provider and model, or, when its provider is `unknown`, of its model's only or default provider, which the comment's detail SHALL say was taken from the table. An entry whose provider and model no row names SHALL be counted in tokens, left out of the cost and named.
+Each price row SHALL name its provider, such as Anthropic's API, Amazon Bedrock or Google Vertex AI. A call SHALL be priced by the row of its entry's provider and model, or, when its provider is `unknown`, of its model's only provider on its day, or of the one that a dated statement names as its default on that day, which the comment SHALL say was taken from the table. An entry whose provider and model no row names SHALL be counted in tokens, left out of the cost and named.
 
 #### Scenario: Two providers of one model are priced apart
 
@@ -153,7 +153,7 @@ Each price row SHALL name its provider, such as Anthropic's API, Amazon Bedrock 
 
 #### Scenario: An unknown provider is priced at the model's default provider and said so
 
-- **WHEN** a call's entry gives the provider `unknown` and a model that the price table lists under two providers, one marked as its default
+- **WHEN** a call's entry gives the provider `unknown` and a model that the price table prices under two providers on its day, with a dated statement naming one as its default from before that day
 - **THEN** the call is priced at the default provider's rates, and the comment's detail names that provider and says that it was taken from the price table, not from the call
 
 #### Scenario: A provider and model that no row names are named, not guessed
@@ -161,10 +161,34 @@ Each price row SHALL name its provider, such as Anthropic's API, Amazon Bedrock 
 - **WHEN** a call's entry gives a provider and a model that the price table lists, but no row for that pair
 - **THEN** the report shows that call's tokens, leaves it out of the cost, and names the provider and the model
 
-#### Scenario: A model listed under two providers with no default fails the checks
+#### Scenario: A model priced by two providers with no default fails the checks
 
-- **WHEN** a price table lists one model under two providers and marks neither, or both, as its default
-- **THEN** the checks fail, naming the model
+- **WHEN** a price table prices one model under two providers from a day on which no dated statement names its default
+- **THEN** the checks fail, naming the model and the day
+
+#### Scenario: A second provider's rows change no earlier call's price
+
+- **WHEN** a model priced only by one provider gains another provider's rows and a statement naming the first as its default, both dated from a later day, and a pull request has calls with the provider `unknown` before and after that day
+- **THEN** every one of those calls is priced at the first provider's rates
+
+### Requirement: Each price row gives the day it was added, and is added in order
+
+Each price row and statement SHALL give the day it was added, on or after the day of the commit it is compared with and not after the day the checks run, and its effective date SHALL be after the newest of the same provider, model and price, and at most 30 days before the day it was added unless the row names its reason. The checks SHALL fail on any other.
+
+#### Scenario: A row dated more than 30 days before it was added fails without a reason
+
+- **WHEN** a pull request adds a row whose effective date is 31 days before the day it was added, and names no reason
+- **THEN** the checks fail, naming the row, and pass once the row names its reason
+
+#### Scenario: A row dated on or before the newest of its kind fails
+
+- **WHEN** a pull request adds a row whose effective date is on or before that of the newest row of the same provider, model and price
+- **THEN** the checks fail, naming both rows
+
+#### Scenario: A row's added day outside the window fails
+
+- **WHEN** a pull request adds a row that gives no day it was added, one before the date of the commit it is compared with, or one after the day the checks run
+- **THEN** the checks fail, naming the row
 
 ### Requirement: The price table states the day it was last checked
 

@@ -38,12 +38,17 @@ The comment SHALL end by saying that a subscription may include this usage, so t
 
 ### Requirement: The comment opens with a brief summary and keeps the detail in a collapsed section
 
-The comment SHALL open with a brief summary giving, for each model and provider, its input, output and cached tokens (cache writes and reads together) and its cost or that it has none; then the CI cost and the total; that the figure is an API-equivalent estimate, not a bill; and whenever a figure is a lower bound or anything was not counted, that it is so. Every other figure SHALL be in one collapsed section after it, giving each model, provider and token type's tokens, rate, currency and cost.
+The comment SHALL open with a brief summary giving, for each model and provider, marked where taken from the table, its input, output and cached tokens (cache writes and reads together) and cost, or that it has none; then the CI cost and the total; that the figure is an estimate, not a bill; and whenever a figure is a lower bound or anything was not counted, that it is so. A collapsed section after it SHALL give every figure, with each model, provider and token type's tokens, rate and cost.
 
 #### Scenario: The summary gives each model's tokens and cost
 
 - **WHEN** a pull request's ledger files hold calls of two models and CI runs
-- **THEN** the comment opens with one line for each model and provider, giving its input and output tokens, its cache-write and cache-read tokens together as its cached tokens, and its cost, then the CI cost and the total, before any collapsed section
+- **THEN** the collapsed section gives each of the brief summary's figures again, to four decimals, and the comment opens with one line for each model and provider, giving its input and output tokens, its cache-write and cache-read tokens together as its cached tokens, and its cost, then the CI cost and the total, before any collapsed section
+
+#### Scenario: A provider taken from the price table is marked in the brief summary
+
+- **WHEN** a pull request's ledger files hold calls whose provider is `unknown`, priced at their model's default provider's rates
+- **THEN** the brief summary's line for them names that provider and says that it was taken from the price table, not from the calls
 
 #### Scenario: The brief summary says that the figure is not a bill
 
@@ -62,13 +67,13 @@ The comment SHALL open with a brief summary giving, for each model and provider,
 
 #### Scenario: The summary says what the collapsed section counts as missing
 
-- **WHEN**, in turn, the comment's collapsed section counts refused lines, refused files, files over the size bound, calls read without a stop reason, calls with a usage field that capture does not know, unpriced calls, calls of a model listed with no price, minutes on runners that the price table does not list, or a CI listing that was not complete, or flags calls left out
+- **WHEN**, in turn, the comment's collapsed section counts refused lines, refused files, files over the size bound, calls that capture refused, calls read without a stop reason, calls with a usage field that capture does not know, calls of a model that capture recorded as unknown, calls whose provider and model no row names, calls before their model's first price, calls with an unpriced attribute or combination, calls of a model listed with no price, minutes on runners that the price table does not list, or a CI listing that was not complete, or flags calls left out
 - **THEN** each time the brief summary says, outside the collapsed section, that the figure is a lower bound or that something was not counted, and that the detail says what
 
 #### Scenario: The collapsed section is well formed
 
 - **WHEN** the report posts its comment
-- **THEN** it holds one `<details>` element with one `<summary>`, neither with an attribute, a blank line after `</summary>` and one before `</details>`, every code fence of three backticks at the start of its line, and no `<` outside code but those four tags, so that "under" is written as a word
+- **THEN** it holds one `<details>` element with one `<summary>`, neither with an attribute, a blank line after `</summary>` and one before `</details>`, every code fence of three backticks at the start of its line, and no `<` outside code but those four tags and the report's marker, one HTML comment on a line of its own, so that "under" is written as a word
 
 ### Requirement: Each cost is shown to the cent in the summary and to four decimals in the detail
 
@@ -81,12 +86,12 @@ Each cost SHALL be shown in the price table's currency, as its code, to two deci
 
 #### Scenario: A total is rounded from its exact cost
 
-- **WHEN** two models' exact costs are 0.004 and 0.004
+- **WHEN** two models' exact costs are 0.004 and 0.004, and the CI runs used no minutes
 - **THEN** the brief summary shows each as under `USD 0.01` and the total as `USD 0.01`, and says, beside the total, that a total can differ from the sum of its shown parts
 
 #### Scenario: A total can differ from its shown parts by more than one cent
 
-- **WHEN** four models' exact costs are 0.005 each
+- **WHEN** four models' exact costs are 0.005 each, and the CI runs used no minutes
 - **THEN** the brief summary shows each as `USD 0.01` and the total as `USD 0.02`, and says, beside the total, that a total can differ from the sum of its shown parts
 
 #### Scenario: A rate is read exactly
@@ -106,12 +111,17 @@ Each cost SHALL be shown in the price table's currency, as its code, to two deci
 
 #### Scenario: A range is rounded at each end
 
-- **WHEN** a cost is a range because the source did not give a cache lifetime (see "Every token type is priced at its own rate" in `pricing`)
-- **THEN** each end of the range is rounded half up from its own exact cost at the precision where it is shown
+- **WHEN** a cost is a range because the source did not give a cache lifetime (see "Every token type is priced at its own rate" in `pricing`), with exact ends 0.00005 and 0.125
+- **THEN** the brief summary shows it from under `USD 0.01` to `USD 0.13`, and the collapsed section from `USD 0.0001` to `USD 0.1250`, each end rounded half up from its own exact cost
+
+#### Scenario: Half a cent rounds up, not to even
+
+- **WHEN** a model's exact cost is 0.125
+- **THEN** the brief summary shows it as `USD 0.13`, not `USD 0.12`
 
 ### Requirement: The comment holds its figures in a block that a program can read
 
-The collapsed section SHALL end with a fenced JSON block holding its form's version, the currency in a field of its own and each figure and count the comment shows, from the same values as its text: each cost as its four-decimal figure, one under the smallest amount as zero with a flag, a range as its two ends. Its form SHALL be published with a JSON Schema, and SHALL say that a program reads the block only from the comment that carries the report's marker and that the report's identity posted.
+The collapsed section SHALL end with a fenced JSON block holding its form's version, its pull request and merge commit, the currency in a field of its own and each figure and count the comment shows, from the same values as its text: each cost as its four-decimal figure, one under the smallest amount as zero with a flag, a range as its two ends. Its form SHALL be published with a JSON Schema, and SHALL say how a program finds the report's own comment.
 
 #### Scenario: The block holds what the comment shows
 
@@ -126,7 +136,7 @@ The collapsed section SHALL end with a fenced JSON block holding its form's vers
 #### Scenario: The block's form names how a program finds the report's comment
 
 - **WHEN** the published form of the block is read
-- **THEN** it says that a program reads the block only from the comment that carries the report's marker (see "A report run again updates only its own comment") and that the identity the report's workflow posts as posted, and that a block in any other comment is not the report's
+- **THEN** it says that a program reads the block only from the comment that carries the report's marker (see "A report run again updates only its own comment") and that the identity the report's workflow posts as posted, and only when the block's pull request number and merge commit are those of the pull request it reads, and that a block in any other comment is not the report's
 
 #### Scenario: A released block form's schema does not change
 
@@ -288,9 +298,9 @@ The comment, the report's job summary and what the report writes to its log SHAL
 - **WHEN** some ledger lines that the pull request adds are not valid entries
 - **THEN** the comment says how many were refused, and none of them is quoted in the comment, the job summary or the log
 
-### Requirement: A ledger line naming a model or attribute value that the price table does not list, other than the value unknown, is refused
+### Requirement: A ledger line naming a model, provider, attribute value or agent that the price table or its format does not list is refused
 
-A ledger line that names a model, a provider or an attribute value that the price table does not list, or an agent that its ledger format's version does not name, other than `unknown`, SHALL be refused.
+A ledger line that names a model, a provider or an attribute value that the price table does not list, other than `unknown`, or an agent that its ledger format's version does not name, SHALL be refused.
 
 #### Scenario: A name with markup is not shown as written
 
@@ -304,7 +314,7 @@ A ledger line that names a model, a provider or an attribute value that the pric
 
 #### Scenario: An agent that the line's format does not name is refused
 
-- **WHEN** a ledger line names an agent that its ledger format's version does not name
+- **WHEN** a ledger line names an agent that its ledger format's version does not name, `unknown` among them
 - **THEN** the line is refused and counted as refused, and the agent's value is not in the comment, the job summary or the log
 
 ### Requirement: The report reads the ledger from git, within bounds

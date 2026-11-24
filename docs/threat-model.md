@@ -316,7 +316,7 @@ The trust boundaries:
 - **Raw impact:** 2 (medium)
 - **Raw likelihood:** 3 (likely)
 - **Raw risk:** 6
-- **What could happen:** a contributor lowers or raises the reported cost by editing their ledger files: their entries, an entry's provider among them, which sets the rate its call is priced at, or a first line's counts, flags or version, as when a file states a version that the report does not read, so that it is refused.
+- **What could happen:** a contributor lowers or raises the reported cost by editing their ledger files: their entries, or a first line's counts, flags or version, as when a file states a version that the report does not read, so that it is refused.
 - **Answer:** none in the tool. A pull request's ledger files are in its diff, where a reviewer sees them, and the comment words each flag as what the ledger files say, and counts each refused file.
 - **Held by:** DR-002; DR-010; DR-066; DR-181; DR-200; accepted: a pull request's ledger files are reviewed like any other file in it, and the report's figure is an estimate, not a bill.; DR-257
 - **Acceptance:** DR-257: the owner accepts it, since nothing that the report trusts signs the ledger, so only a reviewer of the diff sees an edited count, and the figure is an estimate, not a bill.
@@ -524,7 +524,7 @@ The trust boundaries:
 - **Raw likelihood:** 2 (possible)
 - **Raw risk:** 4
 - **What could happen:** a pull request changes a price so that reports come out lower or higher.
-- **Answer:** the price table ships with the pinned tool, so changing it in an adopting repository means pinning a different tool, which T21 covers. In this repository, each price row names its source page, the statements of how modifiers combine are dated like prices (R14), and a test fails when a pull request changes or removes an existing row, or adds one dated on or before the newest row for the same provider, model and price, or dated longer before the day it is added than DR-299 allows, unless it names its reason (T307).
+- **Answer:** the price table ships with the pinned tool, so changing it in an adopting repository means pinning a different tool, which T21 covers. In this repository, each price row names its source page, the statements of how modifiers combine are dated like prices (R14), and a test fails when a pull request changes or removes an existing row, or adds one dated on or before the newest row for the same provider, model and price, or dated more than 30 days before the day it is added unless it names its reason (R295, T307).
 - **Residual:** every row is dated a few days before the day it is added (DR-299), so a row dated after the newest row but before the day its pull request merges, which is how every row is added, changes what the usage between those two days costs. That row is in the pull request's diff, with its source page and the day it was added, for review.
 - **Held by:** `switch-and-opt-in`: "A changed report is flagged"; `pricing`: "A changed combination reprices nothing earlier"; DR-020; DR-186; DR-217; DR-299; `add-pr-cost-calculator` task 3.1; `add-pr-cost-calculator` task 3.2
 - **Assumptions:** A56, A58
@@ -1427,7 +1427,7 @@ The trust boundaries:
 - **What could happen:** nothing says what unit the comment's figures are in, how precise they are, how they are rounded or what arithmetic gives them. Built before that code, the golden set would either hold the costs before they are shown, so that nothing holds what readers see, or choose a rounding that no spec states, so that a test file decides what the comment says. With Python's own formatting to two places, three costs of 0.004 each show as 0.00 beside a total of 0.01, 2.675 shows as 2.67 where decimal arithmetic rounding half up gives 2.68, and 0.00001 prints as 1e-05. A cost that is not zero reads as free, and a reader who recomputes a figure from the ledger gets another number, with nothing saying which is right.
 - **Answer:** `report-comment` states how a cost is shown: its currency's code, two decimals in the brief summary and four in the detail and the job summary, each rounded half up from its own exact cost, worked out from rates read as exact decimals, and a cost above zero too small to show as under the smallest amount, as the owner chose on 2026-11-24 (R284, DR-295). The golden set holds each figure as the comment shows it, and its tests compare the comment that the report writes (R139).
 - **Residual:** a test of the comment's text cannot see how GitHub renders it, which one recorded render covers (T300). How a total and its shown parts differ is T292.
-- **Held by:** `project-standards`: "A result that differs from the golden set fails CI"; `report-comment`: "A summary cost is rounded half up to the cent"; `report-comment`: "A rate is read exactly"; `add-pr-cost-calculator` task 1.21; DR-165; DR-295
+- **Held by:** `project-standards`: "A result that differs from the golden set fails CI"; `report-comment`: "A summary cost is rounded half up to the cent"; `report-comment`: "Half a cent rounds up, not to even"; `report-comment`: "A rate is read exactly"; `add-pr-cost-calculator` task 1.21; DR-165; DR-295
 
 ## Boundary 6, continued: found at the design review of the assumptions, the glossary and the golden set
 
@@ -2165,7 +2165,7 @@ The trust boundaries:
 - **Raw risk:** 6
 - **What could happen:** a repository pins the report's release in its calling workflow and copies the hook file of the same release, while a person's plugin follows their account, so in a project's cloud thread, where only the plugin runs, every ledger file comes from a release that the repository did not pin. The pinned report refuses a line that names a model that only a later price table lists, and every file of a later ledger format, and the comment's only explanation, a hook file from another commit, does not apply there, so a reader sees refused lines and no reason for them. An earlier plugin, in a repository whose configuration file holds a key that only a later release documents, takes the tool to be off there and records nothing, with no flag (T123).
 - **Answer:** each ledger file's first line states, beside its format's version, the release of the capture step that wrote it, both in a place and form that every version of the format keeps (R156), and when a ledger file that a merge adds names a later release than the report's own, whatever its version, the comment says that some ledger files come from a later release than the report, so that lines or files that the report cannot read may be refused, and quotes nothing from them (R193). Where the plugin and the hook file's registration both run, a copy of an earlier release leaves the session to the later one, but for an opt-out (R191, T130). The README's section on installing the plugin says that the plugin's release, not the repository's pinned report, writes the ledger files of the sessions that run it, what a later or an earlier plugin then does, and that a repository keeps its pin current and a person keeps their plugin current (R195). The README's short start says that the marketplace's updates need no approval, so that a person who adds it knows that each new release reaches their sessions with nothing to accept (R198).
-- **Residual:** a later plugin's lines that the report cannot read stay refused, and the figure leaves them out, as the comment says. An earlier plugin that runs alone where the configuration file holds a key that it does not know records nothing there, with no flag, until the person updates it. Counting a well-formed model name that the report's table does not list as `unknown`, in tokens and not in cost, would let a later plugin's calls count, but would also count a name that a hand-edited ledger file makes up, and is left to a later change (DR-208). A provider that only a later price table lists is refused by the pinned report in the same way, and a later table that adds a second provider for a model leaves its calls priced at the model's default (T296).
+- **Residual:** a later plugin's lines that the report cannot read stay refused, and the figure leaves them out, as the comment says. An earlier plugin that runs alone where the configuration file holds a key that it does not know records nothing there, with no flag, until the person updates it. Counting a well-formed model name that the report's table does not list as `unknown`, in tokens and not in cost, would let a later plugin's calls count, but would also count a name that a hand-edited ledger file makes up, and is left to a later change (DR-208). A provider that only a later price table lists is refused by the pinned report in the same way, and where the report's table is the later one, a second provider that it adds for a model leaves earlier plugins' calls priced at the model's default (T296).
 - **Held by:** `report-comment`: "Ledger files of a later release are named, not quoted"; `report-comment`: "A ledger file of a later format is named too"; `ledger`: "A ledger file names its format's version"; `ledger`: "Every version of the ledger format states its version and release alike"; `usage-capture`: "An earlier copy whose release does not know a key leaves the session to the later copy"; `project-standards`: "The README says which release of the plugin runs"; `project-standards`: "The README opens with its short start"; DR-206; DR-208; DR-212; `add-pr-cost-calculator` task 1.2; `add-pr-cost-calculator` task 2.2; `add-pr-cost-calculator` task 4.2; `add-pr-cost-calculator` task 4.4
 - **Assumptions:** A23, A72
 
@@ -4594,10 +4594,10 @@ The trust boundaries:
 - **Raw impact:** 2 (medium)
 - **Raw likelihood:** 3 (likely)
 - **Raw risk:** 6
-- **What could happen:** a cost above zero rounds to zero and reads as free, or a total rounded from its exact cost differs from the sum of its rounded parts, and a reader takes either as an error of the tool, or a figure depends on the order in which binary floating-point costs were added.
+- **What could happen:** a cost above zero rounds to zero and reads as free, or a total rounded from its exact cost differs from the sum of its rounded parts, and a reader takes either as an error of the tool.
 - **Answer:** each figure is rounded half up from its own exact cost, worked out from rates read as exact decimals and rounded only when written; a cost above zero that rounds to zero is shown as under the smallest amount at its precision, a cost of zero as zero, and the brief summary says, beside the total, that it can differ from the sum of its shown parts (R284, DR-295). T89 covers the rule itself; this threat covers how its figures read.
 - **Residual:** a total and the sum of its shown parts can differ by more than one unit of the last digit, as four parts of 0.005 each show `USD 0.01` beside a total of `USD 0.02`, and the comment says only that they can differ.
-- **Held by:** `report-comment`: "A summary cost is rounded half up to the cent"; `report-comment`: "A total is rounded from its exact cost"; `report-comment`: "A total can differ from its shown parts by more than one cent"; `report-comment`: "A cost of zero is shown as zero"; `report-comment`: "A range is rounded at each end"; DR-295
+- **Held by:** `report-comment`: "A summary cost is rounded half up to the cent"; `report-comment`: "Half a cent rounds up, not to even"; `report-comment`: "A total is rounded from its exact cost"; `report-comment`: "A total can differ from its shown parts by more than one cent"; `report-comment`: "A cost of zero is shown as zero"; `report-comment`: "A range is rounded at each end"; DR-295
 
 ## Boundary 3, continued: found at the design of the requirements corrected before the build
 
@@ -4611,14 +4611,14 @@ The trust boundaries:
 - **Raw likelihood:** 2 (possible)
 - **Raw risk:** 4
 - **What could happen:** one model is sold by more than one provider at different rates, and a call made through one is priced at another's rate, because the entry names no provider, the report picks a row by the model alone, or a provider taken from the table is shown as if the call's lines had named it.
-- **Answer:** each price row names its provider, and capture records a provider only where the call's own lines name it (R290); a call is priced by the row of its entry's provider and model, and a call whose provider is `unknown` by its model's only or default provider's row, which the comment's detail says was taken from the table, not from the call (R289, DR-302).
+- **Answer:** each price row names its provider, and capture records a provider only where the call's own lines name it (R290); a call is priced by the row of its entry's provider and model, and a call whose provider is `unknown` by its model's only or default provider's row, which the comment's brief summary and detail say was taken from the table, not from the call (R283, R289, DR-302).
 - **Residual:** whether Claude Code's transcript tells a call's provider is not known until task 1.1 checks it; until it does, a call through Amazon Bedrock or Google Vertex AI is priced at its model's default provider's rates, as the comment says, which is wrong wherever their rates differ. Gateways can also pass a listed model's name to another provider.
-- **Held by:** `pricing`: "Two providers of one model are priced apart"; `pricing`: "An unknown provider is priced at the model's default provider and said so"; `ledger`: "A provider that capture cannot tell is recorded as unknown"; DR-302
+- **Held by:** `pricing`: "Two providers of one model are priced apart"; `pricing`: "An unknown provider is priced at the model's default provider and said so"; `report-comment`: "A provider taken from the price table is marked in the brief summary"; `ledger`: "A provider that capture cannot tell is recorded as unknown"; DR-302
 - **Assumptions:** A2
 
 ## Boundary 1, continued: found at the design-stage review of the requirements corrected before the build
 
-T293, under Boundary 3 below, also concerns this boundary: the provider that capture reads from a call's lines.
+T293 (Boundary 3) also concerns this boundary: the provider that capture reads from a call's lines.
 
 ### T294. A provider or agent value carries private text into the ledger or the comment
 
@@ -4634,7 +4634,7 @@ T293, under Boundary 3 below, also concerns this boundary: the provider that cap
 - **Residual:** which provider a person's calls go through is published wherever the call's lines tell it and the table lists it, as the README's section on adopting the tool says (T31).
 - **Held by:** `ledger`: "A provider that the price table does not list is recorded as unknown"; `ledger`: "A planted string never reaches the ledger"; `ledger`: "A provider that capture cannot tell is recorded as unknown"; `report-comment`: "A provider with markup is not shown as written"; `report-comment`: "An agent that the line's format does not name is refused"; DR-302
 
-### T295. The environment or the hook's input decides a call's provider
+### T295. The environment, the hook's input or a call's content decides its provider
 
 - **Kind:** tampering
 - **Impact:** 2 (medium)
@@ -4643,10 +4643,10 @@ T293, under Boundary 3 below, also concerns this boundary: the provider that cap
 - **Raw impact:** 2 (medium)
 - **Raw likelihood:** 2 (possible)
 - **Raw risk:** 4
-- **What could happen:** capture takes a call's provider from an environment variable, such as one that turns on Amazon Bedrock, from the hook's input or from settings, which a repository's settings can set for everyone and which a run reads after the call was made, so that calls are priced at a provider's rate that they never went through.
-- **Answer:** the provider comes only from the call's own lines, as the price table names it, and never from the environment, the hook's input or settings (R290).
+- **What could happen:** capture takes a call's provider from an environment variable, such as one that turns on Amazon Bedrock, from the hook's input or from settings, which a repository's settings can set for everyone and which a run reads after the call was made, or from a provider's name that a fetched page, a file or a prompt injection put into the call's response or tool data, so that calls are priced at a provider's rate that they never went through.
+- **Answer:** the provider comes only from a metadata field of the call's lines, as the price table names it, never from message content, tool data, the environment, the hook's input or settings (R290); task 1.1 names that field.
 - **Residual:** none beyond T293's.
-- **Held by:** `ledger`: "The environment does not decide a call's provider"; DR-302
+- **Held by:** `ledger`: "The environment does not decide a call's provider"; `ledger`: "A provider named only in a call's content is not recorded"; DR-302; `add-pr-cost-calculator` task 1.1
 
 ## Boundary 3, continued: found at the design-stage review of the requirements corrected before the build
 
@@ -4660,9 +4660,9 @@ T293, under Boundary 3 below, also concerns this boundary: the provider that cap
 - **Raw likelihood:** 3 (likely)
 - **Raw risk:** 6
 - **What could happen:** an ordinary pull request adds Amazon Bedrock's rates, or a row with no price under a self-hosted provider, for a model already priced for Anthropic's API, and from that release capture can no longer tell which provider the model's calls went to, so every call of it is left out of the cost in every adopter's report.
-- **Answer:** capture records only the provider that a call's lines name, and the report prices a call whose provider is `unknown` at its model's only or default provider's rates; a model listed under more than one provider marks one as its default, and the checks fail on a table that marks none or two (R289, R290).
+- **Answer:** capture records only the provider that a call's lines name, and the report prices a call whose provider is `unknown` at its model's only provider's rates on its day, or at those of the provider that a dated statement names as its default; the checks fail on a day when a model has two providers and no default, and since a default is dated, adding a second provider's rows changes no row and reprices no earlier call (R289, R290).
 - **Residual:** a call through a provider other than the default, whose lines do not say so, is priced at the default's rates (T293).
-- **Held by:** `pricing`: "An unknown provider is priced at the model's default provider and said so"; `pricing`: "A model listed under two providers with no default fails the checks"; DR-302
+- **Held by:** `pricing`: "An unknown provider is priced at the model's default provider and said so"; `pricing`: "A model priced by two providers with no default fails the checks"; `pricing`: "A second provider's rows change no earlier call's price"; DR-302
 
 ### T297. A rate read as a binary float rounds a cost the wrong way
 
@@ -4705,8 +4705,9 @@ T293, under Boundary 3 below, also concerns this boundary: the provider that cap
 - **Raw risk:** 4
 - **What could happen:** the comment's detail, with every model, provider, token type, runner and activity type, and its block repeating every figure, grows with the price table until GitHub's API refuses it, and no comment is posted.
 - **Answer:** the largest comment that the price table allows is shorter than a size bound below the length that GitHub's API refuses, which a test that the price table's checks run holds (R293).
-- **Residual:** GitHub can lower its limit; the build records its refusal with its day, and a later lower limit shows only when a comment is refused.
-- **Held by:** `report-comment`: "The largest comment fits the bound"; DR-294; `add-pr-cost-calculator` task 3.1
+- **Residual:** GitHub can lower its limit; the build records its refusal with its day (task 4.6), and a later lower limit shows only when a comment is refused.
+- **Held by:** `report-comment`: "The largest comment fits the bound"; DR-294; `add-pr-cost-calculator` task 3.1; `add-pr-cost-calculator` task 4.6
+- **Assumptions:** A9
 
 ## Boundary 5, continued: found at the design-stage review of the requirements corrected before the build
 
@@ -4720,9 +4721,10 @@ T293, under Boundary 3 below, also concerns this boundary: the provider that cap
 - **Raw likelihood:** 2 (possible)
 - **Raw risk:** 4
 - **What could happen:** Markdown inside the collapsed section shows as raw text because no blank line follows `</summary>`, a `<` written for "under" starts a tag that swallows what follows, or the block's fence does not close, so that readers see a figure or a warning other than the one written.
-- **Answer:** the collapsed section is one `<details>` element with one `<summary>`, neither with an attribute, with a blank line after `</summary>` and before `</details>`, each fence of three backticks at the start of its line, and no `<` outside code but those tags, so that "under" is written as a word (R283); a render of one golden comment through GitHub's Markdown API is recorded with its day (task 4.6).
+- **Answer:** the collapsed section is one `<details>` element with one `<summary>`, neither with an attribute, with a blank line after `</summary>` and before `</details>`, each fence of three backticks at the start of its line, and no `<` outside code but those tags and the report's marker, one HTML comment, so that "under" is written as a word (R283); no dollar sign or tilde stands outside code (R286); a render of one golden comment through GitHub's Markdown API is recorded with its day (task 4.6).
 - **Residual:** a mail client that shows the comment may show the section open; a change to GitHub's renderer after the recorded render shows only to a reader.
-- **Held by:** `report-comment`: "The collapsed section is well formed"; DR-294; `add-pr-cost-calculator` task 4.6
+- **Held by:** `report-comment`: "The collapsed section is well formed"; `report-comment`: "No amount is read as a formula or struck through"; DR-294; DR-303; `add-pr-cost-calculator` task 4.6
+- **Assumptions:** A9
 
 ### T301. The job summary shows a cost by another rule than the comment
 
@@ -4792,8 +4794,8 @@ T293, under Boundary 3 below, also concerns this boundary: the provider that cap
 - **Raw likelihood:** 3 (likely)
 - **Raw risk:** 6
 - **What could happen:** on a public repository anyone can comment on a pull request, and a comment holding a block that validates against the published schema needs no skill to write, so a program that reads every comment's block writes a cost that the report never gave.
-- **Answer:** the block's published form says that a program reads it only from the comment that carries the report's marker and that the identity the report's workflow posts as posted (R285).
-- **Residual:** someone who can edit the report's own comment can still edit its block (T291), and a program that does not follow the form is not held by it; the export command's own change threat-models how it reads the block (B-008).
+- **Answer:** the block names its pull request and merge commit, and its published form says that a program reads it only from the comment that carries the report's marker, posted by the identity that the report's workflow posts as, and only when those match the pull request it reads (R285).
+- **Residual:** every workflow of an adopter's repository that uses its default token posts as the same identity, so another workflow that echoes untrusted text into a comment on the same pull request can carry a copy of the marker and a block with the right numbers; someone who can edit the report's own comment can still edit its block (T291), and a program that does not follow the form is not held by it; the export command's own change threat-models how it reads the block (B-008).
 - **Held by:** `report-comment`: "The block's form names how a program finds the report's comment"; DR-296
 
 ### T306. A report prices usage after a price change at the old rate and says nothing
@@ -4807,8 +4809,8 @@ T293, under Boundary 3 below, also concerns this boundary: the provider that cap
 - **Raw risk:** 6
 - **What could happen:** the price table lags each price change by a few days (DR-299), and an adopter's table lags until they update their pinned release, so calls after a change are priced at the earlier row, and the comment's "price table's date", which no spec defined, does not tell the reader.
 - **Answer:** the price table states the day its rows were last checked against their sources, the comment gives it as the price table's date, and the brief summary says that prices may have changed since then when a priced call's day is after it (R294).
-- **Residual:** the figure itself stays at the earlier price until the table and the pin are updated.
-- **Held by:** `pricing`: "A call after the table's date is flagged"; `pricing`: "A table that states no checked day fails the checks"; DR-299
+- **Residual:** the figure itself stays at the earlier price until the table and the pin are updated, and a pull request that moves the checked day without checking the prices clears the warning, which only review catches.
+- **Held by:** `pricing`: "A call after the table's date is flagged"; `pricing`: "A table that states no checked day fails the checks"; DR-306
 
 ## Boundary 7, continued: found at the design-stage review of the requirements corrected before the build
 
@@ -4822,9 +4824,9 @@ T293, under Boundary 3 below, also concerns this boundary: the provider that cap
 - **Raw likelihood:** 2 (possible)
 - **Raw risk:** 4
 - **What could happen:** with every row dated a few days before it is added (DR-299), a row dated weeks back no longer stands out in review and reprices all the usage since; and a row for an earlier price change that merges after the row for a later one is refused for good, so its period stays at the wrong price. Keyed without the provider, the order check also refuses another provider's rows for a model already listed.
-- **Answer:** each row gives the day it was added; a row dated more than 30 days before that day, the owner's limit (DR-299), or before the newest row of its provider, model and price, fails the checks unless it names its reason, which review reads (task 3.1, DR-299).
-- **Residual:** a row within the limit, or one that names a reason that review accepts, still reprices the usage since its date, in the pull request's diff (T30).
-- **Held by:** DR-299; `add-pr-cost-calculator` task 3.1
+- **Answer:** each row gives the day it was added, no earlier than the commit it is compared with and no later than the day the checks run; a row dated more than 30 days before that day, the owner's limit, fails the checks unless it names its reason, which review reads; a row dated on or before the newest of its provider, model and price fails, and a row for an earlier change that comes late is refused, as DR-020 gives it (R295, DR-299).
+- **Residual:** a row within the limit, or one that names a reason that review accepts, still reprices the usage since its date, in the pull request's diff (T30); a late row for an earlier change leaves its period at the price before it.
+- **Held by:** `pricing`: "A row dated more than 30 days before it was added fails without a reason"; `pricing`: "A row dated on or before the newest of its kind fails"; `pricing`: "A row's added day outside the window fails"; DR-299; `add-pr-cost-calculator` task 3.1
 
 ### T308. A routine that reads vendors' pages writes price rows unreviewed
 
@@ -4850,7 +4852,7 @@ T293, under Boundary 3 below, also concerns this boundary: the provider that cap
 - **Raw likelihood:** 3 (likely)
 - **Raw risk:** 6
 - **What could happen:** a test names a broad built-in error, or the parent of another capability's error, which pytest's `raises=` matches, or skips the marker by calling `pytest.xfail` in its body, by `skipif` or by a conftest hook, or a helper under `tests/` raises the named error itself, so that the test keeps failing, or passes, whatever the code does.
-- **Answer:** each acceptance test is held back only by its marker, naming an error class of the tool's package that only its capability's missing code raises, never a built-in error, one raised from under `tests/`, or another capability's error or a base or subclass of it, and a test that reads the collected tests after every hook has run fails otherwise (R291).
+- **Answer:** each capability's acceptance test drives its capability's own entry point, which raises its capability's error class while unbuilt, and is held back only by a strict marker naming that class, never a built-in error, one raised from under `tests/`, or another capability's error or a base or subclass of it; the golden set names the error of a missing capture step or report; and a test that reads the collected tests after every hook has run fails otherwise (R291).
 - **Residual:** two scenarios of one capability can share its error, so the rule holds per capability, and their own assertions tell them apart once built (DR-304).
 - **Held by:** `project-standards`: "An acceptance test with no expected error fails a test"; `project-standards`: "An acceptance test held back by other means fails a test"; `project-standards`: "An expected error raised from under tests fails a test"; `project-standards`: "Two capabilities' acceptance tests that expect one error fail a test"; DR-304
 
