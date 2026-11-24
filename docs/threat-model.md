@@ -4822,7 +4822,7 @@ T293, under Boundary 3 below, also concerns this boundary: the provider that cap
 - **Raw likelihood:** 2 (possible)
 - **Raw risk:** 4
 - **What could happen:** with every row dated a few days before it is added (DR-299), a row dated weeks back no longer stands out in review and reprices all the usage since; and a row for an earlier price change that merges after the row for a later one is refused for good, so its period stays at the wrong price. Keyed without the provider, the order check also refuses another provider's rows for a model already listed.
-- **Answer:** each row gives the day it was added; a row dated more days before that day than DR-299 allows, or before the newest row of its provider, model and price, fails the checks unless it names its reason, which review reads (task 3.1, DR-299).
+- **Answer:** each row gives the day it was added; a row dated more than 30 days before that day, the owner's limit (DR-299), or before the newest row of its provider, model and price, fails the checks unless it names its reason, which review reads (task 3.1, DR-299).
 - **Residual:** a row within the limit, or one that names a reason that review accepts, still reprices the usage since its date, in the pull request's diff (T30).
 - **Held by:** DR-299; `add-pr-cost-calculator` task 3.1
 
