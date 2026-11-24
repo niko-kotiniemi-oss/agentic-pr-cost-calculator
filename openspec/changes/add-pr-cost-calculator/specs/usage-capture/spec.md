@@ -1300,7 +1300,7 @@ Each git command that the capture step starts SHALL get an environment that hold
 
 ### Requirement: Before a push, calls that no commit carries go into a commit of their own
 
-Before a push that "Only a push of the checked-out branch gets the step's commit" names, a run SHALL, where calls recorded on that branch wait for a commit, the index is free and holds nothing staged, and no rebase, merge, cherry-pick or bisect is in progress, write them into a ledger file and commit only that file, with a message that says so, as "The step's own commit runs nothing and guesses no identity" says; where the configuration asks for signed commits, it SHALL commit nothing.
+Before a push that "Only a push of the checked-out branch gets the step's commit" names, a run SHALL, where calls recorded on that branch wait, the index is free and holds nothing staged, no rebase, merge, cherry-pick or bisect is in progress and the configuration file does not turn it off, write them into a ledger file and commit only that file, with a message saying so, running and signing only as "The step's own commit runs nothing and guesses no identity" and the requirement after it allow.
 
 #### Scenario: Calls after the last commit reach the push
 
@@ -1317,10 +1317,6 @@ Before a push that "Only a push of the checked-out branch gets the step's commit
 - **WHEN** the agent runs `git push` while the index holds a staged change
 - **THEN** no commit is made, and the calls wait for the next commit on that branch
 
-#### Scenario: A clone that signs its commits gets no commit
-
-- **WHEN** git's configuration sets `commit.gpgsign` to `true` where the agent runs `git push`
-- **THEN** no commit is made, no signing program is started, and the calls wait for the next commit
 
 ### Requirement: Only a push of the checked-out branch gets the step's commit
 
@@ -1358,7 +1354,7 @@ The step SHALL commit before a push only for a top-level `git push`, run in the 
 
 ### Requirement: The step's own commit runs nothing and guesses no identity
 
-The step's commit before a push SHALL run with `core.hooksPath` set to an empty folder outside every repository, `core.fsmonitor=false`, `gc.auto=0`, `maintenance.auto=false` and `user.useConfigOnly=true`, so that it runs no hook that `git add`, `git commit` or a ref's update can run, starts no program that git's configuration names, and takes no identity that git would make from the user's and the host's names; where git's configuration gives no identity, it SHALL commit nothing.
+The step's commit before a push SHALL run with `core.hooksPath` set to an empty folder outside every repository, `core.fsmonitor=false`, `gc.auto=0`, `maintenance.auto=false` and `user.useConfigOnly=true`, so that it runs no hook of any kind, starts no program that git's configuration names but the person's own signer, and takes no identity that git would make from the user's and the host's names; where git's configuration gives no identity, it SHALL commit nothing.
 
 #### Scenario: The step's own commit runs no hook
 
@@ -1369,6 +1365,30 @@ The step's commit before a push SHALL run with `core.hooksPath` set to an empty 
 
 - **WHEN** neither the repository's nor the person's git configuration gives `user.name` and `user.email`, and the agent runs `git push` with calls waiting
 - **THEN** no commit is made, nothing names the user's or the host's name, and the calls wait
+
+### Requirement: The step's commit before a push signs with the person's own signer, and a repository can turn it off
+
+Where git's configuration asks for signed commits, the step SHALL sign its commit before a push with the signing format, key and program that the person's global or system configuration gives, and SHALL commit nothing where any of them, or the request to sign, comes from the repository's own configuration or a worktree's. The configuration file SHALL be able to turn the step's commit before a push off, and it SHALL be on where the file does not.
+
+#### Scenario: A person whose global settings sign gets a signed commit
+
+- **WHEN** the person's global git configuration sets `commit.gpgsign` to `true`, `gpg.format` to `ssh` and a signing key, and the agent runs `git push` with calls waiting
+- **THEN** the step's commit is signed with that key, and the push carries it
+
+#### Scenario: A signer that the repository names is never started
+
+- **WHEN** the repository's own configuration sets `commit.gpgsign`, `gpg.program`, `gpg.ssh.program` or `user.signingkey`, and the agent runs `git push` with calls waiting
+- **THEN** no commit is made, no program that the repository names is started, and the calls wait for the next commit
+
+#### Scenario: A repository that turns the commit off gets none
+
+- **WHEN** the configuration file turns the step's commit before a push off, and the agent runs `git push` with calls waiting
+- **THEN** no commit is made, and the calls wait for the next commit
+
+#### Scenario: The commit is on where the configuration file does not turn it off
+
+- **WHEN** the configuration file turns the tool on and says nothing of the step's commit before a push, and the agent runs `git push` with calls waiting
+- **THEN** the step commits the waiting calls before the push
 
 ### Requirement: A commit of the step's whose push did not run is taken back
 

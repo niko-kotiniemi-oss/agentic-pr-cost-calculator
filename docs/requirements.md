@@ -331,6 +331,7 @@ The capability names the spec that holds the requirement. Each capability is one
 | R317 | non-functional | `project-standards` | The base commit's checks trust nothing that the pull request's tree holds |
 | R318 | non-functional | `releases-and-compatibility` | A security entry names its advisory in full, and is checked before the tag |
 | R319 | behavioural | `releases-and-compatibility` | A version that a refused tag gave is never released |
+| R320 | behavioural | `usage-capture` | The step's commit before a push signs with the person's own signer, and a repository can turn it off |
 
 IDs are stable: a requirement keeps its ID while it exists, and a new one takes the next free number, so the rows follow the order in which requirements were added rather than the order of the specs. A requirement that a later change removes leaves the table, and its ID is listed below with the change that removed it, never to be used again.
 
