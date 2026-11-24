@@ -8,7 +8,7 @@ In the scenarios below, a commit that is expected to carry a ledger file is made
 
 ### Requirement: Usage is recorded per model call
 
-The capture step SHALL record each model call once. It SHALL record the call's UTC day, its model, a SHA-256 hash of its message id, whether the main agent or a subagent made it, its input tokens, output tokens, cache-write tokens split by cache lifetime where the source gives it, and cache-read tokens, and, where the source gives them, the attributes that change its price: service tier, speed, inference region and server-side tool requests.
+The capture step SHALL record each model call once. It SHALL record the call's UTC day, agent and provider (see `ledger`), its model, a SHA-256 hash of its message id, whether the main agent or a subagent made it, its input tokens, output tokens, cache-write tokens split by cache lifetime where the source gives it, and cache-read tokens, and, where the source gives them, the attributes that change its price: service tier, speed, inference region and server-side tool requests.
 
 #### Scenario: A turn's calls are recorded once
 
@@ -38,7 +38,7 @@ The capture step SHALL record each model call once. It SHALL record the call's U
 #### Scenario: An entry records the UTC day, not the time
 
 - **WHEN** a call's transcript time is `2026-03-02T01:30:00+02:00`
-- **THEN** its entry's day is `2026-03-01`, and the entry holds no time of day
+- **THEN** its entry's `utc_day` is `2026-03-01`, and the entry holds no time of day
 
 #### Scenario: An entry records that the main agent made its call
 

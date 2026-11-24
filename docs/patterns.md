@@ -45,7 +45,7 @@ The entries are read again at each assessment and before each release, and were 
 - **Anti-patterns:** Vendor lock-in, recognised by a format that only one provider's terms can fill; name the agent and the provider in each entry and row. A format changed in place, recognised by a reader that reads only the newest version; add a version instead.
 - **Held by:** DR-040, DR-181, DR-187, DR-234, `add-pr-cost-calculator` task 1.2 and `add-pr-cost-calculator` task 6.4.
 - **Rests on:** R122, R142, R156, DR-040, DR-181, DR-234, B-007
-- **Where we stand:** Gap. Before the build. B-007 gives the ledger entry and the price table an agent and a provider, as the owner chose on 2026-11-14 (DR-234).
+- **Where we stand:** Gap. Before the build. B-007 gives the ledger entry and the price table an agent and a provider, as the owner chose on 2026-11-14 (DR-234). Its first part puts them in the specs (R289, R290, DR-302), and the gap closes when B-007 is done.
 
 ### Facts about other tools are written down and checked
 
@@ -220,7 +220,7 @@ The entries are read again at each assessment and before each release, and were 
 - **Anti-patterns:** Every acceptance test written before any code or test seam, recognised by tests bound to an interface that nobody has built; name the seam in the design, and write each group's acceptance tests at its start. One shared expected error, recognised by pending tests that all fail on one missing module and so flip at once; give each the error of its own scenario.
 - **Held by:** DR-084, DR-085, `add-pr-cost-calculator` task 1.3 and `add-pr-cost-calculator` task 1.4.
 - **Rests on:** DR-084, DR-085, B-007, B-021
-- **Where we stand:** Gap. Before the build. B-007 names a test seam in the design and gives each acceptance test an expected error of its own, and B-021 builds the seam.
+- **Where we stand:** Gap. Before the build. B-007 names a test seam in the design and gives each acceptance test an expected error of its own, and B-021 builds the seam. B-007's first part names the seam in design decision 25 and the expected errors in R291 (DR-304), and the gap closes when B-007 is done.
 
 ### Every check is shown to fail
 
@@ -264,7 +264,7 @@ The entries are read again at each assessment and before each release, and were 
 - **Anti-patterns:** Fixtures that nothing compares with the real systems, recognised by hand-written transcripts with no recorded shape behind them; check each against a recorded shape of a real session, and date each recorded response. A golden master that blesses what the code printed; work each figure out by hand.
 - **Held by:** DR-167, `add-pr-cost-calculator` task 1.1 and `add-pr-cost-calculator` task 1.21.
 - **Rests on:** R139, R141, R142, DR-167, B-007, B-021
-- **Where we stand:** Gap. Before the build. B-021 records the shape of a real transcript, with no values, for the fixtures to be compared with, and B-007 has each fixture checked against it and each recorded response dated.
+- **Where we stand:** Gap. Before the build. B-021 records the shape of a real transcript, with no values, for the fixtures to be compared with, and B-007 has each fixture checked against it and each recorded response dated. B-007's first part states both in R292 (DR-305), and the gap closes when B-007 is done.
 
 ## Decisions and documentation
 

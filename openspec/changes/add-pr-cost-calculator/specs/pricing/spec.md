@@ -6,7 +6,7 @@ Keep a dated price table for model tokens and CI runners, and turn recorded toke
 
 ### Requirement: Prices are dated
 
-The price table SHALL give each price, and each statement of how modifiers combine, an effective date. A cost SHALL use, for each ledger entry or CI job, the latest price, and the latest statement of how modifiers combine, whose effective date is on or before the UTC day the usage happened, so that a row added later reprices nothing earlier. An entry whose day has no price yet SHALL be left out of the cost and named, and an entry dated after the day the report runs SHALL be refused.
+The price table SHALL give each price, and each statement of how modifiers combine, an effective date. A cost SHALL use, for each ledger entry or CI job, the latest price, and the latest statement of how modifiers combine, whose effective date is on or before the UTC day the usage happened, so that a later row reprices nothing before its date. An entry whose day has no price yet SHALL be left out of the cost and named, and an entry dated after the day the report runs SHALL be refused.
 
 #### Scenario: A price change applies from its date
 
@@ -102,9 +102,104 @@ A call with a recorded attribute whose value the price table does not price, or 
 
 ### Requirement: An unknown model is reported, not guessed
 
-A ledger entry whose model is `unknown`, because the capture step's price table did not list it, or whose model has no price, SHALL be counted in tokens and left out of the cost. The report SHALL name the model, or say that it is unknown, and say that its cost is missing.
+A ledger entry whose model is `unknown`, because the capture step's price table did not list it, SHALL be counted in tokens and left out of the cost. The report SHALL name the model, or say that it is unknown, and say that its cost is missing.
 
 #### Scenario: A new model has no price yet
 
 - **WHEN** a pull request's ledger files hold calls recorded with the model `unknown`, because the capture step's price table did not list their model
 - **THEN** the report shows those calls' tokens, and says that their model is unknown and their cost is missing
+
+### Requirement: A model that the price table lists without a price is counted under its name
+
+The price table SHALL be able to list a model with no price, such as a self-hosted one, in a row that names its provider and effective date as any row does, so that capture records its name and the report counts its tokens under that name, leaves it out of the cost and says that it has no price, which the comment tells apart from an unknown model and from usage before a model's first price (see "Prices are dated").
+
+#### Scenario: A listed model with no price is counted under its name
+
+- **WHEN** a pull request's ledger files hold calls of a model that the price table lists with no price
+- **THEN** the report shows those calls' tokens under the model's name, says that the model has no price, and leaves them out of the cost without calling the model unknown
+
+#### Scenario: A price added later for a model listed with no price applies from its date
+
+- **WHEN** the price table lists a model with no price from one date, and adds a priced row for the same provider and model with a later effective date
+- **THEN** calls before the later date are counted with no price, and calls on or after it are priced
+
+### Requirement: The price table states one currency
+
+The model price table and the runner price table SHALL each state the one currency of all their prices, by its ISO 4217 code, the same in both, and the report SHALL write each cost in it. The tool's checks SHALL fail on a table that states no currency or more than one, and on two tables that state different currencies.
+
+#### Scenario: Every cost is in the table's currency
+
+- **WHEN** the price table states its currency as `USD`
+- **THEN** every cost that the comment and the job summary show is written with `USD`
+
+#### Scenario: A table without one currency fails the checks
+
+- **WHEN** a price table states no currency, or states more than one
+- **THEN** the checks fail, naming the table
+
+#### Scenario: Two tables in different currencies fail the checks
+
+- **WHEN** the model price table states `USD` and the runner price table states another currency
+- **THEN** the checks fail, naming both tables
+
+### Requirement: A call is priced by its provider and its model
+
+Each price row SHALL name its provider, such as Anthropic's API, Amazon Bedrock or Google Vertex AI. A call SHALL be priced by the row of its entry's provider and model, or, when its provider is `unknown`, of its model's only provider on its day, or of the one that a dated statement names as its default on that day, which the comment SHALL say was taken from the table. An entry whose provider and model no row names SHALL be counted in tokens, left out of the cost and named.
+
+#### Scenario: Two providers of one model are priced apart
+
+- **WHEN** the price table gives one model different rates for two providers, and a pull request has a call of that model through each
+- **THEN** each call is priced at its own provider's rate
+
+#### Scenario: An unknown provider is priced at the model's default provider and said so
+
+- **WHEN** a call's entry gives the provider `unknown` and a model that the price table prices under two providers on its day, with a dated statement naming one as its default from before that day
+- **THEN** the call is priced at the default provider's rates, and the comment's detail names that provider and says that it was taken from the price table, not from the call
+
+#### Scenario: A provider and model that no row names are named, not guessed
+
+- **WHEN** a call's entry gives a provider and a model that the price table lists, but no row for that pair
+- **THEN** the report shows that call's tokens, leaves it out of the cost, and names the provider and the model
+
+#### Scenario: A model priced by two providers with no default fails the checks
+
+- **WHEN** a price table prices one model under two providers from a day on which no dated statement names its default
+- **THEN** the checks fail, naming the model and the day
+
+#### Scenario: A second provider's rows change no earlier call's price
+
+- **WHEN** a model priced only by one provider gains another provider's rows and a statement naming the first as its default, both dated from a later day, and a pull request has calls with the provider `unknown` before and after that day
+- **THEN** every one of those calls is priced at the first provider's rates
+
+### Requirement: Each price row gives the day it was added, and is added in order
+
+Each price row and statement SHALL give the day it was added, on or after the day of the commit it is compared with and not after the day the checks run, and its effective date SHALL be after the newest of the same provider, model and price, and at most 30 days before the day it was added unless the row names its reason. The checks SHALL fail on any other.
+
+#### Scenario: A row dated more than 30 days before it was added fails without a reason
+
+- **WHEN** a pull request adds a row whose effective date is 31 days before the day it was added, and names no reason
+- **THEN** the checks fail, naming the row, and pass once the row names its reason
+
+#### Scenario: A row dated on or before the newest of its kind fails
+
+- **WHEN** a pull request adds a row whose effective date is on or before that of the newest row of the same provider, model and price
+- **THEN** the checks fail, naming both rows
+
+#### Scenario: A row's added day outside the window fails
+
+- **WHEN** a pull request adds a row that gives no day it was added, one before the date of the commit it is compared with, or one after the day the checks run
+- **THEN** the checks fail, naming the row
+
+### Requirement: The price table states the day it was last checked
+
+The price table SHALL state the UTC day on which its rows were last checked against their sources, which the comment SHALL give as the price table's date, and when a priced call's day is after that date the brief summary SHALL say that prices may have changed since then.
+
+#### Scenario: A call after the table's date is flagged
+
+- **WHEN** the price table was last checked on one day and a pull request has a priced call on a later day
+- **THEN** the comment gives the day it was checked as the price table's date, and the brief summary says that prices may have changed since then
+
+#### Scenario: A table that states no checked day fails the checks
+
+- **WHEN** a price table states no day on which it was last checked, or one after the day the checks run
+- **THEN** the checks fail, naming the table

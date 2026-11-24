@@ -6,7 +6,7 @@ The ledger is a set of small files under `.pr-cost/ledger/` that the agent's com
 
 **Spec:** `ledger`
 
-**Requirements:** R4, R156, R163, R77, R10, R56, R57, R22, R58, R59, R119, R60
+**Requirements:** R4, R156, R163, R77, R10, R56, R57, R22, R58, R59, R119, R60, R290
 
 ## Expected behaviour
 
@@ -38,7 +38,8 @@ In detail:
 
 - **One file per commit,** named `.pr-cost/ledger/<YYYY-MM>/<random>.jsonl`, one line per call after a first line that states the file's format, and written once, as R10 gives it.
 - **The first line.** It states the version and the release that R156 gives, so that the report can say when a file of any version comes from a later release than its own (DR-208), the number of calls that capture refused, and one flag for each reason that capture left calls out: for consent, for their age, or because their repository could not be told, as R155 gives them. Each entry after it marks the calls that R42 and R43 count.
-- **Counts, never content.** A line holds no prompt, response, code, file contents, tool name, tool input or output, path, working directory, branch name, user name, session identifier, transcript path, `tool_use_id` or time of day, nor a hash of any of them. The model's name and the price attributes are the only text taken from a transcript, and each is recorded only when the price table lists it, or else as `unknown` (R4, R77).
+- **Day, agent and provider.** Each entry names its UTC day, its agent and its provider, so that a later agent or provider needs no new format (R290, R77). No field records how a call was paid (DR-302).
+- **Counts, never content.** A line holds no prompt, response, code, file contents, tool name, tool input or output, path, working directory, branch name, user name, session identifier, transcript path, `tool_use_id` or time of day, nor a hash of any of them. The model's name, the price attributes and the provider are the only text taken from a transcript, and each is recorded only when the price table lists it, or else as `unknown` (R4, R77, R290).
 - **A published format.** Each version of the format is published in `docs/ledger-format.md` with a JSON Schema for each kind of line, as R156 gives it, so that anyone can check a ledger file without the tool, and what no schema can hold, such as a field given twice, is listed beside it, where the report's rules decide. R163 gives the one id by which every version names a call.
 - **The record.** The ledger stays in the repository after the merge, and the report writes nothing to the repository (R22).
 - **Counted once.** R58, R59 and R119 give which ledger files and entries the report counts, and which it flags or counts as restored.

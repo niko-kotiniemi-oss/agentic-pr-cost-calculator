@@ -2490,3 +2490,56 @@ Each Mermaid diagram on a page that this repository writes SHALL number its part
 
 - **WHEN** a page that this repository writes holds a Mermaid block in a fence other than three backticks at the start of a line, opening it or closing it, such as a fence of tildes, of more backticks, or one indented under a list item or inside a quote, or an item of the list after a diagram cites no requirement by its ID
 - **THEN** a test fails and names the file and the line
+
+### Requirement: Each acceptance test names an expected error of its own
+
+Each capability's acceptance test SHALL drive its capability's own entry point, which raises its capability's error class while unbuilt, and be held back only by a strict expected-failure marker naming that class: never `AssertionError`, a built-in error, one raised from under `tests/`, or another capability's error or its base or subclass. The golden set's tests SHALL name the error of a missing capture step or report. A test SHALL fail on any acceptance test that breaks this.
+
+#### Scenario: An acceptance test with no expected error fails a test
+
+- **WHEN** an acceptance test is marked as an expected failure without naming the error it expects, or names `AssertionError`, a built-in error such as `RuntimeError`, `KeyError` or `ImportError`, or a base class of every error
+- **THEN** a test fails and names the acceptance test
+
+#### Scenario: An acceptance test held back by other means fails a test
+
+- **WHEN** an acceptance test is skipped, or calls `pytest.xfail` or `pytest.skip` in its body, or is marked by `skipif`, by an expected failure with `run=False`, `strict=False` or a condition, by `pytestmark` or by a conftest hook
+- **THEN** a test that reads the collected tests after every hook has run fails and names the acceptance test
+
+#### Scenario: An expected error raised from under tests fails a test
+
+- **WHEN** an acceptance test's expected error is defined or raised in a file under `tests/`
+- **THEN** a test fails and names the acceptance test and the file
+
+#### Scenario: Two capabilities' acceptance tests that expect one error fail a test
+
+- **WHEN** an acceptance test of `report-comment` and one of `usage-capture` name the same expected error, or one names a base class or a subclass of the other's
+- **THEN** a test fails and names both
+
+### Requirement: Every transcript fixture fits the kept shape, and every recorded response is dated
+
+Each transcript fixture under `tests/` SHALL hold only the fields, paths and JSON types that the kept transcript shape gives for any line, and under `message.usage` only those that `usage-capture` names, but for paths that the fixture names, each with an existing scenario it departs for. Each recorded API response under `tests/` SHALL have a file beside it giving the UTC day it was recorded or written, which of the two, and its page, on a host that the test lists.
+
+#### Scenario: A fixture with a field that the kept shape does not hold fails a test
+
+- **WHEN** a transcript fixture holds a line with a field, a path or a type that the kept shape does not give for any line, and does not name that path with a scenario that it departs from the shape for
+- **THEN** a test fails and names the fixture, the line and the field
+
+#### Scenario: An exemption that names no path, or a scenario that does not exist, fails a test
+
+- **WHEN** a transcript fixture names a scenario that no spec holds, or names a scenario without the paths that depart from the shape for it, and a line of it departs on another path
+- **THEN** a test fails and names the fixture and the path
+
+#### Scenario: A fixture that departs from the shape for its scenario passes
+
+- **WHEN** a transcript fixture holds a usage field that capture does not know, and names its path with the scenario "A usage field the step does not know is counted" in `usage-capture`
+- **THEN** the test passes it
+
+#### Scenario: A recorded response without its day fails a test
+
+- **WHEN** a recorded response under `tests/` has no file beside it giving the day on which it was recorded or written, or gives a day after the one the test runs
+- **THEN** a test fails and names the file
+
+#### Scenario: A recorded response's page outside the listed hosts fails a test
+
+- **WHEN** the file beside a recorded response gives a page on a host that the test does not list
+- **THEN** a test fails and names the file and the host

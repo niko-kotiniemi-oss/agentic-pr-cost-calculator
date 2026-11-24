@@ -1,11 +1,11 @@
 # B-007: The tool's requirements, corrected before the build
 
-- **Status:** Planned
-- **Last changed:** 2026-11-23
+- **Status:** In progress
+- **Last changed:** 2026-11-24
 - **Brief:** The change's requirements, corrected with what the items above find, before any of them is built. It also settles how the comment shows a cost, the prices' rules, a ledger and a price table that fit more than one provider, and the points that earlier reviews left open.
 - **Rests on:** R18, R21, R97, R122, B-001, B-002, B-021, DR-234
 - **Issue:** 18
-- **Pull requests:** none
+- **Pull requests:** 66
 
 ## Problem
 

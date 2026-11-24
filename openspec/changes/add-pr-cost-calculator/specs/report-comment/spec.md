@@ -27,6 +27,150 @@ The report's comment (see "A merged pull request gets one report comment") SHALL
 - **WHEN** the report posts its comment
 - **THEN** the comment says that the figure is an API-equivalent estimate and not a bill, that it counts the usage the pull request's commits carry and the CI runs on those commits, and that it does not count the model calls that Claude Code makes for its own tools without writing them to the transcript, and names the price table's date and the tool's version
 
+### Requirement: The comment ends with a note on subscriptions
+
+The comment SHALL end by saying that a subscription may include this usage, so that the figure is what the same usage would cost through the API.
+
+#### Scenario: The comment ends with the note on subscriptions
+
+- **WHEN** the report posts its comment
+- **THEN** its last line of prose says that a subscription may include this usage, and that the figure is what the same usage would cost through the API
+
+### Requirement: The comment opens with a brief summary and keeps the detail in a collapsed section
+
+The comment SHALL open with a brief summary giving, for each model and provider, marked where taken from the table, its input, output and cached tokens (cache writes and reads together) and cost, or that it has none; then the CI cost and the total; that the figure is an estimate, not a bill; and whenever a figure is a lower bound or anything was not counted, that it is so. A collapsed section after it SHALL give every figure, with each model, provider and token type's tokens, rate and cost.
+
+#### Scenario: The summary gives each model's tokens and cost
+
+- **WHEN** a pull request's ledger files hold calls of two models and CI runs
+- **THEN** the collapsed section gives each of the brief summary's figures again, to four decimals, and the comment opens with one line for each model and provider, giving its input and output tokens, its cache-write and cache-read tokens together as its cached tokens, and its cost, then the CI cost and the total, before any collapsed section
+
+#### Scenario: A provider taken from the price table is marked in the brief summary
+
+- **WHEN** a pull request's ledger files hold calls whose provider is `unknown`, priced at their model's default provider's rates
+- **THEN** the brief summary's line for them names that provider and says that it was taken from the price table, not from the calls
+
+#### Scenario: The brief summary says that the figure is not a bill
+
+- **WHEN** the report posts its comment
+- **THEN** the line that says that the figure is an API-equivalent estimate and not a bill stands in the brief summary, outside the collapsed section
+
+#### Scenario: A model with no price or no priced row is shown in the brief summary
+
+- **WHEN** a pull request's ledger files hold calls of a model that the price table lists with no price, and calls of a model whose provider and model no price row names
+- **THEN** the brief summary gives each one's tokens on its own line, and says that the first has no price and that the second's cost is missing
+
+#### Scenario: The detail gives each token type's rate
+
+- **WHEN** a pull request's ledger files hold calls of one model with input, output, cache-write and cache-read tokens
+- **THEN** the collapsed section gives, for each of those token types, its tokens, its rate, the price table's currency and its cost
+
+#### Scenario: The summary says what the collapsed section counts as missing
+
+- **WHEN**, in turn, the comment's collapsed section counts refused lines, refused files, files over the size bound, calls that capture refused, calls read without a stop reason, calls with a usage field that capture does not know, calls of a model that capture recorded as unknown, calls whose provider and model no row names, calls before their model's first price, calls with an unpriced attribute or combination, calls of a model listed with no price, minutes on runners that the price table does not list, or a CI listing that was not complete, or flags calls left out
+- **THEN** each time the brief summary says, outside the collapsed section, that the figure is a lower bound or that something was not counted, and that the detail says what
+
+#### Scenario: The collapsed section is well formed
+
+- **WHEN** the report posts its comment
+- **THEN** it holds one `<details>` element with one `<summary>`, neither with an attribute, a blank line after `</summary>` and one before `</details>`, every code fence of three backticks at the start of its line, and no `<` outside code but those four tags and the report's marker, one HTML comment on a line of its own, so that "under" is written as a word
+
+### Requirement: Each cost is shown to the cent in the summary and to four decimals in the detail
+
+Each cost SHALL be shown in the price table's currency, as its code, to two decimals in the brief summary and to four in the collapsed section and the job summary, each rounded half up from its own exact cost, worked out from rates read as exact decimals, never in binary floating point, never summed from rounded figures. A cost above zero that rounds to zero SHALL be shown as under the smallest amount, and beside the total the comment SHALL say that it can differ from the sum of the shown parts.
+
+#### Scenario: A summary cost is rounded half up to the cent
+
+- **WHEN** a model's exact cost is 1.235 in the price table's currency, `USD`
+- **THEN** the brief summary shows it as `USD 1.24`, and the collapsed section shows it as `USD 1.2350`
+
+#### Scenario: A total is rounded from its exact cost
+
+- **WHEN** two models' exact costs are 0.004 and 0.004, and the CI runs used no minutes
+- **THEN** the brief summary shows each as under `USD 0.01` and the total as `USD 0.01`, and says, beside the total, that a total can differ from the sum of its shown parts
+
+#### Scenario: A total can differ from its shown parts by more than one cent
+
+- **WHEN** four models' exact costs are 0.005 each, and the CI runs used no minutes
+- **THEN** the brief summary shows each as `USD 0.01` and the total as `USD 0.02`, and says, beside the total, that a total can differ from the sum of its shown parts
+
+#### Scenario: A rate is read exactly
+
+- **WHEN** a call's 50000 input tokens are priced at a rate of 0.30 `USD` per million tokens, written so in the price table
+- **THEN** the brief summary shows its cost as `USD 0.02` and the collapsed section as `USD 0.0150`
+
+#### Scenario: The job summary shows each cost as the collapsed section does
+
+- **WHEN** the report writes its job summary for a pull request whose model's exact cost is 1.235
+- **THEN** the job summary shows it as `USD 1.2350`
+
+#### Scenario: A cost of zero is shown as zero
+
+- **WHEN** a pull request's CI runs used no minutes and its ledger files hold no calls
+- **THEN** the brief summary shows the CI cost and the total as `USD 0.00`, not as under `USD 0.01`
+
+#### Scenario: A range is rounded at each end
+
+- **WHEN** a cost is a range because the source did not give a cache lifetime (see "Every token type is priced at its own rate" in `pricing`), with exact ends 0.00005 and 0.125
+- **THEN** the brief summary shows it from under `USD 0.01` to `USD 0.13`, and the collapsed section from `USD 0.0001` to `USD 0.1250`, each end rounded half up from its own exact cost
+
+#### Scenario: Half a cent rounds up, not to even
+
+- **WHEN** a model's exact cost is 0.125
+- **THEN** the brief summary shows it as `USD 0.13`, not `USD 0.12`
+
+### Requirement: The comment holds its figures in a block that a program can read
+
+The collapsed section SHALL end with a fenced JSON block holding its form's version, its pull request and merge commit, the currency in a field of its own and each figure and count the comment shows, from the same values as its text: each cost as its four-decimal figure, one under the smallest amount as zero with a flag, a range as its two ends. Its form SHALL be published with a JSON Schema, and SHALL say how a program finds the report's own comment.
+
+#### Scenario: The block holds what the comment shows
+
+- **WHEN** the report posts its comment
+- **THEN** each figure and count in the block is the one that the collapsed section shows for it, written from the same value, and the block holds none that the comment does not show, but for its form's version, its currency and the keys that name what each figure belongs to
+
+#### Scenario: The block gives a cost below the smallest amount as a flag, and a range as its two ends
+
+- **WHEN** the comment shows one cost as under `USD 0.0001` and another as a range
+- **THEN** the block gives the first as `0.0000` with a flag that it is under the smallest amount, and the second as its two ends in two fields
+
+#### Scenario: The block's form names how a program finds the report's comment
+
+- **WHEN** the published form of the block is read
+- **THEN** it says that a program reads the block only from the comment that carries the report's marker (see "A report run again updates only its own comment") and that the identity the report's workflow posts as posted, and only when the block's pull request number and merge commit are those of the pull request it reads, and that a block in any other comment is not the report's
+
+#### Scenario: A released block form's schema does not change
+
+- **WHEN** a pull request changes the schema of a block form that a published release wrote
+- **THEN** the checks fail
+
+#### Scenario: The block validates against its published schema
+
+- **WHEN** the block of any comment that the golden set holds is checked against the published schema of its form's version
+- **THEN** it validates
+
+### Requirement: The comment and the job summary hold no dollar sign and no tilde outside inline code
+
+The comment and the report's job summary SHALL hold no dollar sign and no tilde outside inline code and code blocks fenced with backticks, and no code block fenced with tildes, so that GitHub shows no amount as a formula or as struck through.
+
+#### Scenario: No amount is read as a formula or struck through
+
+- **WHEN** the report posts a comment and writes its job summary for a pull request with costs in every part
+- **THEN** neither holds a dollar sign or a tilde outside inline code and code blocks fenced with backticks, and each currency is written as its code
+
+#### Scenario: A dollar sign in the block for programs passes
+
+- **WHEN** the block for programs holds the key `$schema`
+- **THEN** the check passes it
+
+### Requirement: The comment stays under a size bound below the length that GitHub refuses
+
+The largest comment that the price table allows, with every model, provider, token type, runner and activity type that it lists and every count and flag set, SHALL be shorter than a size bound that the design gives below the length at which GitHub's API refuses a comment, so that the report never fails to post its comment because of its length.
+
+#### Scenario: The largest comment fits the bound
+
+- **WHEN** the report writes the comment for a pull request with calls of every model through every provider that the price table lists, with every token type, attribute, runner and activity type, every count and every flag
+- **THEN** the comment is shorter than the bound, and a test that the price table's checks run fails otherwise
+
 ### Requirement: The comment counts refused calls and calls that may leave the token cost low
 
 The report's comment (see "A merged pull request gets one report comment") SHALL give the number of calls that capture refused; the number of calls that capture read without a stop reason, and, when there are any, that the token cost is a lower bound; and the number of calls whose usage held a field that capture does not know, and, when there are any, that the token cost may be low.
@@ -138,7 +282,7 @@ When a ledger file that the merge adds names, on its first line, a later release
 
 ### Requirement: The comment shows only what the report computed
 
-The comment, the report's job summary and what the report writes to its log SHALL hold only numbers, the report's own fixed text, and model, attribute and runner names that the price table lists, shown as code in the comment and the job summary.
+The comment, the report's job summary and what the report writes to its log SHALL hold only numbers, the report's own fixed text, and the model, provider, attribute, runner and agent names and the currency code that the price table or the ledger format lists, shown as code in the comment and the job summary.
 
 #### Scenario: A runner label with markup is not shown
 
@@ -154,14 +298,24 @@ The comment, the report's job summary and what the report writes to its log SHAL
 - **WHEN** some ledger lines that the pull request adds are not valid entries
 - **THEN** the comment says how many were refused, and none of them is quoted in the comment, the job summary or the log
 
-### Requirement: A ledger line naming a model or attribute value that the price table does not list, other than the value unknown, is refused
+### Requirement: A ledger line naming a model, provider, attribute value or agent that the price table or its format does not list is refused
 
-A ledger line that names a model or an attribute value that the price table does not list, other than `unknown`, SHALL be refused.
+A ledger line that names a model, a provider or an attribute value that the price table does not list, other than `unknown`, or an agent that its ledger format's version does not name, SHALL be refused.
 
 #### Scenario: A name with markup is not shown as written
 
 - **WHEN** a ledger line names a model with a link, an image, an @-mention or a workflow command in it
 - **THEN** the line is refused, and none of that text is in the comment, the job summary or the log
+
+#### Scenario: A provider with markup is not shown as written
+
+- **WHEN** a ledger line names a provider with a link, an image, an @-mention or a workflow command in it
+- **THEN** the line is refused and counted as refused, and none of that text is in the comment, the job summary or the log
+
+#### Scenario: An agent that the line's format does not name is refused
+
+- **WHEN** a ledger line names an agent that its ledger format's version does not name, `unknown` among them
+- **THEN** the line is refused and counted as refused, and the agent's value is not in the comment, the job summary or the log
 
 ### Requirement: The report reads the ledger from git, within bounds
 

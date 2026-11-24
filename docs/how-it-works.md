@@ -54,7 +54,7 @@ flowchart LR
 
 **Inputs:**
 
-- Claude Code's transcript lines, one JSON object per line: each assistant message's model, `usage` block (input, output, cache-write by lifetime, cache-read tokens), service tier, speed, inference region, server-side tool requests, the tools it called, and the working directory; and each line's time, its kind and the line that it names as its parent, which place a call inside or outside an interval.
+- Claude Code's transcript lines, one JSON object per line: each assistant message's model, `usage` block (input, output, cache-write by lifetime, cache-read tokens), service tier, speed, inference region, server-side tool requests, the tools it called, the working directory, and the provider where the lines name it; and each line's time, its kind and the line that it names as its parent, which place a call inside or outside an interval.
 - Claude Code's hook input: the hook event, the session's id, the transcript's path, `cwd`, and for Bash commands the command's text and `tool_use_id`.
 - `.pr-cost.json`; the person's opt-in, `pr-cost.capture`, from their two global configuration files, which the person writes, or the setup script of the cloud environment that they use, and each value of it that git reads in the repository, with the file that each comes from; and the device and inode numbers, size and modification times of the files that hold it.
 - The system's clock, read in UTC.
@@ -63,8 +63,8 @@ flowchart LR
 
 **Outputs:**
 
-- Ledger files: a first line that states the ledger format's version, the release of the capture step that wrote it, the count of refused calls and three flags for calls left out, for consent, for their age or because their repository could not be told, with no count; then one entry per call: UTC day, model, a SHA-256 hash of the message id in a field whose name ends in `_id`, main agent or subagent, the token counts, the price attributes, the activity type, and marks for a call read without a stop reason or with a usage field that capture does not know (R2, R4, R6, R42, R43, R155, R156).
-- One comment per merged pull request, and the report's job summary.
+- Ledger files: a first line that states the ledger format's version, the release of the capture step that wrote it, the count of refused calls and three flags for calls left out, for consent, for their age or because their repository could not be told, with no count; then one entry per call: UTC day in `utc_day`, agent in `agent`, provider in `provider`, model, a SHA-256 hash of the message id in a field whose name ends in `_id`, main agent or subagent, the token counts, the price attributes, the activity type, and marks for a call read without a stop reason or with a usage field that capture does not know (R2, R4, R6, R42, R43, R155, R156, R290).
+- One comment per merged pull request, a brief summary followed by a collapsed section of the detail that ends with a JSON block of its figures for programs, and the report's job summary (R283, R285).
 - A GitHub release per version tag, with its bill of materials and the plugin's zip.
 
 ## What comes in and what goes out
@@ -75,10 +75,10 @@ Everything that crosses the tool's boundary, in three tables, each row with how 
 
 | What | What crosses | How it is pinned | Records |
 |---|---|---|---|
-| Claude Code's transcripts | Each call's model, token counts, attributes and working directory, read while the session runs | Not pinned: Claude Code writes them, and capture reads them tolerantly, counting what it cannot read | DR-003, DR-007, DR-032, DR-033, DR-044, DR-057, DR-128, DR-135, DR-172, DR-178, DR-199 |
+| Claude Code's transcripts | Each call's model, token counts, attributes, working directory and, where its lines name it, provider, read while the session runs | Not pinned: Claude Code writes them, and capture reads them tolerantly, counting what it cannot read | DR-003, DR-007, DR-032, DR-033, DR-044, DR-057, DR-128, DR-135, DR-172, DR-178, DR-199, DR-302 |
 | Claude Code's hook input | The event, the session's id, the transcript's path and the directory | Not pinned: Claude Code gives it | DR-044, DR-172 |
 | The switch and the opt-in | `.pr-cost.json`, and `pr-cost.capture` in the person's git configuration | The repository's own file and the person's own setting, read strictly | DR-169, DR-021, DR-183 |
-| The price table | Dated rates and modifiers | Pinned with the tool's own commit | DR-020 |
+| The price table | Dated rates and modifiers in one currency, by provider and model, with a default provider for a model listed under more than one and a model with no price among them, each row added a few days after its price changes, and the day the table was last checked | Pinned with the tool's own commit | DR-020, DR-298, DR-299, DR-300, DR-306 |
 | GitHub | The push event, the pull request, its runs and job attempts, and the report's earlier comment | Not pinned: GitHub's API, read within a call budget and a time limit | DR-006, DR-008, DR-019, DR-038, DR-039, DR-051, DR-060, DR-061, DR-160, DR-217 |
 | Ledger files of a pull request | Token counts, written by whoever can push to its branch | Not pinned: read as untrusted data, in every earlier format | DR-040, DR-044, DR-066 |
 | Python | The standard library of the person's or the runner's Python | Not pinned: Python 3.11 or any later release | DR-023 |
@@ -106,10 +106,10 @@ Everything that crosses the tool's boundary, in three tables, each row with how 
 | The hook file | The capture step that adopters copy and register | The commit that a release names | DR-022, DR-025, DR-027, DR-030, DR-031, DR-065, DR-125, DR-134, DR-156, DR-211 |
 | The plugin | The capture step, its manifest and its hooks | A release's zip, checked against its README; or this repository as a marketplace, which Claude Code clones from the default branch, whose plugin folder CI holds to a release's build | DR-197, DR-203, DR-204, DR-205, DR-288 |
 | The report | A reusable workflow that adopters call | The commit that a release names | DR-005, DR-016, DR-018, DR-063, DR-132, DR-133, DR-139, DR-186, DR-191, DR-216 |
-| Ledger files | Token counts per call, committed with the agent's work in the adopter's repository | Written once by the release that names itself in them | DR-010, DR-015, DR-037, DR-045, DR-052, DR-053, DR-054, DR-127, DR-136, DR-138, DR-181, DR-200, DR-208 |
+| Ledger files | Token counts per call, committed with the agent's work in the adopter's repository | Written once by the release that names itself in them | DR-010, DR-015, DR-037, DR-045, DR-052, DR-053, DR-054, DR-127, DR-136, DR-138, DR-181, DR-200, DR-208, DR-301, DR-302 |
 | The switch and the opt-in | What adopters and people set to turn the tool and capture on | Their form, read strictly by each release | DR-021, DR-049, DR-050, DR-183, DR-185, DR-190, DR-192, DR-201, DR-202, DR-235 |
 | The store | Notes on the person's machine, in the git common directory | Its format's version, which a later release upgrades | DR-171, DR-173 |
-| The comment | The pull request's figure and what it is made of | The report's commit and the price table at it | DR-002, DR-004, DR-110, DR-124, DR-155 |
+| The comment | The pull request's figure and what it is made of, with a block of its figures for programs | The report's commit and the price table at it | DR-002, DR-004, DR-110, DR-124, DR-155, DR-294, DR-295, DR-296, DR-297, DR-303 |
 | Releases | A tag, the release, its bill of materials and its changelog entry | Immutable, from a tag on the default branch | DR-074, DR-096, DR-097, DR-098, DR-122, DR-123, DR-148, DR-149, DR-154, DR-167, DR-209 |
 | The repository and its pages | The README, the documentation, the licence and every tracked file | The default branch, and the commit that a release names | DR-069, DR-070, DR-116, DR-117, DR-118, DR-157, DR-182, DR-212, DR-213, DR-215, DR-220, DR-229, DR-241, DR-242, DR-243, DR-279, DR-282, DR-286 |
 | What this version leaves out | The uses that later changes take up | Not pinned: each by a record that a later one replaces | DR-189, DR-222, DR-223, DR-234 |
@@ -119,17 +119,17 @@ Everything that crosses the tool's boundary, in three tables, each row with how 
 For each ledger entry counted, on the entry's UTC day *d*:
 
 ```
-token cost = input * rate(model, input, d)
-           + output * rate(model, output, d)
-           + cache write 5 min * rate(model, cache write 5 min, d)
-           + cache write 1 h * rate(model, cache write 1 h, d)
-           + cache read * rate(model, cache read, d)
-           + server-side tool requests * rate(model, request type, d)
+token cost = input * rate(provider, model, input, d)
+           + output * rate(provider, model, output, d)
+           + cache write 5 min * rate(provider, model, cache write 5 min, d)
+           + cache write 1 h * rate(provider, model, cache write 1 h, d)
+           + cache read * rate(provider, model, cache read, d)
+           + server-side tool requests * rate(provider, model, request type, d)
 ```
 
-`rate` is the latest row in `prices/models.json` dated on or before *d*, with every modifier that the table lists for the entry's attributes, combined as the table states (R14, R16). Where the transcript gave no cache lifetime, the cost is a range between the two lifetimes' rates (R15). An entry whose model, attribute or day has no price is counted in tokens and left out of the cost, and the comment names it (R14, R17, R61).
+`rate` is the latest row in `prices/models.json` for the entry's provider and model dated on or before *d*, or, for a provider recorded as `unknown`, for its model's only or default provider, which the comment's detail says was taken from the table (R289), with every modifier that the table lists for the entry's attributes, combined as the table states (R14, R16). Where the transcript gave no cache lifetime, the cost is a range between the two lifetimes' rates (R15). An entry whose provider and model no row names, whose model, attribute or day has no price, or whose model the table lists without a price, is counted in tokens and left out of the cost, and the comment names it (R14, R17, R61, R287, R289). Every rate is in the table's one currency, `USD`, which the runner table states too (R288), and is read as an exact decimal (R284).
 
-For each attempt of each job of each counted run:
+For each attempt of each job of each counted run, each attempt rounded up on its own (R18):
 
 ```
 CI cost = ceil(duration in seconds / 60) * rate(runner type, day the job ran)
@@ -141,7 +141,7 @@ The runs counted are those on the pull request's own commits that no push to the
 total = sum(token cost) + sum(CI cost)
 ```
 
-The comment splits the token cost by model, by token type and by activity type. Every figure can be recomputed from the ledger, the price table and the jobs API.
+The comment splits the token cost by model and provider, by token type and by activity type. Every figure can be recomputed from the ledger, the price table at the report's own commit and the jobs API; the comment gives the day the table was last checked, and says when a priced call came after it (R294). Each figure is computed exactly and rounded only where it is written, so a total can differ from the sum of its shown parts (R284).
 
 ## Flows
 
@@ -357,8 +357,8 @@ flowchart LR
   E --> F["6) Adopters update"]
 ```
 
-- 1) Anthropic or GitHub publishes a new price (R14).
-- 2) A pull request adds a row with its effective date, dated after the existing ones, so that it reprices nothing earlier (R14).
+- 1) Anthropic, another provider or GitHub publishes a new price (R14, R289).
+- 2) A few days later, a pull request adds a row with its provider, its effective date, the day it is added and its source, dated after the newest row of its provider, model and price and at most 30 days before the day it is added, unless it names its reason, and updates the day the table was last checked (R14, R294, R295, DR-299).
 - 3) Review and CI check it, since prices are read from the table in the repository and never fetched (R30).
 - 4) It merges to the default branch (R30).
 - 5) The next release names the commit in its text (R27).

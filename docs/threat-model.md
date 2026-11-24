@@ -2,7 +2,7 @@
 
 What could go wrong with the tool, for the people who use it and for this repository, and what answers each threat. Every change revisits this file (see `CLAUDE.md`).
 
-It was written for the first change, `add-pr-cost-calculator`, before any code, so the answers are requirements and tasks rather than code. It holds 289 threats across 9 trust boundaries. T38 to T69 were found by the design-stage review, T70 to T78 by the design-stage review of the decision records in `docs/decisions/`, T79 to T81 by the implementation-stage review of those records and their checks, T82 to T100 by the design-stage review of the assumptions, the glossary and the golden set, T101 by the implementation-stage review of the assumptions, T102 and T103 by the implementation-stage review of the glossary, T104 to T116 at the design of the revision of consent, the store and the ledger's format, T117 and T118 by the design-stage review of that revision, T119 to T122 by the review of that revision after its approval, T123 with the owner's answer to a question that the check of that review's fixes raised, T124 to T126 by the design-stage review of the test of the specs' form, T127 by the implementation-stage review of that test, T128 to T135 at the design of the plugin that brings capture to a project's cloud threads, T136 to T142 by the design-stage review of that plugin, T143 by its implementation-stage review, T144 by its security review, T145 to T147 at the design of the README's short start, T148 to T156 by the design-stage review of that short start, T157 and T158 by its implementation-stage review, T159 to T162 at the design of the roadmap, T163 to T165 by the design-stage review of the roadmap, T166 to T168 at the design of the backlog, T169 by the design-stage review of the backlog, T170 at the design of the guide, T171 to T174 by the design-stage review of the guide, T175 and T176 by the design-stage review of one opt-in for every agent, T177 to T182 by the second design-stage review of the guide, T183 by the final review of its build, T184 by its implementation-stage review, T185 to T189 at the design of the walking skeleton and T190 to T194 by its design-stage review, and T195 to T197 at the design of the specs' citation sweep, T198 to T200 by its design-stage review and T201 to T205 by its implementation-stage review, T206 to T215 by the design-stage review of the risk register and T216 to T222 by its implementation-stage review, and T223 to T236 by the design-stage reviews of the context files and T237 by their implementation-stage reviews, and T238 to T241 at the design of the check of Renovate's proposals, T242 to T245 by its design-stage review and T246 by its implementation-stage review, and T247 to T249 at the design of the two fields on every record and T250 by its design-stage review, and T251 to T256 at the design of the conventions, T257 to T265 by its design-stage reviews, T266 at its revision for Windows, T267 to T269 by that revision's design-stage review, T270 at its build, T271 to T276 by its implementation-stage review, T277 and T278 by its review lanes and T279 to T282 by its second review, and T283 to T285 at the design of the scope and visual documentation and T286 to T289 by its design-stage review; they follow T37, each under a heading for its boundary, so that the numbers stay in order, and a threat that a change removes keeps its ID out of use (see Retired IDs). Where an answer can be a scenario in a spec, it is one, so that an acceptance test holds it. `tests/test_threat_model.py` checks that every citation below names a scenario, task, decision, decision record or file that exists.
+It was written for the first change, `add-pr-cost-calculator`, before any code, so the answers are requirements and tasks rather than code. It holds 311 threats across 9 trust boundaries. T38 to T69 were found by the design-stage review, T70 to T78 by the design-stage review of the decision records in `docs/decisions/`, T79 to T81 by the implementation-stage review of those records and their checks, T82 to T100 by the design-stage review of the assumptions, the glossary and the golden set, T101 by the implementation-stage review of the assumptions, T102 and T103 by the implementation-stage review of the glossary, T104 to T116 at the design of the revision of consent, the store and the ledger's format, T117 and T118 by the design-stage review of that revision, T119 to T122 by the review of that revision after its approval, T123 with the owner's answer to a question that the check of that review's fixes raised, T124 to T126 by the design-stage review of the test of the specs' form, T127 by the implementation-stage review of that test, T128 to T135 at the design of the plugin that brings capture to a project's cloud threads, T136 to T142 by the design-stage review of that plugin, T143 by its implementation-stage review, T144 by its security review, T145 to T147 at the design of the README's short start, T148 to T156 by the design-stage review of that short start, T157 and T158 by its implementation-stage review, T159 to T162 at the design of the roadmap, T163 to T165 by the design-stage review of the roadmap, T166 to T168 at the design of the backlog, T169 by the design-stage review of the backlog, T170 at the design of the guide, T171 to T174 by the design-stage review of the guide, T175 and T176 by the design-stage review of one opt-in for every agent, T177 to T182 by the second design-stage review of the guide, T183 by the final review of its build, T184 by its implementation-stage review, T185 to T189 at the design of the walking skeleton and T190 to T194 by its design-stage review, and T195 to T197 at the design of the specs' citation sweep, T198 to T200 by its design-stage review and T201 to T205 by its implementation-stage review, T206 to T215 by the design-stage review of the risk register and T216 to T222 by its implementation-stage review, and T223 to T236 by the design-stage reviews of the context files and T237 by their implementation-stage reviews, and T238 to T241 at the design of the check of Renovate's proposals, T242 to T245 by its design-stage review and T246 by its implementation-stage review, and T247 to T249 at the design of the two fields on every record and T250 by its design-stage review, and T251 to T256 at the design of the conventions, T257 to T265 by its design-stage reviews, T266 at its revision for Windows, T267 to T269 by that revision's design-stage review, T270 at its build, T271 to T276 by its implementation-stage review, T277 and T278 by its review lanes and T279 to T282 by its second review, and T283 to T285 at the design of the scope and visual documentation and T286 to T289 by its design-stage review, and T290 to T293 at the design of the first part of the requirements corrected before the build and T294 to T311 by its design-stage review; they follow T37, each under a heading for its boundary, so that the numbers stay in order, and a threat that a change removes keeps its ID out of use (see Retired IDs). Where an answer can be a scenario in a spec, it is one, so that an acceptance test holds it. `tests/test_threat_model.py` checks that every citation below names a scenario, task, decision, decision record or file that exists.
 
 ## How it was built
 
@@ -93,8 +93,8 @@ The trust boundaries:
 - **Raw likelihood:** 3 (likely)
 - **Raw risk:** 9
 - **What could happen:** a prompt, a piece of code, a file's contents, a tool's output or a secret is copied into a ledger entry and published with the pull request.
-- **Answer:** entries are built from typed values only. A count is copied as a number. The only text taken from a transcript is the model's name and the values of the price attributes (R4), each only when the price table that the hook ships with lists it (R77), because a private gateway, a custom model or an alias can have a name that looks like one of Anthropic's. Tool names, including MCP server names, which can name a private service, are never written (R6).
-- **Held by:** `ledger`: "Content in the transcript does not reach the ledger"; `ledger`: "A planted string never reaches the ledger"; `ledger`: "An unexpected model name is recorded as unknown"; `ledger`: "A model name the price table does not list is recorded as unknown"; `ledger`: "An attribute value the price table does not list is recorded as unknown"; `activity-types`: "An MCP call does not record the server's name"; `project-standards`: "A golden call that no entry or cited scenario accounts for fails CI"; DR-029; DR-045; DR-054
+- **Answer:** entries are built from typed values only. A count is copied as a number. The only text taken from a transcript is the model's name, the values of the price attributes and the provider's name (R4), each only when the price table that the hook ships with lists it (R77, R290), because a private gateway, a custom model or an alias can have a name that looks like one of Anthropic's. Tool names, including MCP server names, which can name a private service, are never written (R6).
+- **Held by:** `ledger`: "Content in the transcript does not reach the ledger"; `ledger`: "A planted string never reaches the ledger"; `ledger`: "An unexpected model name is recorded as unknown"; `ledger`: "A model name the price table does not list is recorded as unknown"; `ledger`: "An attribute value the price table does not list is recorded as unknown"; `ledger`: "A provider that the price table does not list is recorded as unknown"; `activity-types`: "An MCP call does not record the server's name"; `project-standards`: "A golden call that no entry or cited scenario accounts for fails CI"; DR-029; DR-045; DR-054; DR-302
 - **Assumptions:** A2, A33
 
 ### T2. Work in another repository is published here
@@ -331,9 +331,9 @@ The trust boundaries:
 - **Raw impact:** 2 (medium)
 - **Raw likelihood:** 3 (likely)
 - **Raw risk:** 6
-- **What could happen:** a ledger line has the wrong types, unknown fields, impossible numbers, a date in the future or before any known price, two versions of one call, or text written to be shown in the comment. One such line could also stop the whole report.
+- **What could happen:** a ledger line has the wrong types, unknown fields, impossible numbers, a date in the future or before any known price, two versions of one call, or text written to be shown in the comment, as a model, a provider or an agent. One such line could also stop the whole report.
 - **Answer:** the report holds each line to the ledger format that `docs/ledger-format.md` documents and capture writes (R35). It refuses any line that does not match, and says how many it refused, showing none of them (R97, R102). An entry dated after the day the report runs is refused, an entry older than any price is named and left out of the cost (R14), and entries of one call that differ are all refused (R59). None of these stops the report (R102).
-- **Held by:** `report-comment`: "Refused ledger lines are counted, not shown"; `report-comment`: "A name with markup is not shown as written"; `ledger`: "Entries of one call that disagree are refused"; `pricing`: "An entry from the future is refused"; `pricing`: "Usage before any known price is named, not priced"; `report-comment`: "A ledger count that is not a whole number within the ceiling is refused"; `report-comment`: "A ledger count given as `true` or `false` is refused"; `report-comment`: "A ledger count given as not-a-number is refused"; `report-comment`: "A ledger count too large to hold is refused"; `report-comment`: "A ledger line that gives a field twice is refused"; `report-comment`: "A ledger line with a field that the format does not name is refused"; `report-comment`: "A ledger line nested too deeply is refused"; `report-comment`: "A ledger day that is not a date is refused"; `report-comment`: "An unreadable ledger line is counted and the report completes"; DR-020; DR-044; DR-124; DR-131; `add-pr-cost-calculator` task 4.2
+- **Held by:** `report-comment`: "Refused ledger lines are counted, not shown"; `report-comment`: "A name with markup is not shown as written"; `report-comment`: "A provider with markup is not shown as written"; `report-comment`: "An agent that the line's format does not name is refused"; `ledger`: "Entries of one call that disagree are refused"; `pricing`: "An entry from the future is refused"; `pricing`: "Usage before any known price is named, not priced"; `report-comment`: "A ledger count that is not a whole number within the ceiling is refused"; `report-comment`: "A ledger count given as `true` or `false` is refused"; `report-comment`: "A ledger count given as not-a-number is refused"; `report-comment`: "A ledger count too large to hold is refused"; `report-comment`: "A ledger line that gives a field twice is refused"; `report-comment`: "A ledger line with a field that the format does not name is refused"; `report-comment`: "A ledger line nested too deeply is refused"; `report-comment`: "A ledger day that is not a date is refused"; `report-comment`: "An unreadable ledger line is counted and the report completes"; DR-020; DR-044; DR-124; DR-131; `add-pr-cost-calculator` task 4.2
 - **Assumptions:** A2, A52, A54
 
 ### T18. The report reads more than it should
@@ -524,9 +524,9 @@ The trust boundaries:
 - **Raw likelihood:** 2 (possible)
 - **Raw risk:** 4
 - **What could happen:** a pull request changes a price so that reports come out lower or higher.
-- **Answer:** the price table ships with the pinned tool, so changing it in an adopting repository means pinning a different tool, which T21 covers. In this repository, each price row names its source page, the statements of how modifiers combine are dated like prices (R14), and a test fails when a pull request changes or removes an existing row, or adds one dated on or before the newest row for the same price.
-- **Residual:** a new row dated after the newest row, but before the day its pull request merges, changes what the usage between those two days costs. That row is in the pull request's diff, with its source page, for review.
-- **Held by:** `switch-and-opt-in`: "A changed report is flagged"; `pricing`: "A changed combination reprices nothing earlier"; DR-020; DR-186; DR-217; `add-pr-cost-calculator` task 3.1; `add-pr-cost-calculator` task 3.2
+- **Answer:** the price table ships with the pinned tool, so changing it in an adopting repository means pinning a different tool, which T21 covers. In this repository, each price row names its source page, the statements of how modifiers combine are dated like prices (R14), and a test fails when a pull request changes or removes an existing row, or adds one dated on or before the newest row for the same provider, model and price, or dated more than 30 days before the day it is added unless it names its reason (R295, T307).
+- **Residual:** every row is dated a few days before the day it is added (DR-299), so a row dated after the newest row but before the day its pull request merges, which is how every row is added, changes what the usage between those two days costs. That row is in the pull request's diff, with its source page and the day it was added, for review.
+- **Held by:** `switch-and-opt-in`: "A changed report is flagged"; `pricing`: "A changed combination reprices nothing earlier"; DR-020; DR-186; DR-217; DR-299; `add-pr-cost-calculator` task 3.1; `add-pr-cost-calculator` task 3.2
 - **Assumptions:** A56, A58
 
 ### T31. An adopter publishes more than they expect
@@ -538,9 +538,9 @@ The trust boundaries:
 - **Raw impact:** 3 (high)
 - **Raw likelihood:** 3 (likely)
 - **Raw risk:** 9
-- **What could happen:** in a public repository, the ledger and the comment are public: which models were used, how many tokens, on which days, and the cost.
-- **Answer:** the README's short start says, before any step that opts anyone in, that what a person's sessions spend is committed with their work and published when that work is pushed (R199), and the README's section on adopting the tool says what a public repository's ledger and comment show: which models were used, how many tokens, on which days, and the cost. The opt-in's pages say that, with the plugin, one opt-in records in every repository that turns the tool on where the person's sessions work or commit, whether or not that repository registers the hook file (R164).
-- **Held by:** `project-standards`: "The opt-in's pages say where an opt-in applies"; `project-standards`: "The short start says what an opt-in records and publishes"; DR-045; DR-212; `add-pr-cost-calculator` task 4.4
+- **What could happen:** in a public repository, the ledger and the comment are public: which models were used, through which provider where a call's lines tell it, by which agent, how many tokens, on which days, and the cost.
+- **Answer:** the README's short start says, before any step that opts anyone in, that what a person's sessions spend is committed with their work and published when that work is pushed (R199), and the README's section on adopting the tool says what a public repository's ledger and comment show: which models were used, through which provider where a call's lines tell it, by which agent, how many tokens, on which days, and the cost. No field records how a call was paid (DR-302). The opt-in's pages say that, with the plugin, one opt-in records in every repository that turns the tool on where the person's sessions work or commit, whether or not that repository registers the hook file (R164).
+- **Held by:** `project-standards`: "The opt-in's pages say where an opt-in applies"; `project-standards`: "The short start says what an opt-in records and publishes"; DR-045; DR-212; DR-302; `add-pr-cost-calculator` task 4.4
 - **Assumptions:** A14
 
 ## Boundary 7: contributors to this repository
@@ -1425,9 +1425,9 @@ The trust boundaries:
 - **Raw likelihood:** 3 (likely)
 - **Raw risk:** 6
 - **What could happen:** nothing says what unit the comment's figures are in, how precise they are, how they are rounded or what arithmetic gives them. Built before that code, the golden set would either hold the costs before they are shown, so that nothing holds what readers see, or choose a rounding that no spec states, so that a test file decides what the comment says. With Python's own formatting to two places, three costs of 0.004 each show as 0.00 beside a total of 0.01, 2.675 shows as 2.67 where decimal arithmetic rounding half up gives 2.68, and 0.00001 prints as 1e-05. A cost that is not zero reads as free, and a reader who recomputes a figure from the ledger gets another number, with nothing saying which is right.
-- **Answer:** the golden set holds each figure as the comment shows it, and its tests compare the comment that the report writes (R139). Task 1.21 waits until `report-comment` states how a cost is shown, a rule whose choices are the owner's and an open question of the design.
-- **Residual:** until that rule is in a spec, this answer holds nothing. A test of the comment's text cannot see how GitHub renders it, and whether the rule suits readers is the owner's call.
-- **Held by:** `project-standards`: "A result that differs from the golden set fails CI"; `add-pr-cost-calculator` task 1.21; DR-165
+- **Answer:** `report-comment` states how a cost is shown: its currency's code, two decimals in the brief summary and four in the detail and the job summary, each rounded half up from its own exact cost, worked out from rates read as exact decimals, and a cost above zero too small to show as under the smallest amount, as the owner chose on 2026-11-24 (R284, DR-295). The golden set holds each figure as the comment shows it, and its tests compare the comment that the report writes (R139).
+- **Residual:** a test of the comment's text cannot see how GitHub renders it, which one recorded render covers (T300). How a total and its shown parts differ is T292.
+- **Held by:** `project-standards`: "A result that differs from the golden set fails CI"; `report-comment`: "A summary cost is rounded half up to the cent"; `report-comment`: "Half a cent rounds up, not to even"; `report-comment`: "A rate is read exactly"; `add-pr-cost-calculator` task 1.21; DR-165; DR-295
 
 ## Boundary 6, continued: found at the design review of the assumptions, the glossary and the golden set
 
@@ -1876,7 +1876,7 @@ The trust boundaries:
 - **Raw likelihood:** 2 (possible)
 - **Raw risk:** 4
 - **What could happen:** the JSON Schema published for a ledger version and the report's reader are two descriptions of one format. Where they disagree, a line that the schema accepts is refused by the report, or one that it refuses is counted, so that someone who checks a ledger file without the tool reaches another answer than the comment.
-- **Answer:** each schema is written with ASCII patterns rather than `format`, which a validator only notes by default, and `docs/ledger-format.md` lists what no schema can hold, where the report's rules decide. The tests hold each schema to what the report refuses and counts, by a standard validator with its default options (R156), a property-based test compares each schema with the reader, and the surface manifest holds each released version's schema by its hash, so that a released schema cannot change unseen (R156).
+- **Answer:** each schema is written with ASCII patterns rather than `format`, which a validator only notes by default, and `docs/ledger-format.md` lists what no schema can hold, the model, provider and attribute names that the price table lists among them, where the report's rules decide. The tests hold each schema to what the report refuses and counts, by a standard validator with its default options (R156), a property-based test compares each schema with the reader, and the surface manifest holds each released version's schema by its hash, so that a released schema cannot change unseen (R156).
 - **Residual:** a line that no test tries, and that the property-based test does not reach, can still be read one way by the schema and another by the report, and then the report's rules decide.
 - **Held by:** `ledger`: "The published schema refuses what the report refuses"; `ledger`: "A released version's schema does not change"; DR-181; `add-pr-cost-calculator` task 1.2
 
@@ -2165,7 +2165,7 @@ The trust boundaries:
 - **Raw risk:** 6
 - **What could happen:** a repository pins the report's release in its calling workflow and copies the hook file of the same release, while a person's plugin follows their account, so in a project's cloud thread, where only the plugin runs, every ledger file comes from a release that the repository did not pin. The pinned report refuses a line that names a model that only a later price table lists, and every file of a later ledger format, and the comment's only explanation, a hook file from another commit, does not apply there, so a reader sees refused lines and no reason for them. An earlier plugin, in a repository whose configuration file holds a key that only a later release documents, takes the tool to be off there and records nothing, with no flag (T123).
 - **Answer:** each ledger file's first line states, beside its format's version, the release of the capture step that wrote it, both in a place and form that every version of the format keeps (R156), and when a ledger file that a merge adds names a later release than the report's own, whatever its version, the comment says that some ledger files come from a later release than the report, so that lines or files that the report cannot read may be refused, and quotes nothing from them (R193). Where the plugin and the hook file's registration both run, a copy of an earlier release leaves the session to the later one, but for an opt-out (R191, T130). The README's section on installing the plugin says that the plugin's release, not the repository's pinned report, writes the ledger files of the sessions that run it, what a later or an earlier plugin then does, and that a repository keeps its pin current and a person keeps their plugin current (R195). The README's short start says that the marketplace's updates need no approval, so that a person who adds it knows that each new release reaches their sessions with nothing to accept (R198).
-- **Residual:** a later plugin's lines that the report cannot read stay refused, and the figure leaves them out, as the comment says. An earlier plugin that runs alone where the configuration file holds a key that it does not know records nothing there, with no flag, until the person updates it. Counting a well-formed model name that the report's table does not list as `unknown`, in tokens and not in cost, would let a later plugin's calls count, but would also count a name that a hand-edited ledger file makes up, and is left to a later change (DR-208).
+- **Residual:** a later plugin's lines that the report cannot read stay refused, and the figure leaves them out, as the comment says. An earlier plugin that runs alone where the configuration file holds a key that it does not know records nothing there, with no flag, until the person updates it. Counting a well-formed model name that the report's table does not list as `unknown`, in tokens and not in cost, would let a later plugin's calls count, but would also count a name that a hand-edited ledger file makes up, and is left to a later change (DR-208). A provider that only a later price table lists is refused by the pinned report in the same way, and where the report's table is the later one, a second provider that it adds for a model leaves earlier plugins' calls priced at the model's default (T296).
 - **Held by:** `report-comment`: "Ledger files of a later release are named, not quoted"; `report-comment`: "A ledger file of a later format is named too"; `ledger`: "A ledger file names its format's version"; `ledger`: "Every version of the ledger format states its version and release alike"; `usage-capture`: "An earlier copy whose release does not know a key leaves the session to the later copy"; `project-standards`: "The README says which release of the plugin runs"; `project-standards`: "The README opens with its short start"; DR-206; DR-208; DR-212; `add-pr-cost-calculator` task 1.2; `add-pr-cost-calculator` task 2.2; `add-pr-cost-calculator` task 4.2; `add-pr-cost-calculator` task 4.4
 - **Assumptions:** A23, A72
 
@@ -4555,15 +4555,344 @@ The trust boundaries:
 - **Residual:** an identifier of up to three characters, which holds no instruction.
 - **Held by:** `project-standards`: "A number left unexplained, or explained but not drawn, fails a test"; `project-standards`: "A diagram in a fence that the checks do not read, or an explanation that cites no requirement, fails a test"; DR-293
 
+## Boundary 5, continued: found at the design of the requirements corrected before the build
+
+### T290. The collapsed section hides that the figure is incomplete
+
+- **Kind:** reliability
+- **Impact:** 2 (medium)
+- **Likelihood:** 1 (unlikely)
+- **Risk:** 2
+- **Raw impact:** 2 (medium)
+- **Raw likelihood:** 3 (likely)
+- **Raw risk:** 6
+- **What could happen:** the comment moves every count of what it did not count, and every note that a figure is a lower bound, into a collapsed section that most readers never open, so that a reader takes a lower bound for the whole cost.
+- **Answer:** the brief summary says, outside the collapsed section, whenever a figure is a lower bound or something was not counted, and that the detail says what, for each reason that the detail counts or flags, one scenario naming them all in turn (R283, DR-294).
+- **Residual:** a reader who reads the summary's line and does not open the detail knows that the figure is incomplete, but not by how much, which no count could say for calls left out (DR-200).
+- **Held by:** `report-comment`: "The summary says what the collapsed section counts as missing"; DR-294
+
+### T291. The block for programs says other than the comment shows
+
+- **Kind:** tampering
+- **Impact:** 2 (medium)
+- **Likelihood:** 2 (possible)
+- **Risk:** 4
+- **Raw impact:** 2 (medium)
+- **Raw likelihood:** 2 (possible)
+- **Raw risk:** 4
+- **What could happen:** the comment's JSON block holds a figure or a count that the comment's text does not show, or shows otherwise, through a defect of the report, or because someone who can edit the comment later edits the block alone, so that the export command (B-008) writes a cost that no reader saw.
+- **Answer:** each figure in the block and in the comment's text is written from one value, and the block holds none that the comment does not show, which the golden set holds for its sessions and a property test over generated ledgers holds beyond them (task 4.6); the block's form is published with a schema (R285, DR-296).
+- **Residual:** a defect is unlikely with one value feeding both, but a comment edited after the report posted it, by a collaborator or by another workflow's token, can change the block alone, which nothing here can stop; the export command's own change threat-models how it reads the block (B-008).
+- **Held by:** `report-comment`: "The block holds what the comment shows"; `report-comment`: "The block validates against its published schema"; DR-296
+
+### T292. Rounding hides a cost or makes a total disagree with its parts unexplained
+
+- **Kind:** reliability
+- **Impact:** 2 (medium)
+- **Likelihood:** 1 (unlikely)
+- **Risk:** 2
+- **Raw impact:** 2 (medium)
+- **Raw likelihood:** 3 (likely)
+- **Raw risk:** 6
+- **What could happen:** a cost above zero rounds to zero and reads as free, or a total rounded from its exact cost differs from the sum of its rounded parts, and a reader takes either as an error of the tool.
+- **Answer:** each figure is rounded half up from its own exact cost, worked out from rates read as exact decimals and rounded only when written; a cost above zero that rounds to zero is shown as under the smallest amount at its precision, a cost of zero as zero, and the brief summary says, beside the total, that it can differ from the sum of its shown parts (R284, DR-295). T89 covers the rule itself; this threat covers how its figures read.
+- **Residual:** a total and the sum of its shown parts can differ by more than one unit of the last digit, as four parts of 0.005 each show `USD 0.01` beside a total of `USD 0.02`, and the comment says only that they can differ.
+- **Held by:** `report-comment`: "A summary cost is rounded half up to the cent"; `report-comment`: "Half a cent rounds up, not to even"; `report-comment`: "A total is rounded from its exact cost"; `report-comment`: "A total can differ from its shown parts by more than one cent"; `report-comment`: "A cost of zero is shown as zero"; `report-comment`: "A range is rounded at each end"; DR-295
+
+## Boundary 3, continued: found at the design of the requirements corrected before the build
+
+### T293. A call is priced at another provider's rate
+
+- **Kind:** reliability
+- **Impact:** 2 (medium)
+- **Likelihood:** 2 (possible)
+- **Risk:** 4
+- **Raw impact:** 2 (medium)
+- **Raw likelihood:** 2 (possible)
+- **Raw risk:** 4
+- **What could happen:** one model is sold by more than one provider at different rates, and a call made through one is priced at another's rate, because the entry names no provider, the report picks a row by the model alone, or a provider taken from the table is shown as if the call's lines had named it.
+- **Answer:** each price row names its provider, and capture records a provider only where the call's own lines name it (R290); a call is priced by the row of its entry's provider and model, and a call whose provider is `unknown` by its model's only or default provider's row, which the comment's brief summary and detail say was taken from the table, not from the call (R283, R289, DR-302).
+- **Residual:** whether Claude Code's transcript tells a call's provider is not known until task 1.1 checks it; until it does, a call through Amazon Bedrock or Google Vertex AI is priced at its model's default provider's rates, as the comment says, which is wrong wherever their rates differ. Gateways can also pass a listed model's name to another provider.
+- **Held by:** `pricing`: "Two providers of one model are priced apart"; `pricing`: "An unknown provider is priced at the model's default provider and said so"; `report-comment`: "A provider taken from the price table is marked in the brief summary"; `ledger`: "A provider that capture cannot tell is recorded as unknown"; DR-302
+- **Assumptions:** A2
+
+## Boundary 1, continued: found at the design-stage review of the requirements corrected before the build
+
+T293 (Boundary 3) also concerns this boundary: the provider that capture reads from a call's lines.
+
+### T294. A provider or agent value carries private text into the ledger or the comment
+
+- **Kind:** information disclosure
+- **Impact:** 3 (high)
+- **Likelihood:** 1 (unlikely)
+- **Risk:** 3
+- **Raw impact:** 3 (high)
+- **Raw likelihood:** 2 (possible)
+- **Raw risk:** 6
+- **What could happen:** a call's lines name a provider by a private gateway's name, an endpoint or a host, which capture copies into the entry's provider field and the comment then shows, so that a private service's name is published; or a hand-edited ledger line gives a provider or agent with markup that the comment shows as written. A field that recorded how a call was paid would publish a person's plan.
+- **Answer:** a provider is recorded only as the capture step's price table names it, where that table lists it for the call's model, and as `unknown` otherwise, with none of the lines' text or its hash in any ledger file (R4, R77, R290); the agent is always `claude-code` in this version; the report refuses and counts a line whose provider the table does not list or whose agent its format's version does not name (R98), and shows only the provider and agent names that the price table or the ledger format lists (R21). No field records how a call was paid (DR-302).
+- **Residual:** which provider a person's calls go through is published wherever the call's lines tell it and the table lists it, as the README's section on adopting the tool says (T31).
+- **Held by:** `ledger`: "A provider that the price table does not list is recorded as unknown"; `ledger`: "A planted string never reaches the ledger"; `ledger`: "A provider that capture cannot tell is recorded as unknown"; `report-comment`: "A provider with markup is not shown as written"; `report-comment`: "An agent that the line's format does not name is refused"; DR-302
+
+### T295. The environment, the hook's input or a call's content decides its provider
+
+- **Kind:** tampering
+- **Impact:** 2 (medium)
+- **Likelihood:** 1 (unlikely)
+- **Risk:** 2
+- **Raw impact:** 2 (medium)
+- **Raw likelihood:** 2 (possible)
+- **Raw risk:** 4
+- **What could happen:** capture takes a call's provider from an environment variable, such as one that turns on Amazon Bedrock, from the hook's input or from settings, which a repository's settings can set for everyone and which a run reads after the call was made, or from a provider's name that a fetched page, a file or a prompt injection put into the call's response or tool data, so that calls are priced at a provider's rate that they never went through.
+- **Answer:** the provider comes only from a metadata field of the call's lines, as the price table names it, never from message content, tool data, the environment, the hook's input or settings (R290); task 1.1 names that field.
+- **Residual:** none beyond T293's.
+- **Held by:** `ledger`: "The environment does not decide a call's provider"; `ledger`: "A provider named only in a call's content is not recorded"; DR-302; `add-pr-cost-calculator` task 1.1
+
+## Boundary 3, continued: found at the design-stage review of the requirements corrected before the build
+
+### T296. A second provider's row leaves every call of a model unpriced
+
+- **Kind:** reliability
+- **Impact:** 2 (medium)
+- **Likelihood:** 1 (unlikely)
+- **Risk:** 2
+- **Raw impact:** 2 (medium)
+- **Raw likelihood:** 3 (likely)
+- **Raw risk:** 6
+- **What could happen:** an ordinary pull request adds Amazon Bedrock's rates, or a row with no price under a self-hosted provider, for a model already priced for Anthropic's API, and from that release capture can no longer tell which provider the model's calls went to, so every call of it is left out of the cost in every adopter's report.
+- **Answer:** capture records only the provider that a call's lines name, and the report prices a call whose provider is `unknown` at its model's only provider's rates on its day, or at those of the provider that a dated statement names as its default; the checks fail on a day when a model has two providers and no default, and since a default is dated, adding a second provider's rows changes no row and reprices no earlier call (R289, R290).
+- **Residual:** a call through a provider other than the default, whose lines do not say so, is priced at the default's rates (T293).
+- **Held by:** `pricing`: "An unknown provider is priced at the model's default provider and said so"; `pricing`: "A model priced by two providers with no default fails the checks"; `pricing`: "A second provider's rows change no earlier call's price"; DR-302
+
+### T297. A rate read as a binary float rounds a cost the wrong way
+
+- **Kind:** reliability
+- **Impact:** 1 (low)
+- **Likelihood:** 1 (unlikely)
+- **Risk:** 1
+- **Raw impact:** 1 (low)
+- **Raw likelihood:** 3 (likely)
+- **Raw risk:** 3
+- **What could happen:** the price table's rates are read from JSON as binary floats, so a rate of 0.30 per million tokens prices 50000 tokens just under 0.015, which rounds half up to `USD 0.01` where the exact cost gives `USD 0.02`, and the comment's figures differ from what anyone working them out by hand gets.
+- **Answer:** rates are read as exact decimals and every cost is worked out with no binary floating point, rounded only when written (R284).
+- **Residual:** none.
+- **Held by:** `report-comment`: "A rate is read exactly"; DR-295; `add-pr-cost-calculator` task 3.2
+
+### T298. The two price tables state different currencies, and the total adds them
+
+- **Kind:** reliability
+- **Impact:** 2 (medium)
+- **Likelihood:** 1 (unlikely)
+- **Risk:** 2
+- **Raw impact:** 2 (medium)
+- **Raw likelihood:** 1 (unlikely)
+- **Raw risk:** 2
+- **What could happen:** the model price table and the runner price table each state one currency, but different ones, and the report adds a token cost and a CI cost in two currencies into one total.
+- **Answer:** the checks fail on two tables that state different currencies (R288).
+- **Residual:** none.
+- **Held by:** `pricing`: "Two tables in different currencies fail the checks"; DR-298
+
+## Boundary 4, continued: found at the design-stage review of the requirements corrected before the build
+
+### T299. The comment is too long to post
+
+- **Kind:** denial of service
+- **Impact:** 2 (medium)
+- **Likelihood:** 1 (unlikely)
+- **Risk:** 2
+- **Raw impact:** 2 (medium)
+- **Raw likelihood:** 2 (possible)
+- **Raw risk:** 4
+- **What could happen:** the comment's detail, with every model, provider, token type, runner and activity type, and its block repeating every figure, grows with the price table until GitHub's API refuses it, and no comment is posted.
+- **Answer:** the largest comment that the price table allows is shorter than a size bound below the length that GitHub's API refuses, which a test that the price table's checks run holds (R293).
+- **Residual:** GitHub can lower its limit; the build records its refusal with its day (task 4.6), and a later lower limit shows only when a comment is refused.
+- **Held by:** `report-comment`: "The largest comment fits the bound"; DR-294; `add-pr-cost-calculator` task 3.1; `add-pr-cost-calculator` task 4.6
+- **Assumptions:** A9
+
+## Boundary 5, continued: found at the design-stage review of the requirements corrected before the build
+
+### T300. GitHub renders the comment otherwise than the report wrote it
+
+- **Kind:** reliability
+- **Impact:** 2 (medium)
+- **Likelihood:** 1 (unlikely)
+- **Risk:** 2
+- **Raw impact:** 2 (medium)
+- **Raw likelihood:** 2 (possible)
+- **Raw risk:** 4
+- **What could happen:** Markdown inside the collapsed section shows as raw text because no blank line follows `</summary>`, a `<` written for "under" starts a tag that swallows what follows, or the block's fence does not close, so that readers see a figure or a warning other than the one written.
+- **Answer:** the collapsed section is one `<details>` element with one `<summary>`, neither with an attribute, with a blank line after `</summary>` and before `</details>`, each fence of three backticks at the start of its line, and no `<` outside code but those tags and the report's marker, one HTML comment, so that "under" is written as a word (R283); no dollar sign or tilde stands outside code (R286); a render of one golden comment through GitHub's Markdown API is recorded with its day (task 4.6).
+- **Residual:** a mail client that shows the comment may show the section open; a change to GitHub's renderer after the recorded render shows only to a reader.
+- **Held by:** `report-comment`: "The collapsed section is well formed"; `report-comment`: "No amount is read as a formula or struck through"; DR-294; DR-303; `add-pr-cost-calculator` task 4.6
+- **Assumptions:** A9
+
+### T301. The job summary shows a cost by another rule than the comment
+
+- **Kind:** reliability
+- **Impact:** 1 (low)
+- **Likelihood:** 1 (unlikely)
+- **Risk:** 1
+- **Raw impact:** 1 (low)
+- **Raw likelihood:** 2 (possible)
+- **Raw risk:** 2
+- **What could happen:** the rule for how a cost is shown covers the comment but not the job summary, so the job summary shows a cost to another precision or rounded otherwise, and the two disagree.
+- **Answer:** the job summary shows each cost as the collapsed section does (R284).
+- **Residual:** none.
+- **Held by:** `report-comment`: "The job summary shows each cost as the collapsed section does"; DR-295
+
+### T302. The line saying that the figure is not a bill is hidden in the collapsed section
+
+- **Kind:** reliability
+- **Impact:** 2 (medium)
+- **Likelihood:** 1 (unlikely)
+- **Risk:** 2
+- **Raw impact:** 2 (medium)
+- **Raw likelihood:** 2 (possible)
+- **Raw risk:** 4
+- **What could happen:** the line saying that the figure is an API-equivalent estimate, not a bill, goes into the collapsed section with the rest of the detail, so that a reader of the brief summary takes the figure for what was paid (T27).
+- **Answer:** the brief summary holds that line, outside the collapsed section (R283).
+- **Residual:** none beyond T27's.
+- **Held by:** `report-comment`: "The brief summary says that the figure is not a bill"; DR-294
+
+## Boundary 6, continued: found at the design-stage review of the requirements corrected before the build
+
+### T303. A change to the block's form ships as a minor release
+
+- **Kind:** reliability
+- **Impact:** 2 (medium)
+- **Likelihood:** 1 (unlikely)
+- **Risk:** 2
+- **Raw impact:** 2 (medium)
+- **Raw likelihood:** 3 (likely)
+- **Raw risk:** 6
+- **What could happen:** the block for programs is published for the export command and adopters' programs, but the public surface does not name it, so a release that renames, drops or retypes one of its fields ships as a minor or patch release, and every comment already posted keeps the old form (T53).
+- **Answer:** the public surface names the comment block's form and schema (R122), and a released block form's schema does not change (R285).
+- **Residual:** none beyond T53's.
+- **Held by:** `report-comment`: "A released block form's schema does not change"; `releases-and-compatibility`: "The surface manifest names the whole public surface"; DR-296
+
+### T304. A program cannot add up or tell apart the block's figures
+
+- **Kind:** reliability
+- **Impact:** 2 (medium)
+- **Likelihood:** 1 (unlikely)
+- **Risk:** 2
+- **Raw impact:** 2 (medium)
+- **Raw likelihood:** 2 (possible)
+- **Raw risk:** 4
+- **What could happen:** the block holds each figure as the comment's text shows it, at two precisions, as "under" a smallest amount or as a range, so that a program sums cent figures and builds up their rounding, or cannot parse a figure at all.
+- **Answer:** the block gives each cost as its four-decimal figure, the currency in a field of its own, one under the smallest amount as zero with a flag, and a range as its two ends, written from the same values as the comment's text (R285).
+- **Residual:** a sum of four-decimal figures can still differ from the exact total, as the comment says of its own.
+- **Held by:** `report-comment`: "The block gives a cost below the smallest amount as a flag, and a range as its two ends"; `report-comment`: "The block holds what the comment shows"; DR-296
+
+### T305. A program takes an imitation of the report's block for the report's own
+
+- **Kind:** spoofing
+- **Impact:** 2 (medium)
+- **Likelihood:** 2 (possible)
+- **Risk:** 4
+- **Raw impact:** 2 (medium)
+- **Raw likelihood:** 3 (likely)
+- **Raw risk:** 6
+- **What could happen:** on a public repository anyone can comment on a pull request, and a comment holding a block that validates against the published schema needs no skill to write, so a program that reads every comment's block writes a cost that the report never gave.
+- **Answer:** the block names its pull request and merge commit, and its published form says that a program reads it only from the comment that carries the report's marker, posted by the identity that the report's workflow posts as, and only when those match the pull request it reads (R285).
+- **Residual:** every workflow of an adopter's repository that uses its default token posts as the same identity, so another workflow that echoes untrusted text into a comment on the same pull request can carry a copy of the marker and a block with the right numbers; someone who can edit the report's own comment can still edit its block (T291), and a program that does not follow the form is not held by it; the export command's own change threat-models how it reads the block (B-008).
+- **Held by:** `report-comment`: "The block's form names how a program finds the report's comment"; DR-296
+
+### T306. A report prices usage after a price change at the old rate and says nothing
+
+- **Kind:** reliability
+- **Impact:** 2 (medium)
+- **Likelihood:** 1 (unlikely)
+- **Risk:** 2
+- **Raw impact:** 2 (medium)
+- **Raw likelihood:** 3 (likely)
+- **Raw risk:** 6
+- **What could happen:** the price table lags each price change by a few days (DR-299), and an adopter's table lags until they update their pinned release, so calls after a change are priced at the earlier row, and the comment's "price table's date", which no spec defined, does not tell the reader.
+- **Answer:** the price table states the day its rows were last checked against their sources, the comment gives it as the price table's date, and the brief summary says that prices may have changed since then when a priced call's day is after it (R294).
+- **Residual:** the figure itself stays at the earlier price until the table and the pin are updated, and a pull request that moves the checked day without checking the prices clears the warning, which only review catches.
+- **Held by:** `pricing`: "A call after the table's date is flagged"; `pricing`: "A table that states no checked day fails the checks"; DR-306
+
+## Boundary 7, continued: found at the design-stage review of the requirements corrected before the build
+
+### T307. A price row is backdated without limit, or one added out of order can never go in
+
+- **Kind:** tampering
+- **Impact:** 2 (medium)
+- **Likelihood:** 1 (unlikely)
+- **Risk:** 2
+- **Raw impact:** 2 (medium)
+- **Raw likelihood:** 2 (possible)
+- **Raw risk:** 4
+- **What could happen:** with every row dated a few days before it is added (DR-299), a row dated weeks back no longer stands out in review and reprices all the usage since; and a row for an earlier price change that merges after the row for a later one is refused for good, so its period stays at the wrong price. Keyed without the provider, the order check also refuses another provider's rows for a model already listed.
+- **Answer:** each row gives the day it was added, no earlier than the commit it is compared with and no later than the day the checks run; a row dated more than 30 days before that day, the owner's limit, fails the checks unless it names its reason, which review reads; a row dated on or before the newest of its provider, model and price fails, and a row for an earlier change that comes late is refused, as DR-020 gives it (R295, DR-299).
+- **Residual:** a row within the limit, or one that names a reason that review accepts, still reprices the usage since its date, in the pull request's diff (T30); a late row for an earlier change leaves its period at the price before it.
+- **Held by:** `pricing`: "A row dated more than 30 days before it was added fails without a reason"; `pricing`: "A row dated on or before the newest of its kind fails"; `pricing`: "A row's added day outside the window fails"; DR-299; `add-pr-cost-calculator` task 3.1
+
+### T308. A routine that reads vendors' pages writes price rows unreviewed
+
+- **Kind:** elevation of privilege
+- **Impact:** 2 (medium)
+- **Likelihood:** 1 (unlikely)
+- **Risk:** 2
+- **Raw impact:** 2 (medium)
+- **Raw likelihood:** 2 (possible)
+- **Raw risk:** 4
+- **What could happen:** the daily routine that DR-299 names is built without a review of its own: it reads vendors' pages, text that someone else controls (T33, T160), turns them into price rows and holds a token that can open pull requests.
+- **Answer:** the routine waits for the owner's go-ahead as backlog item B-028, whose done names its own threat review, and which reads pages as data, writes only rows with their source and never merges (DR-299).
+- **Residual:** none until it is built.
+- **Held by:** DR-299; B-028
+
+### T309. An acceptance test gets round the rule that it fails for its own reason
+
+- **Kind:** reliability
+- **Impact:** 2 (medium)
+- **Likelihood:** 1 (unlikely)
+- **Risk:** 2
+- **Raw impact:** 2 (medium)
+- **Raw likelihood:** 3 (likely)
+- **Raw risk:** 6
+- **What could happen:** a test names a broad built-in error, or the parent of another capability's error, which pytest's `raises=` matches, or skips the marker by calling `pytest.xfail` in its body, by `skipif` or by a conftest hook, or a helper under `tests/` raises the named error itself, so that the test keeps failing, or passes, whatever the code does.
+- **Answer:** each capability's acceptance test drives its capability's own entry point, which raises its capability's error class while unbuilt, and is held back only by a strict marker naming that class, never a built-in error, one raised from under `tests/`, or another capability's error or a base or subclass of it; the golden set names the error of a missing capture step or report; and a test that reads the collected tests after every hook has run fails otherwise (R291).
+- **Residual:** two scenarios of one capability can share its error, so the rule holds per capability, and their own assertions tell them apart once built (DR-304).
+- **Held by:** `project-standards`: "An acceptance test with no expected error fails a test"; `project-standards`: "An acceptance test held back by other means fails a test"; `project-standards`: "An expected error raised from under tests fails a test"; `project-standards`: "Two capabilities' acceptance tests that expect one error fail a test"; DR-304
+
+### T310. The fixture check cannot see a kind of line, and one exemption covers a whole fixture
+
+- **Kind:** reliability
+- **Impact:** 2 (medium)
+- **Likelihood:** 1 (unlikely)
+- **Risk:** 2
+- **Raw impact:** 2 (medium)
+- **Raw likelihood:** 3 (likely)
+- **Raw risk:** 6
+- **What could happen:** the kept transcript shape is one flat list of paths and types with no kind of line, and keeps the fields below `message.usage`'s children only as objects, so a check "for its kind of line" cannot run, the cache-lifetime split is not constrained, and naming any scenario exempts a whole fixture; with exemptions the norm, someone may record the shape again from a real session (T186, T190).
+- **Answer:** each fixture is checked against all of the kept shape, and under `message.usage` against the fields that `usage-capture` names; a fixture that departs names each path with an existing scenario, and a test fails on any other departure (R292).
+- **Residual:** a line kind that the skeleton's run never wrote is checked only against the union of those it did.
+- **Held by:** `project-standards`: "A fixture with a field that the kept shape does not hold fails a test"; `project-standards`: "An exemption that names no path, or a scenario that does not exist, fails a test"; DR-305
+
+### T311. A recorded response's date or page is missing, changes what the code reads, or steers an agent
+
+- **Kind:** tampering
+- **Impact:** 1 (low)
+- **Likelihood:** 1 (unlikely)
+- **Risk:** 1
+- **Raw impact:** 1 (low)
+- **Raw likelihood:** 3 (likely)
+- **Raw risk:** 3
+- **What could happen:** the Renovate check's recorded responses give no day, so the dating rule fails CI or is narrowed unsaid; a day written inside a response changes the object the code under test reads; and the page it follows is a link that agents follow to text that someone else controls (T95, T160).
+- **Answer:** each recorded response has a file beside it with its day, whether it was recorded or written, and its page, on a host that the test lists; the Renovate check's responses get one in the same change (R292, task 1.1).
+- **Residual:** a day earlier than the true one is not caught (T101).
+- **Held by:** `project-standards`: "A recorded response without its day fails a test"; `project-standards`: "A recorded response's page outside the listed hosts fails a test"; DR-305; `add-pr-cost-calculator` task 1.1
+
 ## Risk matrix
 
 Generated from the ratings above. Each cell lists the threats whose impact and likelihood it names.
 
 | Impact \ Likelihood | 1 unlikely | 2 possible | 3 likely |
 |---|---|---|---|
-| 3 high | T1, T12, T14, T15, T23, T24, T28, T29, T35, T43, T46, T58, T59, T63, T64, T66, T67, T68, T73, T77, T81, T82, T83, T92, T93, T94, T95, T103, T107, T108, T119, T125, T133, T138, T140, T141, T142, T144, T147, T148, T150, T151, T160, T163, T164, T165, T167, T169, T174, T175, T177, T178, T180, T183, T184, T186, T187, T188, T190, T192, T210, T211, T212, T213, T214, T217, T219, T225, T226, T227, T229, T230, T231, T233, T234, T237, T240, T251, T252, T253, T254, T256, T257, T258, T259, T260, T261, T263, T264, T265, T270, T271, T279, T286, T288, T289 | T2, T32, T33, T34, T61, T62, T65, T132, T137, T232 | |
-| 2 medium | T4, T6, T11, T13, T18, T25, T26, T38, T41, T42, T53, T55, T56, T57, T60, T69, T70, T76, T78, T79, T80, T84, T85, T86, T87, T88, T89, T90, T91, T97, T98, T99, T100, T101, T102, T104, T105, T109, T112, T115, T124, T126, T127, T135, T139, T146, T149, T152, T153, T155, T156, T157, T162, T172, T173, T179, T181, T182, T185, T189, T191, T193, T194, T195, T196, T197, T198, T199, T202, T203, T204, T206, T207, T215, T216, T220, T221, T223, T228, T235, T236, T238, T239, T245, T247, T248, T250, T266, T268, T269, T280, T284, T287 | T3, T9, T10, T17, T19, T20, T21, T22, T27, T30, T39, T40, T44, T45, T47, T48, T49, T50, T51, T52, T54, T71, T72, T74, T75, T96, T111, T116, T120, T121, T122, T123, T129, T130, T131, T134, T136, T143, T145, T154, T158, T159, T161, T166, T168, T170, T171, T176, T200, T201, T208, T209, T222, T224, T241, T242, T249, T283, T285 | T7, T8, T16, T128 |
-| 1 low | T113, T218, T243, T244, T246, T262, T272, T273, T274, T275, T276, T277, T278, T281, T282 | T31, T36, T37, T110, T114, T118, T255, T267 | T5, T106, T117, T205 |
+| 3 high | T1, T12, T14, T15, T23, T24, T28, T29, T35, T43, T46, T58, T59, T63, T64, T66, T67, T68, T73, T77, T81, T82, T83, T92, T93, T94, T95, T103, T107, T108, T119, T125, T133, T138, T140, T141, T142, T144, T147, T148, T150, T151, T160, T163, T164, T165, T167, T169, T174, T175, T177, T178, T180, T183, T184, T186, T187, T188, T190, T192, T210, T211, T212, T213, T214, T217, T219, T225, T226, T227, T229, T230, T231, T233, T234, T237, T240, T251, T252, T253, T254, T256, T257, T258, T259, T260, T261, T263, T264, T265, T270, T271, T279, T286, T288, T289, T294 | T2, T32, T33, T34, T61, T62, T65, T132, T137, T232 |  |
+| 2 medium | T4, T6, T11, T13, T18, T25, T26, T38, T41, T42, T53, T55, T56, T57, T60, T69, T70, T76, T78, T79, T80, T84, T85, T86, T87, T88, T89, T90, T91, T97, T98, T99, T100, T101, T102, T104, T105, T109, T112, T115, T124, T126, T127, T135, T139, T146, T149, T152, T153, T155, T156, T157, T162, T172, T173, T179, T181, T182, T185, T189, T191, T193, T194, T195, T196, T197, T198, T199, T202, T203, T204, T206, T207, T215, T216, T220, T221, T223, T228, T235, T236, T238, T239, T245, T247, T248, T250, T266, T268, T269, T280, T284, T287, T290, T292, T295, T296, T298, T299, T300, T302, T303, T304, T306, T307, T308, T309, T310 | T3, T9, T10, T17, T19, T20, T21, T22, T27, T30, T39, T40, T44, T45, T47, T48, T49, T50, T51, T52, T54, T71, T72, T74, T75, T96, T111, T116, T120, T121, T122, T123, T129, T130, T131, T134, T136, T143, T145, T154, T158, T159, T161, T166, T168, T170, T171, T176, T200, T201, T208, T209, T222, T224, T241, T242, T249, T283, T285, T291, T293, T305 | T7, T8, T16, T128 |
+| 1 low | T113, T218, T243, T244, T246, T262, T272, T273, T274, T275, T276, T277, T278, T281, T282, T297, T301, T311 | T31, T36, T37, T110, T114, T118, T255, T267 | T5, T106, T117, T205 |
 
 The threats with a risk of 6 or more:
 

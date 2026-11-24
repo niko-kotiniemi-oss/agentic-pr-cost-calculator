@@ -6,7 +6,7 @@ When a pull request merges with the tool on before its merge or after it, a work
 
 **Spec:** `report-comment`
 
-**Requirements:** R20, R94, R95, R157, R96, R65, R202, R193, R21, R97, R98, R23, R66, R67, R168, R24, R68, R69, R70, R35, R158, R102
+**Requirements:** R20, R94, R95, R157, R96, R65, R202, R193, R21, R97, R98, R23, R66, R67, R168, R24, R68, R69, R70, R35, R158, R102, R282, R283, R284, R285, R286, R293
 
 ## Expected behaviour
 
@@ -35,6 +35,7 @@ flowchart TD
 
 In detail:
 
+- **Its form.** A brief summary opens it, so that a reader who opens nothing still sees each model's cost, the total and every warning (R283); the detail is in a collapsed section after it. Costs are shown to the cent and to four decimals (R284), a block of the figures serves programs (R285), a note on subscriptions ends it (R282), and its text is written so that GitHub shows it as written, within GitHub's length (R286, R293).
 - **What it shows.** The total cost; the cost by model, by token type and by activity type; the CI minutes and their cost; the price table's date; the tool's version; how many ledger entries were counted, and how many were not, for each reason; how many calls capture refused; how many it read without a stop reason, with a note that the token cost is then a lower bound, and how many carried a usage field that capture does not know, with a note that the token cost may be low, counting those marks only on the entries that it counts (R20, R94, R95). It also says when the hook file at the merged commit differs from the one at the report's own commit, and when the hook's registration in that commit's `.claude/settings.json` or `.claude/settings.local.json` carries a checksum other than that commit's hook file's, so that the registration runs nothing, as when it was copied from the README of another release, quoting nothing from either file, and leaves out, without stopping, a settings file that it cannot read (R65, R202).
 - **Calls left out.** When the pull request's ledger files say that calls were left out, for consent, for their age or because their repository could not be told, the comment says so for each reason, as what those files say, with no count, and says that the token cost, each of its parts and the total are then lower bounds (R157). For consent, it says that capture could not show that some calls were made while it was on, and nothing of capture being off (R157). It always says that calls that no ledger file holds are neither counted nor flagged (R157). A restored ledger file, or one that holds at least one entry, each of which the default branch already held, adds no counts and no flags (R95).
 - **What it says about itself.** That the figure is an API-equivalent estimate, not a bill, and that it counts the usage that the pull request's commits carry and the CI runs on those commits (R94). Calls that Claude Code's own tools make to a model, such as a web fetch's summary, are counted only where the transcript holds them.

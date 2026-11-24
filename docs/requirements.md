@@ -29,7 +29,7 @@ The capability names the spec that holds the requirement. Each capability is one
 | R15 | functional | `pricing` | Every token type is priced at its own rate |
 | R16 | functional | `pricing` | Price modifiers are applied |
 | R17 | behavioural | `pricing` | An unknown model is reported, not guessed |
-| R18 | functional | `ci-minutes` | CI minutes are billed per job, rounded up |
+| R18 | functional | `ci-minutes` | Each job attempt's minutes are rounded up to a whole minute |
 | R19 | functional | `switch-and-opt-in` | One file turns the tool on or off, and a pull request cannot turn off its own report |
 | R20 | functional | `report-comment` | A merged pull request gets one report comment |
 | R21 | behavioural | `report-comment` | The comment shows only what the report computed |
@@ -88,7 +88,7 @@ The capability names the spec that holds the requirement. Each capability is one
 | R74 | non-functional | `project-standards` | Each proposal says how its outcome is validated |
 | R75 | functional | `usage-capture` | A subagent's calls are read from its own transcript |
 | R76 | functional | `usage-capture` | Capture works on the repository that holds the project directory |
-| R77 | non-functional | `ledger` | A model name or attribute value the price table does not list is recorded as unknown |
+| R77 | non-functional | `ledger` | A model name, provider or attribute value the price table does not list is recorded as unknown |
 | R78 | functional | `usage-capture` | A call goes only to a commit in its worktree, on the branch it was recorded on |
 | R79 | behavioural | `usage-capture` | Only git's commit subcommand counts as a commit |
 | R80 | behavioural | `usage-capture` | A commit is a dry run when a dry-run option is left in effect |
@@ -109,7 +109,7 @@ The capability names the spec that holds the requirement. Each capability is one
 | R95 | functional | `report-comment` | The comment counts refused calls and calls that may leave the token cost low |
 | R96 | functional | `report-comment` | A report run again updates only its own comment |
 | R97 | behavioural | `report-comment` | No text from the pull request or the jobs API is quoted |
-| R98 | behavioural | `report-comment` | A ledger line naming a model or attribute value that the price table does not list, other than the value unknown, is refused |
+| R98 | behavioural | `report-comment` | A ledger line naming a model, provider, attribute value or agent that the price table or its format does not list is refused |
 | R99 | non-functional | `releases-and-compatibility` | Every copy of the oldest supported Python agrees with its one source |
 | R100 | non-functional | `project-standards` | The register matches the specs, and every requirement is on a feature page |
 | R101 | non-functional | `project-standards` | Workflows are checked against the documented permissions, actions and images |
@@ -293,6 +293,20 @@ The capability names the spec that holds the requirement. Each capability is one
 | R279 | non-functional | `project-standards` | The README says what the tool is for and which uses to avoid |
 | R280 | non-functional | `project-standards` | How it works lists everything that comes in and goes out, each with its records |
 | R281 | non-functional | `project-standards` | A diagram numbers its parts and explains each below it, and the README links the overview of how it works |
+| R282 | functional | `report-comment` | The comment ends with a note on subscriptions |
+| R283 | functional | `report-comment` | The comment opens with a brief summary and keeps the detail in a collapsed section |
+| R284 | functional | `report-comment` | Each cost is shown to the cent in the summary and to four decimals in the detail |
+| R285 | functional | `report-comment` | The comment holds its figures in a block that a program can read |
+| R286 | behavioural | `report-comment` | The comment and the job summary hold no dollar sign and no tilde outside inline code |
+| R287 | functional | `pricing` | A model that the price table lists without a price is counted under its name |
+| R288 | behavioural | `pricing` | The price table states one currency |
+| R289 | functional | `pricing` | A call is priced by its provider and its model |
+| R290 | functional | `ledger` | Each entry names its UTC day, its agent and its provider |
+| R291 | non-functional | `project-standards` | Each acceptance test names an expected error of its own |
+| R292 | non-functional | `project-standards` | Every transcript fixture fits the kept shape, and every recorded response is dated |
+| R293 | non-functional | `report-comment` | The comment stays under a size bound below the length that GitHub refuses |
+| R294 | functional | `pricing` | The price table states the day it was last checked |
+| R295 | non-functional | `pricing` | Each price row gives the day it was added, and is added in order |
 
 IDs are stable: a requirement keeps its ID while it exists, and a new one takes the next free number, so the rows follow the order in which requirements were added rather than the order of the specs. A requirement that a later change removes leaves the table, and its ID is listed below with the change that removed it, never to be used again.
 

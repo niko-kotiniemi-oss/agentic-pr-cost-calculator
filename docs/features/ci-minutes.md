@@ -31,7 +31,7 @@ flowchart TD
 - 3) Runs on other commits are not counted (R120).
 - 4) Runs that the merge's push starts are not counted (R120).
 - 5) Every job attempt of the pull request's own runs counts (R62).
-- 6) Each attempt's minutes are rounded up and priced per job (R18).
+- 6) Each attempt's minutes are rounded up on their own, then priced (R18).
 - 7) Whether the price table lists the attempt's runner (R63).
 - 8) Minutes on a runner that it does not list are counted, not priced (R63).
 - 9) The others are priced at the table's rate (R18).
