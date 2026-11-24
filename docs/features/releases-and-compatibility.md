@@ -10,6 +10,35 @@ The tool is meant to be used inside other projects, so it keeps to old enough Py
 
 ## Expected behaviour
 
+From a tag to what an adopter pins:
+
+```mermaid
+flowchart LR
+  T["1) The owner's tag"] --> W["2) Release workflow"]
+  W -->|a check fails| X["3) No release"]
+  W --> R["4) Published release"]
+  R --> B["5) Bill of materials"]
+  R --> Z["6) Plugin zip"]
+  R --> C["7) The commit to pin"]
+  C --> A["8) Adopter's hook and workflow"]
+  Z --> P["9) A person's plugin"]
+  R --> K["10) Marketplace folder"]
+  K --> P
+```
+
+- 1) A tag `vMAJOR.MINOR.PATCH`, for a commit in the default branch's first-parent history, whose numbers say what an adopter must do (R27, R71).
+- 2) The release workflow checks the tag, the tests, the guide, the risks and the public surface (R27, R123, R230, R251).
+- 3) A tag that it refuses names no release (R27).
+- 4) A release is published only once its files are attached and checked (R189).
+- 5) Every release carries a CycloneDX software bill of materials (R28, R72).
+- 6) Each release carries the plugin as a zip that its tag rebuilds, whose SHA-256 the README gives (R183).
+- 7) The release's text names the commit to pin (R27).
+- 8) An adopter takes the hook file, its registration and the calling workflow from the README at that commit (R203).
+- 9) A person adds the plugin from the zip, or from the marketplace (R187).
+- 10) The marketplace serves only a release's plugin (R184, R190).
+
+In detail:
+
 - **Python.** The tool runs on Python 3.11 and every later release, with the standard library only. R25 and R99 give how CI tests it and where the oldest version is kept. The oldest rises only when its version nears its end of life, or when a security fix needs a newer one, on the owner's decision (R26).
 - **Floors of the capture step.** Under a Python older than 3.11, or a git older than 2.43, the capture step records nothing, stages nothing, prints nothing and exits with success (R32), so an old machine is never blocked from committing.
 - **Dependency updates.** Minor and patch updates and vulnerability fixes are proposed as usual. A major update waits for the owner's approval on Renovate's dependency dashboard (R26). A daily check in this repository warns the owner when Renovate seems to have stopped proposing them (R263, DR-267).

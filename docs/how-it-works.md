@@ -8,6 +8,34 @@ The tool is designed and not built yet, so this page describes the design in `op
 
 A hook in each Claude Code session, from the hook file that a repository registers or from the plugin that a person adds, reads the session's transcript and, for a person who has opted in, keeps the token counts of the model calls made from each repository that it works on while both switches were on, in a store of that person's own in that repository's git common directory, for no longer than 30 days. Just before the agent commits, it writes the waiting counts into a new ledger file and stages it, so the agent's own commit carries it. When the pull request merges, a GitHub Actions workflow reads the ledger files that the merge added, prices them from the dated price table at the tool's own commit, adds the CI minutes of the pull request's own commits from GitHub's jobs API, and posts one comment. The ledger stays in the repository as the record.
 
+```mermaid
+flowchart LR
+  subgraph M["Session's machine"]
+    T["1) Transcripts"] --> H["2) Capture hook"]
+    H --> S[("3) Store")]
+    S -->|before git commit| L["4) Ledger file"]
+  end
+  L -->|the agent's commit and push| PR["5) Pull request"]
+  subgraph G["GitHub"]
+    PR -->|merge| D["6) Default branch"]
+    D -->|push event| R["7) Report workflow"]
+    P["8) Price table"] --> R
+    A["9) GitHub's API"] --> R
+    R -->|one comment| C["10) Comment"]
+  end
+```
+
+- 1) The session's and its subagents' transcripts, which Claude Code writes (R2, R75).
+- 2) The capture step, run from the hook file that a repository registers or from the plugin that a person adds, keeps the counts of the calls made from the repository, for a person who has opted in, while both switches are on (R1, R3, R179).
+- 3) The store, in the repository's git common directory, which keeps nothing past its retention window of 30 days (R47, R150).
+- 4) Just before the agent commits, the hook writes the waiting counts into a new ledger file and stages it (R7, R8).
+- 5) The pull request's branch, which the agent's own commit and push carry the ledger file to (R7).
+- 6) The default branch, whose push by a merge alone starts the report (R68).
+- 7) The report workflow reads the ledger files that the merge added, as git blobs (R23, R58).
+- 8) The dated price table at the tool's own commit, never fetched (R14, R30).
+- 9) GitHub's REST API, for the pull request, its runs and their jobs (R18, R62).
+- 10) One comment on the merged pull request (R20).
+
 ## Parts
 
 | Part | Where it runs | Reads | Writes |
@@ -38,6 +66,53 @@ A hook in each Claude Code session, from the hook file that a repository registe
 - Ledger files: a first line that states the ledger format's version, the release of the capture step that wrote it, the count of refused calls and three flags for calls left out, for consent, for their age or because their repository could not be told, with no count; then one entry per call: UTC day, model, a SHA-256 hash of the message id in a field whose name ends in `_id`, main agent or subagent, the token counts, the price attributes, the activity type, and marks for a call read without a stop reason or with a usage field that capture does not know (R2, R4, R6, R42, R43, R155, R156).
 - One comment per merged pull request, and the report's job summary.
 - A GitHub release per version tag, with its bill of materials and the plugin's zip.
+
+## What comes in and what goes out
+
+Everything that crosses the tool's boundary, in three tables, each row with how what it names is pinned, or that it is not, and the decision records that decide it (R280). Nothing comes in from a repository or tool outside this one but what a record names (DR-285). The tables describe what crosses; they say nothing of what may steer an agent's work here, which `CLAUDE.md` alone gives (DR-258).
+
+### What the tool takes in when it runs
+
+| What | What crosses | How it is pinned | Records |
+|---|---|---|---|
+| Claude Code's transcripts | Each call's model, token counts, attributes and working directory, read while the session runs | Not pinned: Claude Code writes them, and capture reads them tolerantly, counting what it cannot read | DR-003, DR-007, DR-032, DR-033, DR-044, DR-057, DR-128, DR-135, DR-172, DR-178, DR-199 |
+| Claude Code's hook input | The event, the session's id, the transcript's path and the directory | Not pinned: Claude Code gives it | DR-044, DR-172 |
+| The switch and the opt-in | `.pr-cost.json`, and `pr-cost.capture` in the person's git configuration | The repository's own file and the person's own setting, read strictly | DR-169, DR-021, DR-183 |
+| The price table | Dated rates and modifiers | Pinned with the tool's own commit | DR-020 |
+| GitHub | The push event, the pull request, its runs and job attempts, and the report's earlier comment | Not pinned: GitHub's API, read within a call budget and a time limit | DR-006, DR-008, DR-019, DR-038, DR-039, DR-051, DR-060, DR-061, DR-160, DR-217 |
+| Ledger files of a pull request | Token counts, written by whoever can push to its branch | Not pinned: read as untrusted data, in every earlier format | DR-040, DR-044, DR-066 |
+| Python | The standard library of the person's or the runner's Python | Not pinned: Python 3.11 or any later release | DR-023 |
+
+### What this repository takes in to be built and checked
+
+| What | What crosses | How it is pinned | Records |
+|---|---|---|---|
+| Superpowers | The vendored skills that guide how code is built | A commit and its tag in `vendor/superpowers/UPSTREAM.lock`, compared with upstream in CI | DR-041, DR-275, DR-284 |
+| OpenSpec | Its command line program and its generated skills | An exact version in `package-lock.json`, its skills regenerated and compared in CI | DR-042, DR-196 |
+| GitHub actions | `actions/checkout`, `actions/setup-python` and `actions/setup-node`, which the workflows run | A full commit that its repository tagged | DR-068 |
+| Development tools | pytest, ruff, mypy and the other tools in `requirements-dev.txt` | Exact versions; their own dependencies are not pinned until task 1.8 adds hashes | DR-126 |
+| Updates | Renovate's pull requests, and the alerts that find vulnerabilities | Renovate's preset `config:best-practices` is not pinned | DR-028, DR-111, DR-145, DR-265, DR-267, DR-287 |
+| CI's runner and Python | The image that every job runs on, the oldest supported Python and the newest release | Not pinned: `ubuntu-latest`, and `3.x`; the oldest, `3.11` in CI's matrix and in `.python-version`, is pinned to its minor version, and its patch releases float | DR-285, DR-026 |
+| Node | The runtime that runs OpenSpec's command line program in CI | Not pinned below its major version: `24` in `.node-version` | DR-285 |
+| Claude Code's review commands | `/simplify`, `/security-review`, `/code-review` and `/verify` | Not pinned: the version of Claude Code that runs them | DR-093, DR-262 |
+| Contributions | Pull requests, issues and comments from anyone | Not pinned: reviewed from `main`, their workflows held for approval, and merged only after the contributor licence agreement | DR-077, DR-078, DR-081, DR-244, DR-264 |
+| Text that agents read | Records, the roadmap, the backlog and other repositories' context files that a session loads | Not pinned: read as data, never as instructions | DR-227, DR-258, DR-266 |
+| Anything else from elsewhere | Code, tests, checks or text | Only by a record of its own | DR-285 |
+
+### What goes out to adopters
+
+| What | What crosses | How it is pinned | Records |
+|---|---|---|---|
+| The hook file | The capture step that adopters copy and register | The commit that a release names | DR-022, DR-025, DR-027, DR-030, DR-031, DR-065, DR-125, DR-134, DR-156, DR-211 |
+| The plugin | The capture step, its manifest and its hooks | A release's zip, checked against its README; or this repository as a marketplace, which Claude Code clones from the default branch, whose plugin folder CI holds to a release's build | DR-197, DR-203, DR-204, DR-205, DR-288 |
+| The report | A reusable workflow that adopters call | The commit that a release names | DR-005, DR-016, DR-018, DR-063, DR-132, DR-133, DR-139, DR-186, DR-191, DR-216 |
+| Ledger files | Token counts per call, committed with the agent's work in the adopter's repository | Written once by the release that names itself in them | DR-010, DR-015, DR-037, DR-045, DR-052, DR-053, DR-054, DR-127, DR-136, DR-138, DR-181, DR-200, DR-208 |
+| The switch and the opt-in | What adopters and people set to turn the tool and capture on | Their form, read strictly by each release | DR-021, DR-049, DR-050, DR-183, DR-185, DR-190, DR-192, DR-201, DR-202, DR-235 |
+| The store | Notes on the person's machine, in the git common directory | Its format's version, which a later release upgrades | DR-171, DR-173 |
+| The comment | The pull request's figure and what it is made of | The report's commit and the price table at it | DR-002, DR-004, DR-110, DR-124, DR-155 |
+| Releases | A tag, the release, its bill of materials and its changelog entry | Immutable, from a tag on the default branch | DR-074, DR-096, DR-097, DR-098, DR-122, DR-123, DR-148, DR-149, DR-154, DR-167, DR-209 |
+| The repository and its pages | The README, the documentation, the licence and every tracked file | The default branch, and the commit that a release names | DR-069, DR-070, DR-116, DR-117, DR-118, DR-157, DR-182, DR-212, DR-213, DR-215, DR-220, DR-229, DR-241, DR-242, DR-243, DR-279, DR-282, DR-286 |
+| What this version leaves out | The uses that later changes take up | Not pinned: each by a record that a later one replaces | DR-189, DR-222, DR-223, DR-234 |
 
 ## How a cost is computed
 
@@ -70,24 +145,7 @@ The comment splits the token cost by model, by token type and by activity type. 
 
 ## Flows
 
-### Overview
-
-```mermaid
-flowchart LR
-  subgraph machine["Session's machine"]
-    T[Transcripts] --> H[Capture hook]
-    H --> S[(Store in the git common directory)]
-    S -->|before git commit| L[New ledger file, staged]
-  end
-  L -->|the agent's commit and push| PR[Pull request branch]
-  subgraph github["GitHub"]
-    PR -->|merge| M[Default branch]
-    M -->|push event| R[Report workflow]
-    P[Price table at the tool's commit] --> R
-    A[REST API: pull requests, runs, jobs] --> R
-    R -->|one comment| C[Merged pull request]
-  end
-```
+The overview of every flow is the diagram in the section [In one paragraph](#in-one-paragraph). Each flow below draws one part of it in detail.
 
 ### Capture during a session
 
@@ -96,67 +154,105 @@ sequenceDiagram
   participant CC as Claude Code
   participant H as Capture hook
   participant G as git common directory
-  CC->>H: SessionStart, Stop, SubagentStop, StopFailure or SessionEnd, with the session's id, the transcript path and cwd
-  Note over H: A run of the plugin does what follows in each repository that it works on, as the next flow shows
-  Note over H: Outside the repository that holds the project directory, a run of the plugin starts a git command that can start a program that the repository's configuration names only before or after a git command of its session there, or to take back a file that its own session staged there
-  H->>H: Read .pr-cost.json and the person's two global configuration files, before starting any program
-  H->>H: Read the project directory's .git, the commondir file of the git folder that it names and each worktree's gitdir file, before starting any program, and stop, saying so, when one cannot be read, a worktree has no gitdir file, or this is a linked worktree whose git common directory is not named .git, as a submodule's is not, nor a bare repository's in a folder such as repo.git
+  CC->>H: 1) A hook event
+  Note over H: 2) A plugin run, in each repository
+  Note over H: 3) Git's programs, outside the project's repository
+  H->>H: 4) Read the switches' files
+  H->>H: 5) Read the git folder's files
   opt both are on
-    H->>H: Ask git twice, in the session's environment and without its GIT_ variables, for each value of pr-cost.capture that it reads here, and take capture to be off when either answer does not come within the time budget, or when its last value, or the last value of any file but the two global ones, is not true
+    H->>H: 6) Ask git for the opt-in
   end
-  H->>G: Find the store, and stop, leaving it as it was, when this release does not know its version
-  H->>G: Unless the person's capture is off, stop when the store notes that a later release has run in this session, leaving the session to that release's copy
+  H->>G: 7) Find the store
+  H->>G: 8) Leave the session to a later release
   alt either switch is off
-    H->>G: Create no store. Remove one that does not parse. In one that parses, end this session's interval, noting this run's time, empty it if the person's capture is off, take back or put back what is due, drop what is older than the retention window, remove it if it then holds nothing, and record nothing
+    H->>G: 9) Record nothing
   else both are on
-    H->>G: Under the store's lock, read both switches again, then note the run's time and the fingerprint of the files that hold the opt-in
-    alt the fingerprint is not the last one that the store notes, of whichever session
-      H->>G: Do what an opt-out does
+    H->>G: 10) Lock, read again, note the run
+    alt the fingerprint is not the last one
+      H->>G: 11) Do what an opt-out does
     end
-    alt the clock reads earlier than the latest time that this session's runs noted or read
-      H->>G: End the session's intervals, and begin none
-    else the session has no open interval
-      H->>G: Begin a new interval here
+    alt the clock went back
+      H->>G: 12) End the intervals
+    else no open interval
+      H->>G: 13) Begin an interval
     end
-    H->>G: Take back or put back what is due, and drop what is older than the retention window
-    H->>H: Unless this is a start run, read the transcripts again from the earliest line that a call not yet recorded may answer, up to the time budget, and at a line whose time is later than the clock, end the session's intervals
-    H->>H: Keep the calls that are over, whose working directory is in this repository, and whose answered line falls inside an interval
-    H->>G: Record each new call once, by the hash of its message id, with hashes of its session, worktree and branch, and note a flag for calls left out
+    H->>G: 14) Take back, put back, drop old
+    H->>H: 15) Read the transcripts
+    H->>H: 16) Keep the calls that count
+    H->>G: 17) Record each new call once
   end
-  H-->>CC: Exit 0, print nothing
+  H-->>CC: 18) Exit 0, print nothing
 ```
+
+- 1) Claude Code runs the hook at `SessionStart`, `Stop`, `SubagentStop`, `StopFailure` or `SessionEnd`, with the session's id, the transcript's path and `cwd` (R2, R148).
+- 2) A run of the plugin does what follows in each repository that it works on, as the next flow shows (R180).
+- 3) Outside the repository that holds the project directory, a run of the plugin starts a git command that can start a program that the repository's configuration names only before or after a git command of its session there, or to take back a file that its own session staged there (R197).
+- 4) It reads `.pr-cost.json` and the person's two global configuration files before it starts any program (R37, R91, R118).
+- 5) It reads the project directory's `.git`, the `commondir` file of the git folder that it names and each worktree's `gitdir` file before it starts any program, and stops, saying so, when one cannot be read, a worktree has no `gitdir` file, or this is a linked worktree whose git common directory is not named `.git` (R54).
+- 6) When both are on, it asks git twice, in the session's environment and without its `GIT_` variables, for each value of `pr-cost.capture` that git reads here, and takes capture to be off when either answer does not come within the time budget, or when its last value, or the last value of any file but the two global ones, is not true (R160).
+- 7) It finds the store, and stops, leaving it as it was, when this release does not know its version (R55).
+- 8) Unless the person's capture is off, it stops when the store notes that a later release has run in this session, leaving the session to that release's copy (R191).
+- 9) With either switch off, it creates no store, removes one that does not parse, and in one that parses ends this session's interval, noting this run's time, empties it if the person's capture is off, takes back or puts back what is due, drops what is older than the retention window, removes it if it then holds nothing, and records nothing (R109, R110, R145, R150, R151).
+- 10) With both on, under the store's lock, it reads both switches again, then notes the run's time and the fingerprint of the files that hold the opt-in (R107).
+- 11) When the fingerprint is not the last one that the store notes, of whichever session, it does what an opt-out does (R162).
+- 12) When the clock reads earlier than the latest time that this session's runs noted or read, it ends the session's intervals and begins none (R166).
+- 13) When the session has no open interval, it begins a new one here (R108).
+- 14) It takes back or puts back what is due, and drops what is older than the retention window (R110, R150).
+- 15) Unless this is a start run, it reads the transcripts again from the earliest line that a call not yet recorded may answer, up to the time budget, and at a line whose time is later than the clock, ends the session's intervals (R148, R165, R90).
+- 16) It keeps the calls that are over, whose working directory is in this repository, and whose answered line falls inside an interval (R3, R42, R144, R147).
+- 17) It records each new call once, by the hash of its message id, with hashes of its session, worktree and branch, and notes a flag for calls left out (R41, R149, R155).
+- 18) It exits with success and prints nothing (R13).
 
 ### Which repositories a run works on
 
 ```mermaid
 flowchart TD
-  A[A run of the capture step] --> B{Run by the hook file's registration or by the plugin?}
-  B -->|the hook file's registration| C[The repository that holds the project directory]
-  B -->|the plugin| D{Does a repository hold the project directory?}
-  D -->|yes| E[That repository]
-  D -->|no| F[Each repository whose top level is directly inside it, and none deeper]
-  B -->|the plugin| G[The repository that holds the hook input's cwd]
-  B -->|the plugin, before or after a git command| H[The repository where the git command runs]
-  C --> I[In each: record only the calls whose line gives a working directory in it]
+  A["1) A run of the capture step"] --> B{"2) Hook file or plugin?"}
+  B -->|the hook file| C["3) The project directory's repository"]
+  B -->|the plugin| D{"4) Does a repository hold the project directory?"}
+  D -->|yes| E["5) That repository"]
+  D -->|no| F["6) Each repository directly inside it"]
+  B -->|the plugin| G["7) The repository of the input's cwd"]
+  B -->|the plugin, at a git command| H["8) The repository where it runs"]
+  C --> I["9) Only the calls made in each"]
   E --> I
   F --> I
   G --> I
   H --> I
-  I --> J[A call whose directory holds the repository's folder and names no repository: left out, and flagged in the session's next ledger file there]
+  I --> J["10) A call that names no repository"]
 ```
+
+- 1) A run of the capture step, from either way of running it (R76, R180).
+- 2) Whether the hook file's registration or the plugin started the run (R179).
+- 3) A run from the hook file's registration works on the repository that holds the project directory alone (R76).
+- 4) A run of the plugin first asks whether a repository holds the project directory (R180).
+- 5) If one does, it works on that repository (R180).
+- 6) If none does, it works on each repository whose top level is directly inside the project directory, and none deeper (R180).
+- 7) It also works on the repository that holds the hook input's `cwd` (R180).
+- 8) Before or after a git command, it works on the repository where that command runs (R180).
+- 9) In each repository, it records only the calls whose line gives a working directory in it (R3, R147).
+- 10) A call whose directory holds the repository's folder and names no repository is left out, and flagged in the session's next ledger file there (R155).
 
 ### How the plugin reaches a session
 
 ```mermaid
 flowchart LR
-  T[Release tag] --> Z[Plugin zip, whose SHA-256 the README at the tag's commit gives]
-  T --> F[A pull request after the release moves the marketplace's folder to it, and CI holds the folder to the tag's build]
-  Z -->|the person checks the checksum and uploads it| A[The person's claude.ai account or project]
-  F -->|claude.ai reads the default branch when the person checks for updates or turns on syncing, and the update needs nothing accepted| A
-  A --> S[A project's cloud thread, or a terminal session signed in with the account]
-  E[The environment's setup script: git config --global pr-cost.capture true] -->|opts in each session in that environment| S
-  V[The environment's variables GIT_CONFIG_COUNT, GIT_CONFIG_KEY_0 and GIT_CONFIG_VALUE_0, setting pr-cost.capture to false] -->|turn capture off in each session from its next restore| S
+  T["1) Release tag"] --> Z["2) Plugin zip"]
+  T --> F["3) Marketplace folder"]
+  Z -->|checked and uploaded| A["4) Account or project"]
+  F -->|read from the default branch| A
+  A --> S["5) Session"]
+  E["6) Setup script"] -->|opts in| S
+  V["7) Environment's variables"] -->|turn capture off| S
 ```
+
+- 1) A release's tag, which builds the plugin (R183).
+- 2) The plugin's zip, whose SHA-256 the README at the tag's commit gives (R183, R187).
+- 3) A pull request after the release moves the marketplace's folder to the release, and CI holds the folder to the tag's build (R184, R190).
+- 4) The person's claude.ai account or project: the person checks the zip's checksum and uploads it, or claude.ai reads the marketplace from the default branch when the person checks for updates or turns on syncing, and the update needs nothing accepted (R187).
+- 5) A project's cloud thread, or a terminal session signed in with the account (R185).
+- 6) The environment's setup script, `git config --global pr-cost.capture true`, opts in each session in that environment; having the plugin alone opts no one in (R182, R185).
+- 7) The environment's variables `GIT_CONFIG_COUNT`, `GIT_CONFIG_KEY_0` and `GIT_CONFIG_VALUE_0`, setting `pr-cost.capture` to `false`, turn capture off in each session from its next restore (R160, R194).
 
 ### A commit
 
@@ -165,33 +261,50 @@ sequenceDiagram
   participant CC as Claude Code
   participant H as Capture hook
   participant W as Worktree and index
-  CC->>H: PreToolUse for a Bash command matching Bash(git *)
-  H->>H: Record calls that are over, as in capture
-  alt the command is a git commit whose branch and contents the hook can tell
-    H->>W: Write .pr-cost/ledger/YYYY-MM/random.jsonl, with the flags due for that worktree and branch, and stage it alone
+  CC->>H: 1) Before a git command
+  H->>H: 2) Record the calls that are over
+  alt a commit that the hook can tell
+    H->>W: 3) Write and stage a ledger file
   else anything else
-    H->>H: Stage nothing; the calls wait
+    H->>H: 4) Stage nothing
   end
-  CC->>W: Run the command
-  CC->>H: PostToolUse or PostToolUseFailure
+  CC->>W: 5) Run the command
+  CC->>H: 6) After the command
   alt the checked-out commit holds the file
-    H->>H: Note its calls as taken
+    H->>H: 7) Note its calls as taken
   else no commit took it
-    H->>W: Take the file back, and its calls and flags wait for a later commit
+    H->>W: 8) Take the file back
   end
 ```
+
+- 1) Claude Code runs the hook at `PreToolUse` for a Bash command matching `Bash(git *)` (R7).
+- 2) The hook records the calls that are over, as in capture (R7, R42).
+- 3) For a git commit whose branch and contents the hook can tell, it writes `.pr-cost/ledger/YYYY-MM/<random>.jsonl`, with the flags due for that worktree and branch, and stages it alone (R8, R56, R78, R81).
+- 4) For anything else it stages nothing, and the calls wait (R8, R82).
+- 5) Claude Code runs the command (R7).
+- 6) Claude Code runs the hook again at `PostToolUse` or `PostToolUseFailure` (R9).
+- 7) When the checked-out commit holds the file, the hook notes its calls as taken (R52).
+- 8) When no commit took it, the hook takes the file back, and its calls and flags wait for a later commit (R9, R113).
 
 ### A commit that never ran
 
 ```mermaid
 flowchart TD
-  A[Ledger file staged for a command] --> B{Did a post-tool run follow?}
-  B -->|yes| C[That run keeps or takes back the file]
-  B -->|no: refused, blocked, cancelled or interrupted| D[Any later run in the repository]
-  D --> E{Is the command over? Its result, a later call, its agent stopped, its session ended, or its note older than the retention window}
-  E -->|yes| F[Take the file back, unless a commit holds it]
-  E -->|no| G[Leave it for a later run]
+  A["1) A staged ledger file"] --> B{"2) Did a run follow the command?"}
+  B -->|yes| C["3) That run keeps it or takes it back"]
+  B -->|no| D["4) A later run"]
+  D --> E{"5) Is the command over?"}
+  E -->|yes| F["6) Take the file back"]
+  E -->|no| G["7) Leave it for a later run"]
 ```
+
+- 1) A ledger file staged for a command (R8).
+- 2) Whether a run after the command followed it (R87).
+- 3) If one did, that run keeps the file or takes it back (R9).
+- 4) If none did, because the command was refused, blocked, cancelled or interrupted, any later run in the repository looks at it (R87).
+- 5) The command is over once its result, a later call, its agent's stop or its session's end is seen, or once its note is older than the retention window (R87).
+- 6) If it is over, the run takes the file back, unless a commit holds it (R87, R113).
+- 7) If not, the run leaves it for a later run (R87).
 
 ### A merge and its report
 
@@ -199,65 +312,104 @@ flowchart TD
 sequenceDiagram
   participant GH as GitHub
   participant R as Report
-  GH->>R: Push to the default branch, made by a merge
-  R->>R: Refuse any other event
-  R->>R: Check out the tool's own code at job.workflow_sha, without keeping the token
-  R->>GH: List pull requests associated with each commit the push adds
-  alt the commits belong to exactly one pull request
-    R->>R: Read .pr-cost.json before and after; if both leave the tool off, say why in the job summary and stop
-    R->>R: Fetch the default branch's history and the pull request's head, refs/pull/N/head
-    R->>R: Read the ledger files the merge adds, as git blobs, within the size bound, holding each file to the version of the ledger format that its first line states
-    R->>R: Read the call ids of the first-parent history's earlier ledger files, by the versions they state, so no call counts twice
-    R->>R: Compare the hook file at the merged commit with the one at its own commit
-    R->>R: Compare the hook's registration in the merged commit's settings files, read as git blobs within a size bound of their own, with that commit's hook file, leaving out a file that it cannot read
-    R->>GH: List runs and every job attempt on the pull request's own commits
-    R->>R: Price tokens and minutes from the price table, and note which reasons the ledger files flag calls left out for
-    R->>GH: Post the comment, or update the report's own earlier one
-  else none, more than one, or more commits than the call budget allows
-    R->>R: Say why, and how many earlier ledger files the push removed or changed, in the job summary; post no comment
+  GH->>R: 1) A merge's push to the default branch
+  R->>R: 2) Refuse any other event
+  R->>R: 3) Check out its own code
+  R->>GH: 4) List each commit's pull requests
+  alt exactly one pull request
+    R->>R: 5) Read the configuration
+    R->>R: 6) Fetch the history and the head
+    R->>R: 7) Read the ledger files that the merge adds
+    R->>R: 8) Read the earlier ledger files
+    R->>R: 9) Compare the hook file
+    R->>R: 10) Compare the hook's registration
+    R->>GH: 11) List the runs and jobs
+    R->>R: 12) Price tokens and minutes
+    R->>GH: 13) Post or update the comment
+  else none, more than one, or too many commits
+    R->>R: 14) Say why in the job summary
   end
 ```
+
+- 1) GitHub starts the report on the push that a merge makes to the default branch (R68).
+- 2) The report refuses any other event (R68).
+- 3) It checks out the tool's own code at `job.workflow_sha`, without keeping the token (R24).
+- 4) It lists the pull requests associated with each commit that the push adds (R69).
+- 5) It reads `.pr-cost.json` before and after the merge, and when both leave the tool off, says why in the job summary and stops (R19, R172).
+- 6) It fetches the default branch's history and the pull request's head, `refs/pull/<number>/head` (R23).
+- 7) It reads the ledger files that the merge adds, as git blobs, within the size bound, holding each file to the version of the ledger format that its first line states (R23, R35, R58, R66, R158).
+- 8) It reads the call ids of the first-parent history's earlier ledger files, by the versions that they state, so that no call counts twice (R59, R67, R168).
+- 9) It compares the hook file at the merged commit with the one at its own commit (R65, R93).
+- 10) It compares the hook's registration in the merged commit's settings files, read as git blobs within a size bound of their own, with that commit's hook file, leaving out a file that it cannot read (R202).
+- 11) It lists the runs and every job attempt on the pull request's own commits (R62, R121).
+- 12) It prices tokens and minutes from the price table, and notes which reasons the ledger files flag calls left out for (R14, R18, R157).
+- 13) It posts the comment, or updates its own earlier one (R20, R96).
+- 14) When the commits belong to no pull request or to more than one, or there are more commits than the call budget allows, it says why, and how many earlier ledger files the push removed or changed, in the job summary, and posts no comment (R60, R69, R70).
 
 ### A price update
 
 ```mermaid
 flowchart LR
-  A[Anthropic or GitHub publishes a new price] --> B[Pull request adds a row dated after the existing ones]
-  B --> C[Review and CI]
-  C --> D[Merge]
-  D --> E[Next release names the commit]
-  E --> F[Adopters update the hook and the workflow pin together]
+  A["1) A new price"] --> B["2) A pull request adds a row"]
+  B --> C["3) Review and CI"]
+  C --> D["4) Merge"]
+  D --> E["5) The next release"]
+  E --> F["6) Adopters update"]
 ```
+
+- 1) Anthropic or GitHub publishes a new price (R14).
+- 2) A pull request adds a row with its effective date, dated after the existing ones, so that it reprices nothing earlier (R14).
+- 3) Review and CI check it, since prices are read from the table in the repository and never fetched (R30).
+- 4) It merges to the default branch (R30).
+- 5) The next release names the commit in its text (R27).
+- 6) Adopters update the hook and the workflow pin together, to the commit that the release names (R203).
 
 ### A release
 
 ```mermaid
 flowchart TD
-  A[Owner pushes tag vMAJOR.MINOR.PATCH] --> Q{Do the tests pass at the tagged commit on the oldest and newest Python, with every expected failure run as an ordinary test?}
-  Q -->|no| X[Refuse, publishing nothing]
-  Q -->|yes| T{Is the tag v and a semantic version?}
-  T -->|no| X
-  T -->|yes| B{Is its commit in the default branch's first-parent history?}
+  A["1) A pushed tag"] --> T{"2) Is the tag a semantic version?"}
+  T -->|no| X["3) Refuse, publishing nothing"]
+  T -->|yes| Q{"4) Do the tests pass?"}
+  Q -->|no| X
+  Q -->|yes| B{"5) Is its commit on the default branch?"}
   B -->|no| X
-  B -->|yes| C{Tag matches pyproject.toml, the plugin's manifest and CHANGELOG.md?}
+  B -->|yes| C{"6) Does the tag match the version?"}
   C -->|no| X
-  C -->|yes| M{Does the root marketplace file list any plugin but the tool's?}
+  C -->|yes| M{"7) Any other plugin listed?"}
   M -->|yes| X
-  M -->|no| G{Does the guide say that its entries were last read for this version, and does the changelog entry name the backlog item of each gap that it gives under Security, Privacy, Identity and credentials, or Supply chain and releases?}
+  M -->|no| G{"8) Was the guide read for it?"}
   G -->|no| X
-  G -->|yes| S{Surface manifest changed, or a breaking change listed, without a raised major number and a Breaking section?}
+  G -->|yes| S{"9) An unannounced breaking change?"}
   S -->|yes| X
-  S -->|no| Z[Build the plugin's zip from the tagged tree]
-  Z -->|its SHA-256 differs from the README's, its manifest holds another key, a hook is not a command, or its capture step differs from the hook file| X
-  Z --> D[Write the CycloneDX bill of materials from the tagged tree]
-  D -->|fails, misses an action, or a checksum differs| X
-  D --> P{Private-reference check on the bill and the release text}
-  P -->|match| X
-  P -->|clean| R[Create the release as a draft, naming the commit, with the changelog entry, and attach the bill of materials and the plugin's zip]
-  R --> V{Does each attached file, downloaded again, have the size and SHA-256 of the file built?}
-  V -->|no| W[Fail, naming the file: the release stays a draft and nothing is published]
-  V -->|yes| E[Publish the release]
+  S -->|no| Z["10) Build the plugin's zip"]
+  Z -->|a check fails| X
+  Z --> D["11) Write the bill of materials"]
+  D -->|a check fails| X
+  D --> P{"12) A private reference?"}
+  P -->|yes| X
+  P -->|no| R["13) Create a draft release"]
+  R --> V{"14) Do the attached files match?"}
+  V -->|no| W["15) Fail, and stay a draft"]
+  V -->|yes| E["16) Publish the release"]
 ```
+
+- 1) The owner pushes a tag `vMAJOR.MINOR.PATCH` (R27).
+- 2) The release workflow checks the tag's form, `v` and a semantic version, before any other step (R27, R71).
+- 3) Any check that fails refuses the release, and nothing is published (R27, R72).
+- 4) The tests run at the tagged commit on the oldest and newest Python, with every expected failure run as an ordinary test, so that every acceptance test passes (R25, R139, DR-167).
+- 5) Its commit must be in the default branch's first-parent history (R27).
+- 6) The tag must match `pyproject.toml`, the plugin's manifest and `CHANGELOG.md` (R27).
+- 7) The root marketplace file must list no plugin but the tool's (R190).
+- 8) The guide must say that its entries were last read for this version, and the changelog entry must name the backlog item of each gap that it gives under Security, Privacy, Identity and credentials, or Supply chain and releases (R230).
+- 9) A changed surface manifest, or a listed breaking change, needs a raised major number and a Breaking section (R122, R123).
+- 10) The plugin's zip is built from the tagged tree, and the release is refused when its SHA-256 differs from the README's, its manifest holds another key, a hook is not a command, or its capture step differs from the hook file (R183, R188).
+- 11) The CycloneDX bill of materials is written from the tagged tree, and the release is refused when that fails, misses an action, or a checksum differs (R28, R72).
+- 12) The bill and the release text are checked for private references (R72).
+- 13) The release is created as a draft, naming the commit, with the changelog entry, and the bill of materials and the plugin's zip are attached (R189).
+- 14) Each attached file is downloaded again and must have the size and SHA-256 of the file built (R189).
+- 15) If one does not, the run fails, naming the file, and the release stays a draft with nothing published (R189).
+- 16) Otherwise the release is published (R189).
 
 ## Credentials and permissions
 
@@ -289,6 +441,31 @@ Each job of each workflow in this repository, with the permissions it is granted
 | `renovate-watch.yml` | `check` | `contents: read`, `pull-requests: read`, `issues: read` |
 
 ## Connections to the outside world
+
+```mermaid
+flowchart LR
+  H["1) Capture step"] -.-> N["2) No network"]
+  subgraph A["GitHub Actions runner"]
+    R["3) Report"]
+    E["4) Release workflow"]
+    J["5) Job summary"]
+  end
+  R -->|"6) GITHUB_TOKEN: contents and actions read, pull-requests write"| API["7) GitHub's REST API"]
+  R -->|"8) GITHUB_TOKEN: contents read"| GIT["9) GitHub, by git"]
+  E -->|"10) GITHUB_TOKEN: contents write"| API
+  R --> J
+```
+
+- 1) The capture step, on the session's machine (R12).
+- 2) It opens no network connection, so it uses no token, no key and no account (R30).
+- 3) The report, which an adopter's workflow calls (R24).
+- 4) The release workflow, in this repository only (R189).
+- 5) The report's job summary, where it says why it posted no comment (R60, R172). The tool has no directory of users and no logging service of its own.
+- 6) The report authenticates with the workflow's own `GITHUB_TOKEN`, which its caller grants `contents: read`, `actions: read` and `pull-requests: write`, and no other secret (R24).
+- 7) GitHub's REST API, at the host in `GITHUB_API_URL`, over HTTPS: the report finds the merged pull request, lists its runs and jobs and posts or updates its comment, and the release workflow creates, checks and publishes a release (R30, R189).
+- 8) The same token, read only, fetches by git (R24, R30).
+- 9) GitHub by git, over HTTPS: the tool's own code at its commit, and the adopter's default branch's history and the pull request's head (R23, R30).
+- 10) The release workflow's release job alone holds `contents: write`, and runs only for a pushed tag (R189).
 
 | From | To | Protocol | Why | Credential |
 |---|---|---|---|---|

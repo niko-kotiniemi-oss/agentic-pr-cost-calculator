@@ -2433,3 +2433,60 @@ A tracked file with the extension of an image, a PDF or a video SHALL be one tha
 
 - **WHEN** a Python file that `ruff check` reads with the repository's configuration gives only names that PEP 8 gives
 - **THEN** `ruff check` passes it
+
+### Requirement: The README says what the tool is for and which uses to avoid
+
+The README SHALL hold, after its section on what the tool will do and before its list of documents, a section that says what the tool is for and lists the uses to avoid, each citing by ID the requirement that states the behaviour behind it, or for a choice the accepted record that makes it, other than this requirement and its record, and a short start SHALL link that section before its first step, so that an adopter meets the uses to avoid before adopting. A test SHALL fail otherwise.
+
+#### Scenario: The README's section on uses passes
+
+- **WHEN** the README holds, after its section on what the tool will do and before its list of documents, a section that says what the tool is for and lists the uses to avoid, each citing a requirement or an accepted decision record that exists, and its short start, where it holds one, links that section before its first step
+- **THEN** the test passes it
+
+#### Scenario: A section on uses that is missing, out of place or unsupported fails a test
+
+- **WHEN** the README holds no such section, holds it before its section on what the tool will do or after its list of documents, lists a use to avoid that cites no requirement or decision record, cites one that does not exist or is closed, or cites only R279, DR-286 or the README itself, or its short start links the section only after a list item, a paragraph that opens in bold or any code, inline or fenced, where a step can stand, or not at all, a use being any item of a list, whatever its marker, indent or quote, with the lines that continue it
+- **THEN** a test fails and names the section, or the line and what it lacks
+
+### Requirement: How it works lists everything that comes in and goes out, each with its records
+
+`docs/how-it-works.md` SHALL hold, after its section on inputs and outputs, a section with three tables, what the tool takes in when it runs, what this repository takes in to be built and checked, and what goes out to adopters, each row a thing that crosses, how it is pinned or that it is not, and the records that decide it, so that every open record whose boundary is incoming is cited in one of the first two tables and every open outgoing one in the third. A test SHALL fail otherwise.
+
+#### Scenario: A complete section passes
+
+- **WHEN** every decision record that is not closed and whose boundary is incoming is cited in the table of what the tool takes in or of what this repository takes in, every such record whose boundary is outgoing in the table of what goes out, every row says how what it names is pinned or that it is not, and every record cited in any of them exists and is open, whatever its boundary
+- **THEN** the test passes
+
+#### Scenario: A record left out of the section, or cited in the wrong table, fails a test
+
+- **WHEN** an open record whose boundary is incoming is cited in neither table of what comes in, an open outgoing record is not cited in the table of what goes out, a row gives no word on how what it names is pinned, the section stands before the section on inputs and outputs, or a citation names a record that does not exist or is closed
+- **THEN** a test fails and names the record or the row, and the table
+
+#### Scenario: An input that a workflow names and the section does not fails a test
+
+- **WHEN** a workflow of this repository names an action, a runner or container image, a Python or Node version, directly or through its job's matrix, or a file of versions, as its YAML gives them, and the section on what comes in and goes out does not name it in code, or does not name the version that such a file holds
+- **THEN** a test fails and names the workflow and what it names
+
+### Requirement: A diagram numbers its parts and explains each below it, and the README links the overview of how it works
+
+Each Mermaid diagram on a page that this repository writes SHALL number its parts in labels that open with the number and `)`, in double quotes in a flowchart, keep each node's and participant's ID to three letters or digits, and be followed by a list explaining each number once, citing its requirement; each feature page and `docs/how-it-works.md`, whose first section holds its overview, SHALL hold one, and the README SHALL link that page without a fragment. Tests SHALL fail otherwise.
+
+#### Scenario: A numbered and explained diagram passes
+
+- **WHEN** a Mermaid diagram's parts carry the numbers 1 to n, each in a label that opens with its number and `)`, in double quotes in a flowchart, such as `A["1) Capture step"]`, or as a sequence diagram's message or participant's alias, such as `H->>G: 1) asks git`, each identifier is at most three letters or digits, and the list right after the diagram explains each of those numbers once and no other
+- **THEN** the test passes it
+
+#### Scenario: A number left unexplained, or explained but not drawn, fails a test
+
+- **WHEN** a diagram carries a number that the list after it does not explain, the list explains a number that the diagram does not carry, explains one twice, or the numbers skip one, a diagram carries no number, carries one twice or one below 1, a number stands in a flowchart's label that no double quotes hold, or an identifier of a node or a participant, in any statement of a line, after a `;` included, is longer than three characters or holds other than letters and digits
+- **THEN** a test fails and names the file, the diagram's line and the number or the identifier
+
+#### Scenario: A page without its diagram fails a test
+
+- **WHEN** one of the feature pages in `docs/features/`, which are its files other than its `README.md`, or `docs/how-it-works.md` holds no Mermaid diagram, the first section of `docs/how-it-works.md` holds no diagram, or the README holds no link to `docs/how-it-works.md` without a fragment
+- **THEN** a test fails and names the page
+
+#### Scenario: A diagram in a fence that the checks do not read, or an explanation that cites no requirement, fails a test
+
+- **WHEN** a page that this repository writes holds a Mermaid block in a fence other than three backticks at the start of a line, opening it or closing it, such as a fence of tildes, of more backticks, or one indented under a list item or inside a quote, or an item of the list after a diagram cites no requirement by its ID
+- **THEN** a test fails and names the file and the line

@@ -10,6 +10,35 @@ The report adds what the pull request's GitHub Actions runs cost, from the times
 
 ## Expected behaviour
 
+Which CI minutes count:
+
+```mermaid
+flowchart TD
+  A["1) A workflow run"] --> B{"2) On one of the pull request's own commits?"}
+  B -->|no| N["3) Not counted"]
+  B -->|yes| C{"4) Started by the merge's push?"}
+  C -->|yes| N
+  C -->|no| D["5) Every job attempt"]
+  D --> E["6) Rounded up to a minute"]
+  E --> F{"7) Is its runner in the price table?"}
+  F -->|no| G["8) Counted, not priced"]
+  F -->|yes| H["9) Priced"]
+  D -.->|a run or job missing| I["10) Marked incomplete"]
+```
+
+- 1) A workflow run that the report finds, with the fewest calls it can (R121).
+- 2) Only runs on the pull request's own commits count (R62).
+- 3) Runs on other commits are not counted (R120).
+- 4) Runs that the merge's push starts are not counted (R120).
+- 5) Every job attempt of the pull request's own runs counts (R62).
+- 6) Each attempt's minutes are rounded up and priced per job (R18).
+- 7) Whether the price table lists the attempt's runner (R63).
+- 8) Minutes on a runner that it does not list are counted, not priced (R63).
+- 9) The others are priced at the table's rate (R18).
+- 10) A CI cost missing any run or job is marked incomplete, and not presented as the total (R64).
+
+In detail:
+
 - **Which runs.** R62 gives which job attempts count, and which commits are the pull request's own.
 - **Which runs are not counted.** Those that R120 gives, and runs on commits that a force-push removed.
 - **Rounding.** R18 gives how each attempt's minutes are rounded and priced.

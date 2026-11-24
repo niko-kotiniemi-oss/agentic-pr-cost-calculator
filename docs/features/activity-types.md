@@ -10,6 +10,30 @@ Each recorded call carries one label for the kind of work it did, so that the re
 
 ## Expected behaviour
 
+How a call gets its activity type:
+
+```mermaid
+flowchart TD
+  A["1) A call"] --> B{"2) Did it use a tool?"}
+  B -->|no| V["3) conversation"]
+  B -->|yes| C["4) Its first tool"]
+  C --> D{"5) Does the classification know it?"}
+  D -->|no| O["6) other"]
+  D -->|yes| T["7) Its type, from the table below"]
+  C -.->|never recorded| X["8) The tool's name"]
+```
+
+- 1) A model call that capture records (R2).
+- 2) Whether the call used any tool (R6).
+- 3) A call with no tool is `conversation` (R6).
+- 4) Otherwise its first tool chooses the label (R6).
+- 5) Whether the classification knows that tool (R6).
+- 6) A tool that it does not know is `other` (R6).
+- 7) A tool that it knows gives its type, as the table below gives it (R6).
+- 8) The tool's name is read only to choose the label, and never recorded (R4, R6).
+
+In detail:
+
 The label comes from the first tool the call used, as R6 gives it:
 
 | The call's first tool | Activity type |
