@@ -2742,6 +2742,30 @@ The hook of "An agent's text for GitHub is checked for private references before
 - **WHEN** the agent runs `gh pr create --body "$BODY"`, or one whose body comes from `$(...)`
 - **THEN** the hook blocks the call, and says that it could not read the text
 
+### Requirement: The guard of an agent's text for GitHub also ships as a plugin
+
+The hook of "An agent's text for GitHub is checked for private references before it is posted" SHALL also ship as a plugin of its own, from a folder of this repository listed in the marketplace that loads Superpowers into its sessions and enabled in `.claude/settings.json`, and a script SHALL build it as a zip that `CONTRIBUTING.md` says to add to a project's settings. A test SHALL fail where the plugin's script, patterns, matcher or `onFailure` differ from the repository hook's.
+
+#### Scenario: The plugin blocks what the repository's hook blocks
+
+- **WHEN** the plugin's hook gets a tool call whose text holds a link to a Claude session, or a text that a private pattern matches
+- **THEN** it blocks the call, names the pattern, and quotes none of the text, as the repository's hook does
+
+#### Scenario: A plugin that differs from the repository's hook fails a test
+
+- **WHEN** the plugin's script or the patterns that it carries differ from the repository hook's, or its hook's matcher or `onFailure` does
+- **THEN** a test fails and names the difference
+
+#### Scenario: A session with several repositories enables the plugin
+
+- **WHEN** `.claude/settings.json` is read
+- **THEN** its `enabledPlugins` turns the plugin on from the marketplace that loads Superpowers into this repository's sessions, which lists the plugin's folder
+
+#### Scenario: The contributor page says how a project's threads get the guard
+
+- **WHEN** `CONTRIBUTING.md` is read
+- **THEN** it gives the command that builds the plugin's zip, says to add the zip in the project's settings, that it reaches only threads that start afterwards, and to add it again after the patterns change
+
 ### Requirement: A pull request that changes the vendored copy or the marketplace is also checked by its base commit's scripts
 
 CI SHALL run, on every pull request, from the base branch's own workflow on `pull_request_target`, a job that, where the pull request changes `vendor/` or the marketplace's root file or plugin folder, runs the base commit's own vendor check and marketplace checks over the merge commit that GitHub tests, and fails when either check fails or it cannot read that commit, and otherwise passes; either way, it SHALL say in its log what it compared, or that nothing in scope changed.

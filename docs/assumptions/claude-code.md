@@ -262,10 +262,10 @@ The assumptions about Claude Code: what its transcripts hold, when its hooks run
 
 ## A69. Claude Code loads the plugin into a project's cloud threads and a person's terminal sessions, runs its hooks there, and registers the hooks of one plugin of a given name.
 
-- **Rests on it:** R179, R182, R185, R188, T8, T59, T130, T135, T141, T185, DR-197, DR-203, DR-206
+- **Rests on it:** R179, R182, R185, R188, R322, T8, T59, T130, T135, T141, T185, T319, DR-197, DR-203, DR-206, DR-315
 - **If it is wrong:** If the plugin did not load into a project's cloud threads, or its hooks did not run there, those threads would record nothing, as before the plugin, with nothing to say why (T8), and if a plugin added in a project's settings reached the threads already running, the pages that say it reaches only new threads would send a person to a new thread where the one already open would do (R185). If another copy of the same name loaded in place of the person's with no sign, or the two loaded together, the person could not tell what runs (T135), and if two copies of one name both ran their hooks, each event would run the step twice, which the shared store records once (T130, DR-206). If a plugin loaded in place ran from a copy, or a copied one from its source folder, the checksum that the plugin's command carries would guard another file than the one that runs (T59). If a plugin could run what a key, a file at a default path or a handler beyond those that the checks read declares, it could run what its zip's list of files and its checksum do not show (R188, T141).
 - **Fact:** Claude Code loads into each new cloud thread of a project the plugins that the person adds in the project's settings, and a change there reaches new threads only.
-  - **Relied on:** R179, R185, T8, T185, DR-197, DR-203
+  - **Relied on:** R179, R185, R322, T8, T185, T319, DR-197, DR-203, DR-315
   - **Checked:** documented: <https://code.claude.com/docs/en/claude-projects>, read 2026-11-09
 - **Fact:** A plugin turned on for a person's claude.ai account, among them those that their organization turns on for its members, loads in their terminal sessions signed in with that account, hooks included, and one that the organization marks as required loads even if the person turned it off.
   - **Relied on:** R179, R182, T8, DR-197
@@ -404,13 +404,13 @@ The assumptions about Claude Code: what its transcripts hold, when its hooks run
 
 ## A61. A session that starts in a repository's folder runs the hooks that the repository's settings register, once the folder is trusted, unless it is a cloud thread of a project or a cloud session with several repositories.
 
-- **Rests on it:** R7, R298, T8, T65, T319, DR-126, DR-172, DR-315
+- **Rests on it:** R7, R298, R322, T8, T65, T319, DR-126, DR-172, DR-315
 - **If it is wrong:** The calls of a session that starts in the repository's trusted folder and runs none of its hooks are never recorded, and the comment shows less than was used, with nothing to say why (T8). If a project's cloud thread ran the repository's hooks, the further answer to T65, a hook, would hold there too (T65).
 - **Fact:** A cloud session with one repository, outside a project's threads, reads that repository's `.claude/settings.json`, since the file is part of the clone and the session starts inside it.
   - **Relied on:** R7, T8, DR-172
   - **Checked:** documented: <https://code.claude.com/docs/en/settings>, read 2026-11-01
 - **Fact:** In a cloud thread of a project, none of a repository's `.claude/settings.json` hooks, permission rules or `env` apply, and a cloud session with several repositories reads only the `enabledPlugins` and `extraKnownMarketplaces` keys of each repository's file.
-  - **Relied on:** R7, R298, T8, T65, T319, DR-126, DR-172, DR-315, `add-pr-cost-calculator` task 7.1
+  - **Relied on:** R7, R298, R322, T8, T65, T319, DR-126, DR-172, DR-315, `add-pr-cost-calculator` task 7.1
   - **Checked:** documented: <https://code.claude.com/docs/en/settings>, read 2026-11-01
 - **Fact:** An interactive session holds back the hooks of every settings file until the person accepts the folder's workspace trust dialog, while a `-p` or SDK session treats the folder as trusted.
   - **Relied on:** R7, T8, DR-172

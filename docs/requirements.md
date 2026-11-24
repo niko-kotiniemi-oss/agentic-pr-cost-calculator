@@ -333,6 +333,7 @@ The capability names the spec that holds the requirement. Each capability is one
 | R319 | behavioural | `releases-and-compatibility` | A version that a refused tag gave is never released |
 | R320 | behavioural | `usage-capture` | The step's commit before a push signs with the person's own signer, and a repository can turn it off |
 | R321 | non-functional | `project-standards` | Only the base commit's checks run on `pull_request_target`, and no workflow on `workflow_run` |
+| R322 | non-functional | `project-standards` | The guard of an agent's text for GitHub also ships as a plugin |
 
 IDs are stable: a requirement keeps its ID while it exists, and a new one takes the next free number, so the rows follow the order in which requirements were added rather than the order of the specs. A requirement that a later change removes leaves the table, and its ID is listed below with the change that removed it, never to be used again.
 
