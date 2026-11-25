@@ -24,7 +24,7 @@ concern, or changes its principle, changes nothing outside `docs/`, `openspec/`,
 context files and `CHANGELOG.md` (R228), one that gives an agreed item a gap changes that
 item's What done looks like (R231), and an entry leaves `Gap.`, or its gap stops naming
 an item that it named, only while that item is `Done` or `Dropped` (R233), each
-examining nothing while no base holds the guide. No attribute hides the diff of the
+failing and saying so where no base holds the guide. No attribute hides the diff of the
 guide, of a file that steers work here or of a change's `tasks.md` (R134).
 
 Each check is shown to fail on a synthetic tree, the roadmap's with a guide, into which

@@ -2768,7 +2768,7 @@ The hook of "An agent's text for GitHub is checked for private references before
 
 ### Requirement: A pull request that changes the vendored copy or the marketplace is also checked by its base commit's scripts
 
-CI SHALL run, on every pull request, from the base branch's own workflow on `pull_request_target`, a job that, where the pull request changes `vendor/` or the marketplace's root file or plugin folder, runs the base commit's own vendor check and marketplace checks over the merge commit that GitHub tests, and fails when either check fails or it cannot read that commit, and otherwise passes; either way, it SHALL say in its log what it compared, or that nothing in scope changed.
+CI SHALL run, on every pull request, from the default branch's own workflow on `pull_request_target`, a job that, where the pull request changes `vendor/` or the marketplace's root file or plugin folder, runs the base commit's own vendor check and marketplace checks over the merge commit that GitHub tests, and fails when either check fails or it cannot read that commit, and otherwise passes; either way, it SHALL say in its log what it compared, or that nothing in scope changed.
 
 #### Scenario: A pull request that weakens a check and changes what it checks fails CI
 
@@ -2778,7 +2778,7 @@ CI SHALL run, on every pull request, from the base branch's own workflow on `pul
 #### Scenario: A pull request that changes the job's workflow does not change the run
 
 - **WHEN** a pull request changes or removes the workflow file that holds the job, or adds a workflow that would run in its place, together with a vendored file that the base's vendor check refuses
-- **THEN** the job runs as the base branch's workflow file gives it, and fails
+- **THEN** the job runs as the default branch's workflow file gives it, and fails
 
 #### Scenario: A merge commit that cannot be read fails the job
 
@@ -2821,11 +2821,11 @@ The base commit's checks' job SHALL run only programs from the base's checkout o
 
 ### Requirement: The base commit's checks read a path as a case-insensitive system writes it
 
-The base commit's checks SHALL take a pull request's path as in their scope where, with each of its parts folded to lower case and stripped of trailing dots and spaces, as Windows and macOS write it, it falls under `vendor/` or is the root marketplace file, and SHALL fail, naming the path, where such a path falls under a checked path without being spelt as that path is.
+The base commit's checks SHALL take a pull request's path as in their scope where, with each part folded to lower case and stripped of trailing dots and spaces and of the characters that macOS leaves out, as Windows and macOS write it, it falls under `vendor/` or is the root marketplace file, and SHALL fail, naming the path, where such a path is not spelt so, holds such a character, or has a part in Windows' short form, such as `SUPERP~1`.
 
 #### Scenario: A path that a case-insensitive system would write into a checked path fails
 
-- **WHEN** a pull request adds `Vendor/superpowers/skills/x/SKILL.md`, `vendor/Superpowers/skills/x/SKILL.md` or `vendor/superpowers./skills/x/SKILL.md`
+- **WHEN** a pull request adds `Vendor/superpowers/skills/x/SKILL.md`, `vendor/Superpowers/skills/x/SKILL.md`, `vendor/superpowers./skills/x/SKILL.md`, `Vendor/README.md`, `vendor/SUPERP~1/skills/x/SKILL.md`, or `vendor/superpowers/skills/x/SKILL.md` with a zero-width non-joiner inside `superpowers`
 - **THEN** the base commit's checks fail and name the path
 
 #### Scenario: A path spelt as the checked path passes on to the check
@@ -2844,7 +2844,7 @@ No workflow here SHALL trigger on `workflow_run`, and only the workflow of the b
 
 #### Scenario: The base commit's checks' workflow with a write permission or the pull request's checkout fails a test
 
-- **WHEN** the workflow of the base commit's checks grants a permission other than `contents: read`, names a secret, runs for pull requests to any other branch, checks out the pull request's head or merge ref, keeps the checkout's credentials, uses any other action, or puts a `${{` expression anywhere but a step's `env:`
+- **WHEN** the workflow of the base commit's checks grants a permission other than `contents: read`, names a secret, runs for pull requests to any other branch, checks out the pull request's head or merge ref, keeps the checkout's credentials, uses any other action, calls another workflow, runs a container or a service, or puts a `${{` expression anywhere but a step's `env:`
 - **THEN** a test of the workflows fails and names the workflow and what it holds
 
 ### Requirement: A name that the tool gives git is never read as an option

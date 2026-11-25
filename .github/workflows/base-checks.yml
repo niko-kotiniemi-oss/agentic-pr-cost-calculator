@@ -1,7 +1,7 @@
 name: Base checks
 
 # The base commit's own checks over a pull request (R299, R317, R321, DR-312).
-# `pull_request_target` runs this file as the base branch holds it, so a pull
+# `pull_request_target` runs this file as the default branch holds it, so a pull
 # request that changes a check, or this workflow, together with what it checks
 # cannot change the check that judges it. That event is the one through which a
 # pull request's code most often reaches a token that can write, so this
@@ -10,8 +10,9 @@ name: Base checks
 # only through `env:`, and no cache.
 on:
   pull_request_target:
-    # Only pull requests to `main`: one to another branch would run that
-    # branch's own copy of this file, which no review of `main` has read.
+    # Only pull requests to `main`: GitHub runs the default branch's copy of
+    # this file whatever the base, so one to another branch would be judged by
+    # `main`'s checks rather than its own base's.
     branches: [main]
     # As in CI: `edited` is a change of the pull request's base branch too.
     types: [opened, synchronize, reopened, edited]

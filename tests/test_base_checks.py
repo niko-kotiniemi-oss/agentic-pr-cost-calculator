@@ -152,13 +152,6 @@ def test_a_pull_request_that_changes_the_root_marketplace_file_says_what_the_bas
     assert "the base holds no marketplace check yet" in done.stdout
 
 
-def test_a_merge_commit_that_cannot_be_fetched_fails(tmp_path: Path) -> None:
-    done = run(pull(tmp_path, {"README.md": "changed\n"}, merge_ref=False))
-    assert done.returncode == 1
-    assert "cannot fetch the merge commit" in done.stderr
-    assert "nothing in scope changed" not in done.stdout
-
-
 def loaded(case: Pull, monkeypatch: pytest.MonkeyPatch) -> ModuleType:
     """The base's copy of the script, loaded in this process with the environment that
     `run` gives it, so that a test can stand in for its waits."""
@@ -197,6 +190,39 @@ def test_a_merge_commit_of_another_head_fails_after_each_wait(
     assert f"merges {case.head}, not the pull request's head {'1' * 40}" in capsys.readouterr().err
 
 
+def test_a_merge_commit_that_cannot_be_fetched_fails_after_each_wait(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    case = pull(tmp_path, {"README.md": "changed\n"}, merge_ref=False)
+    module = loaded(case, monkeypatch)
+    waits: list[float] = []
+    status = module.main(environ(case), delays=(1.0, 2.0), sleep=waits.append)
+    assert status == 1
+    assert waits == [1.0, 2.0]
+    done = capsys.readouterr()
+    assert (
+        f"cannot fetch the merge commit of pull request {NUMBER}: GitHub has not made it yet,"
+        " or cannot, as where it conflicts with its base: " in done.err
+    )
+    assert "nothing in scope changed" not in done.out
+
+
+def test_a_merge_commit_that_github_makes_during_a_wait_passes(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    case = pull(tmp_path, {"README.md": "changed\n"})
+    bare = case.server / f"{REPOSITORY}.git"
+    git("update-ref", "-d", f"refs/pull/{NUMBER}/merge", cwd=bare)
+    module = loaded(case, monkeypatch)
+
+    def github_makes_it(delay: float) -> None:
+        git("update-ref", f"refs/pull/{NUMBER}/merge", case.merge, cwd=bare)
+
+    status = module.main(environ(case), delays=(1.0,), sleep=github_makes_it)
+    assert status == 0, capsys.readouterr().err
+    assert "nothing in scope changed" in capsys.readouterr().out
+
+
 def test_a_merge_commit_that_github_updates_during_a_wait_passes(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
@@ -230,6 +256,9 @@ def test_the_job_turns_workflow_commands_off_while_it_runs(tmp_path: Path) -> No
         "vendor/superpowers./skills/x/SKILL.md",
         "vendor/superpowers /skills/x/SKILL.md",
         ".claude-plugin/Marketplace.json",
+        "Vendor/README.md",
+        "vendor/SUPERP~1/skills/x/SKILL.md",
+        "vendor/super" + chr(0x200C) + "powers/skills/x/SKILL.md",
     ],
 )
 def test_a_path_that_a_case_insensitive_system_writes_into_a_checked_path_fails(
@@ -237,9 +266,7 @@ def test_a_path_that_a_case_insensitive_system_writes_into_a_checked_path_fails(
 ) -> None:
     done = run(pull(tmp_path, {path: "planted\n"}))
     assert done.returncode == 1
-    assert f"changes {path!r}, which a case-insensitive system writes into a checked" in (
-        done.stderr
-    )
+    assert f"changes {path!r}, which Windows or macOS would write into a checked" in (done.stderr)
     assert "sync ran" not in done.stdout
 
 

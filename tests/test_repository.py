@@ -790,7 +790,7 @@ WRITES_ALLOWED: dict[str, set[str]] = {}
 FORBIDDEN_TRIGGERS = {"pull_request_target", "workflow_run"}
 
 # The one workflow that may trigger on `pull_request_target`: the base commit's checks, which
-# run from the base branch's copy so that a pull request cannot change them (R299, R321).
+# run from the default branch's copy so that a pull request cannot change them (R299, R321).
 BASE_CHECKS = "base-checks.yml"
 # What the checkout of the base commit's checks may not be given: either would check out the
 # pull request's code rather than the base's.
@@ -891,7 +891,8 @@ def base_checks_problems(name: str, doc: dict[Any, Any]) -> list[str]:
     """What the workflow of the base commit's checks holds beyond what R321 allows it: runs
     for pull requests to another branch than `main`, a grant other than `contents: read`, an
     action other than a pinned checkout, a checkout of another commit or repository or one
-    that keeps its credentials, or an expression anywhere but a step's `env:`."""
+    that keeps its credentials, a job that calls another workflow or runs an image, or an
+    expression anywhere but a step's `env:`."""
     problems = []
     events = doc.get("on", doc.get(True))
     target = events.get("pull_request_target") if isinstance(events, dict) else None
@@ -899,12 +900,17 @@ def base_checks_problems(name: str, doc: dict[Any, Any]) -> list[str]:
         problems.append(f"{name} runs for pull requests to other branches than `main`")
     if doc.get("permissions") != {"contents": "read"}:
         problems.append(f"{name} the workflow grants other than `contents: read`")
-    if holds_expression(doc.get("defaults")):
-        problems.append(f"{name} puts an expression in its defaults")
+    if holds_expression({key: value for key, value in doc.items() if key != "jobs"}):
+        problems.append(f"{name} puts an expression outside a step's `env:` in the workflow")
     for job, body in (doc.get("jobs") or {}).items():
         where = f"in job `{job}`"
         if body.get("permissions") != {"contents": "read"}:
             problems.append(f"{name} job `{job}` grants other than `contents: read`")
+        problems += [
+            f"{name} job `{job}` gives `{key}`, which R321 does not allow"
+            for key in ("uses", "container", "services")
+            if key in body
+        ]
         if holds_expression({key: value for key, value in body.items() if key != "steps"}):
             problems.append(f"{name} puts an expression outside a step's `env:` {where}")
         for step in body.get("steps") or []:
@@ -1092,7 +1098,41 @@ def test_the_base_commit_s_checks_may_run_on_pull_request_target() -> None:
             "permissions:\n  contents: read\n"
             "defaults:\n  run:\n    shell: bash ${{ github.event.pull_request.title }}\n"
             "jobs:",
-            "puts an expression in its defaults",
+            "puts an expression outside a step's `env:` in the workflow",
+        ),
+        (
+            "permissions:\n  contents: read\njobs:",
+            "permissions:\n  contents: read\n"
+            "env:\n  TITLE: ${{ github.event.pull_request.title }}\njobs:",
+            "puts an expression outside a step's `env:` in the workflow",
+        ),
+        (
+            "permissions:\n  contents: read\njobs:",
+            "permissions:\n  contents: read\n"
+            "run-name: ${{ github.event.pull_request.title }}\njobs:",
+            "puts an expression outside a step's `env:` in the workflow",
+        ),
+        (
+            "permissions:\n  contents: read\njobs:",
+            "permissions:\n  contents: read\n"
+            "concurrency: ${{ github.event.pull_request.head.ref }}\njobs:",
+            "puts an expression outside a step's `env:` in the workflow",
+        ),
+        (
+            "jobs:\n",
+            "jobs:\n  other:\n    permissions:\n      contents: read\n"
+            "    uses: ./.github/workflows/ci.yml\n",
+            "job `other` gives `uses`, which R321 does not allow",
+        ),
+        (
+            "    steps:",
+            "    container: python:3\n    steps:",
+            "job `base-checks` gives `container`, which R321 does not allow",
+        ),
+        (
+            "    steps:",
+            "    services:\n      db:\n        image: postgres\n    steps:",
+            "job `base-checks` gives `services`, which R321 does not allow",
         ),
     ],
 )

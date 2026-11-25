@@ -16,10 +16,10 @@ changes. Either way, the log says what was compared, or that nothing in scope ch
 The event's values reach it only through the environment: `PR_NUMBER`, `HEAD_SHA`, and
 GitHub's own `GITHUB_SERVER_URL` and `GITHUB_REPOSITORY`.
 
-It reads each changed path as a case-insensitive system writes it (R323), so that a path
-that Windows or macOS would write into `vendor/superpowers/` is in scope and, spelt
-otherwise, fails. GitHub's workflow commands stay off while it runs, so that a path or a
-line of the pull request's tree in the log cannot act as one.
+It reads each changed path as Windows or macOS writes it (R323), so that a path that
+either would write into `vendor/` is in scope and, spelt otherwise, fails. GitHub's
+workflow commands stay off while it runs, so that a path or a line of the pull request's
+tree in the log cannot act as one.
 """
 
 from __future__ import annotations
@@ -41,6 +41,13 @@ REPOSITORY = re.compile(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+")
 VENDOR = "vendor/"
 CHECKED = "vendor/superpowers/"
 MARKETPLACE = ".claude-plugin/marketplace.json"
+# The characters that macOS leaves out of a name, as git's own check of `.git` lists them,
+# and a part in Windows' short form, such as `SUPERP~1`.
+IGNORED = re.compile(
+    "[" + "".join(map(chr, [*range(0x200C, 0x2010), *range(0x202A, 0x202F),
+                            *range(0x206A, 0x2070), 0xFEFF])) + "]"
+)  # fmt: skip
+SHORT = re.compile(r"~[0-9]")
 # How long to wait before each new fetch while GitHub's merge commit still merges an
 # earlier head, as it can just after a push, since the event does not wait for it.
 DELAYS = (5.0, 10.0, 20.0)
@@ -59,16 +66,21 @@ def git(*args: str) -> subprocess.CompletedProcess[str]:
 
 def folded(path: str) -> str:
     """The path as Windows and macOS write it: each part in lower case, with no trailing
-    dot or space."""
-    return "/".join(part.rstrip(". ").casefold() for part in path.split("/"))
+    dot or space and none of the characters that macOS leaves out."""
+    return "/".join(IGNORED.sub("", part).rstrip(". ").casefold() for part in path.split("/"))
 
 
 def misspelt(path: str) -> bool:
-    """Whether a path falls under the checked copy or is the root marketplace file, as a
-    case-insensitive system writes it, without being spelt as that path is."""
+    """Whether a path falls under `vendor/` or is the root marketplace file, as Windows or
+    macOS writes it, without being spelt as that path is, or with a character that macOS
+    leaves out or a part in Windows' short form."""
     fold = folded(path)
     if fold == MARKETPLACE:
         return path != MARKETPLACE
+    if not fold.startswith(VENDOR):
+        return False
+    if not path.startswith(VENDOR) or IGNORED.search(path) or SHORT.search(path):
+        return True
     return (fold + "/").startswith(CHECKED) and not (path + "/").startswith(CHECKED)
 
 
@@ -94,8 +106,9 @@ def fetch_merge(
     number: str, head: str, remote: str, delays: Sequence[float], sleep: Callable[[float], None]
 ) -> tuple[str, str] | str:
     """GitHub's merge commit for the pull request and the head that it merges, fetched
-    again after each delay while it merges another head than the event's; or what is wrong."""
-    merge = merged = ""
+    again after each delay while it cannot be fetched or merges another head than the
+    event's; or what is wrong."""
+    merge = merged = failed = ""
     for delay in [0.0, *delays]:
         if delay:
             sleep(delay)
@@ -103,16 +116,21 @@ def fetch_merge(
             "fetch", "-q", "--no-tags", "--no-recurse-submodules", "--depth=2",
             "--end-of-options", remote, f"+refs/pull/{number}/merge:{MERGE}",
         )  # fmt: skip
+        failed = ""
         if fetched.returncode != 0:
-            return (
-                f"cannot fetch the merge commit of pull request {number}, as where it"
-                f" conflicts with its base: {fetched.stderr.strip()}"
-            )
+            failed = fetched.stderr.strip() or f"git exited {fetched.returncode}"
+        if failed:
+            continue
         merge = git("rev-parse", "--verify", "--end-of-options", f"{MERGE}^{{commit}}").stdout
         merge = merge.strip()
         merged = git("rev-parse", "--verify", "--end-of-options", f"{merge}^2").stdout.strip()
         if merged == head:
             return merge, merged
+    if failed:
+        return (
+            f"cannot fetch the merge commit of pull request {number}: GitHub has not made it"
+            f" yet, or cannot, as where it conflicts with its base: {failed}"
+        )
     return (
         f"GitHub's merge commit {merge} merges {merged or 'no head'}, not the pull request's"
         f" head {head}: GitHub has not made the merge commit of that head yet, or cannot, as"
@@ -160,8 +178,8 @@ def checks(
     wrong = [path for path in changed if misspelt(path)]
     for path in wrong:
         print(
-            f"base checks: the pull request changes {path!r}, which a case-insensitive system"
-            " writes into a checked path that it does not spell so",
+            f"base checks: the pull request changes {path!r}, which Windows or macOS would"
+            " write into a checked path that it does not spell so",
             file=sys.stderr,
         )
     if wrong:
