@@ -111,7 +111,7 @@ Everything that crosses the tool's boundary, in three tables, each row with how 
 | The store | Notes on the person's machine, in the git common directory | Its format's version, which a later release upgrades | DR-171, DR-173 |
 | The comment | The pull request's figure and what it is made of, with a block of its figures for programs | The report's commit and the price table at it | DR-002, DR-004, DR-110, DR-124, DR-155, DR-294, DR-295, DR-296, DR-297, DR-303, DR-318 |
 | Releases | A tag, the release, its bill of materials and its changelog entry | Immutable, from a tag on the default branch | DR-074, DR-096, DR-097, DR-098, DR-122, DR-123, DR-148, DR-149, DR-154, DR-167, DR-209, DR-311, DR-317, DR-319 |
-| The repository and its pages | The README, the documentation, the licence and every tracked file | The default branch, and the commit that a release names | DR-069, DR-070, DR-116, DR-117, DR-118, DR-157, DR-182, DR-212, DR-213, DR-215, DR-220, DR-229, DR-241, DR-242, DR-243, DR-279, DR-282, DR-286 |
+| The repository and its pages | The README, the documentation, the licence and every tracked file | The default branch, and the commit that a release names | DR-069, DR-070, DR-116, DR-117, DR-118, DR-157, DR-182, DR-212, DR-213, DR-215, DR-220, DR-229, DR-325, DR-242, DR-243, DR-279, DR-282, DR-286 |
 | What this version leaves out | The uses that later changes take up | Not pinned: each by a record that a later one replaces | DR-189, DR-222, DR-223, DR-234 |
 
 ## How a cost is computed
