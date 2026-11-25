@@ -1368,7 +1368,7 @@ The step's commit before a push SHALL run with `core.hooksPath` set to an empty 
 
 ### Requirement: The step's commit before a push signs with the person's own signer, and a repository can turn it off
 
-Where git's configuration asks for signed commits, the step SHALL sign its commit before a push with the signing format, key and program that the person's global or system configuration gives, and SHALL commit nothing where any of them, or the request to sign, comes from the repository's own configuration or a worktree's. The configuration file SHALL be able to turn the step's commit before a push off, and it SHALL be on where the file does not.
+Where git's configuration asks for signed commits, the step SHALL sign its commit with the signing format, key and program of the person's global or system settings, and SHALL commit nothing where any of them, or the request to sign, comes from the repository's or a worktree's configuration. The configuration file's `commit_before_push` SHALL turn that commit off when `false`, and it SHALL be on where the file lacks the key; a value other than `true` or `false` SHALL make the file not valid.
 
 #### Scenario: A person whose global settings sign gets a signed commit
 
@@ -1382,12 +1382,17 @@ Where git's configuration asks for signed commits, the step SHALL sign its commi
 
 #### Scenario: A repository that turns the commit off gets none
 
-- **WHEN** the configuration file turns the step's commit before a push off, and the agent runs `git push` with calls waiting
+- **WHEN** the configuration file sets `commit_before_push` to `false`, and the agent runs `git push` with calls waiting
 - **THEN** no commit is made, and the calls wait for the next commit
+
+#### Scenario: A `commit_before_push` other than `true` or `false` makes the file not valid
+
+- **WHEN** the configuration file sets `enabled` to `true`, names this repository and sets `commit_before_push` to `"no"`, `0` or `null`, and the person running the session has turned capture on
+- **THEN** nothing is recorded, as for any configuration file that is not valid
 
 #### Scenario: The commit is on where the configuration file does not turn it off
 
-- **WHEN** the configuration file turns the tool on and says nothing of the step's commit before a push, and the agent runs `git push` with calls waiting
+- **WHEN** the configuration file turns the tool on and holds no `commit_before_push`, and the agent runs `git push` with calls waiting
 - **THEN** the step commits the waiting calls before the push
 
 ### Requirement: A commit of the step's whose push did not run is taken back

@@ -10,6 +10,9 @@ name: Base checks
 # only through `env:`, and no cache.
 on:
   pull_request_target:
+    # Only pull requests to `main`: one to another branch would run that
+    # branch's own copy of this file, which no review of `main` has read.
+    branches: [main]
     # As in CI: `edited` is a change of the pull request's base branch too.
     types: [opened, synchronize, reopened, edited]
 
@@ -27,6 +30,7 @@ permissions:
 jobs:
   base-checks:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     permissions:
       contents: read
     steps:

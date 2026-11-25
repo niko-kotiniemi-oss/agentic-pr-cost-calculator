@@ -23,7 +23,7 @@ A repository turns it on or off with one file, its configuration file, and each 
 
 Usage is recorded by the directory that Claude is in when it makes each call, not by which files it touches (R3, R147). A call made from the repository is recorded there even when it works on another repository, so work on other repositories, private ones above all, belongs in sessions of its own.
 
-Before the agent pushes its branch, the tool commits the calls that no commit carries yet in a commit of its own that holds only its ledger file (R305). That commit is on by default, and a repository's configuration file can turn it off. Where git asks for signed commits, it signs with the person's own signer, from their global or system git configuration, and never with one that the repository's configuration names; a repository whose rules ask for a sign-off line or a form of commit message is best served with it turned off (R320).
+Before the agent pushes its branch, the tool commits the calls that no commit carries yet in a commit of its own that holds only its ledger file (R305). That commit is on by default, and a repository turns it off with `commit_before_push` set to `false` in its configuration file. Where git asks for signed commits, it signs with the person's own signer, from their global or system git configuration, and never with one that the repository's configuration names; a repository whose rules ask for a sign-off line or a form of commit message is best served with it turned off (R320).
 
 The figure is an **API-equivalent estimate**, meaning what the same tokens would cost at list prices (R94). It is not a bill: subscription plans and included CI minutes change what you actually pay.
 

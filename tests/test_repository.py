@@ -795,6 +795,8 @@ BASE_CHECKS = "base-checks.yml"
 # What the checkout of the base commit's checks may not be given: either would check out the
 # pull request's code rather than the base's.
 CHECKOUT_TARGETS = ("ref", "repository")
+# The one command that the job runs: the base's own script (R317).
+BASE_CHECKS_RUN = "python3 -I scripts/base_checks.py"
 
 
 class WorkflowLoader(yaml.SafeLoader):
@@ -876,26 +878,50 @@ def workflow_problems(name: str, text: str) -> list[str]:
     return problems
 
 
+def holds_expression(value: Any) -> bool:
+    """Whether a `${{` expression stands anywhere in a value of a workflow."""
+    if isinstance(value, dict):
+        return any(holds_expression(key) or holds_expression(item) for key, item in value.items())
+    if isinstance(value, list):
+        return any(holds_expression(item) for item in value)
+    return "${{" in str(value)
+
+
 def base_checks_problems(name: str, doc: dict[Any, Any]) -> list[str]:
-    """What the workflow of the base commit's checks holds beyond what R321 allows it: a job
-    that is granted more than `contents: read`, a checkout of another commit or repository,
-    an expression in a shell, or a cache."""
+    """What the workflow of the base commit's checks holds beyond what R321 allows it: runs
+    for pull requests to another branch than `main`, a grant other than `contents: read`, an
+    action other than a pinned checkout, a checkout of another commit or repository or one
+    that keeps its credentials, or an expression anywhere but a step's `env:`."""
     problems = []
+    events = doc.get("on", doc.get(True))
+    target = events.get("pull_request_target") if isinstance(events, dict) else None
+    if not isinstance(target, dict) or target.get("branches") != ["main"]:
+        problems.append(f"{name} runs for pull requests to other branches than `main`")
+    if doc.get("permissions") != {"contents": "read"}:
+        problems.append(f"{name} the workflow grants other than `contents: read`")
+    if holds_expression(doc.get("defaults")):
+        problems.append(f"{name} puts an expression in its defaults")
     for job, body in (doc.get("jobs") or {}).items():
         where = f"in job `{job}`"
         if body.get("permissions") != {"contents": "read"}:
             problems.append(f"{name} job `{job}` grants other than `contents: read`")
+        if holds_expression({key: value for key, value in body.items() if key != "steps"}):
+            problems.append(f"{name} puts an expression outside a step's `env:` {where}")
         for step in body.get("steps") or []:
             uses = str(step.get("uses", ""))
             given = step.get("with") or {}
+            if "uses" in step and not re.fullmatch(r"actions/checkout@[0-9a-f]{40}", uses):
+                problems.append(f"{name} uses `{uses}` {where}")
             if uses.startswith("actions/checkout@"):
                 problems += [
                     f"{name} checks out `{key}` {where}" for key in CHECKOUT_TARGETS if key in given
                 ]
-            if "${{" in str(step.get("run", "")):
-                problems.append(f"{name} puts an expression in a `run:` {where}")
-            if uses.startswith("actions/cache") or "cache" in given:
-                problems.append(f"{name} restores or saves a cache {where}")
+                if given.get("persist-credentials") is not False:
+                    problems.append(f"{name} keeps the checkout's credentials {where}")
+            if "run" in step and step["run"] != BASE_CHECKS_RUN:
+                problems.append(f"{name} runs other than `{BASE_CHECKS_RUN}` {where}")
+            if holds_expression({key: value for key, value in step.items() if key != "env"}):
+                problems.append(f"{name} puts an expression outside a step's `env:` {where}")
     return problems
 
 
@@ -962,6 +988,7 @@ def test_a_trigger_under_either_on_key_or_in_a_list_s_mapping_is_read(text: str)
 GOOD_BASE_CHECKS = """\
 on:
   pull_request_target:
+    branches: [main]
 permissions:
   contents: read
 jobs:
@@ -997,8 +1024,7 @@ def test_the_base_commit_s_checks_may_run_on_pull_request_target() -> None:
         ),
         (
             "          persist-credentials: false\n",
-            "          persist-credentials: false\n"
-            "          ref: ${{ github.event.pull_request.head.sha }}\n",
+            "          persist-credentials: false\n          ref: refs/pull/7/head\n",
             "checks out `ref` in job `base-checks`",
         ),
         (
@@ -1008,21 +1034,65 @@ def test_the_base_commit_s_checks_may_run_on_pull_request_target() -> None:
         ),
         (
             "      - run: python3 -I scripts/base_checks.py\n",
-            "      - run: echo ${{ github.event.pull_request.title }}\n",
-            "puts an expression in a `run:` in job `base-checks`",
+            "      - run: git fetch origin refs/pull/7/head && git checkout FETCH_HEAD\n",
+            "runs other than `python3 -I scripts/base_checks.py` in job `base-checks`",
+        ),
+        (
+            "      - run: python3 -I scripts/base_checks.py\n",
+            "      - run: python3 -I scripts/base_checks.py\n"
+            "        shell: bash ${{ github.event.pull_request.title }}\n",
+            "puts an expression outside a step's `env:` in job `base-checks`",
+        ),
+        (
+            "          persist-credentials: false\n",
+            "          persist-credentials: false\n"
+            "          fetch-depth: ${{ github.event.pull_request.title }}\n",
+            "puts an expression outside a step's `env:` in job `base-checks`",
+        ),
+        (
+            "    permissions:\n      contents: read\n    steps:",
+            "    permissions:\n      contents: read\n"
+            "    if: ${{ github.event.pull_request.title }}\n    steps:",
+            "puts an expression outside a step's `env:` in job `base-checks`",
         ),
         (
             "      - run: python3",
             "      - uses: actions/cache@0000000000000000000000000000000000000000 # v4\n"
             "      - run: python3",
-            "restores or saves a cache in job `base-checks`",
+            "uses `actions/cache@0000000000000000000000000000000000000000` in job `base-checks`",
         ),
         (
             "      - run: python3",
-            "      - uses: actions/setup-python@0000000000000000000000000000000000000000 # v6\n"
-            "        with:\n          cache: pip\n"
+            "      - uses: actions/setup-go@0000000000000000000000000000000000000000 # v6\n"
             "      - run: python3",
-            "restores or saves a cache in job `base-checks`",
+            "uses `actions/setup-go@0000000000000000000000000000000000000000` in job `base-checks`",
+        ),
+        (
+            "          persist-credentials: false\n",
+            "          persist-credentials: true\n",
+            "keeps the checkout's credentials in job `base-checks`",
+        ),
+        (
+            "        with:\n          persist-credentials: false\n",
+            "",
+            "keeps the checkout's credentials in job `base-checks`",
+        ),
+        (
+            "  pull_request_target:\n    branches: [main]\n",
+            "  pull_request_target:\n",
+            "runs for pull requests to other branches than `main`",
+        ),
+        (
+            "permissions:\n  contents: read\njobs:",
+            "permissions:\n  contents: read\n  pull-requests: read\njobs:",
+            "the workflow grants other than `contents: read`",
+        ),
+        (
+            "permissions:\n  contents: read\njobs:",
+            "permissions:\n  contents: read\n"
+            "defaults:\n  run:\n    shell: bash ${{ github.event.pull_request.title }}\n"
+            "jobs:",
+            "puts an expression in its defaults",
         ),
     ],
 )

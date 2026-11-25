@@ -10,12 +10,15 @@ in the base's place of the sync script that says which copy ran: never the netwo
 
 from __future__ import annotations
 
+import importlib.util
+import os
 import subprocess
 from dataclasses import dataclass
 from pathlib import Path
+from types import ModuleType
 
 import pytest
-from test_vendor_sync import IDENTITY, git, isolated
+from test_vendor_sync import git, isolated
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = ROOT / "scripts" / "base_checks.py"
@@ -89,7 +92,6 @@ def pull(tmp_path: Path, changes: dict[str, str], merge_ref: bool = True) -> Pul
 def run(case: Pull, **given: str) -> subprocess.CompletedProcess[str]:
     environment = {
         **isolated(),
-        **IDENTITY,
         "PR_NUMBER": NUMBER,
         "HEAD_SHA": case.head,
         "GITHUB_SERVER_URL": case.server.as_uri(),
@@ -119,7 +121,7 @@ def test_a_pull_request_that_changes_the_vendored_copy_runs_the_base_s_check(
     done = run(case)
     assert done.returncode == 0, done.stderr
     assert f"the base's sync ran with --check-commit {case.merge}" in done.stdout
-    assert f"compared vendor/superpowers at {case.merge}" in done.stdout
+    assert f"ran the base's vendor check over {case.merge}, which exited 0" in done.stdout
 
 
 def test_a_pull_request_whose_vendored_copy_the_base_refuses_fails(tmp_path: Path) -> None:
@@ -157,16 +159,126 @@ def test_a_merge_commit_that_cannot_be_fetched_fails(tmp_path: Path) -> None:
     assert "nothing in scope changed" not in done.stdout
 
 
-def test_a_merge_commit_of_another_head_fails(tmp_path: Path) -> None:
+def loaded(case: Pull, monkeypatch: pytest.MonkeyPatch) -> ModuleType:
+    """The base's copy of the script, loaded in this process with the environment that
+    `run` gives it, so that a test can stand in for its waits."""
+    for name in list(os.environ):
+        monkeypatch.delenv(name)
+    for name, value in isolated().items():
+        monkeypatch.setenv(name, value)
+    spec = importlib.util.spec_from_file_location(
+        "base_checks", case.base / "scripts" / "base_checks.py"
+    )
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def environ(case: Pull, **given: str) -> dict[str, str]:
+    return {
+        "PR_NUMBER": NUMBER,
+        "HEAD_SHA": case.head,
+        "GITHUB_SERVER_URL": case.server.as_uri(),
+        "GITHUB_REPOSITORY": REPOSITORY,
+        **given,
+    }
+
+
+def test_a_merge_commit_of_another_head_fails_after_each_wait(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
     case = pull(tmp_path, {"README.md": "changed\n"})
-    done = run(case, HEAD_SHA="1" * 40)
+    module = loaded(case, monkeypatch)
+    waits: list[float] = []
+    status = module.main(environ(case, HEAD_SHA="1" * 40), delays=(1.0, 2.0), sleep=waits.append)
+    assert status == 1
+    assert waits == [1.0, 2.0]
+    assert f"merges {case.head}, not the pull request's head {'1' * 40}" in capsys.readouterr().err
+
+
+def test_a_merge_commit_that_github_updates_during_a_wait_passes(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    case = pull(tmp_path, {"README.md": "changed\n"})
+    bare = case.server / f"{REPOSITORY}.git"
+    git("update-ref", f"refs/pull/{NUMBER}/merge", f"{case.merge}^1", cwd=bare)
+    module = loaded(case, monkeypatch)
+
+    def github_catches_up(delay: float) -> None:
+        git("update-ref", f"refs/pull/{NUMBER}/merge", case.merge, cwd=bare)
+
+    status = module.main(environ(case), delays=(1.0,), sleep=github_catches_up)
+    assert status == 0, capsys.readouterr().err
+    assert "nothing in scope changed" in capsys.readouterr().out
+
+
+def test_the_job_turns_workflow_commands_off_while_it_runs(tmp_path: Path) -> None:
+    done = run(pull(tmp_path, {"README.md": "changed\n"}))
+    first, *_, last = done.stdout.splitlines()
+    assert first.startswith("::stop-commands::")
+    token = first.removeprefix("::stop-commands::")
+    assert len(token) == 32
+    assert last == f"::{token}::"
+
+
+@pytest.mark.parametrize(
+    "path",
+    [
+        "Vendor/superpowers/skills/x/SKILL.md",
+        "vendor/Superpowers/skills/x/SKILL.md",
+        "vendor/superpowers./skills/x/SKILL.md",
+        "vendor/superpowers /skills/x/SKILL.md",
+        ".claude-plugin/Marketplace.json",
+    ],
+)
+def test_a_path_that_a_case_insensitive_system_writes_into_a_checked_path_fails(
+    tmp_path: Path, path: str
+) -> None:
+    done = run(pull(tmp_path, {path: "planted\n"}))
     assert done.returncode == 1
-    assert f"merges {case.head}, not the pull request's head {'1' * 40}" in done.stderr
+    assert f"changes {path!r}, which a case-insensitive system writes into a checked" in (
+        done.stderr
+    )
+    assert "sync ran" not in done.stdout
+
+
+def test_a_path_that_is_not_utf_8_is_read(tmp_path: Path) -> None:
+    case = pull(tmp_path, {"README.md": "changed\n"})
+    done = run(case)
+    assert done.returncode == 0, done.stderr
+    work = tmp_path / "odd"
+    git("clone", "-q", str(case.server / f"{REPOSITORY}.git"), str(work), cwd=tmp_path)
+    git("checkout", "-q", "--detach", case.head, cwd=work)
+    (work / os.fsdecode(b"notes-\xff.txt")).write_text("odd\n", encoding="utf-8")
+    git("add", "--", os.fsdecode(b"notes-\xff.txt"), cwd=work)
+    git("commit", "-q", "-m", "an odd name", cwd=work)
+    head = git("rev-parse", "HEAD", cwd=work)
+    git("checkout", "-q", "--detach", case.merge + "^1", cwd=work)
+    git("merge", "-q", "--no-ff", "--no-edit", head, cwd=work)
+    merge = git("rev-parse", "HEAD", cwd=work)
+    git(
+        "push",
+        "-q",
+        str(case.server / f"{REPOSITORY}.git"),
+        f"+{merge}:refs/pull/{NUMBER}/merge",
+        cwd=work,
+    )
+    done = run(case, HEAD_SHA=head)
+    assert done.returncode == 0, done.stderr
+    assert "nothing in scope changed" in done.stdout
 
 
 @pytest.mark.parametrize(
     ("variable", "value"),
-    [("PR_NUMBER", "7; rm -rf /"), ("PR_NUMBER", ""), ("HEAD_SHA", "--output=x")],
+    [
+        ("PR_NUMBER", "7; rm -rf /"),
+        ("PR_NUMBER", ""),
+        ("HEAD_SHA", "--output=x"),
+        ("GITHUB_REPOSITORY", "owner/repo/../other"),
+        ("GITHUB_REPOSITORY", "--upload-pack=x"),
+        ("GITHUB_SERVER_URL", ""),
+    ],
 )
 def test_an_event_value_of_another_form_stops_the_job(
     tmp_path: Path, variable: str, value: str

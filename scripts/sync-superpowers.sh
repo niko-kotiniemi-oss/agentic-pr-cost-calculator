@@ -11,8 +11,8 @@
 # (R299, R317): this copy of the script, from the base's checkout, compares the
 # copy that COMMIT holds, read from git's objects alone, with the commit that
 # COMMIT's own lock pins, and fails where that lock gives another `repo=` or
-# `vendored_paths=` than the base's. It fetches from GitHub whatever
-# SYNC_REMOTE_BASE says.
+# `vendored_paths=` than the base's. It always fetches from GitHub, and never
+# from an address that SYNC_REMOTE_BASE gives.
 set -euo pipefail
 
 MODE="${1:-}"
@@ -88,17 +88,35 @@ if [ -n "$COMMIT" ]; then
     printf 'sync: the commit %q cannot be read\n' "$COMMIT" >&2
     exit 1
   }
-  git -C "$ROOT" ls-tree -z "$commit_id" -- vendor vendor/superpowers >"${work}/top"
+  # Each of the two folders by itself: given both, git lists the first one's
+  # children rather than its own entry.
+  : >"${work}/top"
+  for folder in vendor vendor/superpowers; do
+    git -C "$ROOT" ls-tree -z "$commit_id" -- "$folder" >>"${work}/top"
+  done
+  # And every link or gitlink anywhere under vendor/, where none is read.
+  git -C "$ROOT" ls-tree -r -z "$commit_id" -- vendor >"${work}/all"
   bad=0
   while IFS= read -r -d '' entry; do
     read -r mode _ <<<"${entry%%$'\t'*}"
     path="${entry#*$'\t'}"
     if [ "$mode" != 040000 ]; then
-      printf 'sync: the pull request gives %s the mode %s, which the check does not read\n' \
+      printf 'sync: the pull request gives %q the mode %s, which the check does not read\n' \
         "$path" "$mode" >&2
       bad=1
     fi
   done <"${work}/top"
+  while IFS= read -r -d '' entry; do
+    read -r mode _ <<<"${entry%%$'\t'*}"
+    path="${entry#*$'\t'}"
+    case "$mode" in
+      120000 | 160000)
+        printf 'sync: the pull request gives %q the mode %s, which the check does not read\n' \
+          "$path" "$mode" >&2
+        bad=1
+        ;;
+    esac
+  done <"${work}/all"
   [ "$bad" = 0 ] || exit 1
   git -C "$ROOT" ls-tree -r -z "$commit_id" -- vendor/superpowers >"${work}/theirs"
   while IFS= read -r -d '' entry; do
@@ -107,7 +125,7 @@ if [ -n "$COMMIT" ]; then
     case "$mode" in
       100644 | 100755) ;;
       *)
-        printf 'sync: the pull request gives %s the mode %s, which the check does not read\n' \
+        printf 'sync: the pull request gives %q the mode %s, which the check does not read\n' \
           "$path" "$mode" >&2
         bad=1
         ;;
@@ -129,7 +147,7 @@ if [ -n "$COMMIT" ]; then
     case "$key" in repo) base="$BASE_REPO" ;; *) base="$BASE_PATHS" ;; esac
     theirs="$(read_lock "$key")"
     if [ "$theirs" != "$base" ]; then
-      printf "sync: the pull request's lock gives %s=%s, not the base's %s=%s\n" \
+      printf "sync: the pull request's lock gives %s=%q, not the base's %s=%q\n" \
         "$key" "$theirs" "$key" "$base" >&2
       bad=1
     fi

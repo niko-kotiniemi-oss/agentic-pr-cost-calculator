@@ -68,7 +68,7 @@ from types import ModuleType
 from urllib.parse import unquote
 
 import pytest
-from test_decisions import base_commits
+from test_decisions import base_commits, uncompared_problems
 from test_roadmap import (
     BACKLOG,
     FENCE,
@@ -707,7 +707,10 @@ def test_the_repository_has_no_backlog_problem() -> None:
 
 def test_the_repository_has_no_problem_against_its_base() -> None:
     today = datetime.now(UTC).date()
-    assert history_problems(ROOT, *base_commits(ROOT, os.environ), today=today) == []
+    bases = base_commits(ROOT, os.environ)
+    held = any(git(ROOT, "cat-file", "-e", f"{base}:{BACKLOG}").returncode == 0 for base in bases)
+    problems = history_problems(ROOT, *bases, today=today)
+    assert problems + uncompared_problems(held, bases, BACKLOG) == []
 
 
 def test_the_repository_gives_each_check_something_to_examine() -> None:

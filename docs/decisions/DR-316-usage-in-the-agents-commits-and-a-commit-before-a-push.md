@@ -30,7 +30,7 @@ Usage reaches the pull request inside the agent's own commits: when capture stag
 
 - The hook makes no network write: the ledger leaves the machine only when the person's commits are pushed (DR-060).
 - The calls made before a push that sends the checked-out branch reach the pull request; calls after the last push, such as opening the pull request, still reach none, as the README says (T8).
-- The person's history holds small commits that they did not type, one before a push that finds calls waiting; a repository whose rules ask for a sign-off line or a message form may turn them off, as the README says (T314).
+- The person's history holds small commits that they did not type, one before a push that finds calls waiting; a repository whose rules ask for a sign-off line or a message form may turn them off with `commit_before_push` in its configuration file, as the README says (R320, T314).
 - Staging a file in the person's index brings capture into their git work (T10), which DR-011, DR-013, DR-014, DR-034, DR-035, DR-128, DR-129 and DR-130 answer; the commit before a push touches neither the index nor the working tree where it cannot finish (R313).
 - The ledger is in the pull request's diff, where a reviewer sees it and anyone who can push to the branch can edit it (the design's risk "[A ledger edited by hand changes the reported cost]"; T16).
 - DR-010 is closed, and this record holds what it decided. R7, T8, T10 and T16, which rested on it, rest on this record, and the threat model, the assumptions, the design and `docs/how-it-works.md` cite it in DR-010's place; records that name DR-010 keep their text.

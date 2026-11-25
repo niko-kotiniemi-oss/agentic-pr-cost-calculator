@@ -953,12 +953,15 @@ def test_no_further_answer_is_rewritten_while_its_item_stands() -> None:
     text = THREAT_MODEL.read_text()
     now = {item.ident: item for item in backlog_items(ROOT)}
     problems = []
-    for base in base_commits(ROOT, os.environ):
+    bases = base_commits(ROOT, os.environ)
+    compared = False
+    for base in bases:
         shown = git(ROOT, "show", f"{base}:docs/threat-model.md")
         if shown.returncode == 0:
+            compared = True
             was = {item.ident: item for item in items_in(ROOT, base).values()}
             problems += rewritten_problems(shown.stdout.decode("utf-8"), text, was, now, base)
-    assert problems == []
+    assert problems + uncompared_problems(compared, bases, "docs/threat-model.md") == []
 
 
 ITEM_PATH = "docs/backlog/B-007-a-thing.md"

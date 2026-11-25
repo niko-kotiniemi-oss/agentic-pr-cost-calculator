@@ -20,6 +20,8 @@ Every checkout writes line feeds, whatever `core.autocrlf` says, and the checks 
 
 If you work with Claude Code: Start a Claude Code session for this repository in the clone's own folder, so that it loads this repository's `CLAUDE.md` and settings from the start.
 
+In a fork, the base commit's checks, `.github/workflows/base-checks.yml`, run on `pull_request_target`, which GitHub blocks in public repositories from 2 December 2026 unless an Actions policy allows it. To run them on your fork's own pull requests, allow that event for that one workflow under Settings, Actions, Policies, as the threat model's section "Settings the owner keeps" says, and why.
+
 ## Making a change
 
 1. **The change first.** Update or add the OpenSpec change that says what must hold, with its requirements and scenarios. A change that makes or reverses a decision adds its record to [`docs/decisions/`](docs/decisions/README.md), and closes the record of any decision it reverses; a record that the default branch holds is never edited otherwise, except that a closed record's lines may become `[removed]` (R124, R129).

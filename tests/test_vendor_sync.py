@@ -918,7 +918,17 @@ def tree_commit(world: World, entries: dict[str, tuple[str, bytes]]) -> str:
         else:
             oid = git("hash-object", "-w", "--stdin", cwd=world.repo, stdin=data.decode())
         subprocess.run(
-            ["git", "update-index", "--add", "--cacheinfo", f"{mode},{oid},{path}"],
+            # With NTFS's protections off, so that a test can plant a path that the
+            # base's check must refuse.
+            [
+                "git",
+                "-c",
+                "core.protectNTFS=false",
+                "update-index",
+                "--add",
+                "--cacheinfo",
+                f"{mode},{oid},{path}",
+            ],  # fmt: skip
             cwd=world.repo,
             env={**isolated(), "GIT_INDEX_FILE": str(index)},
             check=True,
@@ -990,22 +1000,16 @@ def test_a_commit_that_gives_a_vendored_file_another_mode_fails_the_base_s_check
     assert "vendor/superpowers/LICENSE the mode 100755, not the mode 100644" in done.stderr
 
 
-@pytest.mark.parametrize(
-    ("line", "named"),
-    [
-        ("repo=someone/superpowers", "repo=someone/superpowers"),
-        ("vendored_paths=skills", "vendored_paths=skills"),
-    ],
-)
+@pytest.mark.parametrize("line", ["repo=someone/superpowers", "vendored_paths=skills"])
 def test_a_commit_whose_lock_points_elsewhere_fails_the_base_s_check(
-    world: World, line: str, named: str
+    world: World, line: str
 ) -> None:
     lock = LOCK_LINES.format(sha=world.tagged)
     key = line.partition("=")[0]
     lock = "\n".join(x for x in lock.splitlines() if not x.startswith(f"{key}=")) + f"\n{line}\n"
     done = check_commit(world, tree_commit(world, pinned_entries(world, lock)))
     assert done.returncode == 1
-    assert f"the pull request's lock gives {named}, not the base's" in done.stderr
+    assert f"the pull request's lock gives {line}, not the base's" in done.stderr
 
 
 @pytest.mark.parametrize(
@@ -1025,10 +1029,70 @@ def test_a_commit_with_a_link_or_a_gitlink_in_the_copy_fails_the_base_s_check(
     )
 
 
+@pytest.mark.parametrize(
+    ("path", "mode"),
+    [("vendor/other/link", "120000"), ("vendor/other/sub", "160000")],
+    ids=["link", "gitlink"],
+)
+def test_a_commit_with_a_link_or_a_gitlink_elsewhere_under_vendor_fails_the_base_s_check(
+    world: World, path: str, mode: str
+) -> None:
+    entries = pinned_entries(world)
+    entries[path] = (mode, world.tagged.encode() if mode == "160000" else b"../superpowers")
+    done = check_commit(world, tree_commit(world, entries))
+    assert done.returncode == 1
+    assert f"the pull request gives {path} the mode {mode}, which the check does not read" in (
+        done.stderr
+    )
+
+
+def test_a_commit_with_a_regular_file_directly_under_vendor_passes_the_base_s_check(
+    world: World,
+) -> None:
+    entries = pinned_entries(world)
+    entries["vendor/README.md"] = (REGULAR, b"what is vendored here\n")
+    done = check_commit(world, tree_commit(world, entries))
+    assert done.returncode == 0, done.stderr
+    assert "matches owner/superpowers" in done.stdout
+
+
+def test_a_path_that_the_base_s_check_refuses_to_write_fails_it(world: World) -> None:
+    entries = pinned_entries(world)
+    entries["vendor/superpowers/skills/GIT~1/config"] = (REGULAR, b"[core]\n")
+    done = check_commit(world, tree_commit(world, entries))
+    assert done.returncode == 1
+    assert "gives the path vendor/superpowers/skills/GIT~1/config, which the check does not" in (
+        done.stderr
+    )
+
+
+def test_a_path_with_a_line_feed_reaches_the_log_quoted(world: World) -> None:
+    entries = pinned_entries(world)
+    entries["vendor/superpowers/skills/x\n::warning::planted"] = ("120000", b"elsewhere")
+    done = check_commit(world, tree_commit(world, entries))
+    assert done.returncode == 1
+    assert "\n::warning::planted" not in done.stderr
+    assert "$'vendor/superpowers/skills/x\\n::warning::planted'" in done.stderr
+
+
 def test_a_commit_whose_vendor_folder_is_a_link_fails_the_base_s_check(world: World) -> None:
     done = check_commit(world, tree_commit(world, {"vendor": ("120000", b"elsewhere")}))
     assert done.returncode == 1
     assert "the pull request gives vendor the mode 120000" in done.stderr
+
+
+def test_a_commit_with_no_lock_fails_the_base_s_check(world: World) -> None:
+    entries = pinned_entries(world)
+    del entries["vendor/superpowers/UPSTREAM.lock"]
+    done = check_commit(world, tree_commit(world, entries))
+    assert done.returncode == 1
+    assert "the pull request's tree holds no vendor/superpowers/UPSTREAM.lock" in done.stderr
+
+
+def test_the_base_s_check_with_no_commit_stops(world: World) -> None:
+    done = sync(world, world.tagged, "v1.0.0", "--check-commit")
+    assert done.returncode == 2
+    assert "sync: --check-commit needs a commit" in done.stderr
 
 
 def test_a_commit_that_cannot_be_read_fails_the_base_s_check(world: World) -> None:

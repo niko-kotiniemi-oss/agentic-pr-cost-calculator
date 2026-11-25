@@ -1220,17 +1220,17 @@ Compared with the base commit that the records' check uses, no backlog item SHAL
 
 ### Requirement: An item becomes agreed only by a change to its status
 
-Compared with the base commit that the records' check uses, an item that the base does not hold SHALL be `Open to feedback and contributions` or `Planned`, and an item that the base gives as `Open to feedback and contributions` or `Dropped` SHALL NOT become `In progress` or `Done`, so that an item is agreed by its status line before it is built. The check SHALL be skipped while no base holds `docs/backlog/`. Tests SHALL fail otherwise.
+Compared with the base commit that the records' check uses, an item that the base does not hold SHALL be `Open to feedback and contributions` or `Planned`, and an item that the base gives as `Open to feedback and contributions` or `Dropped` SHALL NOT become `In progress` or `Done`, so that an item is agreed by its status line before it is built. Where no base holds `docs/backlog/`, the check SHALL fail and say so. Tests SHALL fail otherwise.
 
 #### Scenario: An item that skips agreement fails a test
 
 - **WHEN** a branch adds an item that is `In progress`, `Done` or `Dropped`, or moves an item that the base gives as `Open to feedback and contributions` or `Dropped` to `In progress` or `Done`
 - **THEN** a test fails and names the item and the two statuses
 
-#### Scenario: The first items pass before any base holds the backlog
+#### Scenario: A run with no base that holds the backlog fails
 
 - **WHEN** no base commit holds `docs/backlog/`
-- **THEN** the check of status changes examines nothing and passes, and once a base holds it, the check reads every item
+- **THEN** the check of status changes fails and says that no base holds `docs/backlog/`, so nothing was compared
 
 ### Requirement: The guide says how the project builds, concern by concern
 
@@ -1373,7 +1373,7 @@ While an entry's Where we stand opens with `Gap.` and names a backlog item that 
 
 ### Requirement: A principle of the guide changes alone
 
-Compared with the base that the records' check uses, a pull request that adds or removes a guide entry, moves one to another concern, or changes an entry's Statement, Rationale, Implications, Pattern or Anti-patterns, SHALL change no file outside `docs/`, `openspec/`, the context files and `CHANGELOG.md`, so that one diff cannot both weaken a principle and add the work that the principle forbade. The check SHALL be skipped while no base holds the guide. Tests SHALL fail otherwise.
+Compared with the base that the records' check uses, a pull request that adds or removes a guide entry, moves one to another concern, or changes an entry's Statement, Rationale, Implications, Pattern or Anti-patterns, SHALL change no file outside `docs/`, `openspec/`, the context files and `CHANGELOG.md`, so that one diff cannot both weaken a principle and add the work that the principle forbade. Where no base holds the guide, the check SHALL fail and say so. Tests SHALL fail otherwise.
 
 #### Scenario: A principle changed beside other work fails a test
 
@@ -1395,14 +1395,14 @@ Compared with the base that the records' check uses, a pull request that adds or
 - **WHEN**, compared with the base, a pull request changes a principle of the guide and, outside `docs/`, `openspec/` and `CHANGELOG.md`, changes only the root `CLAUDE.md` and `tests/CLAUDE.md`
 - **THEN** the test passes it
 
-#### Scenario: The guide's first entries pass before any base holds the guide
+#### Scenario: A run with no base that holds the guide fails (changes to the guide's principles)
 
 - **WHEN** no base commit holds `docs/patterns.md`
-- **THEN** the check of changes to the guide's principles examines nothing and passes, and once a base holds it, the check reads every entry
+- **THEN** the check of changes to the guide's principles fails and says that no base holds `docs/patterns.md`, so nothing was compared
 
 ### Requirement: A gap given to an agreed item changes that item
 
-Compared with the base that the records' check uses, a pull request that makes an entry of the guide name as a gap a backlog item that the base gives as `Planned` or `In progress` SHALL change that item's What done looks like, so that what an agreed item takes on shows in its own text, which changes only on the owner's words. The check SHALL be skipped while no base holds the guide. Tests SHALL fail otherwise.
+Compared with the base that the records' check uses, a pull request that makes an entry of the guide name as a gap a backlog item that the base gives as `Planned` or `In progress` SHALL change that item's What done looks like, so that what an agreed item takes on shows in its own text, which changes only on the owner's words. Where no base holds the guide, the check SHALL fail and say so. Tests SHALL fail otherwise.
 
 #### Scenario: A gap given to an agreed item without a change to that item fails a test
 
@@ -1414,14 +1414,14 @@ Compared with the base that the records' check uses, a pull request that makes a
 - **WHEN**, compared with the base, an entry comes to name as a gap a backlog item that the base gives as `Planned` or `In progress`, and that item's What done looks like differs from the base's, or it comes to name an item that the base gives with another status or does not hold
 - **THEN** the test passes it
 
-#### Scenario: The guide's first gaps pass before any base holds the guide
+#### Scenario: A run with no base that holds the guide fails (gaps given to agreed items)
 
 - **WHEN** no base commit holds `docs/patterns.md`
-- **THEN** the check of gaps given to agreed items examines nothing and passes, and once a base holds it, the check reads every entry's gap
+- **THEN** the check of gaps given to agreed items fails and says that no base holds `docs/patterns.md`, so nothing was compared
 
 ### Requirement: A gap of the guide closes only with its item
 
-Compared with the base that the records' check uses, a pull request in which an entry of the guide, known by its heading, stops being a gap, or its gap stops naming a backlog item that the base's gap names, SHALL leave that item `Done` or `Dropped`, so that a gap closes, or passes to other work, only through its item, and not in the pull request whose work it holds back. The check SHALL be skipped while no base holds the guide. Tests SHALL fail otherwise.
+Compared with the base that the records' check uses, a pull request in which an entry of the guide, known by its heading, stops being a gap, or its gap stops naming a backlog item that the base's gap names, SHALL leave that item `Done` or `Dropped`, so that a gap closes, or passes to other work, only through its item, and not in the pull request whose work it holds back. Where no base holds the guide, the check SHALL fail and say so. Tests SHALL fail otherwise.
 
 #### Scenario: A gap closed while its item is open fails a test
 
@@ -1438,10 +1438,10 @@ Compared with the base that the records' check uses, a pull request in which an 
 - **WHEN**, compared with the base, each backlog item that the base's gap names is `Done` or `Dropped`, or is still named by the entry's gap, whatever other items the gap comes to name
 - **THEN** the test passes it
 
-#### Scenario: The guide's first standings pass before any base holds the guide
+#### Scenario: A run with no base that holds the guide fails (gaps closed)
 
 - **WHEN** no base commit holds `docs/patterns.md`
-- **THEN** the check of gaps closed examines nothing and passes, and once a base holds it, the check reads every entry that the base gives as a gap
+- **THEN** the check of gaps closed fails and says that no base holds `docs/patterns.md`, so nothing was compared
 
 ### Requirement: This repository holds no switch and no ledger file before its own capture is turned on
 
@@ -2819,9 +2819,23 @@ The base commit's checks' job SHALL run only programs from the base's checkout o
 - **WHEN** the job's workflow restores or saves a cache, through `actions/cache` or a setup action's own cache
 - **THEN** a test of the workflows fails and names the step
 
+### Requirement: The base commit's checks read a path as a case-insensitive system writes it
+
+The base commit's checks SHALL take a pull request's path as in their scope where, with each of its parts folded to lower case and stripped of trailing dots and spaces, as Windows and macOS write it, it falls under `vendor/` or is the root marketplace file, and SHALL fail, naming the path, where such a path falls under a checked path without being spelt as that path is.
+
+#### Scenario: A path that a case-insensitive system would write into a checked path fails
+
+- **WHEN** a pull request adds `Vendor/superpowers/skills/x/SKILL.md`, `vendor/Superpowers/skills/x/SKILL.md` or `vendor/superpowers./skills/x/SKILL.md`
+- **THEN** the base commit's checks fail and name the path
+
+#### Scenario: A path spelt as the checked path passes on to the check
+
+- **WHEN** a pull request changes `vendor/superpowers/LICENSE` and nothing else
+- **THEN** the base commit's checks run the base's vendor check over it, and fail on no path's spelling
+
 ### Requirement: Only the base commit's checks run on `pull_request_target`, and no workflow on `workflow_run`
 
-No workflow here SHALL trigger on `workflow_run`, and only the workflow of the base commit's checks SHALL trigger on `pull_request_target`, granting only `contents: read` to itself and its job, reading no secret, checking out only the base's commit and giving the pull request's number and commits to a command only through `env:`. A test of the workflows SHALL fail on any other workflow that triggers on either event, and on that workflow where it holds otherwise.
+No workflow here SHALL trigger on `workflow_run`, and only the workflow of the base commit's checks SHALL trigger on `pull_request_target`, for pull requests to the default branch, granting itself and its job only `contents: read`, reading no secret, using no action but a checkout of the base that keeps no credentials, and giving the event's values only through a step's `env:`. A test SHALL fail on any other workflow that triggers on either event, and on that workflow where it holds otherwise.
 
 #### Scenario: Another workflow on `pull_request_target` fails a test
 
@@ -2830,7 +2844,7 @@ No workflow here SHALL trigger on `workflow_run`, and only the workflow of the b
 
 #### Scenario: The base commit's checks' workflow with a write permission or the pull request's checkout fails a test
 
-- **WHEN** the workflow of the base commit's checks grants a permission other than `contents: read`, names a secret, checks out the pull request's head or merge ref, or puts a `${{` expression of the event in a `run:`
+- **WHEN** the workflow of the base commit's checks grants a permission other than `contents: read`, names a secret, runs for pull requests to any other branch, checks out the pull request's head or merge ref, keeps the checkout's credentials, uses any other action, or puts a `${{` expression anywhere but a step's `env:`
 - **THEN** a test of the workflows fails and names the workflow and what it holds
 
 ### Requirement: A name that the tool gives git is never read as an option

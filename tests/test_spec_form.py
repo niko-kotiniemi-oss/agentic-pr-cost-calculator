@@ -2166,10 +2166,6 @@ def test_no_line_of_a_spec_or_of_openspec_s_output_starts_a_line_of_the_comparis
         assert all(" " <= character <= "~" or character == "\n" for character in err)
 
 
-if __name__ == "__main__":
-    record(sys.argv[1])
-
-
 # A sentence that cites "the N requirements from A to B" gives how many it cites, so that a
 # requirement inserted inside the range later, which would join it unseen, fails here.
 
@@ -2246,3 +2242,7 @@ def test_each_range_of_requirements_in_the_change_gives_how_many_it_cites() -> N
     texts = {path.parent.name: path.read_text(encoding="utf-8") for path in folder.rglob("spec.md")}
     assert range_problems(texts) == []
     assert any(RANGE.search(text) for text in texts.values()), "no range was compared"
+
+
+if __name__ == "__main__":
+    record(sys.argv[1])
