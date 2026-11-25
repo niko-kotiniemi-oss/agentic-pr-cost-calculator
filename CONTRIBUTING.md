@@ -41,6 +41,8 @@ If you work with Claude Code: Start a Claude Code session for this repository in
 
 This repository is public. Never commit session transcripts, session identifiers, cost figures measured on someone's private work, internal names or secrets. Test data is synthetic.
 
+The same holds for issues and comments. Where one holds such text by mistake, a maintainer can delete a revision from an edit history on request, which recalls no notification or copy that GitHub already sent, such as an email to those who watch the repository: report a bug with a synthetic transcript line, as the bug form asks.
+
 ## Licence
 
 By contributing you agree that your contribution is licensed under this repository's [licence](LICENSE). Before a contribution from outside the project is merged, its author will also be asked to agree to a contributor licence agreement, which backlog item [B-023](docs/backlog/B-023-a-contributor-licence-agreement.md) describes.

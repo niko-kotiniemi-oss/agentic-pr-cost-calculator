@@ -146,7 +146,7 @@ The capture step SHALL stage only the ledger file it wrote.
 
 ### Requirement: A ledger file is noted before it is written
 
-The capture step SHALL note a ledger file in its store before it writes it, so that a later run takes back a file that a run killed while writing it left behind, as the requirements from "A ledger file that no commit takes is taken back" to "A put-back is tried once, and in no other case" in `usage-capture` say for a file that no commit took.
+The capture step SHALL note a ledger file in its store before it writes it, so that a later run takes back a file that a run killed while writing it left behind, as the eight requirements from "A ledger file that no commit takes is taken back" to "A put-back is tried once, and in no other case" in `usage-capture` say for a file that no commit took.
 
 #### Scenario: A ledger file that a killed run left is taken back
 
@@ -197,7 +197,7 @@ The report SHALL count each call at most once: an added entry for a call that a 
 
 ### Requirement: The comment says how many ledger files the pull request restores, removes or changes
 
-An added ledger file (see "Only the ledger files that the merge adds are counted") at a path that a ledger file held at any commit of the default branch's first-parent history before the merge SHALL be counted as restored. The comment SHALL say how many ledger files it counted as restored, and how many ledger files that the default branch held before the merge the pull request removed or changed, and SHALL count none of their entries.
+An added ledger file (see "Only the ledger files that the merge adds are counted") at a path that a ledger file held at any commit of the default branch's first-parent history before the merge SHALL be counted as restored. The comment SHALL say how many ledger files it counted as restored, and how many ledger files that the default branch held before the merge the pull request removed or changed, and SHALL count none of the entries of any file that it restores, removes or changes.
 
 #### Scenario: Removed or changed ledger files are flagged
 

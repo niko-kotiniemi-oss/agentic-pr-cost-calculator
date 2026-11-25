@@ -6,7 +6,7 @@ Give each merged pull request one short, readable comment saying what it cost, c
 
 ### Requirement: A merged pull request gets one report comment
 
-When a pull request merges with the tool on before its merge or after it, the report SHALL post one comment giving the total cost; the cost by model, by token type and by activity type; the CI minutes and their cost, and how many of those minutes ran on runners that the price table does not list; and the number of ledger entries it counted, and the number of entries and files it did not count, for each reason that this capability and `ledger` give.
+When a pull request merges with the tool on before or after its merge, the report SHALL post one comment giving the total cost; the cost by model, by token type and by activity type; the CI minutes and their cost, and how many ran on runners that the price table does not list; and how many ledger entries it counted, and how many entries and files it did not count, for each reason that this capability and `ledger` give, or that no agent usage was recorded where it adds no ledger file.
 
 #### Scenario: The comment states the totals
 
@@ -453,7 +453,7 @@ The report SHALL run only for a push that a merge makes to the default branch, a
 
 ### Requirement: A push gets a comment only when all its commits belong to one pull request
 
-The report SHALL comment only when every commit that the push adds to the default branch's first-parent history belongs to one pull request. A push that merges no pull request SHALL get no comment. A push that merges more than one pull request, as a merge queue can, or that adds commits of no pull request beside a merge, SHALL get no comment either, because the report cannot tell which ledger files and runs belong to which. In each of these cases, the report SHALL say so in its job summary.
+The report SHALL comment only when every commit that the push adds to the default branch's first-parent history belongs to one pull request. A push that merges no pull request SHALL get no comment. A push that merges more than one pull request, as a merge queue can, or that adds commits of no pull request beside a merge, SHALL get none either, since it cannot tell which ledger files and runs belong to which. In each case, the report SHALL say so in its job summary, and its job SHALL succeed.
 
 #### Scenario: A push that merges no pull request gets no comment
 

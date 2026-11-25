@@ -1558,6 +1558,9 @@ def python_floor_problems(oldest: str, copies: dict[str, Any], prose: dict[str, 
     return problems
 
 
+# The design and the capture's spec are left out: each names other Pythons on purpose, the
+# design one before which a schema library needs another package, and the capture's spec the
+# Pythons that a scenario finds on a Windows machine before the one that it runs.
 PYTHON_PROSE = [
     "README.md",
     "SECURITY.md",
@@ -1565,6 +1568,8 @@ PYTHON_PROSE = [
     "CLAUDE.md",
     "docs/features/releases-and-compatibility.md",
     "openspec/changes/add-pr-cost-calculator/specs/releases-and-compatibility/spec.md",
+    "openspec/changes/add-pr-cost-calculator/proposal.md",
+    "openspec/changes/add-pr-cost-calculator/tasks.md",
 ]
 
 
@@ -1662,6 +1667,129 @@ def test_a_bug_report_form_whose_privacy_checkbox_is_optional_is_refused() -> No
     assert not required_privacy_checkbox({"body": []})
     option["required"] = True
     assert required_privacy_checkbox({"body": [field]})
+
+
+# R304: the bug form asks for a synthetic transcript line or the comment's counts, never a
+# real transcript, and CONTRIBUTING.md says what deleting a revision from an edit history
+# does and does not do.
+
+# A value that a template line gives is a placeholder where it is written in angle brackets.
+PLACEHOLDER = re.compile(r"<[^<>]+>")
+
+
+def reproduce_problems(form: dict[str, Any]) -> list[str]:
+    """What the bug form's field for how to reproduce a bug lacks of R304."""
+    fields = [field for field in form.get("body", []) if field.get("id") == "reproduce"]
+    if not fields:
+        return ["the bug form has no field `reproduce`"]
+    attributes = fields[0].get("attributes") or {}
+    description = " ".join(str(attributes.get("description", "")).split())
+    problems = []
+    for words in ("synthetic transcript line", "the counts that the comment shows"):
+        if words not in description:
+            problems.append(f"the field `reproduce` does not ask for {words!r}")
+    if "never paste a real transcript" not in description.lower():
+        problems.append("the field `reproduce` does not say never to paste a real transcript")
+    lines = [
+        line.strip()
+        for line in str(attributes.get("value", "")).splitlines()
+        if line.strip().startswith("{")
+    ]
+    try:
+        template = json.loads(lines[0]) if lines else None
+    except json.JSONDecodeError:
+        template = None
+    strings = list(strings_in(template)) if isinstance(template, dict) else []
+    if not strings or not all(PLACEHOLDER.fullmatch(text) for text in strings):
+        problems.append("the field `reproduce` gives no template line of placeholder values")
+    return problems
+
+
+def strings_in(value: Any) -> Iterator[str]:
+    if isinstance(value, str):
+        yield value
+    elif isinstance(value, dict):
+        for item in value.values():
+            yield from strings_in(item)
+    elif isinstance(value, list):
+        for item in value:
+            yield from strings_in(item)
+
+
+GOOD_REPRODUCE = {
+    "id": "reproduce",
+    "type": "textarea",
+    "attributes": {
+        "description": "Give a synthetic transcript line, from the template below, with every"
+        " identifier and path invented, or the counts that the comment shows. Never paste a"
+        " real transcript.",
+        "value": '{"sessionId": "<an invented id>", "cwd": "<an invented path>"}\n',
+    },
+}
+
+
+def test_the_bug_form_asks_for_a_synthetic_transcript_line() -> None:
+    form = yaml.safe_load(
+        (ROOT / ".github/ISSUE_TEMPLATE/bug_report.yml").read_text(encoding="utf-8")
+    )
+    assert reproduce_problems(form) == []
+
+
+@pytest.mark.parametrize(
+    ("change", "expected"),
+    [
+        (
+            lambda field: field["attributes"].update(description="Paste the transcript."),
+            [
+                "the field `reproduce` does not ask for 'synthetic transcript line'",
+                "the field `reproduce` does not ask for 'the counts that the comment shows'",
+                "the field `reproduce` does not say never to paste a real transcript",
+            ],
+        ),
+        (
+            lambda field: field["attributes"].update(value='{"cwd": "/home/someone/work"}\n'),
+            ["the field `reproduce` gives no template line of placeholder values"],
+        ),
+        (
+            lambda field: field["attributes"].pop("value"),
+            ["the field `reproduce` gives no template line of placeholder values"],
+        ),
+        (
+            lambda field: field.update(id="steps"),
+            ["the bug form has no field `reproduce`"],
+        ),
+    ],
+)
+def test_a_bug_form_that_asks_for_a_real_transcript_fails(
+    change: Callable[[dict[str, Any]], Any], expected: list[str]
+) -> None:
+    assert reproduce_problems({"body": [GOOD_REPRODUCE]}) == []
+    field = json.loads(json.dumps(GOOD_REPRODUCE))
+    change(field)
+    assert reproduce_problems({"body": [field]}) == expected
+
+
+EDIT_HISTORY = (
+    "a maintainer can delete a revision from an edit history on request",
+    "recalls no notification or copy that GitHub already sent",
+)
+
+
+def edit_history_problems(text: str) -> list[str]:
+    flat = " ".join(text.split())
+    return [
+        f"CONTRIBUTING.md does not say that {words}" for words in EDIT_HISTORY if words not in flat
+    ]
+
+
+def test_contributing_says_what_deleting_a_revision_does() -> None:
+    assert edit_history_problems((ROOT / "CONTRIBUTING.md").read_text(encoding="utf-8")) == []
+
+
+def test_a_contributing_page_without_the_edit_history_s_note_fails() -> None:
+    assert edit_history_problems("Be kind.") == [
+        f"CONTRIBUTING.md does not say that {words}" for words in EDIT_HISTORY
+    ]
 
 
 # R223 and R229: what this repository holds before the tool is turned on here.

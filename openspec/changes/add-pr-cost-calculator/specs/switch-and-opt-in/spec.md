@@ -431,7 +431,7 @@ An opt-out, a removal of the store, or the end of its retention window (see "The
 
 ### Requirement: Ledger files are taken back and put back whatever the switches say
 
-The switches (see "Capture runs only where the tool is on and the person has opted in") SHALL keep no run of the capture step that the floors in `releases-and-compatibility` let go on from taking back and putting back ledger files, and noting as taken the calls of a file that a commit holds, as the requirements from "A ledger file that no commit takes is taken back" to "A put-back is tried once, and in no other case" in `usage-capture` say.
+The switches (see "Capture runs only where the tool is on and the person has opted in") SHALL keep no run of the capture step that the floors in `releases-and-compatibility` let go on from taking back and putting back ledger files, and noting as taken the calls of a file that a commit holds, as the eight requirements from "A ledger file that no commit takes is taken back" to "A put-back is tried once, and in no other case" in `usage-capture` say.
 
 #### Scenario: A file staged before capture is turned off is still taken back
 

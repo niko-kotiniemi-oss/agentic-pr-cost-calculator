@@ -423,7 +423,7 @@ Calls recorded while no branch was checked out SHALL go only to a commit made wh
 
 ### Requirement: Capture keeps what it records inside the git common directory
 
-Apart from staging a ledger file, taking it back and putting it back, as the requirements from "A ledger file is staged only for a commit whose branch and contents the step can tell" to "A put-back is tried once, and in no other case" say, and its commit before a push and the taking back of that commit, the step SHALL keep what it records inside the repository's git common directory, and SHALL NOT change the working tree or the index.
+Apart from staging a ledger file, taking it back and putting it back, as the twenty-two requirements from "A ledger file is staged only for a commit whose branch and contents the step can tell" to "A put-back is tried once, and in no other case" say, and its commit before a push and the taking back of that commit, the step SHALL keep what it records inside the repository's git common directory, and SHALL NOT change the working tree or the index.
 
 #### Scenario: A turn's end leaves the working tree alone
 
@@ -469,7 +469,7 @@ The capture step SHALL treat a `git commit` as a dry run when any of `--dry-run`
 
 ### Requirement: A ledger file holds the new calls of its commit's worktree and branch
 
-The calls that the capture step stages for a commit SHALL be those recorded in the worktree where the commit runs, while the branch now checked out there was checked out, that no ledger file on that branch holds and that the step has not noted as taken (see "A ledger file that a commit takes stays taken"), and the step SHALL stage nothing when there is no such call to stage.
+The calls that the capture step stages for a commit SHALL be those recorded in the worktree where the commit runs, while the branch now checked out there was checked out, that no ledger file on that branch holds, that the step has not noted as taken (see "A ledger file that a commit takes stays taken") and that no opt-out came after (see "An opt-out ends every session's interval and empties the store"), and the step SHALL stage nothing when there is no such call to stage.
 
 #### Scenario: A commit with nothing new to record takes no ledger file
 
@@ -634,7 +634,7 @@ The step SHALL add the file even when the repository's ignore rules match it, or
 
 ### Requirement: A run that comes again before the same command stages nothing twice
 
-A run that comes again before the same command, as when a call that another hook deferred is resumed, SHALL stage nothing new while the file it staged for that command is still staged and the branch that it was staged for is still checked out there, and when that branch is no longer checked out there, SHALL first take that file back, as the requirements from "A ledger file that no commit takes is taken back" to "A put-back is tried once, and in no other case" say.
+A run that comes again before the same command, as when a call that another hook deferred is resumed, SHALL stage nothing new while the file it staged for that command is still staged and the branch that it was staged for is still checked out there, and when that branch is no longer checked out there, SHALL first take that file back, as the eight requirements from "A ledger file that no commit takes is taken back" to "A put-back is tried once, and in no other case" say.
 
 #### Scenario: A run that comes again before a command stages that command's calls once
 
@@ -695,7 +695,7 @@ Once a run finds a commit holding a ledger file that the step staged, the step S
 
 ### Requirement: Only a ledger file that no run has found in a commit is taken back
 
-A take-back SHALL NOT remove a file from a worktree where a commit holds it (see "A ledger file that no commit takes is taken back"). The step SHALL take back only a file that it staged and that no run has found a commit holding, and SHALL leave any other ledger file to git, wherever git leaves it.
+A take-back SHALL NOT remove a file from a worktree where a commit holds it (see "A ledger file that no commit takes is taken back"). The step SHALL take back only a file that it staged, or that a run killed while writing it left (see "A ledger file is noted before it is written" in `ledger`), and that no run has found a commit holding, and SHALL leave any other ledger file to git, wherever git leaves it.
 
 #### Scenario: A take-back leaves a committed file in place
 

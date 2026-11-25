@@ -2168,3 +2168,81 @@ def test_no_line_of_a_spec_or_of_openspec_s_output_starts_a_line_of_the_comparis
 
 if __name__ == "__main__":
     record(sys.argv[1])
+
+
+# A sentence that cites "the N requirements from A to B" gives how many it cites, so that a
+# requirement inserted inside the range later, which would join it unseen, fails here.
+
+RANGE = re.compile(r'the (?:([a-z]+(?:-[a-z]+)?) )?requirements from "([^"]+)" to "([^"]+)"')
+NUMBER_WORDS = {
+    word: number
+    for number, word in enumerate(
+        "zero one two three four five six seven eight nine ten eleven twelve thirteen fourteen"
+        " fifteen sixteen seventeen eighteen nineteen twenty".split()
+    )
+}
+NUMBER_WORDS.update(
+    {f"twenty-{word}": 20 + NUMBER_WORDS[word] for word in list(NUMBER_WORDS)[1:10]}
+)
+REQUIREMENT_TITLE = re.compile(r"^### Requirement: (.+?)\s*$", re.M)
+
+
+def range_problems(texts: Mapping[str, str]) -> list[str]:
+    """Each range of requirements that a spec cites whose count it does not give, or gives
+    otherwise than the specs hold, or whose ends no one spec holds in that order."""
+    titles = {name: REQUIREMENT_TITLE.findall(text) for name, text in texts.items()}
+    words = {number: word for word, number in NUMBER_WORDS.items()}
+    problems = []
+    for text in texts.values():
+        for match in RANGE.finditer(" ".join(text.split())):
+            count, first, last = match.groups()
+            cited = match.group(0)
+            spans = [
+                found.index(last) - found.index(first) + 1
+                for found in titles.values()
+                if first in found and last in found and found.index(first) <= found.index(last)
+            ]
+            if count is None:
+                problems.append(f"{cited} do not say how many they are")
+            elif len(spans) != 1:
+                problems.append(f"{cited} name no range of one spec")
+            elif NUMBER_WORDS.get(count) != spans[0]:
+                problems.append(f"{cited} are {words.get(spans[0], spans[0])}")
+    return problems
+
+
+ALPHA_SPEC = (
+    "### Requirement: First\n\nIt SHALL be first.\n\n"
+    "### Requirement: Second\n\nIt SHALL be second.\n\n"
+    "### Requirement: Third\n\nIt SHALL be third.\n"
+)
+
+
+@pytest.mark.parametrize(
+    ("cited", "expected"),
+    [
+        ('the three requirements from "First" to "Third"', []),
+        (
+            'the two requirements from "First" to "Third"',
+            ['the two requirements from "First" to "Third" are three'],
+        ),
+        (
+            'the two requirements from "First" to "Nowhere"',
+            ['the two requirements from "First" to "Nowhere" name no range of one spec'],
+        ),
+        (
+            'the requirements from "First" to "Third"',
+            ['the requirements from "First" to "Third" do not say how many they are'],
+        ),
+    ],
+)
+def test_a_range_of_requirements_gives_how_many_it_cites(cited: str, expected: list[str]) -> None:
+    texts = {"alpha": ALPHA_SPEC, "beta": f"### Requirement: Other\n\nAs {cited} say.\n"}
+    assert range_problems(texts) == expected
+
+
+def test_each_range_of_requirements_in_the_change_gives_how_many_it_cites() -> None:
+    folder = ROOT / "openspec" / "changes" / "add-pr-cost-calculator" / "specs"
+    texts = {path.parent.name: path.read_text(encoding="utf-8") for path in folder.rglob("spec.md")}
+    assert range_problems(texts) == []
+    assert any(RANGE.search(text) for text in texts.values()), "no range was compared"
