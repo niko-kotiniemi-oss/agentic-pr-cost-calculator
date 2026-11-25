@@ -44,8 +44,8 @@ The entries are read again at each assessment and before each release, and were 
 - **Pattern:** Schema evolution with backward compatibility. Source: Martin Kleppmann, Designing Data-Intensive Applications (2017), chapter 4.
 - **Anti-patterns:** Vendor lock-in, recognised by a format that only one provider's terms can fill; name the agent and the provider in each entry and row. A format changed in place, recognised by a reader that reads only the newest version; add a version instead.
 - **Held by:** DR-040, DR-181, DR-187, DR-234, `add-pr-cost-calculator` task 1.2 and `add-pr-cost-calculator` task 6.4.
-- **Rests on:** R122, R142, R156, DR-040, DR-181, DR-234, B-007
-- **Where we stand:** Gap. Before the build. B-007 gives the ledger entry and the price table an agent and a provider, as the owner chose on 2026-11-14 (DR-234). Its first part puts them in the specs (R289, R290, DR-302), and the gap closes when B-007 is done.
+- **Rests on:** R122, R142, R156, R289, R290, DR-040, DR-181, DR-234, DR-302
+- **Where we stand:** Designed. The ledger entry and the price table name an agent and a provider, as the owner chose on 2026-11-14 (R289, R290, DR-234, DR-302), and tasks 1.2 and 3.1 build them.
 
 ### Facts about other tools are written down and checked
 
@@ -79,8 +79,8 @@ The entries are read again at each assessment and before each release, and were 
 - **Pattern:** OWASP Secure Coding Practices, input validation and output encoding. Source: OWASP Foundation, Secure Coding Practices Quick Reference Guide (2010).
 - **Anti-patterns:** Script injection, recognised by event data written inside a workflow's `run:`; pass it through `env:` (GitHub Security Lab, Part 2: Untrusted input, 2021). Argument injection into git, CWE-88 in MITRE's list, recognised by a value placed where git reads options; run git from an argument list, with the value after `--end-of-options`.
 - **Held by:** DR-044, DR-321, `add-pr-cost-calculator` task 4.1 and `add-pr-cost-calculator` task 4.2.
-- **Rests on:** R36, R66, R102, DR-044, DR-321, T68, B-007
-- **Where we stand:** Gap. Before the build. B-007 adds the report's rule against script injection and the rule against argument injection into git, each as a scenario, the second with a property test.
+- **Rests on:** R36, R66, R102, R300, R314, DR-044, DR-321, T68
+- **Where we stand:** Designed. The report's workflow gives event data to commands only through the environment (R314), and a name that the tool gives git is never read as an option, with a property test (R300); tasks 4.1 and 4.2 build the report's reads.
 
 ### Anything missing or unknown leaves the tool off
 
@@ -185,7 +185,7 @@ The entries are read again at each assessment and before each release, and were 
 - **Anti-patterns:** Mutable references, recognised by an action named by a tag or a branch, or a pin whose comment names a tag that no longer points at it; pin the commit and check its comment. Installs without hash checking, recognised by a lock that holds no hashes; lock them (T66).
 - **Held by:** `tests/test_repository.py`, `tests/test_vendor_sync.py`, `renovate.json`, DR-041, DR-068, DR-126, `add-pr-cost-calculator` task 1.8 and `add-pr-cost-calculator` task 1.15.
 - **Rests on:** R34, DR-028, DR-041, DR-068, DR-126, T28, T66
-- **Where we stand:** Gap. Before the build. B-007 has task 1.15 also check that each pin's comment names a tag that resolves to its commit, and the Python side installs without hashes until task 1.8.
+- **Where we stand:** Designed. Task 1.15 checks that each pin's comment names a tag that resolves to its commit (R34), and the Python side installs without hashes until task 1.8.
 
 ### Releases come from a tag, with a bill of materials, built reproducibly
 
@@ -205,9 +205,9 @@ The entries are read again at each assessment and before each release, and were 
 - **Implications:** A security policy with private reporting (DR-077), Renovate, read-only tokens and pinned actions answer their checks, while Code-Review asks for approvals that one account cannot give its own changes (DR-141).
 - **Pattern:** OpenSSF Scorecard. Source: Open Source Security Foundation, OpenSSF Scorecard.
 - **Anti-patterns:** No static analysis, recognised by a pull request that no code scanning reads; turn on code scanning for the tool's language.
-- **Held by:** `SECURITY.md`, `renovate.json`, `tests/test_repository.py`, DR-077 and DR-141.
-- **Rests on:** DR-077, DR-141, B-007
-- **Where we stand:** Gap. Before the build. B-007 has GitHub's code scanning for Python turned on, and a step in the README that verifies a release's attestation, as the owner answered on 2026-11-12.
+- **Held by:** `SECURITY.md`, `renovate.json`, `tests/test_repository.py`, DR-077, DR-141, DR-308 and `add-pr-cost-calculator` task 4.4.
+- **Rests on:** R315, DR-077, DR-141, DR-308
+- **Where we stand:** Designed. GitHub's code scanning for Python is a setting that the owner turns on (DR-308), and task 4.4 writes the README's step that verifies a release's attestation (R315), as the owner answered on 2026-11-12.
 
 ## Testing
 
@@ -219,8 +219,8 @@ The entries are read again at each assessment and before each release, and were 
 - **Pattern:** Acceptance-test-driven development. Source: Kent Beck, Test-Driven Development: By Example (2002), and Steve Freeman and Nat Pryce, Growing Object-Oriented Software, Guided by Tests (2009).
 - **Anti-patterns:** Every acceptance test written before any code or test seam, recognised by tests bound to an interface that nobody has built; name the seam in the design, and write each group's acceptance tests at its start. One shared expected error, recognised by pending tests that all fail on one missing module and so flip at once; give each the error of its own scenario.
 - **Held by:** DR-084, DR-085, `add-pr-cost-calculator` task 1.3 and `add-pr-cost-calculator` task 1.4.
-- **Rests on:** DR-084, DR-085, B-007, B-021
-- **Where we stand:** Gap. Before the build. B-007 names a test seam in the design and gives each acceptance test an expected error of its own, and B-021 builds the seam. B-007's first part names the seam in design decision 25 and the expected errors in R291 (DR-304), and the gap closes when B-007 is done.
+- **Rests on:** R291, DR-084, DR-085, DR-304, B-021
+- **Where we stand:** Gap. Before the build. B-021 builds the test seam that design decision 25 names, and R291 gives each acceptance test an expected error of its own (DR-304), which task 1.4 builds.
 
 ### Every check is shown to fail
 
@@ -263,8 +263,8 @@ The entries are read again at each assessment and before each release, and were 
 - **Pattern:** Specification by example. Source: Gojko Adzic, Specification by Example (2011).
 - **Anti-patterns:** Fixtures that nothing compares with the real systems, recognised by hand-written transcripts with no recorded shape behind them; check each against a recorded shape of a real session, and date each recorded response. A golden master that blesses what the code printed; work each figure out by hand.
 - **Held by:** DR-167, `add-pr-cost-calculator` task 1.1 and `add-pr-cost-calculator` task 1.21.
-- **Rests on:** R139, R141, R142, DR-167, B-007, B-021
-- **Where we stand:** Gap. Before the build. B-021 records the shape of a real transcript, with no values, for the fixtures to be compared with, and B-007 has each fixture checked against it and each recorded response dated. B-007's first part states both in R292 (DR-305), and the gap closes when B-007 is done.
+- **Rests on:** R139, R141, R142, R292, DR-167, DR-305, B-021
+- **Where we stand:** Gap. Before the build. B-021 records the shape of a real transcript, with no values, and R292 has each fixture checked against it and each recorded response dated (DR-305), which task 1.1 builds.
 
 ## Decisions and documentation
 
