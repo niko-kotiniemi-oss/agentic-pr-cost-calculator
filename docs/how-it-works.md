@@ -427,6 +427,8 @@ It needs no `contents: write`, so a ruleset protecting the default branch needs 
 
 **This repository's CI** (`.github/workflows/ci.yml`) grants every job `contents: read` and nothing else. Its checkouts keep no credentials, and no job reads a secret. Each job that runs the tests clones the whole history rather than one commit, so that the decision records' check can compare the records with what the default branch held before the change. The workflow names that commit in `BASE_COMMIT`: the pull request's base commit, or the commit that a push to the default branch replaced. The check also compares with where HEAD left the default branch, since a pull request's base is the branch that its author chose, and a pull request's run starts again when its base changes, and so when its title or description is edited, since GitHub reports these as one event. The repository is public, so the whole history gives those jobs nothing that they could not already read. Every command that a step of this workflow or of the next runs, but one step of the job `ci` that checks the filter from outside it, prints through `scripts/printable_log.py`, the shell that their defaults give, so that what those commands print reaches the log as printable ASCII (R278). The lines that the runner itself writes before each step's command, such as the step's script and its environment, and what an action prints, such as the checkout's, do not go through the filter.
 
+**The base commit's checks** (`.github/workflows/base-checks.yml`), in this repository only, run on every pull request from the base branch's own copy of the workflow, on `pull_request_target`, so that a pull request cannot change the check that judges it, and grant their one job `contents: read` alone. The job checks out the base's commit, keeps no credentials, reads no secret and restores no cache; it fetches the merge commit that GitHub tests anonymously, over HTTPS, reads that commit's tree from git's objects alone, runs nothing from it, and gets the pull request's number and head only through the step's environment (R299, R317, R321, DR-312, DR-321). Its check is the second one that the ruleset on `main` requires, beside `ci` (DR-320, DR-322).
+
 **The daily check of Renovate's proposals** (`.github/workflows/renovate-watch.yml`), in this repository only, runs every day and by hand, and grants its one job `contents: read`, to check out the pins, and `pull-requests: read` and `issues: read`, to list Renovate's pull requests and find its dependency dashboard. It holds no write permission and reads no secret: its one credential is the workflow's own token, which it sends to GitHub's API alone (R263, DR-267).
 
 Each job of each workflow in this repository, with the permissions it is granted. `tests/test_documentation.py` fails when a job is granted anything this table does not give it, or the table gives a job something it is not granted:
@@ -438,6 +440,7 @@ Each job of each workflow in this repository, with the permissions it is granted
 | `ci.yml` | `vendor` | `contents: read` |
 | `ci.yml` | `windows-line-endings` | `contents: read` |
 | `ci.yml` | `ci` | `contents: read` |
+| `base-checks.yml` | `base-checks` | `contents: read` |
 | `renovate-watch.yml` | `check` | `contents: read`, `pull-requests: read`, `issues: read` |
 
 ## Connections to the outside world
@@ -484,6 +487,8 @@ Prices are never fetched: the price table is a file at the tool's commit, change
 | CI and cloud sessions | The Python Package Index | HTTPS | Install the pinned development tools in `requirements-dev.txt` |
 | CI and cloud sessions | The npm registry | HTTPS | Install the pinned OpenSpec CLI from `package-lock.json` |
 | CI | `github.com/obra/superpowers` | HTTPS, git | Check that `vendor/superpowers/` matches the commit that `UPSTREAM.lock` pins |
+| The base commit's checks | This repository on GitHub, by git, with no credential | HTTPS, git | Fetch the merge commit that GitHub tests for a pull request, as `refs/pull/<number>/merge`, to read its tree as data (R299, R317) |
+| The base commit's checks | `github.com/obra/superpowers` | HTTPS, git | Check that the pull request's `vendor/superpowers/` matches the commit that its own `UPSTREAM.lock` pins, from GitHub whatever `SYNC_REMOTE_BASE` says (R317) |
 | The daily check of Renovate's proposals | The Python Package Index's JSON API and the npm registry | HTTPS | Read when each release of a pinned tool was published (R263) |
 | The daily check of Renovate's proposals | GitHub's REST API, at the host in `GITHUB_API_URL` | HTTPS | List Renovate's pull requests, the head commits of its open ones and its dependency dashboard, with the workflow's own token (R263) |
 

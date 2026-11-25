@@ -1,0 +1,42 @@
+name: Base checks
+
+# The base commit's own checks over a pull request (R299, R317, R321, DR-312).
+# `pull_request_target` runs this file as the base branch holds it, so a pull
+# request that changes a check, or this workflow, together with what it checks
+# cannot change the check that judges it. That event is the one through which a
+# pull request's code most often reaches a token that can write, so this
+# workflow is held to what R321 allows: only `contents: read`, no secret, a
+# checkout of the base's commit alone, the event's values given to a command
+# only through `env:`, and no cache.
+on:
+  pull_request_target:
+    # As in CI: `edited` is a change of the pull request's base branch too.
+    types: [opened, synchronize, reopened, edited]
+
+# No `paths:` filters: a required check that never runs never reports, and the
+# pull request then waits forever.
+
+defaults:
+  run:
+    # The filter of CI's steps (R278), from the base's checkout.
+    shell: python3 -I scripts/printable_log.py bash --noprofile --norc -eo pipefail {0}
+
+permissions:
+  contents: read
+
+jobs:
+  base-checks:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      # With no `ref`, the checkout of a `pull_request_target` run is the base
+      # branch's commit. Nothing of the pull request is checked out: the script
+      # fetches its merge commit and reads it from git's objects alone.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - run: python3 -I scripts/base_checks.py
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}

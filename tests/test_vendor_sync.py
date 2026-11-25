@@ -897,3 +897,157 @@ def test_the_editors_configuration_unsets_its_settings_only_for_the_files_that_o
             assert "unset" not in given.values(), path
             kept = (given["charset"], given["end_of_line"], given["insert_final_newline"])
             assert kept == ("utf-8", "lf", "true"), path
+
+
+# R299, R317: the base commit's sync checks a pull request's tree from git's objects alone,
+# holding its lock to the base's repository and vendored paths, and fetching from GitHub
+# whatever SYNC_REMOTE_BASE says.
+
+LOCK_LINES = "repo=owner/superpowers\nsha={sha}\ntag=v1.0.0\n"
+REGULAR = "100644"
+
+
+def tree_commit(world: World, entries: dict[str, tuple[str, bytes]]) -> str:
+    """A commit in the repository whose tree holds these entries, each a mode and the bytes
+    of its blob, or the commit it names for a gitlink, written with git's plumbing alone."""
+    index = world.repo / ".git" / "commit-index"
+    index.unlink(missing_ok=True)
+    for path, (mode, data) in entries.items():
+        if mode == "160000":
+            oid = data.decode()
+        else:
+            oid = git("hash-object", "-w", "--stdin", cwd=world.repo, stdin=data.decode())
+        subprocess.run(
+            ["git", "update-index", "--add", "--cacheinfo", f"{mode},{oid},{path}"],
+            cwd=world.repo,
+            env={**isolated(), "GIT_INDEX_FILE": str(index)},
+            check=True,
+            capture_output=True,
+        )
+    tree = subprocess.run(
+        ["git", "write-tree"],
+        cwd=world.repo,
+        env={**isolated(), "GIT_INDEX_FILE": str(index)},
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout.strip()
+    return git("commit-tree", tree, "-m", "a pull request's tree", cwd=world.repo)
+
+
+def pinned_entries(world: World, lock: str | None = None) -> dict[str, tuple[str, bytes]]:
+    """The tree of a pull request whose copy is the pinned one, with its lock."""
+    entries = {
+        f"vendor/superpowers/{path}": ("100755" if path in EXECUTABLE else REGULAR, text.encode())
+        for path, text in RELEASED.items()
+    }
+    text = lock if lock is not None else LOCK_LINES.format(sha=world.tagged)
+    entries["vendor/superpowers/UPSTREAM.lock"] = (REGULAR, text.encode())
+    return entries
+
+
+def check_commit(
+    world: World, commit: str, environment: dict[str, str] | None = None
+) -> subprocess.CompletedProcess[str]:
+    """The base's script, with the base's lock, run over a commit's tree, with GitHub's
+    address sent to the local upstream by git's own configuration."""
+    lock = world.repo / "vendor" / "superpowers" / "UPSTREAM.lock"
+    lock.write_bytes(LOCK_LINES.format(sha=world.tagged).encode())
+    github = {
+        "GIT_CONFIG_COUNT": "1",
+        "GIT_CONFIG_KEY_0": f"url.{world.remotes.as_uri()}/.insteadOf",
+        "GIT_CONFIG_VALUE_0": "https://github.com/",
+    }
+    return subprocess.run(
+        ["bash", str(world.repo / "scripts" / SCRIPT.name), "--check-commit", commit],
+        env={**isolated(), **github, **(environment or {})},
+        capture_output=True,
+        text=True,
+    )
+
+
+def test_a_commit_whose_copy_is_the_pinned_one_passes_the_base_s_check(world: World) -> None:
+    done = check_commit(world, tree_commit(world, pinned_entries(world)))
+    assert done.returncode == 0, done.stderr
+    assert "matches owner/superpowers" in done.stdout
+
+
+def test_a_commit_that_edits_a_vendored_file_fails_the_base_s_check(world: World) -> None:
+    entries = pinned_entries(world)
+    entries["vendor/superpowers/LICENSE"] = (REGULAR, b"edited in a pull request\n")
+    done = check_commit(world, tree_commit(world, entries))
+    assert done.returncode == 1
+    assert "DIFFERS" in done.stderr
+
+
+def test_a_commit_that_gives_a_vendored_file_another_mode_fails_the_base_s_check(
+    world: World,
+) -> None:
+    entries = pinned_entries(world)
+    entries["vendor/superpowers/LICENSE"] = ("100755", RELEASED["LICENSE"].encode())
+    done = check_commit(world, tree_commit(world, entries))
+    assert done.returncode == 1
+    assert "vendor/superpowers/LICENSE the mode 100755, not the mode 100644" in done.stderr
+
+
+@pytest.mark.parametrize(
+    ("line", "named"),
+    [
+        ("repo=someone/superpowers", "repo=someone/superpowers"),
+        ("vendored_paths=skills", "vendored_paths=skills"),
+    ],
+)
+def test_a_commit_whose_lock_points_elsewhere_fails_the_base_s_check(
+    world: World, line: str, named: str
+) -> None:
+    lock = LOCK_LINES.format(sha=world.tagged)
+    key = line.partition("=")[0]
+    lock = "\n".join(x for x in lock.splitlines() if not x.startswith(f"{key}=")) + f"\n{line}\n"
+    done = check_commit(world, tree_commit(world, pinned_entries(world, lock)))
+    assert done.returncode == 1
+    assert f"the pull request's lock gives {named}, not the base's" in done.stderr
+
+
+@pytest.mark.parametrize(
+    ("path", "mode"),
+    [("vendor/superpowers/skills/b", "120000"), ("vendor/superpowers/skills/c", "160000")],
+    ids=["link", "gitlink"],
+)
+def test_a_commit_with_a_link_or_a_gitlink_in_the_copy_fails_the_base_s_check(
+    world: World, path: str, mode: str
+) -> None:
+    entries = pinned_entries(world)
+    entries[path] = (mode, world.tagged.encode() if mode == "160000" else b"../../../etc")
+    done = check_commit(world, tree_commit(world, entries))
+    assert done.returncode == 1
+    assert f"the pull request gives {path} the mode {mode}, which the check does not read" in (
+        done.stderr
+    )
+
+
+def test_a_commit_whose_vendor_folder_is_a_link_fails_the_base_s_check(world: World) -> None:
+    done = check_commit(world, tree_commit(world, {"vendor": ("120000", b"elsewhere")}))
+    assert done.returncode == 1
+    assert "the pull request gives vendor the mode 120000" in done.stderr
+
+
+def test_a_commit_that_cannot_be_read_fails_the_base_s_check(world: World) -> None:
+    done = check_commit(world, "0" * 40)
+    assert done.returncode != 0
+    assert "matches" not in done.stdout
+
+
+def test_the_base_s_check_fetches_from_github_whatever_sync_remote_base_says(
+    world: World, tmp_path: Path
+) -> None:
+    nowhere = (tmp_path / "nowhere").as_uri()
+    commit = tree_commit(world, pinned_entries(world))
+    done = check_commit(world, commit, {"SYNC_REMOTE_BASE": nowhere})
+    assert done.returncode == 0, done.stderr
+
+
+def test_an_option_that_the_sync_does_not_have_stops_it_before_it_writes(world: World) -> None:
+    done = sync(world, world.tagged, "v1.0.0", "--check-comit")
+    assert done.returncode == 2
+    assert "sync: --check-comit is not an option of the sync" in done.stderr
+    assert not (world.repo / "vendor" / "superpowers" / "skills").exists()

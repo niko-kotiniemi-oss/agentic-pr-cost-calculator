@@ -789,6 +789,13 @@ WRITES_ALLOWED: dict[str, set[str]] = {}
 # Triggers that run a workflow with this repository's token on someone else's code.
 FORBIDDEN_TRIGGERS = {"pull_request_target", "workflow_run"}
 
+# The one workflow that may trigger on `pull_request_target`: the base commit's checks, which
+# run from the base branch's copy so that a pull request cannot change them (R299, R321).
+BASE_CHECKS = "base-checks.yml"
+# What the checkout of the base commit's checks may not be given: either would check out the
+# pull request's code rather than the base's.
+CHECKOUT_TARGETS = ("ref", "repository")
+
 
 class WorkflowLoader(yaml.SafeLoader):
     """YAML read as `yaml.safe_load` reads it, but a mapping that gives a key twice is
@@ -852,9 +859,10 @@ def workflow_problems(name: str, text: str) -> list[str]:
     except ValueError:
         problems = [f"{name} gives its events in a form that this check cannot read"]
     else:
-        problems = [
-            f"{name} triggers on {trigger}" for trigger in sorted(events & FORBIDDEN_TRIGGERS)
-        ]
+        forbidden = FORBIDDEN_TRIGGERS - ({"pull_request_target"} if name == BASE_CHECKS else set())
+        problems = [f"{name} triggers on {trigger}" for trigger in sorted(events & forbidden)]
+        if name == BASE_CHECKS and "pull_request_target" in events:
+            problems += base_checks_problems(name, doc)
     blocks = [("the workflow", doc.get("permissions"))] + [
         (f"job `{job}`", body.get("permissions")) for job, body in (doc.get("jobs") or {}).items()
     ]
@@ -865,6 +873,29 @@ def workflow_problems(name: str, text: str) -> list[str]:
         )
     if re.search(r"\bsecrets\b", text):
         problems.append(f"{name} reads a secret")
+    return problems
+
+
+def base_checks_problems(name: str, doc: dict[Any, Any]) -> list[str]:
+    """What the workflow of the base commit's checks holds beyond what R321 allows it: a job
+    that is granted more than `contents: read`, a checkout of another commit or repository,
+    an expression in a shell, or a cache."""
+    problems = []
+    for job, body in (doc.get("jobs") or {}).items():
+        where = f"in job `{job}`"
+        if body.get("permissions") != {"contents": "read"}:
+            problems.append(f"{name} job `{job}` grants other than `contents: read`")
+        for step in body.get("steps") or []:
+            uses = str(step.get("uses", ""))
+            given = step.get("with") or {}
+            if uses.startswith("actions/checkout@"):
+                problems += [
+                    f"{name} checks out `{key}` {where}" for key in CHECKOUT_TARGETS if key in given
+                ]
+            if "${{" in str(step.get("run", "")):
+                problems.append(f"{name} puts an expression in a `run:` {where}")
+            if uses.startswith("actions/cache") or "cache" in given:
+                problems.append(f"{name} restores or saves a cache {where}")
     return problems
 
 
@@ -922,6 +953,89 @@ def test_a_write_the_workflow_is_allowed_is_not_reported(monkeypatch: Any) -> No
 )
 def test_a_trigger_under_either_on_key_or_in_a_list_s_mapping_is_read(text: str) -> None:
     assert workflow_problems("x.yml", text) == ["x.yml triggers on pull_request_target"]
+
+
+# R321: only the workflow of the base commit's checks triggers on `pull_request_target`, and
+# it holds only `contents: read`, checks out only the base, puts no expression in a shell and
+# shares no cache with the default branch.
+
+GOOD_BASE_CHECKS = """\
+on:
+  pull_request_target:
+permissions:
+  contents: read
+jobs:
+  base-checks:
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@0000000000000000000000000000000000000000 # v7
+        with:
+          persist-credentials: false
+      - run: python3 -I scripts/base_checks.py
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+"""
+
+
+def test_the_base_commit_s_checks_may_run_on_pull_request_target() -> None:
+    assert workflow_problems(BASE_CHECKS, GOOD_BASE_CHECKS) == []
+
+
+@pytest.mark.parametrize(
+    ("old", "new", "expected"),
+    [
+        (
+            "    permissions:\n      contents: read\n    steps:",
+            "    steps:",
+            "job `base-checks` grants other than `contents: read`",
+        ),
+        (
+            "      contents: read\n    steps:",
+            "      contents: read\n      pull-requests: read\n    steps:",
+            "job `base-checks` grants other than `contents: read`",
+        ),
+        (
+            "          persist-credentials: false\n",
+            "          persist-credentials: false\n"
+            "          ref: ${{ github.event.pull_request.head.sha }}\n",
+            "checks out `ref` in job `base-checks`",
+        ),
+        (
+            "          persist-credentials: false\n",
+            "          persist-credentials: false\n          repository: someone/fork\n",
+            "checks out `repository` in job `base-checks`",
+        ),
+        (
+            "      - run: python3 -I scripts/base_checks.py\n",
+            "      - run: echo ${{ github.event.pull_request.title }}\n",
+            "puts an expression in a `run:` in job `base-checks`",
+        ),
+        (
+            "      - run: python3",
+            "      - uses: actions/cache@0000000000000000000000000000000000000000 # v4\n"
+            "      - run: python3",
+            "restores or saves a cache in job `base-checks`",
+        ),
+        (
+            "      - run: python3",
+            "      - uses: actions/setup-python@0000000000000000000000000000000000000000 # v6\n"
+            "        with:\n          cache: pip\n"
+            "      - run: python3",
+            "restores or saves a cache in job `base-checks`",
+        ),
+    ],
+)
+def test_the_base_commit_s_checks_that_hold_more_fail(old: str, new: str, expected: str) -> None:
+    assert GOOD_BASE_CHECKS.count(old) == 1
+    text = GOOD_BASE_CHECKS.replace(old, new)
+    assert workflow_problems(BASE_CHECKS, text) == [f"{BASE_CHECKS} {expected}"]
+
+
+def test_another_workflow_on_pull_request_target_fails() -> None:
+    assert workflow_problems("other.yml", GOOD_BASE_CHECKS) == [
+        "other.yml triggers on pull_request_target"
+    ]
 
 
 def test_a_workflow_that_gives_a_key_twice_is_refused() -> None:
