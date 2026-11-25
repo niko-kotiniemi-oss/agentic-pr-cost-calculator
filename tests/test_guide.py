@@ -60,7 +60,13 @@ from test_backlog import (
     rest_problems,
 )
 from test_context_files import CONTEXT_FILES
-from test_decisions import DECIDER, attribute_problems, base_commits, records_of
+from test_decisions import (
+    DECIDER,
+    attribute_problems,
+    base_commits,
+    records_of,
+    uncompared_problems,
+)
 from test_roadmap import (
     ARCHIVED_TASKS,
     BACKLOG,
@@ -1893,9 +1899,8 @@ def test_the_repository_holds_its_principles_and_agreed_items_against_its_base()
     changes, held = principle_change_problems(ROOT, *bases)
     given, _ = agreed_gap_problems(ROOT, *bases)
     lifted, _ = closed_gap_problems(ROOT, *bases)
-    assert changes == [] and given == [] and lifted == []
-    if not held:
-        pytest.skip("no base holds the guide yet, so its checks against the base examine nothing")
+    missing = uncompared_problems(held, bases, "docs/patterns.md")
+    assert changes == [] and given == [] and lifted == [] and missing == []
 
 
 # R134: no attribute hides the diff of the guide, of a file that steers work here or of a

@@ -54,7 +54,15 @@ from risk_register import (
     threats_in,
 )
 from test_backlog import AGREED, Item, backlog_items, items_in
-from test_decisions import DECIDER, Record, attribute_problems, base_commits, git, records_of
+from test_decisions import (
+    DECIDER,
+    Record,
+    attribute_problems,
+    base_commits,
+    git,
+    records_of,
+    uncompared_problems,
+)
 from test_roadmap import (
     hidden_text_problems_in,
     link_problems_in,
@@ -1139,14 +1147,14 @@ def test_no_high_or_critical_rating_is_lowered_alone() -> None:
     text = THREAT_MODEL.read_text()
     compared = 0
     problems = []
-    for base in base_commits(ROOT, os.environ):
+    bases = base_commits(ROOT, os.environ)
+    for base in bases:
         shown = git(ROOT, "show", f"{base}:docs/threat-model.md")
         if shown.returncode == 0:
             compared += 1
             problems += lowered_problems(shown.stdout.decode("utf-8"), text)
+    problems += uncompared_problems(bool(compared), bases, "docs/threat-model.md")
     assert problems == []
-    if not compared:
-        pytest.skip("no base holds the threat model, so there is nothing to compare")
 
 
 LOWERED: Ratings = {"impact": "3 (high)", "likelihood": "1 (unlikely)", "risk": "3", "raw": HIGHEST}
