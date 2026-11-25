@@ -306,6 +306,29 @@ flowchart TD
 - 6) If it is over, the run takes the file back, unless a commit holds it (R87, R113).
 - 7) If not, the run leaves it for a later run (R87).
 
+### Calls that wait when the agent pushes
+
+```mermaid
+flowchart TD
+  A["1) Before a git push"] --> B{"2) A push of the checked-out branch, with calls waiting there?"}
+  B -->|no| C["3) Commit nothing"]
+  B -->|yes| D{"4) Index free, nothing staged, no operation in progress, not turned off?"}
+  D -->|no| C
+  D -->|yes| E["5) Commit only a ledger file"]
+  E --> F["6) The push carries it"]
+  E --> G{"7) Did the push run?"}
+  G -->|no| H["8) The next run takes the commit back"]
+```
+
+- 1) The hook runs before a Bash command whose only git command is a top-level `git push` in the foreground (R305, R311).
+- 2) Only a push that sends the checked-out branch to a branch of its own name, with calls recorded on that branch that no commit carries, gets the step's commit (R305, R311).
+- 3) Any other push, or one that the next answer stops, gets no commit, and its calls wait (R305).
+- 4) The index must be free and hold nothing staged, no rebase, merge, cherry-pick or bisect may be in progress, and the configuration file must not turn the commit off (R305, R320).
+- 5) The step writes the calls into a ledger file and commits only that file, running no hook and no program that git's configuration names but the person's own signer, guessing no identity, and signing with the person's global or system signer where git asks for signatures (R312, R320).
+- 6) The push sends that commit with the agent's own (R305).
+- 7) Whether the push ran (R313).
+- 8) Where it did not and the branch's tip is still that commit, the next run takes the commit back, leaving HEAD, the index and the working tree as they were where it cannot (R313).
+
 ### A merge and its report
 
 ```mermaid
@@ -335,7 +358,7 @@ sequenceDiagram
 - 2) The report refuses any other event (R68).
 - 3) It checks out the tool's own code at `job.workflow_sha`, without keeping the token (R24).
 - 4) It lists the pull requests associated with each commit that the push adds (R69).
-- 5) It reads `.pr-cost.json` before and after the merge, and when both leave the tool off, says why in the job summary and stops (R19, R172).
+- 5) It reads `.pr-cost.json` before and after the merge, and when both leave the tool off, or name another repository, says why in the job summary and stops (R19, R172, R296).
 - 6) It fetches the default branch's history and the pull request's head, `refs/pull/<number>/head` (R23).
 - 7) It reads the ledger files that the merge adds, as git blobs, within the size bound, holding each file to the version of the ledger format that its first line states (R23, R35, R58, R66, R158).
 - 8) It reads the call ids of the first-parent history's earlier ledger files, by the versions that they state, so that no call counts twice (R59, R67, R168).
@@ -359,7 +382,7 @@ flowchart LR
 
 - 1) Anthropic, another provider or GitHub publishes a new price (R14, R289).
 - 2) A few days later, a pull request adds a row with its provider, its effective date, the day it is added and its source, dated after the newest row of its provider, model and price and at most 30 days before the day it is added, unless it names its reason, and updates the day the table was last checked (R14, R294, R295, DR-299).
-- 3) Review and CI check it, since prices are read from the table in the repository and never fetched (R30).
+- 3) Review and CI check it, since prices are read from the table at the tool's own commit and never fetched (R30).
 - 4) It merges to the default branch (R30).
 - 5) The next release names the commit in its text (R27).
 - 6) Adopters update the hook and the workflow pin together, to the commit that the release names (R203).

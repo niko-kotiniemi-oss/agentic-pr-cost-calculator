@@ -90,7 +90,7 @@ The assumptions about git: what its commands, options, attributes, locks and con
 
 ## A21. The git commands that the step runs start no program that the step did not choose, apart from those that git's configuration names.
 
-- **Rests on it:** R54, R197, T15, T19, T46, T112, T144, DR-188, DR-198
+- **Rests on it:** R54, R197, R312, R320, T15, T19, T46, T112, T144, DR-188, DR-198
 - **If it is wrong:** A program that git starts would run at every capture run, outside the step's own guard (T15, T46), in a clone that a session only meets as well (T144), and one that a command's own options start could change the branch before a commit (T19).
 - **Fact:** The git commands that the step itself runs start no other program, except programs that git's configuration names, the person's own or the repository's, such as `core.fsmonitor`, which `git status`, `git add`, `git rm --cached`, `git ls-files`, `git diff --cached` and `git check-attr` start, each of which reads the index, and `gpg.program`, which `git log` and `git show` start for a signed commit when `log.showSignature` is on, while `git config` and `git rev-parse` start neither, or a clean filter that the repository's `info/attributes` assigns, which `git add` starts, so that whoever can write the git common directory can name one.
   - **Relied on:** R54, R197, T15, T46, T112, T144, DR-188, DR-198
@@ -98,6 +98,9 @@ The assumptions about git: what its commands, options, attributes, locks and con
 - **Fact:** git's own options and environment variables in a command can make git start another program, such as `git -c diff.external=<program> diff`, `git -c core.hooksPath=<folder> commit` or `GIT_EDITOR=<program> git commit`, and such a program can change the branch before a commit.
   - **Relied on:** T19
   - **Checked:** not yet: none will, since T19's residual accepts the case
+- **Fact:** `git commit`, which the step runs before a push, starts the hooks of the folder that `core.hooksPath` names, the `core.fsmonitor` program, `git gc --auto` and `git maintenance run --auto` where their thresholds are reached, and, where `commit.gpgSign` is on, the program that `gpg.program`, `gpg.ssh.program` or `gpg.x509.program` names for the format that `gpg.format` gives, and `-c` options on its command line that name an empty hooks folder and turn the others off start none of them but the signer.
+  - **Relied on:** R312, R320
+  - **Checked:** not yet: `add-pr-cost-calculator` task 2.7 checks it, by the scenarios of R312 and R320
 
 ## A40. The options of `git commit` mean what capture takes them to mean.
 

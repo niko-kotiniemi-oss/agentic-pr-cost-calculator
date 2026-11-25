@@ -29,7 +29,7 @@ The entries are read again at each assessment and before each release, and were 
 
 - **Statement:** Each step between a session's calls and the report's figure exists because a requirement needs it, and a simpler way is weighed in a record before a more complex one is built.
 - **Rationale:** A part that answers another part's problem, rather than a requirement, brings risks and code of its own.
-- **Implications:** How usage reaches a commit is weighed against git notes and against a commit that holds only the ledger file, in DR-316, which replaced the record that sent usage only inside the agent's own commits.
+- **Implications:** How usage reaches a commit is weighed against git notes and against a commit that holds only the ledger file, in a record that replaces DR-010.
 - **Pattern:** Simple design. Source: Kent Beck, Extreme Programming Explained (1999), the rules of simple design.
 - **Anti-patterns:** Accidental complexity, after Fred Brooks's No Silver Bullet (1986), recognised by a part whose only reason is another part; take it out, or record the requirement that needs it.
 - **Held by:** DR-316, `add-pr-cost-calculator` task 2.7. Review: whether each part of the path from the calls to the report answers a requirement.
@@ -67,9 +67,9 @@ The entries are read again at each assessment and before each release, and were 
 - **Implications:** No workflow triggers on `pull_request_target` or `workflow_run`, the report runs only after a merge, from its own pinned code, and no workflow here can be called from another repository before the report's guard exists (R229).
 - **Pattern:** Preventing pwn requests. Source: GitHub Security Lab, Keeping your GitHub Actions and workflows secure, Part 1: Preventing pwn requests (2021).
 - **Anti-patterns:** A pwn request, recognised by a privileged workflow that checks out a pull request's head; run privileged work after the merge, from the default branch's code.
-- **Held by:** `tests/test_repository.py`, DR-018, DR-061, DR-217 and `add-pr-cost-calculator` task 1.29.
-- **Rests on:** R229, DR-018, DR-061, DR-217, T23
-- **Where we stand:** Followed. The checks of the workflows refuse the triggers that run a pull request's code with this repository's token, and task 4.3 adds the report's own refusal of every other event.
+- **Held by:** `tests/test_repository.py`, DR-018, DR-061, DR-217, DR-321 and `add-pr-cost-calculator` task 1.29.
+- **Rests on:** R229, R321, DR-018, DR-061, DR-217, DR-321, T23, T320
+- **Where we stand:** Followed. The checks of the workflows refuse the triggers that run a pull request's code with this repository's token, allow `pull_request_target` only for the base commit's checks and hold that job to a read-only token, no cache and no checkout of the pull request, and task 4.3 adds the report's own refusal of every other event.
 
 ### Everything that crosses into the tool is untrusted
 

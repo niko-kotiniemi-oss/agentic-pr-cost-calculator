@@ -33,7 +33,7 @@ CI's last job, `ci`, needs every other job of `.github/workflows/ci.yml` and pas
 
 ## Scope
 
-This covers how CI's jobs reach the ruleset. What the ruleset on `main` requires is DR-322 (The ruleset on `main` requires a pull request, the `ci` check and the base commit's checks), that it has no bypass actor is DR-140 (The ruleset on `main` has no bypass actor), and the jobs' tokens are DR-321 (Workflow tokens are read-only, except for releases and the report's comment).
+This covers how CI's jobs reach the ruleset. What the ruleset on `main` requires is DR-322 (The ruleset on `main` requires a pull request, the `ci` check and the base commit's checks), that it has no bypass actor is DR-140 (The ruleset on `main` has no bypass actor), and the jobs' tokens are DR-321 (Workflow tokens are read-only, except for releases and the report's comment, and only the base commit's checks run on `pull_request_target`).
 
 ## What reversing it would change
 
