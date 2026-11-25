@@ -39,6 +39,7 @@ A release's entry lists any breaking change under `### Breaking`, and the releas
 
 ### Changed
 
+- Two of the guide's principles, as the owner asked: the one on the path from the calls to the report says that a record of B-007 weighs how usage reaches a commit, and the one on privileged workflows lets `pull_request_target` run a job that runs only the base's own code with a read-only token.
 - The pages other than the specs, such as the threat model, the design, the feature pages and the page on how the tool works, cite the requirement that states a behaviour instead of stating it again, while keeping in words what a reader acts on or relies on (DR-232, DR-250, DR-251). `docs/evidence/B-022-mapping.md` shows where each clause that they lost is held.
 - The records that sent usage only inside the agent's own commits, made CI's aggregate job the only required check, kept every workflow off `pull_request_target` and set the ruleset on `main` are closed, and DR-316, DR-320, DR-321 and DR-322 replace them; the checks that compare records, threats and the guide's principles with their base fail, rather than pass, where no base gave anything to compare (R129).
 - The licence moves from MIT to the Fair Core License, version 1.0, with MIT as its future licence (FCL-1.0-MIT): the tool is fair source, not open source, as the README's section on the licence says (DR-242, DR-243).

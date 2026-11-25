@@ -29,7 +29,7 @@ The entries are read again at each assessment and before each release, and were 
 
 - **Statement:** Each step between a session's calls and the report's figure exists because a requirement needs it, and a simpler way is weighed in a record before a more complex one is built.
 - **Rationale:** A part that answers another part's problem, rather than a requirement, brings risks and code of its own.
-- **Implications:** How usage reaches a commit is weighed against git notes and against a commit that holds only the ledger file, in a record that replaces DR-010.
+- **Implications:** How usage reaches a commit is weighed against git notes and against a commit that holds only the ledger file, in a record of B-007.
 - **Pattern:** Simple design. Source: Kent Beck, Extreme Programming Explained (1999), the rules of simple design.
 - **Anti-patterns:** Accidental complexity, after Fred Brooks's No Silver Bullet (1986), recognised by a part whose only reason is another part; take it out, or record the requirement that needs it.
 - **Held by:** DR-316, `add-pr-cost-calculator` task 2.7. Review: whether each part of the path from the calls to the report answers a requirement.
@@ -64,7 +64,7 @@ The entries are read again at each assessment and before each release, and were 
 
 - **Statement:** No workflow that holds a write token or a secret runs code, or reads text, from a pull request.
 - **Rationale:** Anyone can open a pull request, and its code, run with this repository's token, could write to the repository or reach adopters.
-- **Implications:** No workflow triggers on `pull_request_target` or `workflow_run`, the report runs only after a merge, from its own pinned code, and no workflow here can be called from another repository before the report's guard exists (R229).
+- **Implications:** No workflow triggers on `workflow_run`, and none on `pull_request_target` but a job that runs only the base's own code with a read-only token, reading the pull request's files only from git's stored objects; the report runs only after a merge, from its own pinned code, and no workflow here can be called from another repository before the report's guard exists (R229).
 - **Pattern:** Preventing pwn requests. Source: GitHub Security Lab, Keeping your GitHub Actions and workflows secure, Part 1: Preventing pwn requests (2021).
 - **Anti-patterns:** A pwn request, recognised by a privileged workflow that checks out a pull request's head; run privileged work after the merge, from the default branch's code.
 - **Held by:** `tests/test_repository.py`, DR-018, DR-061, DR-217, DR-321 and `add-pr-cost-calculator` task 1.29.
