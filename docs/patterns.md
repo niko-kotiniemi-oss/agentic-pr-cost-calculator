@@ -29,12 +29,12 @@ The entries are read again at each assessment and before each release, and were 
 
 - **Statement:** Each step between a session's calls and the report's figure exists because a requirement needs it, and a simpler way is weighed in a record before a more complex one is built.
 - **Rationale:** A part that answers another part's problem, rather than a requirement, brings risks and code of its own.
-- **Implications:** How usage reaches a commit is weighed against git notes and against a commit that holds only the ledger file, in a record that replaces DR-010.
+- **Implications:** How usage reaches a commit is weighed against git notes and against a commit that holds only the ledger file, in DR-316, which replaced the record that sent usage only inside the agent's own commits.
 - **Pattern:** Simple design. Source: Kent Beck, Extreme Programming Explained (1999), the rules of simple design.
 - **Anti-patterns:** Accidental complexity, after Fred Brooks's No Silver Bullet (1986), recognised by a part whose only reason is another part; take it out, or record the requirement that needs it.
-- **Held by:** DR-010. Review: whether each part of the path from the calls to the report answers a requirement.
-- **Rests on:** DR-010, B-007
-- **Where we stand:** Gap. Before the build. B-007 weighs git notes and a commit that holds only the ledger file in a record that replaces DR-010.
+- **Held by:** DR-316, `add-pr-cost-calculator` task 2.7. Review: whether each part of the path from the calls to the report answers a requirement.
+- **Rests on:** DR-316, B-007
+- **Where we stand:** Designed. DR-316 weighs git notes and a commit that holds only the ledger file, and chooses the commit, which R305 holds.
 
 ### Formats name their agent, their provider and their version
 
@@ -78,8 +78,8 @@ The entries are read again at each assessment and before each release, and were 
 - **Implications:** Reads refuse what is not a regular file, learn a size before reading, and count what they refuse rather than stopping (R36, R66, R102).
 - **Pattern:** OWASP Secure Coding Practices, input validation and output encoding. Source: OWASP Foundation, Secure Coding Practices Quick Reference Guide (2010).
 - **Anti-patterns:** Script injection, recognised by event data written inside a workflow's `run:`; pass it through `env:` (GitHub Security Lab, Part 2: Untrusted input, 2021). Argument injection into git, CWE-88 in MITRE's list, recognised by a value placed where git reads options; run git from an argument list, with the value after `--end-of-options`.
-- **Held by:** DR-044, DR-067, `add-pr-cost-calculator` task 4.1 and `add-pr-cost-calculator` task 4.2.
-- **Rests on:** R36, R66, R102, DR-044, DR-067, T68, B-007
+- **Held by:** DR-044, DR-321, `add-pr-cost-calculator` task 4.1 and `add-pr-cost-calculator` task 4.2.
+- **Rests on:** R36, R66, R102, DR-044, DR-321, T68, B-007
 - **Where we stand:** Gap. Before the build. B-007 adds the report's rule against script injection and the rule against argument injection into git, each as a scenario, the second with a property test.
 
 ### Anything missing or unknown leaves the tool off
@@ -148,8 +148,8 @@ The entries are read again at each assessment and before each release, and were 
 - **Implications:** Checkouts keep no credentials, no workflow reads a secret, and the repository's default token is read-only as a backstop (DR-076).
 - **Pattern:** Least privilege. Source: Jerome Saltzer and Michael Schroeder, The Protection of Information in Computer Systems (1975), and the Token-Permissions check of OpenSSF Scorecard.
 - **Anti-patterns:** A token with every permission, recognised by a workflow that declares none or declares write access at its top; declare read access at the top and grant a write per job.
-- **Held by:** `tests/test_repository.py`, DR-063, DR-067, DR-076, `add-pr-cost-calculator` task 4.3 and `add-pr-cost-calculator` task 6.3.
-- **Rests on:** DR-063, DR-067, DR-076, T24
+- **Held by:** `tests/test_repository.py`, DR-063, DR-076, DR-321, `add-pr-cost-calculator` task 4.3 and `add-pr-cost-calculator` task 6.3.
+- **Rests on:** DR-063, DR-076, DR-321, T24
 - **Where we stand:** Designed. The workflows that exist hold it, and the report's and the release's are still to be built.
 
 ### What cannot be undone stays with the owner's own keys

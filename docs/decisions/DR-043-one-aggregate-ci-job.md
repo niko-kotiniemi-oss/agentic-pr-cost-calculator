@@ -3,12 +3,12 @@
 - **Type:** technical
 - **Boundary:** inside
 - **Reversibility:** reversible
-- **Status:** accepted
+- **Status:** closed
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** R25
 - **Threats:** none
 - **Replaces:** none
-- **Closed by:** none
+- **Closed by:** DR-320
 
 ## Context
 

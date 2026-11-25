@@ -4,13 +4,13 @@ The assumptions about Claude Code: what its transcripts hold, when its hooks run
 
 ## A1. Claude Code keeps each session's transcript where the capture step can read it while the session lasts.
 
-- **Rests on it:** R2, R7, R52, R87, T2, T8, T10, T19, T131, DR-003, DR-008, DR-010, DR-014, DR-033, DR-053, DR-055, DR-110, DR-172, DR-184
+- **Rests on it:** R2, R7, R52, R87, T2, T8, T10, T19, T131, DR-003, DR-008, DR-316, DR-014, DR-033, DR-053, DR-055, DR-110, DR-172, DR-184
 - **If it is wrong:** If the transcript were kept elsewhere or in another form, capture would find nothing it can read, and no usage would reach a pull request (T8). If a transcript moved, or lost its earlier calls, at a resume or a change of worktree, a later run would miss a command's result, so a staged ledger file would wait (T10), or would record again calls that the branch holds (T19).
 - **Fact:** Claude Code writes each session's transcript as JSON lines, one JSON object per line, in a file on the machine that runs the session.
   - **Relied on:** R2, T8, DR-003, DR-110, DR-172
   - **Checked:** not yet: none will, since no test may reach Claude Code; the walking skeleton's run on 2026-11-17 saw it in a project's cloud thread, under `~/.claude/projects/` in a folder named after the thread's folder, with one JSON object on every line
 - **Fact:** A cloud session's machine is thrown away when the session ends, and the transcript goes with it.
-  - **Relied on:** R7, T8, DR-008, DR-010, DR-172
+  - **Relied on:** R7, T8, DR-008, DR-316, DR-172
   - **Checked:** not yet: none will, since no test may reach Claude Code; the walking skeleton's run on 2026-11-17 could not tell, since its session had not ended when its observations were written
 - **Fact:** Reading transcripts after a session has ended is slow for a long pull request, and needs access that a CI job does not have.
   - **Relied on:** R7, DR-172
@@ -227,7 +227,7 @@ The assumptions about Claude Code: what its transcripts hold, when its hooks run
 
 ## A6. The agent runs git in forms that capture recognises, and acts on GitHub as the owner's own account.
 
-- **Rests on it:** R7, R26, R33, R48, R52, R56, R79, R80, R82, R87, R112, T8, T10, T19, T32, T62, T64, T65, T189, T233, DR-007, DR-010, DR-013, DR-014, DR-030, DR-034, DR-035, DR-055, DR-070, DR-111, DR-128, DR-140, DR-141, DR-144
+- **Rests on it:** R7, R26, R33, R48, R52, R56, R79, R80, R82, R87, R112, T8, T10, T19, T32, T62, T64, T65, T189, T233, DR-007, DR-316, DR-013, DR-014, DR-030, DR-034, DR-035, DR-055, DR-070, DR-111, DR-128, DR-140, DR-141, DR-144
 - **If it is wrong:** Commits made in other forms, through a wrapper, an alias, another tool or a person, would get no ledger file, so their calls would wait for a later commit or reach none (T8), and a change of branch made that way would send calls to the next branch (T19). If an agent could not read back and remove a link that a tool adds, private references would reach the public repository (T32, T65), as they would from a session that works here without the root, which says to remove one (T233), and if agent sessions had an identity of their own, rulesets could hold what only `CLAUDE.md` holds today (T64).
 - **Fact:** Claude Code applies the aliases and functions of the person's shell start-up file to every Bash command, so git run through one of them does not match the hook's condition.
   - **Relied on:** R7, R82, T8, T19, T189, DR-030
@@ -239,7 +239,7 @@ The assumptions about Claude Code: what its transcripts hold, when its hooks run
   - **Relied on:** R7, T8, T19, DR-007
   - **Checked:** not yet: none will, since no test may reach Claude Code
 - **Fact:** The agent itself makes the pull request's commits, through the Bash tool, with a command whose text runs `git commit`.
-  - **Relied on:** R7, R82, T8, DR-010, DR-013, DR-128
+  - **Relied on:** R7, R82, T8, DR-316, DR-013, DR-128
   - **Checked:** not yet: none will, since no test may reach Claude Code; the walking skeleton's run on 2026-11-17 saw the agent and its subagent commit through the Bash tool, each with a command whose text ran `git commit`
 - **Fact:** Claude writes its commits in forms that capture recognises: `git` as a top-level command in the foreground, not behind a wrapper, an alias or another command's output.
   - **Relied on:** R82, T8, T10, T19, DR-013, DR-030, DR-034

@@ -26,7 +26,7 @@ CI runs, on every pull request, from the base branch's own workflow on `pull_req
 ## Consequences
 
 - A pull request that changes a check, or the job's workflow, reaches the default branch only through the owner's review, and checks only the pull requests after it.
-- The job's check is outside the aggregate `ci` job, which cannot need a job of another workflow, so the ruleset on `main` requires it beside `ci`: a setting that the owner makes, and records that replace DR-043, DR-067 and DR-072 at the build.
+- The job's check is outside the aggregate `ci` job, which cannot need a job of another workflow, so the ruleset on `main` requires it beside `ci`: a setting that the owner makes, and DR-320, DR-321 and DR-322, which replace the records that made `ci` the one required check and let no workflow trigger on `pull_request_target`.
 - A pull request from a fork runs the job without the approval that DR-078 asks for its own workflows, since the job runs the base's code alone.
 - The job reads the pull request's tree through git, which the design threat-models (T320).
 - The base's sync script finds its tree from its own location, so the build gives it a way to read another tree; the marketplace half holds only once task 6.9 builds the marketplace's checks.

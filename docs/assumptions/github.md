@@ -4,7 +4,7 @@ The assumptions about GitHub: this repository's settings there, and its workflow
 
 ## A7. The repository's settings on GitHub are applied, and stay applied, as the threat model's section on the settings the owner keeps lists them.
 
-- **Rests on it:** R27, T28, T33, T35, T37, T61, T62, T64, T67, T68, T76, T100, T132, T133, T142, T231, DR-072, DR-073, DR-074, DR-075, DR-076, DR-077, DR-078, DR-084, DR-089, DR-119, DR-122, DR-140, DR-141, DR-144, DR-161, DR-203, DR-243, DR-244
+- **Rests on it:** R27, T28, T33, T35, T37, T61, T62, T64, T67, T68, T76, T100, T132, T133, T142, T231, DR-073, DR-074, DR-075, DR-076, DR-077, DR-078, DR-084, DR-089, DR-119, DR-122, DR-140, DR-141, DR-144, DR-161, DR-203, DR-243, DR-244, DR-322
 - **If it is wrong:** Each answer that rests on a setting would fail without any sign: a change could reach `main` without a pull request or `ci`, also from an agent session acting as the owner's account (T62, T64), a release or its tag could change after adopters took it (T67), a workflow that declares no permissions could get a write token (T68), a fork's pull request could run CI before the owner looked at it (T37), two pull requests could take one record's number (T76), a reporter could find no private route (T61), a published release's zip could change after people checked it (T133), someone could serve another plugin from the address that people added the marketplace by (T142), and an update could merge itself once its checks pass (T64, T231). No test reads a setting on GitHub, so nothing would show that one changed (T100).
 - **Fact:** A ruleset that requires branches to be up to date before merging makes a pull request's CI run on what the default branch holds before the pull request merges.
   - **Relied on:** T76, DR-119
@@ -13,7 +13,7 @@ The assumptions about GitHub: this repository's settings there, and its workflow
   - **Relied on:** T37, T100, DR-078, DR-244, `docs/threat-model.md`
   - **Checked:** not yet: none will, since no test may read a setting on GitHub
 - **Fact:** **The ruleset on `main`** is set as the threat model's section on the settings the owner keeps says, and stays so.
-  - **Relied on:** T28, T33, T35, T62, T64, T100, T132, DR-072, DR-084, DR-089, DR-140, `docs/threat-model.md`
+  - **Relied on:** T28, T33, T35, T62, T64, T100, T132, DR-084, DR-089, DR-140, DR-322, `docs/threat-model.md`
   - **Checked:** not yet: none will, since no test may read a setting on GitHub
 - **Fact:** **Auto-merge off** is set as the threat model's section on the settings the owner keeps says, and stays so.
   - **Relied on:** T64, T100, T231, `docs/threat-model.md`
@@ -45,13 +45,13 @@ The assumptions about GitHub: this repository's settings there, and its workflow
 
 ## A8. Workflows and required checks run when the design expects them to.
 
-- **Rests on it:** R33, R129, T28, T35, T65, T70, T76, DR-043, DR-072, DR-119, DR-243, DR-283
+- **Rests on it:** R33, R129, T28, T35, T65, T70, T76, DR-119, DR-243, DR-283, DR-320, DR-322
 - **If it is wrong:** A failed, cancelled or skipped job might not block a merge, so the `ci` check would not stand for the jobs before it (T28, T35). A change of a pull request's base, title or body that sends no event, or whose event carries stale text, would go unchecked until the next event (T70, T65).
 - **Fact:** A required check that never runs never reports, so a pull request that requires it waits for good.
-  - **Relied on:** DR-043, DR-072
+  - **Relied on:** DR-320, DR-322
   - **Checked:** not yet: none will, since no test may reach GitHub
 - **Fact:** A job with `if: always()` runs even when a job that it needs has failed, so a last job that fails unless each job it needs succeeded can stand for all of them as the one required check.
-  - **Relied on:** T28, T35, DR-043, DR-072, DR-283
+  - **Relied on:** T28, T35, DR-283, DR-320, DR-322
   - **Checked:** not yet: none will, since no test may reach GitHub; `add-pr-cost-calculator` task 1.7 and `add-pr-cost-calculator` task 1.54 test only what this repository does with it
 - **Fact:** GitHub runs a pull request's CI again when the pull request is pushed to, not when its base branch moves on.
   - **Relied on:** T76, DR-119
@@ -184,7 +184,7 @@ The assumptions about GitHub: this repository's settings there, and its workflow
 
 ## A20. Checkouts and GitHub's hosted runners are what the workflows expect.
 
-- **Rests on it:** R23, R24, R25, R27, T22, T23, T24, T68, DR-019, DR-023, DR-067, DR-076, DR-217
+- **Rests on it:** R23, R24, R25, R27, T22, T23, T24, T68, DR-019, DR-023, DR-076, DR-217, DR-321
 - **If it is wrong:** The report would fail on a runner without a suitable `python3`, and the tools on a runner that is not trustworthy would be exposed to the release job's token and the report's (T68, T23, T24).
 - **Fact:** `actions/checkout` fetches one commit unless it is asked for more.
   - **Relied on:** R23, T22, DR-019
@@ -193,7 +193,7 @@ The assumptions about GitHub: this repository's settings there, and its workflow
   - **Relied on:** R24, R25, DR-023, DR-217
   - **Checked:** not yet: `add-pr-cost-calculator` task 7.1 meets it once, at the merge of that task's own pull request
 - **Fact:** GitHub's hosted runners, and the `python3` and `git` installed on them, are trustworthy, though nothing pins the runner image.
-  - **Relied on:** R24, R27, T23, T24, T68, DR-067, DR-076
+  - **Relied on:** R24, R27, T23, T24, T68, DR-076, DR-321
   - **Checked:** not yet: none will, since no test may reach GitHub
 
 ## A48. A pull request's commits stay findable after every merge method.
@@ -258,13 +258,13 @@ The assumptions about GitHub: this repository's settings there, and its workflow
 
 ## A35. GitHub enforces the permissions a workflow declares, gives runs from forks a read-only token, and gives a reusable workflow its caller's event, as its documentation says.
 
-- **Rests on it:** R24, R68, T23, T24, T29, T37, T320, DR-005, DR-016, DR-018, DR-061, DR-063, DR-067, DR-078, DR-132, DR-244
+- **Rests on it:** R24, R68, T23, T24, T29, T37, T320, DR-005, DR-016, DR-018, DR-061, DR-063, DR-078, DR-132, DR-244, DR-321
 - **If it is wrong:** A token could hold more than the report declares, as through an adopter's broad grant (T24, T29), a fork's pull request could write through CI (T37), and the report's own check of the event would read the wrong event, so it could refuse every merge or let another event through (T23).
 - **Fact:** GitHub enforces the permissions that a workflow declares, setting each one that it does not declare to `none`, and a reusable workflow can narrow, but not widen, the permissions that its caller passes it.
   - **Relied on:** R24, T24, T29, DR-016, DR-063, DR-132
   - **Checked:** documented: <https://github.com/github/docs/blob/33b1f4a6fec2d9b6fd3d374afa56bcd9f0875b57/data/reusables/actions/github-token-scope-descriptions.md>, <https://github.com/github/docs/blob/33b1f4a6fec2d9b6fd3d374afa56bcd9f0875b57/content/actions/reference/workflows-and-actions/reusing-workflow-configurations.md>, read 2026-11-01
 - **Fact:** A workflow run for a pull request from a fork gets a `GITHUB_TOKEN` with read-only permissions.
-  - **Relied on:** T37, T320, DR-018, DR-067, DR-078, DR-244
+  - **Relied on:** T37, T320, DR-018, DR-078, DR-244, DR-321
   - **Checked:** documented: <https://github.com/github/docs/blob/33b1f4a6fec2d9b6fd3d374afa56bcd9f0875b57/data/reusables/developer-site/pull_request_forked_repos_link.md>, read 2026-11-01
 - **Fact:** A reusable workflow's `github` context is always its caller's, so it names the event that triggered the caller.
   - **Relied on:** R68, T23, T29, DR-005, DR-061, DR-132
