@@ -30,6 +30,11 @@ The capture step SHALL record nothing unless the repository's configuration turn
 - **WHEN** the setup script of the cloud environment where a session runs has set `pr-cost.capture` to `true` in the global git configuration with `git config --global`, and the session makes calls in a repository that turns the tool on and then commits there
 - **THEN** that commit adds a ledger file that holds those calls
 
+#### Scenario: An organization's managed settings can opt a member in
+
+- **WHEN** the hook that the README gives for an organization's managed settings runs with `CLAUDE_CODE_REMOTE` set to `true`, while the global git configuration does not give `pr-cost.capture` as `true`, and after a later run of the step finds both switches on, the session makes calls in a repository that turns the tool on and commits there
+- **THEN** that commit adds a ledger file that holds those calls
+
 ### Requirement: Having the plugin opts no one in
 
 The plugin SHALL record nothing for a session whose opt-in is not on, however the plugin came to that session, such as when an organization turns it on or requires it for its members.
@@ -426,12 +431,17 @@ An opt-out, a removal of the store, or the end of its retention window (see "The
 
 ### Requirement: Ledger files are taken back and put back whatever the switches say
 
-The switches (see "Capture runs only where the tool is on and the person has opted in") SHALL keep no run of the capture step that the floors in `releases-and-compatibility` let go on from taking back and putting back ledger files, and noting as taken the calls of a file that a commit holds, as the requirements from "A ledger file that no commit takes is taken back" to "A put-back is tried once, and in no other case" in `usage-capture` say.
+The switches (see "Capture runs only where the tool is on and the person has opted in") SHALL keep no run of the capture step that the floors in `releases-and-compatibility` let go on from taking back and putting back ledger files, and noting as taken the calls of a file that a commit holds, as the eight requirements from "A ledger file that no commit takes is taken back" to "A put-back is tried once, and in no other case" in `usage-capture` say.
 
 #### Scenario: A file staged before capture is turned off is still taken back
 
 - **WHEN** the step has staged a ledger file for a `git commit` that is then refused at a permission prompt, the person then turns capture off, and the step's next run finds that command over while no other git command holds the index
 - **THEN** that run takes the file back, from the index and the working tree
+
+#### Scenario: A file taken back before capture is turned off is still put back
+
+- **WHEN** a take-back removes a ledger file while a commit that takes it is still running, the person then turns capture off, and the step's next run there finds that commit checked out and the index free
+- **THEN** that run puts the file back, and after it the index and the working tree hold the file as that commit does
 
 ### Requirement: One file turns the tool on or off, and a pull request cannot turn off its own report
 
@@ -451,6 +461,11 @@ A repository SHALL turn the tool on by adding a configuration file that can be r
 
 - **WHEN** the pull request that adds a configuration file that turns the tool on merges
 - **THEN** its report comment is posted
+
+#### Scenario: The report reads the configuration from git, not from a working tree
+
+- **WHEN** a pull request merges, the configuration file disables the tool at the default branch both before and after the merge, and the working tree where the report runs holds a configuration file that turns the tool on
+- **THEN** no comment is posted, and the job summary says that the configuration file after the merge disables the tool
 
 ### Requirement: Capture reads the configuration in the working tree
 
@@ -496,7 +511,7 @@ A configuration file SHALL count as not valid (see "A missing or unreadable conf
 
 ### Requirement: The report says when the configuration after the merge does not turn the tool on
 
-When the configuration before the merge turns the tool on and the configuration after it does not, the comment SHALL say, in the report's own words, that the tool is off after the merge, and whether the file there is missing, disables the tool or cannot be read as a valid configuration (see "A missing or unreadable configuration file neither turns the tool on nor stops the report"). When neither turns the tool on, the report's job summary SHALL say the same of the file after the merge.
+When the configuration before the merge turns the tool on and the configuration after it does not, the comment SHALL say, in the report's own words, that the tool is off after the merge, and whether the file there is missing, disables the tool, cannot be read as a valid configuration or names another repository. When neither turns the tool on, the report's job summary SHALL say the same of the file after the merge.
 
 #### Scenario: A pull request after which the tool is off is told so
 
@@ -512,6 +527,11 @@ When the configuration before the merge turns the tool on and the configuration 
 
 - **WHEN** the configuration turns the tool on before the merge, and a pull request that sets `enabled` to false merges
 - **THEN** its comment says that the configuration file after the merge disables the tool, so that the tool is off after it
+
+#### Scenario: A pull request that changes the configured repository gets its report
+
+- **WHEN** the configuration before the merge turns the tool on and names this repository, and a pull request that changes its `repository` to another repository merges
+- **THEN** its comment is posted, says that the pull request changed the tool's configuration, and says that the configuration after the merge names another repository, so that the tool is off after it
 
 #### Scenario: A merge with the tool off at both commits says why in its job summary
 
@@ -541,3 +561,95 @@ When a pull request changes the configuration file, the hook file at the path th
 
 - **WHEN** a pull request changes `.claude/settings.json`, or adds or changes `.claude/settings.local.json`
 - **THEN** its comment says that the pull request changed a project settings file that can register the hook
+
+### Requirement: The tool stays off in a repository that its configuration does not name
+
+A configuration file that enables the tool SHALL name the repository that it turns the tool on in under the key `repository`, as `owner/name`: an owner of 1 to 39 ASCII letters, digits or `-`, and a name of 1 to 100 ASCII letters, digits, `.`, `_` or `-` that does not end in `.git`. A file that enables the tool with that key missing, or with a value outside that form, SHALL NOT be valid. Two names SHALL be compared with the case of ASCII letters folded, and of no other character.
+
+#### Scenario: A fork's owner turns the tool on by naming the fork
+
+- **WHEN** the fork's configuration names the fork, in a file whose lines end in CRLF
+- **THEN** capture records the person's calls there as in any repository that turns the tool on
+
+#### Scenario: A repository name that is missing, or outside GitHub's form, makes the configuration not valid
+
+- **WHEN** a configuration file sets `enabled` to `true` and holds no `repository`, or gives it as `owner/name.git`, `https://github.com/owner/name`, ` owner/name`, `owner/name/`, `owner`, an owner of 40 characters or a name with a character other than those that the form allows
+- **THEN** the configuration is not valid, capture records nothing, and the report's job summary says that the configuration file cannot be read as a valid configuration
+
+#### Scenario: A disabled configuration needs no repository
+
+- **WHEN** a configuration file sets `enabled` to `false` and holds no `repository`
+- **THEN** the configuration is valid, and the tool is off
+
+#### Scenario: Names are compared with ASCII case folded alone
+
+- **WHEN** the configuration gives `Owner/Name` and the clone's `origin` remote gives `owner/name`, and in another clone the configuration gives a name whose `k` is the Kelvin sign, U+212A, where the remote gives `k`
+- **THEN** the first clone records, and in the second the configuration is not valid and nothing is recorded
+
+### Requirement: Capture stays off in a clone whose `origin` names another repository
+
+The capture step SHALL record nothing, and commit nothing before a push, where the configuration's repository differs from the one that the clone's `origin` remote gives, read as `git remote get-url origin` gives it without the session's `GIT_` variables and with no network, from a URL whose host is `github.com`, keeping only its owner and name. It SHALL then write one line of its own words saying so to standard error, once per session, and this check SHALL stop no take-back and no put-back.
+
+#### Scenario: A fork that copies the configuration records nothing
+
+- **WHEN** a person who has opted in commits in a clone whose `origin` remote is a fork, and the fork's configuration names the repository that it was forked from
+- **THEN** capture records nothing and stages no ledger file
+
+#### Scenario: Each form of a remote's URL gives its repository's name
+
+- **WHEN** the `origin` remote's URL is `https://github.com/Owner/Name`, `https://github.com/owner/name.git`, `git@github.com:owner/name.git` or `ssh://git@github.com/owner/name/`, or carries a user name and a token
+- **THEN** each gives the name `owner/name`, and no part of the URL is written into the store, a ledger file or standard error
+
+#### Scenario: A clone whose remote names no repository records nothing
+
+- **WHEN** the clone has no `origin` remote, or its URL is a local path or gives no owner and name
+- **THEN** capture records nothing and stages no ledger file
+
+#### Scenario: A Windows path or another host is not a GitHub remote
+
+- **WHEN** the `origin` remote's URL is `C:/work/owner/name`, `C:\work\owner\name`, `\\host\share\owner\name`, `file:///owner/name`, or an address on a host other than `github.com`, such as a GitHub Enterprise Server or an SSH host alias
+- **THEN** capture records nothing and stages no ledger file
+
+#### Scenario: The first URL of `origin`, with git's rewriting, decides
+
+- **WHEN** `remote.origin.url` has two values, the first naming the configured repository and the second another, or its one value is `gh:owner/name` and git's configuration, outside the session's `GIT_` variables, rewrites `gh:` to `https://github.com/`
+- **THEN** capture records in both clones, as the first URL and the rewritten one give the configured repository
+
+#### Scenario: A clone whose origin gives another name says so once
+
+- **WHEN** a person who has opted in makes calls and commits twice in one session in a clone whose `origin` gives a repository's old name, while its configuration gives the new one after a rename or a transfer
+- **THEN** capture records nothing, and writes one line of its own words, which quotes neither name, to standard error in that session, and none after it
+
+#### Scenario: A changed origin still takes back and puts back
+
+- **WHEN** the step has staged a ledger file for a commit, and the agent then runs `git remote set-url origin` to a fork, or `git remote rename origin upstream`, before the step's next run
+- **THEN** that run still takes the file back, or puts it back, as it would where `origin` names the configured repository
+
+#### Scenario: A push from a clone whose origin no longer matches makes no commit
+
+- **WHEN** calls recorded while `origin` gave the configured repository wait for a commit, `origin` is then pointed at another repository, and the agent runs `git push`
+- **THEN** no commit is made before the push, and the calls wait
+
+### Requirement: The report stays off where the configuration names another repository
+
+A configuration SHALL turn the tool on at a commit, for the report, only where it also names the repository that the workflow runs in, on the server whose API `GITHUB_API_URL` gives, or where GitHub, asked once for the configured repository, gives it the id that `GITHUB_REPOSITORY_ID` gives, as after a rename or a transfer, which the comment then says. Where the report says that the configuration names another repository, it SHALL quote neither name.
+
+#### Scenario: A merge in a fork whose configuration names another repository gets no comment
+
+- **WHEN** a pull request merges in a fork whose configuration names the repository that it was forked from
+- **THEN** no comment is posted, the job summary says that the configuration names another repository, and the job succeeds
+
+#### Scenario: A renamed or transferred repository whose configuration gives its old name still gets its comment
+
+- **WHEN** a repository is renamed or transferred, its configuration still gives the old name, and GitHub, asked for that name, gives the repository whose id `GITHUB_REPOSITORY_ID` gives
+- **THEN** the comment is posted, and says that the configuration gives an earlier name of this repository
+
+#### Scenario: A clone whose origin still gives the old name records there
+
+- **WHEN** a repository is renamed, its configuration still gives the old name, and a clone's `origin` still gives the old name, as GitHub keeps serving it
+- **THEN** capture records there, and the report posts the comment
+
+#### Scenario: The job summary names neither repository
+
+- **WHEN** a merge gets no comment because the configuration names another repository, whose name holds markup, and GitHub gives that repository another id
+- **THEN** the job summary says that the configuration names another repository, in the report's fixed text alone, and quotes neither name

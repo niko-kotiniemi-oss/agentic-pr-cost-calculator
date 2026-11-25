@@ -81,7 +81,7 @@ The assumptions about Python, about the development tools of this repository, an
 
 ### A66. Later Pythons keep what the tool uses, on every system that adopters use, and each version gets security fixes until its end of life.
 
-- **Rests on it:** R12, R25, R26, DR-023, DR-025, DR-111, DR-134
+- **Rests on it:** R12, R25, R26, R307, T317, DR-023, DR-025, DR-111, DR-134, DR-314
 - **If it is wrong:** A later Python, or another system, that drops or changes what the tool uses would break capture for the adopters who meet it first, and the command's `; exit 0` would hide it. A changed schedule would move when the oldest supported Python should rise.
 - **Fact:** Every Python release after 3.11 keeps the standard-library modules and behaviours that the tool uses.
   - **Relied on:** R25, DR-023, DR-025
@@ -92,6 +92,9 @@ The assumptions about Python, about the development tools of this repository, an
 - **Fact:** A Python version gets security fixes until the end of life that its release schedule sets: 3.10 until October 2026, when it reached its end of life, and 3.11 until about October 2027.
   - **Relied on:** R25, R26, DR-025, DR-134
   - **Checked:** documented: <https://github.com/python/peps/blob/48eba77cd527ac5ac82dd1e092b0430361484a50/peps/pep-0619.rst>, <https://github.com/python/peps/blob/48eba77cd527ac5ac82dd1e092b0430361484a50/peps/pep-0664.rst>, read 2026-11-01
+- **Fact:** On Windows, the Python install manager gives `python3`, `python` and `py` launch commands, and its documentation says both that any launch command tries to install a Python when no runtime is installed, and that `PYTHON_MANAGER_AUTOMATIC_INSTALL`, true by default, governs only `py exec` and `py`, so that other commands never install.
+  - **Relied on:** R307, T317, DR-314
+  - **Checked:** not yet: `add-pr-cost-calculator` task 2.3 runs the command on the Windows runner, which has no install manager, so only B-027 will check it on a machine that has one; Python's documentation for Windows, read 2026-11-24, says so
 
 ## The development tools
 

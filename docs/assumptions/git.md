@@ -90,7 +90,7 @@ The assumptions about git: what its commands, options, attributes, locks and con
 
 ## A21. The git commands that the step runs start no program that the step did not choose, apart from those that git's configuration names.
 
-- **Rests on it:** R54, R197, T15, T19, T46, T112, T144, DR-188, DR-198
+- **Rests on it:** R54, R197, R312, R320, T15, T19, T46, T112, T144, DR-188, DR-198
 - **If it is wrong:** A program that git starts would run at every capture run, outside the step's own guard (T15, T46), in a clone that a session only meets as well (T144), and one that a command's own options start could change the branch before a commit (T19).
 - **Fact:** The git commands that the step itself runs start no other program, except programs that git's configuration names, the person's own or the repository's, such as `core.fsmonitor`, which `git status`, `git add`, `git rm --cached`, `git ls-files`, `git diff --cached` and `git check-attr` start, each of which reads the index, and `gpg.program`, which `git log` and `git show` start for a signed commit when `log.showSignature` is on, while `git config` and `git rev-parse` start neither, or a clean filter that the repository's `info/attributes` assigns, which `git add` starts, so that whoever can write the git common directory can name one.
   - **Relied on:** R54, R197, T15, T46, T112, T144, DR-188, DR-198
@@ -98,6 +98,9 @@ The assumptions about git: what its commands, options, attributes, locks and con
 - **Fact:** git's own options and environment variables in a command can make git start another program, such as `git -c diff.external=<program> diff`, `git -c core.hooksPath=<folder> commit` or `GIT_EDITOR=<program> git commit`, and such a program can change the branch before a commit.
   - **Relied on:** T19
   - **Checked:** not yet: none will, since T19's residual accepts the case
+- **Fact:** `git commit`, which the step runs before a push, starts the hooks of the folder that `core.hooksPath` names, the `core.fsmonitor` program, `git gc --auto` and `git maintenance run --auto` where their thresholds are reached, and, where `commit.gpgSign` is on, the program that `gpg.program`, `gpg.ssh.program` or `gpg.x509.program` names for the format that `gpg.format` gives, and `-c` options on its command line that name an empty hooks folder and turn the others off start none of them but the signer.
+  - **Relied on:** R312, R320
+  - **Checked:** not yet: `add-pr-cost-calculator` task 2.7 checks it, by the scenarios of R312 and R320
 
 ## A40. The options of `git commit` mean what capture takes them to mean.
 
@@ -127,7 +130,7 @@ The assumptions about git: what its commands, options, attributes, locks and con
 
 ## A41. Only the attributes and settings that capture knows change what git commits of a ledger file.
 
-- **Rests on it:** R50, R86, T8, T10, DR-014, DR-034, DR-129
+- **Rests on it:** R50, R86, R306, T8, T10, T316, DR-014, DR-034, DR-129, DR-313
 - **If it is wrong:** A ledger file could fall out of a commit, or a committed one could hold something other than the entries written, which the report then refuses (T8). A file left behind in the working tree would meet the person's git commands (T10).
 - **Fact:** `git add --force` stages a file that an ignore rule matches, and `--sparse` stages one that a sparse checkout leaves out; without them git drops or refuses the file.
   - **Relied on:** R50, T8, T10, DR-014, DR-129
@@ -141,8 +144,8 @@ The assumptions about git: what its commands, options, attributes, locks and con
 - **Fact:** Only a `filter`, a `working-tree-encoding` or a line-ending conversion can make a committed ledger file differ from the file written.
   - **Relied on:** R86, T8, DR-034
   - **Checked:** not yet: `add-pr-cost-calculator` task 2.2 checks it in part
-- **Fact:** git refuses to add a file where `core.safecrlf` is on and line endings would be converted, and a `.pr-cost/** -text` line in the root `.gitattributes` lets it through unless git ranks above it a line that gives `text` another state.
-  - **Relied on:** R50, T8, T10, DR-129
+- **Fact:** git refuses to add a file where `core.safecrlf` is on and line endings would be converted, and only warns where it is unset while `core.autocrlf` is `true`, writing the working tree's copy with CRLF; a `.pr-cost/** -text` line in the root `.gitattributes` lets the file through as written unless git ranks above it a later line that gives `text` another state, such as `* text=auto`.
+  - **Relied on:** R50, R306, T8, T10, T316, DR-129, DR-313
   - **Checked:** not yet: `add-pr-cost-calculator` task 2.2 and `add-pr-cost-calculator` task 4.4 check it
 
 ## A42. git's index lock and staging behave as the design expects.

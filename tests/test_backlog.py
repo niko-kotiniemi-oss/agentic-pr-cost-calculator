@@ -45,9 +45,8 @@ removed, renamed or moved; an item whose text changed gives a later date than th
 base's, or the same date when that is the day of the run; no item gives a date after
 the day of the run, in UTC (R216). An item that the base does not hold is open to
 feedback and contributions or planned, and an item that the base gives as open or
-dropped does not become in progress or done (R218, DR-226, T166). A base that does
-not hold `docs/backlog/` is not compared, which is the case until the first items
-reach the default branch.
+dropped does not become in progress or done (R218, DR-226, T166). Where no base holds
+`docs/backlog/`, the check fails and says so, since a check that examined nothing fails.
 
 Each check is shown to fail on the synthetic tree of `tests/test_roadmap.py`, with
 the pages that this test reads added, into which its defect is planted.
@@ -68,7 +67,7 @@ from types import ModuleType
 from urllib.parse import unquote
 
 import pytest
-from test_decisions import base_commits
+from test_decisions import base_commits, uncompared_problems
 from test_roadmap import (
     BACKLOG,
     FENCE,
@@ -707,7 +706,10 @@ def test_the_repository_has_no_backlog_problem() -> None:
 
 def test_the_repository_has_no_problem_against_its_base() -> None:
     today = datetime.now(UTC).date()
-    assert history_problems(ROOT, *base_commits(ROOT, os.environ), today=today) == []
+    bases = base_commits(ROOT, os.environ)
+    held = any(git(ROOT, "cat-file", "-e", f"{base}:{BACKLOG}").returncode == 0 for base in bases)
+    problems = history_problems(ROOT, *bases, today=today)
+    assert problems + uncompared_problems(held, bases, BACKLOG) == []
 
 
 def test_the_repository_gives_each_check_something_to_examine() -> None:

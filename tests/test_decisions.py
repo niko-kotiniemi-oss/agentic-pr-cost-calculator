@@ -65,10 +65,11 @@ The comparison with the default branch compares git trees, not the working
 tree, so a change counts once it is committed. It compares with where HEAD left
 `refs/remotes/origin/main` and, in CI, with the base commit that the workflow
 names in `BASE_COMMIT` too, since a pull request's base is whichever branch its
-author chose. By design, the comparison skips while no base holds the records'
-folder, which is the case until the first records reach the default branch,
-and fails when a base holds that folder and no file in it that these tests name
-a record.
+author chose. The comparison fails when no base holds the records' folder, since a check
+that examined nothing fails (R129), and when a base holds that folder and no
+file in it that these tests name a record. The comparisons of the register's
+IDs, of the threat model's ratings and of the guide's principles fail in the
+same case.
 """
 
 from __future__ import annotations
@@ -79,7 +80,7 @@ import re
 import shutil
 import subprocess
 import tempfile
-from collections.abc import Iterable, Mapping
+from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass
 from datetime import UTC, date, datetime
 from pathlib import Path
@@ -723,6 +724,13 @@ def fetch_advice(root: Path, otherwise: str) -> str:
     )
 
 
+def uncompared_problems(held: bool, bases: Sequence[str], what: str) -> list[str]:
+    """Give the problem of a comparison that no base gave anything to compare (R129)."""
+    if held:
+        return []
+    return [f"no base ({', '.join(bases)}) holds {what}, so nothing was compared"]
+
+
 def base_commits(root: Path, environ: Mapping[str, str]) -> list[str]:
     """The commits that this run compares with: the one CI names, if it names one, and
     where HEAD left the default branch. A pull request's base is the branch it was opened
@@ -1292,27 +1300,38 @@ def test_every_file_in_the_records_folder_has_git_s_ordinary_file_mode() -> None
     assert listing, "no record was listed, so this test covered nothing"
 
 
+# R129: a comparison that no base gave anything to compare fails rather than skips, since a
+# check that examined nothing fails.
+
+
+@pytest.mark.parametrize(
+    ("held", "expected"),
+    [
+        (
+            False,
+            ["no base (origin/main, abc123) holds the records' folder, so nothing was compared"],
+        ),
+        (True, []),
+    ],
+)
+def test_a_comparison_with_nothing_held_fails(held: bool, expected: list[str]) -> None:
+    assert uncompared_problems(held, ("origin/main", "abc123"), "the records' folder") == expected
+
+
 def test_no_record_the_default_branch_holds_was_changed_but_to_be_closed() -> None:
     bases = base_commits(ROOT, os.environ)
     problems, held = change_problems(ROOT, *bases)
-    if not held and not problems:
-        pytest.skip(
-            f"no base ({', '.join(bases)}) holds {DECISIONS.as_posix()} yet, so there is"
-            " nothing to compare"
-        )
+    problems += [] if problems else uncompared_problems(bool(held), bases, DECISIONS.as_posix())
     assert not problems, "\n".join(problems)
 
 
 def test_every_requirement_threat_and_assumption_id_the_default_branch_holds_stays() -> None:
     bases = base_commits(ROOT, os.environ)
-    if all(
-        git(ROOT, "cat-file", "-e", f"{base}:docs/requirements.md").returncode != 0
+    held = any(
+        git(ROOT, "cat-file", "-e", f"{base}:docs/requirements.md").returncode == 0
         for base in bases
-    ):
-        pytest.skip(
-            f"no base ({', '.join(bases)}) holds a register yet, so there is nothing to compare"
-        )
-    problems = id_problems(ROOT, *bases)
+    )
+    problems = uncompared_problems(held, bases, "docs/requirements.md") or id_problems(ROOT, *bases)
     assert not problems, "\n".join(problems)
 
 

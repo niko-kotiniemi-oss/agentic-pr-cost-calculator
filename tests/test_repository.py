@@ -789,6 +789,15 @@ WRITES_ALLOWED: dict[str, set[str]] = {}
 # Triggers that run a workflow with this repository's token on someone else's code.
 FORBIDDEN_TRIGGERS = {"pull_request_target", "workflow_run"}
 
+# The one workflow that may trigger on `pull_request_target`: the base commit's checks, which
+# run from the default branch's copy so that a pull request cannot change them (R299, R321).
+BASE_CHECKS = "base-checks.yml"
+# What the checkout of the base commit's checks may not be given: either would check out the
+# pull request's code rather than the base's.
+CHECKOUT_TARGETS = ("ref", "repository")
+# The one command that the job runs: the base's own script (R317).
+BASE_CHECKS_RUN = "python3 -I scripts/base_checks.py"
+
 
 class WorkflowLoader(yaml.SafeLoader):
     """YAML read as `yaml.safe_load` reads it, but a mapping that gives a key twice is
@@ -852,9 +861,10 @@ def workflow_problems(name: str, text: str) -> list[str]:
     except ValueError:
         problems = [f"{name} gives its events in a form that this check cannot read"]
     else:
-        problems = [
-            f"{name} triggers on {trigger}" for trigger in sorted(events & FORBIDDEN_TRIGGERS)
-        ]
+        forbidden = FORBIDDEN_TRIGGERS - ({"pull_request_target"} if name == BASE_CHECKS else set())
+        problems = [f"{name} triggers on {trigger}" for trigger in sorted(events & forbidden)]
+        if name == BASE_CHECKS and "pull_request_target" in events:
+            problems += base_checks_problems(name, doc)
     blocks = [("the workflow", doc.get("permissions"))] + [
         (f"job `{job}`", body.get("permissions")) for job, body in (doc.get("jobs") or {}).items()
     ]
@@ -865,6 +875,59 @@ def workflow_problems(name: str, text: str) -> list[str]:
         )
     if re.search(r"\bsecrets\b", text):
         problems.append(f"{name} reads a secret")
+    return problems
+
+
+def holds_expression(value: Any) -> bool:
+    """Whether a `${{` expression stands anywhere in a value of a workflow."""
+    if isinstance(value, dict):
+        return any(holds_expression(key) or holds_expression(item) for key, item in value.items())
+    if isinstance(value, list):
+        return any(holds_expression(item) for item in value)
+    return "${{" in str(value)
+
+
+def base_checks_problems(name: str, doc: dict[Any, Any]) -> list[str]:
+    """What the workflow of the base commit's checks holds beyond what R321 allows it: runs
+    for pull requests to another branch than `main`, a grant other than `contents: read`, an
+    action other than a pinned checkout, a checkout of another commit or repository or one
+    that keeps its credentials, a job that calls another workflow or runs an image, or an
+    expression anywhere but a step's `env:`."""
+    problems = []
+    events = doc.get("on", doc.get(True))
+    target = events.get("pull_request_target") if isinstance(events, dict) else None
+    if not isinstance(target, dict) or target.get("branches") != ["main"]:
+        problems.append(f"{name} runs for pull requests to other branches than `main`")
+    if doc.get("permissions") != {"contents": "read"}:
+        problems.append(f"{name} the workflow grants other than `contents: read`")
+    if holds_expression({key: value for key, value in doc.items() if key != "jobs"}):
+        problems.append(f"{name} puts an expression outside a step's `env:` in the workflow")
+    for job, body in (doc.get("jobs") or {}).items():
+        where = f"in job `{job}`"
+        if body.get("permissions") != {"contents": "read"}:
+            problems.append(f"{name} job `{job}` grants other than `contents: read`")
+        problems += [
+            f"{name} job `{job}` gives `{key}`, which R321 does not allow"
+            for key in ("uses", "container", "services")
+            if key in body
+        ]
+        if holds_expression({key: value for key, value in body.items() if key != "steps"}):
+            problems.append(f"{name} puts an expression outside a step's `env:` {where}")
+        for step in body.get("steps") or []:
+            uses = str(step.get("uses", ""))
+            given = step.get("with") or {}
+            if "uses" in step and not re.fullmatch(r"actions/checkout@[0-9a-f]{40}", uses):
+                problems.append(f"{name} uses `{uses}` {where}")
+            if uses.startswith("actions/checkout@"):
+                problems += [
+                    f"{name} checks out `{key}` {where}" for key in CHECKOUT_TARGETS if key in given
+                ]
+                if given.get("persist-credentials") is not False:
+                    problems.append(f"{name} keeps the checkout's credentials {where}")
+            if "run" in step and step["run"] != BASE_CHECKS_RUN:
+                problems.append(f"{name} runs other than `{BASE_CHECKS_RUN}` {where}")
+            if holds_expression({key: value for key, value in step.items() if key != "env"}):
+                problems.append(f"{name} puts an expression outside a step's `env:` {where}")
     return problems
 
 
@@ -922,6 +985,167 @@ def test_a_write_the_workflow_is_allowed_is_not_reported(monkeypatch: Any) -> No
 )
 def test_a_trigger_under_either_on_key_or_in_a_list_s_mapping_is_read(text: str) -> None:
     assert workflow_problems("x.yml", text) == ["x.yml triggers on pull_request_target"]
+
+
+# R321: only the workflow of the base commit's checks triggers on `pull_request_target`, and
+# it holds only `contents: read`, checks out only the base, puts no expression in a shell and
+# shares no cache with the default branch.
+
+GOOD_BASE_CHECKS = """\
+on:
+  pull_request_target:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  base-checks:
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@0000000000000000000000000000000000000000 # v7
+        with:
+          persist-credentials: false
+      - run: python3 -I scripts/base_checks.py
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+"""
+
+
+def test_the_base_commit_s_checks_may_run_on_pull_request_target() -> None:
+    assert workflow_problems(BASE_CHECKS, GOOD_BASE_CHECKS) == []
+
+
+@pytest.mark.parametrize(
+    ("old", "new", "expected"),
+    [
+        (
+            "    permissions:\n      contents: read\n    steps:",
+            "    steps:",
+            "job `base-checks` grants other than `contents: read`",
+        ),
+        (
+            "      contents: read\n    steps:",
+            "      contents: read\n      pull-requests: read\n    steps:",
+            "job `base-checks` grants other than `contents: read`",
+        ),
+        (
+            "          persist-credentials: false\n",
+            "          persist-credentials: false\n          ref: refs/pull/7/head\n",
+            "checks out `ref` in job `base-checks`",
+        ),
+        (
+            "          persist-credentials: false\n",
+            "          persist-credentials: false\n          repository: someone/fork\n",
+            "checks out `repository` in job `base-checks`",
+        ),
+        (
+            "      - run: python3 -I scripts/base_checks.py\n",
+            "      - run: git fetch origin refs/pull/7/head && git checkout FETCH_HEAD\n",
+            "runs other than `python3 -I scripts/base_checks.py` in job `base-checks`",
+        ),
+        (
+            "      - run: python3 -I scripts/base_checks.py\n",
+            "      - run: python3 -I scripts/base_checks.py\n"
+            "        shell: bash ${{ github.event.pull_request.title }}\n",
+            "puts an expression outside a step's `env:` in job `base-checks`",
+        ),
+        (
+            "          persist-credentials: false\n",
+            "          persist-credentials: false\n"
+            "          fetch-depth: ${{ github.event.pull_request.title }}\n",
+            "puts an expression outside a step's `env:` in job `base-checks`",
+        ),
+        (
+            "    permissions:\n      contents: read\n    steps:",
+            "    permissions:\n      contents: read\n"
+            "    if: ${{ github.event.pull_request.title }}\n    steps:",
+            "puts an expression outside a step's `env:` in job `base-checks`",
+        ),
+        (
+            "      - run: python3",
+            "      - uses: actions/cache@0000000000000000000000000000000000000000 # v4\n"
+            "      - run: python3",
+            "uses `actions/cache@0000000000000000000000000000000000000000` in job `base-checks`",
+        ),
+        (
+            "      - run: python3",
+            "      - uses: actions/setup-go@0000000000000000000000000000000000000000 # v6\n"
+            "      - run: python3",
+            "uses `actions/setup-go@0000000000000000000000000000000000000000` in job `base-checks`",
+        ),
+        (
+            "          persist-credentials: false\n",
+            "          persist-credentials: true\n",
+            "keeps the checkout's credentials in job `base-checks`",
+        ),
+        (
+            "        with:\n          persist-credentials: false\n",
+            "",
+            "keeps the checkout's credentials in job `base-checks`",
+        ),
+        (
+            "  pull_request_target:\n    branches: [main]\n",
+            "  pull_request_target:\n",
+            "runs for pull requests to other branches than `main`",
+        ),
+        (
+            "permissions:\n  contents: read\njobs:",
+            "permissions:\n  contents: read\n  pull-requests: read\njobs:",
+            "the workflow grants other than `contents: read`",
+        ),
+        (
+            "permissions:\n  contents: read\njobs:",
+            "permissions:\n  contents: read\n"
+            "defaults:\n  run:\n    shell: bash ${{ github.event.pull_request.title }}\n"
+            "jobs:",
+            "puts an expression outside a step's `env:` in the workflow",
+        ),
+        (
+            "permissions:\n  contents: read\njobs:",
+            "permissions:\n  contents: read\n"
+            "env:\n  TITLE: ${{ github.event.pull_request.title }}\njobs:",
+            "puts an expression outside a step's `env:` in the workflow",
+        ),
+        (
+            "permissions:\n  contents: read\njobs:",
+            "permissions:\n  contents: read\n"
+            "run-name: ${{ github.event.pull_request.title }}\njobs:",
+            "puts an expression outside a step's `env:` in the workflow",
+        ),
+        (
+            "permissions:\n  contents: read\njobs:",
+            "permissions:\n  contents: read\n"
+            "concurrency: ${{ github.event.pull_request.head.ref }}\njobs:",
+            "puts an expression outside a step's `env:` in the workflow",
+        ),
+        (
+            "jobs:\n",
+            "jobs:\n  other:\n    permissions:\n      contents: read\n"
+            "    uses: ./.github/workflows/ci.yml\n",
+            "job `other` gives `uses`, which R321 does not allow",
+        ),
+        (
+            "    steps:",
+            "    container: python:3\n    steps:",
+            "job `base-checks` gives `container`, which R321 does not allow",
+        ),
+        (
+            "    steps:",
+            "    services:\n      db:\n        image: postgres\n    steps:",
+            "job `base-checks` gives `services`, which R321 does not allow",
+        ),
+    ],
+)
+def test_the_base_commit_s_checks_that_hold_more_fail(old: str, new: str, expected: str) -> None:
+    assert GOOD_BASE_CHECKS.count(old) == 1
+    text = GOOD_BASE_CHECKS.replace(old, new)
+    assert workflow_problems(BASE_CHECKS, text) == [f"{BASE_CHECKS} {expected}"]
+
+
+def test_another_workflow_on_pull_request_target_fails() -> None:
+    assert workflow_problems("other.yml", GOOD_BASE_CHECKS) == [
+        "other.yml triggers on pull_request_target"
+    ]
 
 
 def test_a_workflow_that_gives_a_key_twice_is_refused() -> None:
@@ -1444,6 +1668,9 @@ def python_floor_problems(oldest: str, copies: dict[str, Any], prose: dict[str, 
     return problems
 
 
+# The design and the capture's spec are left out: each names other Pythons on purpose, the
+# design one before which a schema library needs another package, and the capture's spec the
+# Pythons that a scenario finds on a Windows machine before the one that it runs.
 PYTHON_PROSE = [
     "README.md",
     "SECURITY.md",
@@ -1451,6 +1678,8 @@ PYTHON_PROSE = [
     "CLAUDE.md",
     "docs/features/releases-and-compatibility.md",
     "openspec/changes/add-pr-cost-calculator/specs/releases-and-compatibility/spec.md",
+    "openspec/changes/add-pr-cost-calculator/proposal.md",
+    "openspec/changes/add-pr-cost-calculator/tasks.md",
 ]
 
 
@@ -1548,6 +1777,129 @@ def test_a_bug_report_form_whose_privacy_checkbox_is_optional_is_refused() -> No
     assert not required_privacy_checkbox({"body": []})
     option["required"] = True
     assert required_privacy_checkbox({"body": [field]})
+
+
+# R304: the bug form asks for a synthetic transcript line or the comment's counts, never a
+# real transcript, and CONTRIBUTING.md says what deleting a revision from an edit history
+# does and does not do.
+
+# A value that a template line gives is a placeholder where it is written in angle brackets.
+PLACEHOLDER = re.compile(r"<[^<>]+>")
+
+
+def reproduce_problems(form: dict[str, Any]) -> list[str]:
+    """What the bug form's field for how to reproduce a bug lacks of R304."""
+    fields = [field for field in form.get("body", []) if field.get("id") == "reproduce"]
+    if not fields:
+        return ["the bug form has no field `reproduce`"]
+    attributes = fields[0].get("attributes") or {}
+    description = " ".join(str(attributes.get("description", "")).split())
+    problems = []
+    for words in ("synthetic transcript line", "the counts that the comment shows"):
+        if words not in description:
+            problems.append(f"the field `reproduce` does not ask for {words!r}")
+    if "never paste a real transcript" not in description.lower():
+        problems.append("the field `reproduce` does not say never to paste a real transcript")
+    lines = [
+        line.strip()
+        for line in str(attributes.get("value", "")).splitlines()
+        if line.strip().startswith("{")
+    ]
+    try:
+        template = json.loads(lines[0]) if lines else None
+    except json.JSONDecodeError:
+        template = None
+    strings = list(strings_in(template)) if isinstance(template, dict) else []
+    if not strings or not all(PLACEHOLDER.fullmatch(text) for text in strings):
+        problems.append("the field `reproduce` gives no template line of placeholder values")
+    return problems
+
+
+def strings_in(value: Any) -> Iterator[str]:
+    if isinstance(value, str):
+        yield value
+    elif isinstance(value, dict):
+        for item in value.values():
+            yield from strings_in(item)
+    elif isinstance(value, list):
+        for item in value:
+            yield from strings_in(item)
+
+
+GOOD_REPRODUCE = {
+    "id": "reproduce",
+    "type": "textarea",
+    "attributes": {
+        "description": "Give a synthetic transcript line, from the template below, with every"
+        " identifier and path invented, or the counts that the comment shows. Never paste a"
+        " real transcript.",
+        "value": '{"sessionId": "<an invented id>", "cwd": "<an invented path>"}\n',
+    },
+}
+
+
+def test_the_bug_form_asks_for_a_synthetic_transcript_line() -> None:
+    form = yaml.safe_load(
+        (ROOT / ".github/ISSUE_TEMPLATE/bug_report.yml").read_text(encoding="utf-8")
+    )
+    assert reproduce_problems(form) == []
+
+
+@pytest.mark.parametrize(
+    ("change", "expected"),
+    [
+        (
+            lambda field: field["attributes"].update(description="Paste the transcript."),
+            [
+                "the field `reproduce` does not ask for 'synthetic transcript line'",
+                "the field `reproduce` does not ask for 'the counts that the comment shows'",
+                "the field `reproduce` does not say never to paste a real transcript",
+            ],
+        ),
+        (
+            lambda field: field["attributes"].update(value='{"cwd": "/home/someone/work"}\n'),
+            ["the field `reproduce` gives no template line of placeholder values"],
+        ),
+        (
+            lambda field: field["attributes"].pop("value"),
+            ["the field `reproduce` gives no template line of placeholder values"],
+        ),
+        (
+            lambda field: field.update(id="steps"),
+            ["the bug form has no field `reproduce`"],
+        ),
+    ],
+)
+def test_a_bug_form_that_asks_for_a_real_transcript_fails(
+    change: Callable[[dict[str, Any]], Any], expected: list[str]
+) -> None:
+    assert reproduce_problems({"body": [GOOD_REPRODUCE]}) == []
+    field = json.loads(json.dumps(GOOD_REPRODUCE))
+    change(field)
+    assert reproduce_problems({"body": [field]}) == expected
+
+
+EDIT_HISTORY = (
+    "a maintainer can delete a revision from an edit history on request",
+    "recalls no notification or copy that GitHub already sent",
+)
+
+
+def edit_history_problems(text: str) -> list[str]:
+    flat = " ".join(text.split())
+    return [
+        f"CONTRIBUTING.md does not say that {words}" for words in EDIT_HISTORY if words not in flat
+    ]
+
+
+def test_contributing_says_what_deleting_a_revision_does() -> None:
+    assert edit_history_problems((ROOT / "CONTRIBUTING.md").read_text(encoding="utf-8")) == []
+
+
+def test_a_contributing_page_without_the_edit_history_s_note_fails() -> None:
+    assert edit_history_problems("Be kind.") == [
+        f"CONTRIBUTING.md does not say that {words}" for words in EDIT_HISTORY
+    ]
 
 
 # R223 and R229: what this repository holds before the tool is turned on here.

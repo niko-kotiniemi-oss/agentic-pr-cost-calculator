@@ -3,12 +3,12 @@
 - **Type:** process
 - **Boundary:** inside
 - **Reversibility:** reversible
-- **Status:** accepted
+- **Status:** closed
 - **Decided by:** the change `add-pr-cost-calculator`, as the owner asked on 2026-11-14
 - **Requirements:** R228
 - **Threats:** T179, T183
 - **Replaces:** none
-- **Closed by:** none
+- **Closed by:** DR-324
 
 ## Context
 

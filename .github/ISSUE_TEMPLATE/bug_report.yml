@@ -27,6 +27,13 @@ body:
     id: reproduce
     attributes:
       label: How to reproduce
+      description: >-
+        Give a synthetic transcript line, made from the template line below with
+        every identifier and path invented, or the counts that the comment shows.
+        Never paste a real transcript, or a line of one: it holds what was said in
+        the session, and an issue here is public.
+      value: |
+        {"type": "<assistant>", "sessionId": "<an invented id>", "cwd": "<an invented path>", "gitBranch": "<an invented branch>", "timestamp": "<a time>", "message": {"model": "<a model's name>", "usage": {"input_tokens": "<a count>", "output_tokens": "<a count>", "cache_read_input_tokens": "<a count>"}}}
   - type: textarea
     id: versions
     attributes:

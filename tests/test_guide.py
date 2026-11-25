@@ -24,7 +24,7 @@ concern, or changes its principle, changes nothing outside `docs/`, `openspec/`,
 context files and `CHANGELOG.md` (R228), one that gives an agreed item a gap changes that
 item's What done looks like (R231), and an entry leaves `Gap.`, or its gap stops naming
 an item that it named, only while that item is `Done` or `Dropped` (R233), each
-examining nothing while no base holds the guide. No attribute hides the diff of the
+failing and saying so where no base holds the guide. No attribute hides the diff of the
 guide, of a file that steers work here or of a change's `tasks.md` (R134).
 
 Each check is shown to fail on a synthetic tree, the roadmap's with a guide, into which
@@ -60,7 +60,13 @@ from test_backlog import (
     rest_problems,
 )
 from test_context_files import CONTEXT_FILES
-from test_decisions import DECIDER, attribute_problems, base_commits, records_of
+from test_decisions import (
+    DECIDER,
+    attribute_problems,
+    base_commits,
+    records_of,
+    uncompared_problems,
+)
 from test_roadmap import (
     ARCHIVED_TASKS,
     BACKLOG,
@@ -1893,9 +1899,8 @@ def test_the_repository_holds_its_principles_and_agreed_items_against_its_base()
     changes, held = principle_change_problems(ROOT, *bases)
     given, _ = agreed_gap_problems(ROOT, *bases)
     lifted, _ = closed_gap_problems(ROOT, *bases)
-    assert changes == [] and given == [] and lifted == []
-    if not held:
-        pytest.skip("no base holds the guide yet, so its checks against the base examine nothing")
+    missing = uncompared_problems(held, bases, "docs/patterns.md")
+    assert changes == [] and given == [] and lifted == [] and missing == []
 
 
 # R134: no attribute hides the diff of the guide, of a file that steers work here or of a

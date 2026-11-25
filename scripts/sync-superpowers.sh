@@ -6,7 +6,24 @@
 # temporary tree and diffs; any difference fails, so a hand-edit to a vendored
 # file is a red build rather than a silent fork. That is why no vendored file
 # may be edited: the edit cannot survive the next sync and cannot hide.
+#
+# `--check-commit COMMIT` is the base commit's check of a pull request's tree
+# (R299, R317): this copy of the script, from the base's checkout, compares the
+# copy that COMMIT holds, read from git's objects alone, with the commit that
+# COMMIT's own lock pins, and fails where that lock gives another `repo=` or
+# `vendored_paths=` than the base's. It always fetches from GitHub, and never
+# from an address that SYNC_REMOTE_BASE gives.
 set -euo pipefail
+
+MODE="${1:-}"
+COMMIT=""
+if [ "$MODE" = "--check-commit" ]; then
+  COMMIT="${2:-}"
+  [ -n "$COMMIT" ] || { echo "sync: --check-commit needs a commit" >&2; exit 2; }
+elif [ -n "$MODE" ] && [ "$MODE" != "--check" ]; then
+  echo "sync: $MODE is not an option of the sync" >&2
+  exit 2
+fi
 
 # A variable that names a repository, such as a GIT_DIR that a person or a tool
 # exports, would have git fetch into, read and write that repository rather than
@@ -60,15 +77,96 @@ LOCK_TEXT=${LOCK_TEXT%x}
 LOCK_TEXT=${LOCK_TEXT//$'\r\n'/$'\n'}
 read_lock() { printf '%s' "$LOCK_TEXT" | sed -n "s/^$1=//p"; }
 
+work="$(mktemp -d)"
+trap 'rm -rf "$work"' EXIT
+
+if [ -n "$COMMIT" ]; then
+  # The pull request's tree, read from git's objects: no checkout, so no
+  # attribute, filter or submodule of its own runs, and a link or a gitlink
+  # where the copy lies stops the check rather than be followed.
+  commit_id="$(git -C "$ROOT" rev-parse --verify --quiet --end-of-options "${COMMIT}^{commit}")" || {
+    printf 'sync: the commit %q cannot be read\n' "$COMMIT" >&2
+    exit 1
+  }
+  # Each of the two folders by itself: given both, git lists the first one's
+  # children rather than its own entry.
+  : >"${work}/top"
+  for folder in vendor vendor/superpowers; do
+    git -C "$ROOT" ls-tree -z "$commit_id" -- "$folder" >>"${work}/top"
+  done
+  # And every link or gitlink anywhere under vendor/, where none is read.
+  git -C "$ROOT" ls-tree -r -z "$commit_id" -- vendor >"${work}/all"
+  bad=0
+  while IFS= read -r -d '' entry; do
+    read -r mode _ <<<"${entry%%$'\t'*}"
+    path="${entry#*$'\t'}"
+    if [ "$mode" != 040000 ]; then
+      printf 'sync: the pull request gives %q the mode %s, which the check does not read\n' \
+        "$path" "$mode" >&2
+      bad=1
+    fi
+  done <"${work}/top"
+  while IFS= read -r -d '' entry; do
+    read -r mode _ <<<"${entry%%$'\t'*}"
+    path="${entry#*$'\t'}"
+    case "$mode" in
+      120000 | 160000)
+        printf 'sync: the pull request gives %q the mode %s, which the check does not read\n' \
+          "$path" "$mode" >&2
+        bad=1
+        ;;
+    esac
+  done <"${work}/all"
+  [ "$bad" = 0 ] || exit 1
+  git -C "$ROOT" ls-tree -r -z "$commit_id" -- vendor/superpowers >"${work}/theirs"
+  while IFS= read -r -d '' entry; do
+    read -r mode _ <<<"${entry%%$'\t'*}"
+    path="${entry#*$'\t'}"
+    case "$mode" in
+      100644 | 100755) ;;
+      *)
+        printf 'sync: the pull request gives %q the mode %s, which the check does not read\n' \
+          "$path" "$mode" >&2
+        bad=1
+        ;;
+    esac
+  done <"${work}/theirs"
+  [ "$bad" = 0 ] || exit 1
+  BASE_REPO="$(read_lock repo)"
+  BASE_PATHS="$(read_lock vendored_paths)"
+  THEIR_LOCK="${work}/their.lock"
+  git -C "$ROOT" cat-file blob "${commit_id}:vendor/superpowers/UPSTREAM.lock" >"$THEIR_LOCK" || {
+    echo "sync: the pull request's tree holds no vendor/superpowers/UPSTREAM.lock" >&2
+    exit 1
+  }
+  LOCK="$THEIR_LOCK"
+  LOCK_TEXT="$(cat "$LOCK"; printf x)"
+  LOCK_TEXT=${LOCK_TEXT%x}
+  LOCK_TEXT=${LOCK_TEXT//$'\r\n'/$'\n'}
+  for key in repo vendored_paths; do
+    case "$key" in repo) base="$BASE_REPO" ;; *) base="$BASE_PATHS" ;; esac
+    theirs="$(read_lock "$key")"
+    if [ "$theirs" != "$base" ]; then
+      printf "sync: the pull request's lock gives %s=%q, not the base's %s=%q\n" \
+        "$key" "$theirs" "$key" "$base" >&2
+      bad=1
+    fi
+  done
+  [ "$bad" = 0 ] || exit 1
+fi
+
 REPO="$(read_lock repo)"
 SHA="$(read_lock sha)"
 [ -n "$REPO" ] && [ -n "$SHA" ] || { echo "sync: UPSTREAM.lock is missing repo= or sha=" >&2; exit 2; }
 TAG="$(read_lock tag)"
 [ -n "$TAG" ] || { echo "sync: UPSTREAM.lock is missing tag=" >&2; exit 2; }
-# Tests point this at a local fixture so that they never use the network.
-URL="${SYNC_REMOTE_BASE:-https://github.com}/${REPO}.git"
-work="$(mktemp -d)"
-trap 'rm -rf "$work"' EXIT
+# Tests point this at a local fixture so that they never use the network. The
+# check of a pull request's tree reads it not, since it is the base's check.
+if [ -n "$COMMIT" ]; then
+  URL="https://github.com/${REPO}.git"
+else
+  URL="${SYNC_REMOTE_BASE:-https://github.com}/${REPO}.git"
+fi
 
 # A fetch by commit id takes any commit upstream serves, including those of its
 # open pull requests that no release contains. So the lock's tag must name the
@@ -156,7 +254,51 @@ staged_mode() {
   staged="${record%% *}"
 }
 
-if [ "${1:-}" = "--check" ]; then
+if [ -n "$COMMIT" ]; then
+  probe="${work}/probe"
+  materialise "$probe"
+  cp "$LOCK" "${probe}/UPSTREAM.lock"
+  # The pull request's copy, each file written from its blob with the mode that
+  # its tree gives it, and each path first put to git, in an index of its own,
+  # with the protections of NTFS and HFS+ on, as the copy from upstream is.
+  theirs="${work}/theirs-tree"
+  mkdir -p "$theirs"
+  declare -A their_mode=()
+  while IFS= read -r -d '' entry; do
+    read -r mode _ oid <<<"${entry%%$'\t'*}"
+    path="${entry#*$'\t'}"
+    path="${path#vendor/superpowers/}"
+    if ! GIT_INDEX_FILE="${work}/protect-index" git -C "$ROOT" -c core.protectNTFS=true \
+      -c core.protectHFS=true update-index --add --cacheinfo "$mode" "$oid" "$path" 2>/dev/null; then
+      printf 'sync: the pull request gives the path %q, which the check does not write\n' \
+        "vendor/superpowers/$path" >&2
+      exit 1
+    fi
+    case "$path" in */*) mkdir -p "${theirs}/${path%/*}" ;; esac
+    git -C "$ROOT" cat-file blob "$oid" >"${theirs}/${path}"
+    their_mode["$path"]="$mode"
+  done <"${work}/theirs"
+  differs=0
+  diff -r "$probe" "$theirs" >"${work}/report" 2>&1 || differs=1
+  while IFS= read -r -d '' entry; do
+    read -r mode _ <<<"${entry%%$'\t'*}"
+    path="${entry#*$'\t'}"
+    given="${their_mode[$path]:-}"
+    if [ -n "$given" ] && [ "$given" != "$mode" ]; then
+      printf "sync: the pull request gives %q the mode %s, not the mode %s %s\n" \
+        "vendor/superpowers/$path" "$given" "$mode" "that the pinned commit gives it" \
+        >>"${work}/report"
+      differs=1
+    fi
+  done <"${work}/listing"
+  if [ "$differs" = 0 ]; then
+    echo "sync: the pull request's vendor/superpowers matches ${REPO}@${SHA}"
+  else
+    echo "sync: the pull request's vendor/superpowers DIFFERS from ${REPO}@${SHA}" >&2
+    cat "${work}/report" >&2
+    exit 1
+  fi
+elif [ "$MODE" = "--check" ]; then
   probe="${work}/probe"
   materialise "$probe"
   # The lock at the root is ours, not upstream's, so it is copied into the tree

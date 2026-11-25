@@ -3,12 +3,12 @@
 - **Type:** security and privacy
 - **Boundary:** inside
 - **Reversibility:** reversible
-- **Status:** accepted
+- **Status:** closed
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** R27
 - **Threats:** T37, T68
 - **Replaces:** none
-- **Closed by:** none
+- **Closed by:** DR-321
 
 ## Context
 

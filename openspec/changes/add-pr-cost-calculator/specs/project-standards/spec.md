@@ -29,16 +29,21 @@ Tests SHALL fail when the register (see "The documentation names everything the 
 
 ### Requirement: Workflows are checked against the documented permissions, actions and images
 
-Tests SHALL fail when a workflow, whether its file ends in `.yml` or `.yaml`, grants a permission in any job that the table of the page that explains the tool as a whole (see "The documentation names everything the tool does") does not give for that job, or the table gives one that the job is not granted, and when a workflow runs an action or a container or service image that the page does not name.
+Tests SHALL fail when a workflow, whether its file ends in `.yml` or `.yaml`, grants a permission in any job that the table of the page that explains the tool as a whole (see "The documentation names everything the tool does") does not give for that job, or the table gives one that the job is not granted, when a workflow grants a write permission or `write-all` at its top level, and when a workflow runs an action or a container or service image that the page does not name.
 
 #### Scenario: An undocumented permission or action fails CI
 
 - **WHEN** a job of any workflow is granted a permission that the page's table does not give for that job, or the table gives a job a permission it is not granted, or a workflow runs an action or an image that the page does not name
 - **THEN** a test fails and names the workflow, the job and the permission, or the action or image
 
+#### Scenario: A write permission granted to a whole workflow fails CI
+
+- **WHEN** a workflow grants a write permission, or `write-all` as a string, in its top-level `permissions`, rather than to the one job that the page's table gives it to
+- **THEN** a test fails and names the workflow and the permission
+
 ### Requirement: The tool connects only where its documentation says
 
-The hook SHALL open no network connection. The report SHALL connect only to GitHub, over HTTPS, with the workflow's own `GITHUB_TOKEN`: to its REST API, at the address that the workflow's `GITHUB_API_URL` gives, and by git to the tool's own repository and the repository it reports on. Prices SHALL be read from the price table in the repository and never fetched.
+The hook SHALL open no network connection. The report SHALL connect only to GitHub, over HTTPS, with the workflow's own `GITHUB_TOKEN`: to its REST API, at the address that the workflow's `GITHUB_API_URL` gives, and by git to the tool's own repository and the repository it reports on. Prices SHALL be read from the price table at the tool's own commit and never fetched.
 
 #### Scenario: The hook opens no connection
 
@@ -90,12 +95,27 @@ CI SHALL check a pull request's title and body against the same private patterns
 
 ### Requirement: Every pinned action is a commit its repository tagged
 
-Every action and container image that a workflow uses SHALL be pinned to a full commit or a digest that a tag of its source names, and CI SHALL fail when one is pinned to anything else, such as a commit that only a fork holds.
+Every action and container image that a workflow uses SHALL be pinned to a full commit or a digest that a tag of its source names, with a comment beside the pin that names the full release tag, such as `v7.0.1`, that names that commit, peeled where the tag is annotated, and CI SHALL fail when one is pinned to anything else, such as a commit that only a fork holds, or its comment names another tag.
 
 #### Scenario: An action pinned to an untagged commit fails CI
 
 - **WHEN** a workflow pins an action to a commit that no tag of its repository names
 - **THEN** CI fails and names the action and the pin
+
+#### Scenario: A pin whose comment names another tag fails CI
+
+- **WHEN** a workflow pins an action to a full commit, and the comment beside the pin names a tag that resolves to another commit, or to none
+- **THEN** CI fails and names the action, the pin and the tag
+
+#### Scenario: A pin whose comment names a moving major tag fails CI
+
+- **WHEN** the comment beside a pin names a major tag, such as `v7`, that names the pinned commit today
+- **THEN** CI fails, names the action and the pin, and asks for the full release tag
+
+#### Scenario: A pin whose comment names an annotated release tag of its commit passes
+
+- **WHEN** the comment beside a pin names a full release tag that is annotated, and that names the pinned commit once peeled
+- **THEN** the check of that pin passes
 
 ### Requirement: Each feature's page matches its spec
 
@@ -283,6 +303,16 @@ Each decision about what the tool is, how it works or how it is built SHALL have
 - **WHEN** a record is named or headed outside its form, lacks a field or a section, has one twice or out of order, leaves a section empty, or gives a field a value outside its form
 - **THEN** a test fails and names the record
 
+#### Scenario: A decider outside its three forms fails CI
+
+- **WHEN** a record's "Decided by" gives anything but the owner with the dates of the decision, the change that made it, or that change with the dates on which the owner asked for what it decided
+- **THEN** a test fails and names the record
+
+#### Scenario: A link, a quotation or an identifier in the decider fails CI
+
+- **WHEN** a record's "Decided by" gives one of its three forms with a link, a quotation or an identifier added to it
+- **THEN** a test fails and names the record
+
 #### Scenario: A gap or a repeat in the record numbers fails CI
 
 - **WHEN** two records share a number, or a number between DR-001 and the highest has no record
@@ -290,7 +320,7 @@ Each decision about what the tool is, how it works or how it is built SHALL have
 
 #### Scenario: A record numbered in other digits fails CI
 
-- **WHEN** a record's file name writes its number in digits other than ASCII, or with a leading zero that padding to three does not need
+- **WHEN** a record's file name writes its number in digits other than ASCII, or with a leading zero that padding to three does not need, or padded to fewer than three digits
 - **THEN** a test fails and names the file
 
 ### Requirement: The index lists every record as the record has it
@@ -304,12 +334,17 @@ Each decision about what the tool is, how it works or how it is built SHALL have
 
 ### Requirement: A decision record names only what exists
 
-Each requirement and threat that a record names SHALL be held or retired, each record, change and task that it names SHALL exist, and each date that it gives SHALL be a real one, no later than the day the tests run. A closed record SHALL name the record that closed it, which SHALL name it among those it replaces, no record SHALL name itself, and an accepted record SHALL NOT rest only on retired requirements.
+Each requirement and threat that a record names SHALL be held or retired, each record, change, design decision and task that it names SHALL exist, and each date that it gives SHALL be a real one, no later than the day the tests run. A closed record SHALL name the record that closed it, which SHALL name it among those it replaces, no record SHALL name itself, and an accepted record SHALL NOT rest only on retired requirements.
 
 #### Scenario: A record that names nothing fails CI
 
 - **WHEN** a record names a requirement or a threat that is neither held nor retired, a record, a change or a task that does not exist, or a date that is not one or is later than the day the test runs
 - **THEN** a test fails and names what it named
+
+#### Scenario: A design decision or a task named without its change is looked for in every change
+
+- **WHEN** a record names a design decision or a task by its number without naming its change
+- **THEN** the test looks for it in every change, active or archived, passes when exactly one holds it, and fails and names it when none does or more than one does
 
 #### Scenario: A closed record and its closer that do not name each other fail CI
 
@@ -387,6 +422,12 @@ Tests SHALL fail when a commit removes, renames or moves a record that the base 
 
 - **WHEN** a base commit holds `docs/decisions/` and no file in it that the tests read as a record
 - **THEN** a test fails and names the base
+
+#### Scenario: A comparison whose bases hold no records' folder fails CI
+
+- **WHEN** no base that the test compares with, neither where HEAD left the default branch nor a base commit that CI names, holds `docs/decisions/`
+- **THEN** a test fails and says that no base holds the records' folder, rather than skipping
+- **AND** when only the base commit that CI names holds `docs/decisions/`, the test compares with it and fails on a change to a record that it holds
 
 #### Scenario: A tag never stands in for the default branch
 
@@ -578,11 +619,16 @@ No attribute that the repository sets SHALL make git show as binary, or GitHub h
 
 ### Requirement: The assumptions the design rests on are written down
 
-The repository SHALL keep the assumptions that the specs, design, threat model and records rest on, each with what rests on it, by requirement, threat or record, and what changes if it is wrong, and each of its facts with where it is relied on and how it is checked: by a test, an observation, documentation, or not yet, with the task that will check it or why none will. A threat that rests on an assumption SHALL name it, and the assumption SHALL name the threat. Tests SHALL fail otherwise.
+The repository SHALL keep the assumptions that the specs, design, threat model and records rest on, each with what rests on it, by ID, and what changes if it is wrong, and each fact with where it is relied on, its check, by a test, an observation, documentation, or not yet, with the task that will check it or why none will, and under `Handled by` any test of the tool's handling of it. A threat that rests on an assumption SHALL name it, and the assumption the threat. Tests SHALL fail otherwise.
 
 #### Scenario: An assumption without its check fails CI
 
 - **WHEN** an assumption names nothing that rests on it or does not say what changes if it is wrong, or one of its facts does not say where it is relied on or how it is checked, or names a task that is done as the one that will check it
+- **THEN** a test fails and names the assumption
+
+#### Scenario: An assumption that holds a field of another name fails CI
+
+- **WHEN** an assumption's entry holds a line that is not one of its fields, `Rests on it`, `If it is wrong` and `Fact`, or of a fact's, `Relied on`, `Checked` and `Handled by`, such as one that says how to change what it assumes
 - **THEN** a test fails and names the assumption
 
 #### Scenario: A citation of nothing fails CI
@@ -645,7 +691,7 @@ No page of the assumptions SHALL give a web address but in the check of a fact c
 
 ### Requirement: The assumptions with the most at stake come first
 
-The assumptions SHALL be listed by the highest impact among the threats that rest on them, as the threat model rates those threats, then with the least checked first, then by the highest risk among those threats, with the assumptions that no threat rests on last. Each line of the index SHALL give that impact beside that risk. Tests SHALL fail when the list's order differs from the order that these give, or a line of the index does not give both ratings as the threat model does.
+The assumptions SHALL be listed by the highest impact among the threats that rest on them, then the least checked first, an assumption as checked as its least checked fact, from `not yet` through `documented` and `observed` to `tested`, then by the highest risk among those threats, with those that no threat rests on last. Each index line SHALL give that impact beside that risk. Tests SHALL fail when the order differs, or a line does not give both ratings as the threat model does.
 
 #### Scenario: An assumption out of order fails CI
 
@@ -656,6 +702,12 @@ The assumptions SHALL be listed by the highest impact among the threats that res
 
 - **WHEN** one assumption rests on a threat of impact 3 and likelihood 1, and another only on threats of lower impact and higher risk
 - **THEN** the first stands before the second, or a test fails and names it
+
+#### Scenario: An assumption is ranked by its least checked fact
+
+- **WHEN** two assumptions rest on threats of the same highest impact and the same highest risk, the first with one fact checked `tested` and one `not yet`, the second with every fact checked `observed`
+- **THEN** the first stands before the second, or a test fails and names it
+- **AND** of two such assumptions whose least checked facts are `documented` and `observed`, the one with `documented` stands first, or a test fails and names it
 
 #### Scenario: An index line without the impact fails CI
 
@@ -696,6 +748,11 @@ The repository SHALL keep a glossary of each term's meaning and its words to avo
 - **WHEN** a tracked Markdown file that the test reads is a symbolic link, is not UTF-8, opens a fenced code block that never closes, or holds a line that GitHub reads in a fence or after it depending on whether a list item holds that fence
 - **THEN** a test fails and names the file
 
+#### Scenario: A page whose path is not UTF-8 fails CI
+
+- **WHEN** git tracks a file that the test reads by its extension, and its path holds bytes that are not UTF-8
+- **THEN** a test fails and names the file, rather than stopping on an error that names none
+
 #### Scenario: A wording check that reads nothing fails CI
 
 - **WHEN** the glossary gives no word to avoid, or the test finds no file to read
@@ -717,7 +774,7 @@ Tests SHALL fail when a glossary row gives no meaning, when two rows give the sa
 
 ### Requirement: Every version reproduces the golden set
 
-The repository SHALL hold a golden set of synthetic sessions, each with the pull request it is reported for, a price table of its own, each call of its transcripts with its entry or the scenario that leaves it out, and the figures as the comment shows them, worked out by hand from the specs with the working beside each. Tests SHALL run each session in a repository of its own, and fail when capture or the report gives another entry or figure, or a figure does not follow from its working.
+The repository SHALL hold a golden set of synthetic sessions, each with the pull request it is reported for, a price table of its own, each call of its transcripts by message ID with its entry or the scenario that leaves it out, and the figures as the comment shows them, worked out by hand from the specs with the working beside each. Tests SHALL run each session in its own repository, and fail when capture or the report gives another entry or figure, or a figure does not follow from its working.
 
 #### Scenario: A result that differs from the golden set fails CI
 
@@ -734,10 +791,20 @@ The repository SHALL hold a golden set of synthetic sessions, each with the pull
 - **WHEN** a golden session leaves a call of its transcripts unlisted, lists one with neither a hand-worked entry nor a scenario that leaves it out, or cites a scenario that does not exist
 - **THEN** a test fails and names the session and the call
 
+#### Scenario: A golden call listed by anything but its message ID fails CI
+
+- **WHEN** a golden session lists a call of its transcripts by anything but its message ID, or by a message ID that its transcripts do not hold
+- **THEN** a test fails and names the session and the call
+
 #### Scenario: A golden pull request can hold ledger lines that no capture step wrote
 
 - **WHEN** a golden session's pull request adds, removes, changes or restores ledger files, some of them holding lines that the capture step does not write
 - **THEN** the test runs the report on it without the capture step, and fails when a figure, or a count that the comment gives of what the report did not count, differs from the hand-worked one
+
+#### Scenario: A rule of the report that no golden session holds fails CI
+
+- **WHEN** task 1.21 of `add-pr-cost-calculator` is ticked, and a threat under a heading of Boundary 3, whose Answer cites a requirement of `ledger`, `report-comment`, `ci-minutes` or `pricing`, cites no folder under `tests/golden/` in its Held by line
+- **THEN** a test fails and names the threat
 
 #### Scenario: The golden set leaves the clone that runs it alone
 
@@ -1153,17 +1220,17 @@ Compared with the base commit that the records' check uses, no backlog item SHAL
 
 ### Requirement: An item becomes agreed only by a change to its status
 
-Compared with the base commit that the records' check uses, an item that the base does not hold SHALL be `Open to feedback and contributions` or `Planned`, and an item that the base gives as `Open to feedback and contributions` or `Dropped` SHALL NOT become `In progress` or `Done`, so that an item is agreed by its status line before it is built. The check SHALL be skipped while no base holds `docs/backlog/`. Tests SHALL fail otherwise.
+Compared with the base commit that the records' check uses, an item that the base does not hold SHALL be `Open to feedback and contributions` or `Planned`, and an item that the base gives as `Open to feedback and contributions` or `Dropped` SHALL NOT become `In progress` or `Done`, so that an item is agreed by its status line before it is built. Where no base holds `docs/backlog/`, the check SHALL fail and say so. Tests SHALL fail otherwise.
 
 #### Scenario: An item that skips agreement fails a test
 
 - **WHEN** a branch adds an item that is `In progress`, `Done` or `Dropped`, or moves an item that the base gives as `Open to feedback and contributions` or `Dropped` to `In progress` or `Done`
 - **THEN** a test fails and names the item and the two statuses
 
-#### Scenario: The first items pass before any base holds the backlog
+#### Scenario: A run with no base that holds the backlog fails
 
 - **WHEN** no base commit holds `docs/backlog/`
-- **THEN** the check of status changes examines nothing and passes, and once a base holds it, the check reads every item
+- **THEN** the check of status changes fails and says that no base holds `docs/backlog/`, so nothing was compared
 
 ### Requirement: The guide says how the project builds, concern by concern
 
@@ -1306,7 +1373,7 @@ While an entry's Where we stand opens with `Gap.` and names a backlog item that 
 
 ### Requirement: A principle of the guide changes alone
 
-Compared with the base that the records' check uses, a pull request that adds or removes a guide entry, moves one to another concern, or changes an entry's Statement, Rationale, Implications, Pattern or Anti-patterns, SHALL change no file outside `docs/`, `openspec/`, the context files and `CHANGELOG.md`, so that one diff cannot both weaken a principle and add the work that the principle forbade. The check SHALL be skipped while no base holds the guide. Tests SHALL fail otherwise.
+Compared with the base that the records' check uses, a pull request that adds or removes a guide entry, moves one to another concern, or changes an entry's Statement, Rationale, Implications, Pattern or Anti-patterns, SHALL change no file outside `docs/`, `openspec/`, the context files and `CHANGELOG.md`, so that one diff cannot both weaken a principle and add the work that the principle forbade. Where no base holds the guide, the check SHALL fail and say so. Tests SHALL fail otherwise.
 
 #### Scenario: A principle changed beside other work fails a test
 
@@ -1328,14 +1395,14 @@ Compared with the base that the records' check uses, a pull request that adds or
 - **WHEN**, compared with the base, a pull request changes a principle of the guide and, outside `docs/`, `openspec/` and `CHANGELOG.md`, changes only the root `CLAUDE.md` and `tests/CLAUDE.md`
 - **THEN** the test passes it
 
-#### Scenario: The guide's first entries pass before any base holds the guide
+#### Scenario: A run with no base that holds the guide fails (changes to the guide's principles)
 
 - **WHEN** no base commit holds `docs/patterns.md`
-- **THEN** the check of changes to the guide's principles examines nothing and passes, and once a base holds it, the check reads every entry
+- **THEN** the check of changes to the guide's principles fails and says that no base holds `docs/patterns.md`, so nothing was compared
 
 ### Requirement: A gap given to an agreed item changes that item
 
-Compared with the base that the records' check uses, a pull request that makes an entry of the guide name as a gap a backlog item that the base gives as `Planned` or `In progress` SHALL change that item's What done looks like, so that what an agreed item takes on shows in its own text, which changes only on the owner's words. The check SHALL be skipped while no base holds the guide. Tests SHALL fail otherwise.
+Compared with the base that the records' check uses, a pull request that makes an entry of the guide name as a gap a backlog item that the base gives as `Planned` or `In progress` SHALL change that item's What done looks like, so that what an agreed item takes on shows in its own text, which changes only on the owner's words. Where no base holds the guide, the check SHALL fail and say so. Tests SHALL fail otherwise.
 
 #### Scenario: A gap given to an agreed item without a change to that item fails a test
 
@@ -1347,14 +1414,14 @@ Compared with the base that the records' check uses, a pull request that makes a
 - **WHEN**, compared with the base, an entry comes to name as a gap a backlog item that the base gives as `Planned` or `In progress`, and that item's What done looks like differs from the base's, or it comes to name an item that the base gives with another status or does not hold
 - **THEN** the test passes it
 
-#### Scenario: The guide's first gaps pass before any base holds the guide
+#### Scenario: A run with no base that holds the guide fails (gaps given to agreed items)
 
 - **WHEN** no base commit holds `docs/patterns.md`
-- **THEN** the check of gaps given to agreed items examines nothing and passes, and once a base holds it, the check reads every entry's gap
+- **THEN** the check of gaps given to agreed items fails and says that no base holds `docs/patterns.md`, so nothing was compared
 
 ### Requirement: A gap of the guide closes only with its item
 
-Compared with the base that the records' check uses, a pull request in which an entry of the guide, known by its heading, stops being a gap, or its gap stops naming a backlog item that the base's gap names, SHALL leave that item `Done` or `Dropped`, so that a gap closes, or passes to other work, only through its item, and not in the pull request whose work it holds back. The check SHALL be skipped while no base holds the guide. Tests SHALL fail otherwise.
+Compared with the base that the records' check uses, a pull request in which an entry of the guide, known by its heading, stops being a gap, or its gap stops naming a backlog item that the base's gap names, SHALL leave that item `Done` or `Dropped`, so that a gap closes, or passes to other work, only through its item, and not in the pull request whose work it holds back. Where no base holds the guide, the check SHALL fail and say so. Tests SHALL fail otherwise.
 
 #### Scenario: A gap closed while its item is open fails a test
 
@@ -1371,10 +1438,10 @@ Compared with the base that the records' check uses, a pull request in which an 
 - **WHEN**, compared with the base, each backlog item that the base's gap names is `Done` or `Dropped`, or is still named by the entry's gap, whatever other items the gap comes to name
 - **THEN** the test passes it
 
-#### Scenario: The guide's first standings pass before any base holds the guide
+#### Scenario: A run with no base that holds the guide fails (gaps closed)
 
 - **WHEN** no base commit holds `docs/patterns.md`
-- **THEN** the check of gaps closed examines nothing and passes, and once a base holds it, the check reads every entry that the base gives as a gap
+- **THEN** the check of gaps closed fails and says that no base holds `docs/patterns.md`, so nothing was compared
 
 ### Requirement: This repository holds no switch and no ledger file before its own capture is turned on
 
@@ -1515,12 +1582,17 @@ Each hook command of the walking skeleton's plugin SHALL run its capture script 
 
 ### Requirement: The walking skeleton stages only for a commit it recognises
 
-The walking skeleton SHALL stage a ledger file only before a command whose parts, joined by two ampersands, are `cd` to a written path or `git add` with written paths, then a `git commit` with only `-m` and a quoted message, which may repeat, `-a` or `-q`, in the repository of each `git add`, each git with at most one written `-C`, and only when the commit would commit something without the file; and SHALL take back a file that the command did not commit, its calls waiting.
+The walking skeleton SHALL stage a new ledger file of random name only before a command whose parts, joined by two ampersands, are `cd` to a written path or `git add` with written paths, then a `git commit` with only `-m` and a quoted message, which may repeat, `-a` or `-q`, in the repository of each `git add`, each git with at most one written `-C`, and only when the commit would commit something without the file; and SHALL take back a file that the command did not commit, its calls waiting.
 
 #### Scenario: A recognised commit after calls holds one ledger file
 
 - **WHEN** the switch and the opt-in are on, calls made in the repository wait, and the agent runs `cd` to the clone, `git add` with a path and `git commit -m` with a message, joined by two ampersands
 - **THEN** the commit holds the agent's change and one ledger file with those calls' counts by model, and no text of the transcript but the model's name
+
+#### Scenario: The skeleton's ledger file has a name of its own
+
+- **WHEN** the skeleton stages a ledger file in each of two clones of one repository, for the same calls of the same transcript, on a branch of the same name
+- **THEN** the two files' names differ, and neither holds a call's message id or its SHA-256 hash
 
 #### Scenario: A commit in another form gets no ledger file
 
@@ -1549,7 +1621,7 @@ The walking skeleton SHALL stage a ledger file only before a command whose parts
 
 ### Requirement: The kept transcript shape holds no values
 
-Each transcript shape kept from the walking skeleton's run, a tracked file under `tests/` whose name begins with `transcript-shape`, SHALL hold only field names at a line's top level that the recorder's list names, in its `message` and in `message.usage`, each with its JSON type, and every other object and array as its type alone; each name of letters, digits and underscores, at most 40 long and not of an identifier's form. A test SHALL fail and name the entry otherwise.
+Each transcript shape kept from the skeleton's run, a tracked file under `tests/` whose name begins with `transcript-shape`, SHALL hold only field names at a line's top level that the recorder's list names, in its `message` and in `message.usage`, each with its JSON type, and every other object and array as its type alone; each name of letters, digits and underscores, at most 40 long, not of an identifier's form. A test SHALL fail and name the entry otherwise, and the recorder write nothing.
 
 #### Scenario: A value in the kept shape fails a test
 
@@ -1576,6 +1648,16 @@ Each transcript shape kept from the walking skeleton's run, a tracked file under
 - **WHEN** every entry of each kept shape gives a path of names at those levels only, and a JSON type name
 - **THEN** that test passes
 
+#### Scenario: The shape recorder keeps names only at the line's top level, in `message` and in `message.usage`
+
+- **WHEN** the shape recorder reads a transcript whose lines hold objects below `message.content`, in a tool's input and in a map keyed by identifiers, and a top-level name that its list does not name
+- **THEN** the shape that it writes gives each of those objects and arrays as its type alone, and leaves that top-level name out
+
+#### Scenario: A shape recorder whose output fails its check writes nothing
+
+- **WHEN** the shape recorder reads a transcript whose `message.usage` holds a name of an identifier's form, or one longer than 40 characters
+- **THEN** the recorder writes no shape
+
 #### Scenario: No kept shape after the run fails a test
 
 - **WHEN** task 1.36 of `add-pr-cost-calculator` is ticked, and no tracked file under `tests/` has a name that begins with `transcript-shape`
@@ -1583,7 +1665,7 @@ Each transcript shape kept from the walking skeleton's run, a tracked file under
 
 ### Requirement: The skeleton's workflow can do no more than post its comment
 
-The skeleton's workflow, `skeleton/workflow.yml`, SHALL run only on a push to `main`, ask only to read contents and write pull requests, use no action but `actions/checkout` pinned to a full commit with `persist-credentials: false`, fetch no commit but the push's `before` and `after`, read no secret, put no `${{` inside a `run:`, and set `timeout-minutes`. A test SHALL fail and name what differs otherwise.
+The skeleton's workflow, `skeleton/workflow.yml`, SHALL run only on a push to `main`, ask only to read contents and write pull requests, use no action but `actions/checkout` pinned to a full commit, given only its ref, the paths that the report reads and `persist-credentials: false`, fetch no commit but the push's `before` and `after`, run no command but the report's, hold no `secrets`, put no `${{` inside a `run:`, and set `timeout-minutes`. A test SHALL fail and name what differs otherwise.
 
 #### Scenario: Another event, permission or action in the skeleton's workflow fails a test
 
@@ -1595,19 +1677,29 @@ The skeleton's workflow, `skeleton/workflow.yml`, SHALL run only on a push to `m
 - **WHEN** `skeleton/workflow.yml` reads a secret, checks out without `persist-credentials: false`, puts `${{` inside a `run:`, fetches a ref other than the push's `before` and `after`, or sets no `timeout-minutes`
 - **THEN** a test fails and names what differs
 
+#### Scenario: Another checkout input, folder or command, or the word `secrets`, fails a test
+
+- **WHEN** `skeleton/workflow.yml` gives `actions/checkout` an input other than its ref, its path and `persist-credentials`, checks out into a folder other than the two that the report reads, `before` and `after`, runs a command other than the report's, or holds the word `secrets` anywhere
+- **THEN** a test fails and names what differs
+
 #### Scenario: The skeleton's workflow as designed passes
 
-- **WHEN** `skeleton/workflow.yml` runs only on a push to `main`, with those two permissions, `actions/checkout` alone pinned to a full commit without kept credentials, the push's two commits fetched by SHA, no secret, no expression in a command and a time limit
+- **WHEN** `skeleton/workflow.yml` runs only on a push to `main`, with those two permissions, `actions/checkout` alone pinned to a full commit, given only its ref, the report's path and no kept credentials, the push's two commits fetched by SHA, no command but the report's, no word `secrets`, no expression in a command and a time limit
 - **THEN** that test passes
 
 ### Requirement: The skeleton's report counts one merged pull request's calls once, at a test price
 
-Only when GitHub's API gives exactly one merged pull request for a push and its `before` is not all zeros, the skeleton's report SHALL read the ledger files that the push added, count each call's key once, sum each model's tokens at the test price that `skeleton/` holds, and write the figure, saying that it is at a test price and not a real cost, to the job summary and as one comment; otherwise it SHALL post no comment and say why in the job summary.
+Only when GitHub's API gives exactly one merged pull request for a push and its `before` is not all zeros, the skeleton's report SHALL read the ledger files that the push added, following no link, count each call's key once, take as counts only whole numbers below a bound, sum each model's tokens at the test price in `skeleton/`, and write the figure, said to be at a test price, not a real cost, to the job summary and one comment; else it SHALL post no comment and say why in the job summary.
 
 #### Scenario: One call in two ledger files is counted once
 
 - **WHEN** two ledger files that the push added hold the same call's key
 - **THEN** the report counts that call once
+
+#### Scenario: A ledger file that is a link, or a count out of bounds, is not counted
+
+- **WHEN** a ledger file that the push added is a symbolic link, or a line of one gives as a count anything but a whole number from zero to below the report's bound
+- **THEN** the report reads nothing through the link and counts none of that file, counts a line out of bounds as unread, and its job summary still says what it did
 
 #### Scenario: A merge, a squash and a rebase give the figure of the files that the push added
 
@@ -2515,6 +2607,11 @@ Each capability's acceptance test SHALL drive its capability's own entry point, 
 - **WHEN** an acceptance test of `report-comment` and one of `usage-capture` name the same expected error, or one names a base class or a subclass of the other's
 - **THEN** a test fails and names both
 
+#### Scenario: A golden test that expects another error fails a test
+
+- **WHEN** a test of the golden set is marked as an expected failure naming an error other than the one that the capture step or the report raises while it is missing, such as the error that a comparison of figures raises
+- **THEN** a test fails and names the golden test
+
 ### Requirement: Every transcript fixture fits the kept shape, and every recorded response is dated
 
 Each transcript fixture under `tests/` SHALL hold only the fields, paths and JSON types that the kept transcript shape gives for any line, and under `message.usage` only those that `usage-capture` names, but for paths that the fixture names, each with an existing scenario it departs for. Each recorded API response under `tests/` SHALL have a file beside it giving the UTC day it was recorded or written, which of the two, and its page, on a host that the test lists.
@@ -2543,3 +2640,247 @@ Each transcript fixture under `tests/` SHALL hold only the fields, paths and JSO
 
 - **WHEN** the file beside a recorded response gives a page on a host that the test does not list
 - **THEN** a test fails and names the file and the host
+
+### Requirement: The README gives the commands that verify a release
+
+The README's section on adopting the tool SHALL give the commands that check a release before it is used, `gh release verify` and `gh release verify-asset`, each with the release's tag and with `--repo` naming this repository, the second with each file that it tells an adopter to download, and SHALL say to use no file whose check fails. A test SHALL fail when the README lacks either command, gives one without the tag or `--repo`, or names a file that the release workflow does not attach.
+
+#### Scenario: A README without the release's checks fails a test
+
+- **WHEN** the README's section on adopting the tool lacks `gh release verify` or `gh release verify-asset`
+- **THEN** a test fails and names the missing command
+
+#### Scenario: A README that tells adopters to check a file that no release carries fails a test
+
+- **WHEN** the README gives `gh release verify-asset` for a file that the release workflow does not attach
+- **THEN** a test fails and names the file
+
+#### Scenario: A release check without its tag or its repository fails a test
+
+- **WHEN** the README gives `gh release verify` or `gh release verify-asset` with no tag, or with no `--repo` that names this repository
+- **THEN** a test fails and names the command
+
+### Requirement: The README says how to check what runs from a release
+
+The README SHALL tell an adopter to compare the commit that `gh release verify` gives for the release with the commit that they pin, to check the bill of materials with `gh release verify-asset`, and to compare the hook file's SHA-256 that it lists with the copied file's and the registration's; SHALL name the oldest gh that has both commands; and SHALL give a check with git and a SHA-256 tool alone, saying that it does not check GitHub's attestation. A test SHALL fail when any is missing.
+
+#### Scenario: A README that checks the release but not the pin or the hook fails a test
+
+- **WHEN** the README's section on adopting the tool does not compare the release's attested commit with the pin, does not check the bill of materials, or does not compare the hook file's SHA-256 with the copied file and the registration
+- **THEN** a test fails and names the missing step
+
+#### Scenario: A README without the oldest gh or the fallback fails a test
+
+- **WHEN** the README does not name the oldest gh that has both commands, or gives no check with git and `sha256sum`, `shasum -a 256` or PowerShell's `Get-FileHash`, or does not say that this check does not check GitHub's attestation
+- **THEN** a test fails and names what is missing
+
+### Requirement: An agent's text for GitHub is checked for private references before it is posted
+
+`.claude/settings.json` SHALL register, with `onFailure` set to `block`, a hook that runs before each Bash command and each `mcp__*` tool call, that blocks the call, naming the pattern, quoting none of its text, when any string of its input, at any depth, matches a private pattern or name hash that pull request text is checked against, or holds a link to, or an identifier of, a Claude session, project or thread. It SHALL block a call whose input it cannot read, or on any error of its own.
+
+#### Scenario: A pull request's text with a session link is blocked before it is posted
+
+- **WHEN** an agent's tool call that opens a pull request gives a body that holds a link to a Claude session
+- **THEN** the hook blocks the call, names the pattern, and quotes none of the text
+
+#### Scenario: A comment with a private reference is blocked before it is posted
+
+- **WHEN** an agent's tool call that adds or edits a comment on an issue or a pull request gives a text that one of the private patterns or name hashes matches
+- **THEN** the hook blocks the call, names the pattern, and quotes none of the text
+
+#### Scenario: Text with no private reference is posted
+
+- **WHEN** an agent's tool call that opens a pull request gives a title and a body that no private pattern, name hash or session link matches
+- **THEN** the hook lets the call run
+
+#### Scenario: A call whose input the hook cannot read is blocked
+
+- **WHEN** the hook's input is not JSON, or lacks the tool's name or its input
+- **THEN** the hook blocks the call and says that it could not read it
+
+#### Scenario: A hook that fails or times out blocks the call
+
+- **WHEN** the hook raises an error of its own, or runs past its timeout
+- **THEN** the call is blocked
+
+#### Scenario: A tool of any MCP server that writes to GitHub is checked
+
+- **WHEN** a tool of an MCP server of any name, such as one that pushes files, creates or updates a file, or creates a branch or a repository, gives a commit message, a file's contents or a branch's name that holds a session link, nested at any depth of its input
+- **THEN** the hook blocks the call, names the pattern, and quotes none of the text
+
+#### Scenario: An issue, a review and a Bash `gh` call with private text are blocked
+
+- **WHEN** an agent opens an issue, submits a review, or runs `gh issue create`, `gh pr comment` or `gh api` in Bash, with a text that a private pattern matches
+- **THEN** the hook blocks each call, names the pattern, and quotes none of the text
+
+#### Scenario: Each link and identifier form is blocked
+
+- **WHEN** a tool call's text holds a link to a Claude project, a thread's identifier, or a session's identifier on its own, with no link around it
+- **THEN** the hook blocks the call and names the form
+
+### Requirement: The hook reads what a command would post from where it lies
+
+The hook of "An agent's text for GitHub is checked for private references before it is posted" SHALL also check each file that a `gh`, `git commit` or `git tag` command names for the text that it posts, such as with `--body-file`, `-F`, `--input` or `@file`, the messages of `git commit` and `git tag`, and the messages of the commits that a `git push` would send; and SHALL block a `gh` command whose text comes from an expansion that it cannot resolve.
+
+#### Scenario: A commit with a session-link trailer is blocked
+
+- **WHEN** the agent runs `git commit` with a message whose trailer holds a link to a Claude session
+- **THEN** the hook blocks the call, names the pattern, and quotes none of the text
+
+#### Scenario: A file that a command posts is checked
+
+- **WHEN** the agent runs `gh pr create --body-file f`, `gh api --input f` or `git commit -F f`, and the file holds a private reference
+- **THEN** the hook blocks the call, names the pattern, and quotes none of the text
+
+#### Scenario: A push of a commit whose message holds a session link is blocked
+
+- **WHEN** the agent runs `git push`, and a commit that it would send holds a link to a Claude session in its message
+- **THEN** the hook blocks the call, names the pattern, and quotes none of the text
+
+#### Scenario: A `gh` call whose text the hook cannot resolve is blocked
+
+- **WHEN** the agent runs `gh pr create --body "$BODY"`, or one whose body comes from `$(...)`
+- **THEN** the hook blocks the call, and says that it could not read the text
+
+### Requirement: The guard of an agent's text for GitHub also ships as a plugin
+
+The hook of "An agent's text for GitHub is checked for private references before it is posted" SHALL also ship as a plugin of its own, from a folder of this repository listed in the marketplace that loads Superpowers into its sessions and enabled in `.claude/settings.json`, and a script SHALL build it as a zip that `CONTRIBUTING.md` says to add to a project's settings. A test SHALL fail where the plugin's script, patterns, matcher or `onFailure` differ from the repository hook's.
+
+#### Scenario: The plugin blocks what the repository's hook blocks
+
+- **WHEN** the plugin's hook gets a tool call whose text holds a link to a Claude session, or a text that a private pattern matches
+- **THEN** it blocks the call, names the pattern, and quotes none of the text, as the repository's hook does
+
+#### Scenario: A plugin that differs from the repository's hook fails a test
+
+- **WHEN** the plugin's script or the patterns that it carries differ from the repository hook's, or its hook's matcher or `onFailure` does
+- **THEN** a test fails and names the difference
+
+#### Scenario: A session with several repositories enables the plugin
+
+- **WHEN** `.claude/settings.json` is read
+- **THEN** its `enabledPlugins` turns the plugin on from the marketplace that loads Superpowers into this repository's sessions, which lists the plugin's folder
+
+#### Scenario: The contributor page says how a project's threads get the guard
+
+- **WHEN** `CONTRIBUTING.md` is read
+- **THEN** it gives the command that builds the plugin's zip, says to add the zip in the project's settings, that it reaches only threads that start afterwards, and to add it again after the patterns change
+
+### Requirement: A pull request that changes the vendored copy or the marketplace is also checked by its base commit's scripts
+
+CI SHALL run, on every pull request, from the default branch's own workflow on `pull_request_target`, a job that, where the pull request changes `vendor/` or the marketplace's root file or plugin folder, runs the base commit's own vendor check and marketplace checks over the merge commit that GitHub tests, and fails when either check fails or it cannot read that commit, and otherwise passes; either way, it SHALL say in its log what it compared, or that nothing in scope changed.
+
+#### Scenario: A pull request that weakens a check and changes what it checks fails CI
+
+- **WHEN** a pull request changes the vendor check so that it passes any vendored copy, and changes a vendored file
+- **THEN** the base commit's vendor check fails over the pull request's tree, and the job's check fails
+
+#### Scenario: A pull request that changes the job's workflow does not change the run
+
+- **WHEN** a pull request changes or removes the workflow file that holds the job, or adds a workflow that would run in its place, together with a vendored file that the base's vendor check refuses
+- **THEN** the job runs as the default branch's workflow file gives it, and fails
+
+#### Scenario: A merge commit that cannot be read fails the job
+
+- **WHEN** GitHub gives no merge commit for the pull request, as where it conflicts with its base, or the job cannot fetch it
+- **THEN** the job fails and says so, and does not pass as though nothing in scope changed
+
+#### Scenario: The base commit's checks run none of the pull request's code
+
+- **WHEN** a pull request that changes the marketplace's plugin folder also changes a script, a module or a configuration file that the checks would load from a working tree
+- **THEN** the base commit's checks load none of them, and the job that runs them is granted no write permission and reads no secret
+
+#### Scenario: A pull request that changes neither passes and says so
+
+- **WHEN** a pull request changes neither `vendor/` nor the marketplace's root file or plugin folder
+- **THEN** the job passes, says in its log that it compared nothing because nothing in scope changed, and its check passes
+
+### Requirement: The base commit's checks trust nothing that the pull request's tree holds
+
+The base commit's checks' job SHALL run only programs from the base's checkout or the runner, its shell included, the pull request's tree never its working directory or on a search path; SHALL read that tree from git's objects alone, with no checkout, attributes or submodule, failing on a link or a gitlink under a checked path; SHALL restore and save no cache; and SHALL fail where the tree's `UPSTREAM.lock` gives another `repo=` or `vendored_paths=` than the base's, ignoring `SYNC_REMOTE_BASE`.
+
+#### Scenario: A pull request's script that a step would load by its path changes nothing
+
+- **WHEN** a pull request changes `scripts/printable_log.py`, or another file that a step or the workflow's defaults load by its path, together with a vendored file that the base's vendor check refuses
+- **THEN** the base commit's checks still fail, and no file of the pull request's tree runs
+
+#### Scenario: A lock that points at another repository fails the base's check
+
+- **WHEN** a pull request changes the lock's `repo=` to a fork, and the vendored files to match that fork's tag
+- **THEN** the base commit's vendor check fails, and fetches nothing from an address that `SYNC_REMOTE_BASE` gives
+
+#### Scenario: A link or a submodule under a checked path fails
+
+- **WHEN** the pull request's tree holds a symbolic link or a gitlink under `vendor/` or the marketplace's plugin folder
+- **THEN** the base commit's checks fail and name it, and nothing is fetched for the gitlink
+
+#### Scenario: The base commit's checks share no cache with the base branch
+
+- **WHEN** the job's workflow restores or saves a cache, through `actions/cache` or a setup action's own cache
+- **THEN** a test of the workflows fails and names the step
+
+### Requirement: The base commit's checks read a path as a case-insensitive system writes it
+
+The base commit's checks SHALL take a pull request's path as in their scope where, with each part folded to lower case and stripped of trailing dots and spaces and of the characters that macOS leaves out, as Windows and macOS write it, it falls under `vendor/` or is the root marketplace file, and SHALL fail, naming the path, where such a path is not spelt so, holds such a character, or has a part in Windows' short form, such as `SUPERP~1`.
+
+#### Scenario: A path that a case-insensitive system would write into a checked path fails
+
+- **WHEN** a pull request adds `Vendor/superpowers/skills/x/SKILL.md`, `vendor/Superpowers/skills/x/SKILL.md`, `vendor/superpowers./skills/x/SKILL.md`, `Vendor/README.md`, `vendor/SUPERP~1/skills/x/SKILL.md`, or `vendor/superpowers/skills/x/SKILL.md` with a zero-width non-joiner inside `superpowers`
+- **THEN** the base commit's checks fail and name the path
+
+#### Scenario: A path spelt as the checked path passes on to the check
+
+- **WHEN** a pull request changes `vendor/superpowers/LICENSE` and nothing else
+- **THEN** the base commit's checks run the base's vendor check over it, and fail on no path's spelling
+
+### Requirement: Only the base commit's checks run on `pull_request_target`, and no workflow on `workflow_run`
+
+No workflow here SHALL trigger on `workflow_run`, and only the workflow of the base commit's checks SHALL trigger on `pull_request_target`, for pull requests to the default branch, granting itself and its job only `contents: read`, reading no secret, using no action but a checkout of the base that keeps no credentials, and giving the event's values only through a step's `env:`. A test SHALL fail on any other workflow that triggers on either event, and on that workflow where it holds otherwise.
+
+#### Scenario: Another workflow on `pull_request_target` fails a test
+
+- **WHEN** a workflow other than that of the base commit's checks triggers on `pull_request_target`, or any workflow triggers on `workflow_run`
+- **THEN** a test of the workflows fails and names the workflow and the event
+
+#### Scenario: The base commit's checks' workflow with a write permission or the pull request's checkout fails a test
+
+- **WHEN** the workflow of the base commit's checks grants a permission other than `contents: read`, names a secret, runs for pull requests to any other branch, checks out the pull request's head or merge ref, keeps the checkout's credentials, uses any other action, calls another workflow, runs a container or a service, or puts a `${{` expression anywhere but a step's `env:`
+- **THEN** a test of the workflows fails and names the workflow and what it holds
+
+### Requirement: A name that the tool gives git is never read as an option
+
+Every git command that the capture step or the report starts SHALL go through one function, give each ref, revision or remote that it was given or read only after `--end-of-options` and each path only after `--`, and run `rev-parse` only with `--verify`. A property test SHALL drive every git command that a scan of the code finds with names that begin with `-`, check each output, and fail when git reads a name as an option or it drove none; a test SHALL fail on a git process started elsewhere.
+
+#### Scenario: A ref or a path named like an option stays a name
+
+- **WHEN** a branch named `--output=x`, made with `git update-ref` since `git branch` refuses that name, and a ledger path that holds a folder named `-c`, reach the tool
+- **THEN** each git command that the tool starts takes each as a name, and none of them writes a file or sets a configuration value that it names
+
+#### Scenario: A property test drives every git command with names that look like options
+
+- **WHEN** the property test generates names that begin with `-` or `--`, for each git command that the tool starts, under the newest git and the floor's
+- **THEN** git takes each as a name, each command's output is the object that the test expects, and the test fails and names the command when it is not
+
+#### Scenario: A revision given where a path is read fails the property test
+
+- **WHEN** a git command of the tool gives a revision after `--`, where git reads it as a path and prints nothing
+- **THEN** the property test fails and names the command, since its output is not the object that it expects
+
+#### Scenario: A git process started outside the one function fails a test
+
+- **WHEN** the tool's code starts a git process other than through its one function for git, or the property test drives fewer commands than the scan finds
+- **THEN** a test fails and names the place or the command
+
+### Requirement: The bug form asks for no real transcript
+
+The bug form's field for how to reproduce a bug SHALL ask for a synthetic transcript line, from a template line of placeholder values that it gives, with every identifier and path invented, or the counts that the comment shows, and SHALL say never to paste a real one; `CONTRIBUTING.md` SHALL say that a maintainer can delete a revision from an edit history on request, which recalls no notification or copy that GitHub already sent. A test SHALL fail when either is missing.
+
+#### Scenario: A bug form that asks for a real transcript fails a test
+
+- **WHEN** the bug form's reproduction field does not ask for a synthetic transcript line or the comment's counts, does not give a template line of placeholder values, or does not say never to paste a real transcript
+- **THEN** a test fails and names the field
+
+#### Scenario: A CONTRIBUTING.md without the edit history's note fails a test
+
+- **WHEN** `CONTRIBUTING.md` does not say that a maintainer can delete a revision from an edit history on request, or does not say that this recalls no notification or copy already sent
+- **THEN** a test fails and names the file

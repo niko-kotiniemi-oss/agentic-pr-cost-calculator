@@ -125,6 +125,11 @@ Each ledger file SHALL be a new regular file with a random name, in the ledger f
 - **WHEN** capture adds calls to a branch that already has ledger files
 - **THEN** it writes a new file, and leaves every other ledger file unchanged
 
+#### Scenario: A ledger file's name carries nothing of its calls or its session
+
+- **WHEN** capture writes a ledger file in each of two clones of one repository, for the same calls of the same transcript, on a branch of the same name
+- **THEN** the two files' names differ, and neither holds a call's message id or its SHA-256 hash
+
 #### Scenario: A symbolic link in the ledger path is refused
 
 - **WHEN** a folder on the ledger file's path below the repository root is a symbolic link
@@ -141,7 +146,7 @@ The capture step SHALL stage only the ledger file it wrote.
 
 ### Requirement: A ledger file is noted before it is written
 
-The capture step SHALL note a ledger file in its store before it writes it, so that a later run takes back a file that a run killed while writing it left behind, as the requirements from "A ledger file that no commit takes is taken back" to "A put-back is tried once, and in no other case" in `usage-capture` say for a file that no commit took.
+The capture step SHALL note a ledger file in its store before it writes it, so that a later run takes back a file that a run killed while writing it left behind, as the eight requirements from "A ledger file that no commit takes is taken back" to "A put-back is tried once, and in no other case" in `usage-capture` say for a file that no commit took.
 
 #### Scenario: A ledger file that a killed run left is taken back
 
@@ -192,7 +197,7 @@ The report SHALL count each call at most once: an added entry for a call that a 
 
 ### Requirement: The comment says how many ledger files the pull request restores, removes or changes
 
-An added ledger file (see "Only the ledger files that the merge adds are counted") at a path that a ledger file held at any commit of the default branch's first-parent history before the merge SHALL be counted as restored. The comment SHALL say how many ledger files it counted as restored, and how many ledger files that the default branch held before the merge the pull request removed or changed, and SHALL count none of their entries.
+An added ledger file (see "Only the ledger files that the merge adds are counted") at a path that a ledger file held at any commit of the default branch's first-parent history before the merge SHALL be counted as restored. The comment SHALL say how many ledger files it counted as restored, and how many ledger files that the default branch held before the merge the pull request removed or changed, and SHALL count none of the entries of any file that it restores, removes or changes.
 
 #### Scenario: Removed or changed ledger files are flagged
 
@@ -212,3 +217,47 @@ When a push that gets no comment, with the tool on before or after it, removes o
 
 - **WHEN** a push to the default branch that merges no pull request, or more than one, removes or changes ledger files that the default branch held before it, with the tool on
 - **THEN** no comment is posted, and the job summary says how many ledger files the push removed or changed
+
+### Requirement: A ledger file's lines end in a line feed alone
+
+The capture step SHALL end every line of a ledger file with a line feed alone, on every system. The report SHALL split each ledger file's bytes on 0x0A before it decodes them, for added files and the default branch's alike, and SHALL take a line that holds 0x0D anywhere, or a last line that no 0x0A ends, as breaking the format, so a first line makes its file refused. The README SHALL give every adopter `.pr-cost/** -text -filter -linguist-generated` as the last line of the root `.gitattributes`.
+
+#### Scenario: Capture on Windows writes line feeds alone
+
+- **WHEN** the capture step writes a ledger file under Python on Windows
+- **THEN** every line of the file ends with a line feed and holds no carriage return
+
+#### Scenario: A ledger file whose lines end in CRLF is refused
+
+- **WHEN** a pull request adds a ledger file whose lines end with a carriage return and a line feed
+- **THEN** the report counts the file as a refused file, as one whose first line breaks its version's rules, and counts none of its entries
+
+#### Scenario: A later line that ends in CRLF is refused alone
+
+- **WHEN** a pull request adds a ledger file whose first line ends in a line feed alone, and one of whose later lines ends with a carriage return and a line feed
+- **THEN** the report counts that line as refused, and counts the file's other lines
+
+#### Scenario: A ledger file whose lines end in a lone CR is refused
+
+- **WHEN** a pull request adds a ledger file whose lines end with a carriage return alone, or a line that holds one before its end
+- **THEN** the report reads each part between line feeds as one line, refuses each that holds a carriage return, and counts it as refused
+
+#### Scenario: A last line without a line feed is refused
+
+- **WHEN** a ledger file that a pull request adds ends in a line that no line feed ends
+- **THEN** the report counts that line as refused, and counts the file's other lines
+
+#### Scenario: A line that holds U+2028 or U+0085 is one line
+
+- **WHEN** a ledger line that ends in a line feed holds U+2028 or U+0085 inside a JSON string
+- **THEN** the report reads it as one line, and does not split it
+
+#### Scenario: The default branch's ledger files are split the same way
+
+- **WHEN** the default branch held, before the merge, a ledger file with a line that holds a carriage return, and a pull request adds one that holds the same call in a valid line
+- **THEN** the report skips the default branch's line and counts the pull request's call once
+
+#### Scenario: The README gives every adopter the attribute line
+
+- **WHEN** the README does not give `.pr-cost/** -text -filter -linguist-generated`, or does not say to make it the last line of the root `.gitattributes`
+- **THEN** a test fails and names what is missing

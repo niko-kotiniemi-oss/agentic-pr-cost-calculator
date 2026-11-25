@@ -6,7 +6,7 @@ What holds for the whole tool rather than for one feature: documentation that na
 
 **Spec:** `project-standards`
 
-**Requirements:** R29, R100, R101, R30, R31, R33, R34, R73, R74, R177, R173, R174, R175, R176, R178, R124, R125, R126, R127, R128, R129, R265, R266, R130, R131, R132, R133, R134, R135, R140, R143, R136, R137, R138, R139, R141, R159, R164, R185, R194, R186, R187, R195, R196, R198, R199, R200, R201, R203, R204, R205, R206, R207, R208, R209, R210, R211, R212, R213, R214, R215, R216, R217, R218, R219, R220, R221, R222, R226, R227, R228, R231, R233, R223, R229, R232, R224, R234, R235, R236, R237, R238, R239, R240, R241, R242, R243, R142, R244, R245, R246, R247, R248, R249, R250, R252, R253, R254, R255, R256, R257, R258, R264, R267, R268, R273, R272, R278, R274, R276, R277, R269, R275, R270, R271, R279, R280, R281, R291, R292
+**Requirements:** R29, R100, R101, R30, R31, R33, R34, R73, R74, R177, R173, R174, R175, R176, R178, R124, R125, R126, R127, R128, R129, R265, R266, R130, R131, R132, R133, R134, R135, R140, R143, R136, R137, R138, R139, R141, R159, R164, R185, R194, R186, R187, R195, R196, R198, R199, R200, R201, R203, R204, R205, R206, R207, R208, R209, R210, R211, R212, R213, R214, R215, R216, R217, R218, R219, R220, R221, R222, R226, R227, R228, R231, R233, R223, R229, R232, R224, R234, R235, R236, R237, R238, R239, R240, R241, R242, R243, R142, R244, R245, R246, R247, R248, R249, R250, R252, R253, R254, R255, R256, R257, R258, R264, R267, R268, R273, R272, R278, R274, R276, R277, R269, R275, R270, R271, R279, R280, R281, R291, R292, R297, R315, R298, R316, R322, R299, R317, R323, R321, R300, R304
 
 ## Expected behaviour
 
@@ -27,7 +27,7 @@ flowchart LR
 - 3) The pinned OpenSpec reads every spec, and CI compares that reading with the tests' (R178).
 - 4) The vendored copy of Superpowers holds only what its pinned commit gives (R275).
 - 5) The checks read a checkout's files with Windows line endings as git stages them (R276).
-- 6) The one check that the ruleset requires, `ci`, which passes only when every job above passes, the tests on both Pythons among them (R25; DR-043, DR-072, DR-283).
+- 6) `ci`, one of the two checks that the ruleset requires, which passes only when every job above passes, the tests on both Pythons among them (R25; DR-283, DR-320, DR-322).
 - 7) The threat model is reviewed independently at design and before the merge, and every threat is rated (R31).
 
 In detail:

@@ -307,6 +307,34 @@ The capability names the spec that holds the requirement. Each capability is one
 | R293 | non-functional | `report-comment` | The comment stays under a size bound below the length that GitHub refuses |
 | R294 | functional | `pricing` | The price table states the day it was last checked |
 | R295 | non-functional | `pricing` | Each price row gives the day it was added, and is added in order |
+| R296 | behavioural | `switch-and-opt-in` | The tool stays off in a repository that its configuration does not name |
+| R297 | non-functional | `project-standards` | The README gives the commands that verify a release |
+| R298 | non-functional | `project-standards` | An agent's text for GitHub is checked for private references before it is posted |
+| R299 | non-functional | `project-standards` | A pull request that changes the vendored copy or the marketplace is also checked by its base commit's scripts |
+| R300 | non-functional | `project-standards` | A name that the tool gives git is never read as an option |
+| R301 | non-functional | `usage-capture` | The capture step keeps no transcript text and reads no secret |
+| R302 | behavioural | `report-comment` | The comment says when the ledger files may be hidden in the pull request's diff |
+| R303 | non-functional | `releases-and-compatibility` | Each security fix ships as a release with a security advisory |
+| R304 | non-functional | `project-standards` | The bug form asks for no real transcript |
+| R305 | functional | `usage-capture` | Before a push, calls that no commit carries go into a commit of their own |
+| R306 | behavioural | `ledger` | A ledger file's lines end in a line feed alone |
+| R307 | behavioural | `usage-capture` | The registered command finds a Python on each system and installs none |
+| R308 | behavioural | `switch-and-opt-in` | Capture stays off in a clone whose `origin` names another repository |
+| R309 | behavioural | `switch-and-opt-in` | The report stays off where the configuration names another repository |
+| R310 | non-functional | `usage-capture` | Capture's git commands get only the environment they need |
+| R311 | behavioural | `usage-capture` | Only a push of the checked-out branch gets the step's commit |
+| R312 | non-functional | `usage-capture` | The step's own commit runs nothing and guesses no identity |
+| R313 | behavioural | `usage-capture` | A commit of the step's whose push did not run is taken back |
+| R314 | non-functional | `report-comment` | The report's workflow gives event data to commands only through the environment |
+| R315 | non-functional | `project-standards` | The README says how to check what runs from a release |
+| R316 | non-functional | `project-standards` | The hook reads what a command would post from where it lies |
+| R317 | non-functional | `project-standards` | The base commit's checks trust nothing that the pull request's tree holds |
+| R318 | non-functional | `releases-and-compatibility` | A security entry names its advisory in full, and is checked before the tag |
+| R319 | behavioural | `releases-and-compatibility` | A version that a refused tag gave is never released |
+| R320 | behavioural | `usage-capture` | The step's commit before a push signs with the person's own signer, and a repository can turn it off |
+| R321 | non-functional | `project-standards` | Only the base commit's checks run on `pull_request_target`, and no workflow on `workflow_run` |
+| R322 | non-functional | `project-standards` | The guard of an agent's text for GitHub also ships as a plugin |
+| R323 | non-functional | `project-standards` | The base commit's checks read a path as a case-insensitive system writes it |
 
 IDs are stable: a requirement keeps its ID while it exists, and a new one takes the next free number, so the rows follow the order in which requirements were added rather than the order of the specs. A requirement that a later change removes leaves the table, and its ID is listed below with the change that removed it, never to be used again.
 

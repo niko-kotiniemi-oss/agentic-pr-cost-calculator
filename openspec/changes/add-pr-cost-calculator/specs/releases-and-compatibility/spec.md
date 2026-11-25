@@ -8,7 +8,7 @@ Scenarios below that run the capture step follow the conventions that `usage-cap
 
 ### Requirement: The tool runs on the oldest supported Python and on every later release
 
-The hook and the report SHALL run on Python 3.11, the oldest version this change supports, and on every later release, with the standard library only. CI SHALL run the tests on the oldest supported version and on the newest release.
+The hook and the report SHALL run on Python 3.11, the oldest version this change supports, and on every later release, with the standard library only. CI SHALL run the tests on the oldest supported version and on the newest release, and a test SHALL fail where CI's matrix lacks either.
 
 #### Scenario: The tests run on the oldest supported Python
 
@@ -129,6 +129,11 @@ The public surface SHALL be the hook file's path and registration, the plugin's 
 - **WHEN** the surface manifest in the repository is read
 - **THEN** it names each key that the configuration's format documents, and the values that each takes, and no other key or value of the configuration
 
+#### Scenario: A configuration reader that differs from the manifest fails a test
+
+- **WHEN** the configuration's reader takes as valid a key or a value that the surface manifest does not name, or refuses a key or a value of the configuration that the manifest names
+- **THEN** a test fails
+
 #### Scenario: The surface manifest names each agent that the opt-in records
 
 - **WHEN** the surface manifest in the repository is read
@@ -151,6 +156,11 @@ Each release SHALL carry a CycloneDX JSON software bill of materials, written by
 
 - **WHEN** a release is published
 - **THEN** a CycloneDX JSON file is attached that names the tool, the release's version and commit, the tool's licence, FCL-1.0-MIT, the oldest supported Python, the hook file's checksum, the plugin zip's checksum, each action the reusable workflow uses, and the development-only components
+
+#### Scenario: The bill of materials is written from the tagged tree
+
+- **WHEN** the bill of materials is written for a tag while the working tree holds a file that the tagged tree does not, and a hook file that differs from the tagged one
+- **THEN** the bill of materials names nothing of that file and no path of the working tree, and gives the SHA-256 of the hook file as the tagged tree holds it
 
 ### Requirement: A release is not published when its bill of materials is missing or fails a check
 
@@ -209,6 +219,11 @@ The plugin that a commit builds SHALL have a manifest that holds no key but its 
 - **WHEN** the capture step in the plugin that a pull request's tree builds differs from the hook file by any byte
 - **THEN** CI fails, and no release is published from a tag where it differs
 
+#### Scenario: A plugin that declares only the allowed keys and command hooks passes
+
+- **WHEN** the plugin that a pull request's tree builds has a manifest that holds its name, version, description, author, licence and repository and no other key, hooks that are all command hooks, and the hook file, byte for byte, as its capture step
+- **THEN** these checks pass, and do not stop a release from a tag where this holds
+
 #### Scenario: A changed hook file is not compared with the marketplace's folder
 
 - **WHEN** a pull request changes the hook file, while the marketplace's plugin folder holds an earlier release's plugin, whose capture step is the earlier hook file
@@ -251,6 +266,11 @@ The folder that the root marketplace file names SHALL hold the plugin as a publi
 
 - **WHEN** the plugin's manifest in the marketplace's folder gives a version whose tag names no published release, as the tag of a release that the workflow refused does not, or that only a branch named like that tag gives
 - **THEN** CI fails, and reads no ref by the version's short name
+
+#### Scenario: A marketplace folder whose release's tag is off the default branch's first-parent history fails CI
+
+- **WHEN** the plugin's manifest in the marketplace's folder gives a version that a published release has, and that release's tag, read by its full name, names a commit that is not in the default branch's first-parent history, such as one from inside a merged pull request
+- **THEN** CI fails
 
 #### Scenario: A marketplace folder that moves back to an earlier release fails CI
 
@@ -428,3 +448,50 @@ A workflow SHALL run every day and on demand, with a token that only reads, and 
 
 - **WHEN** a package rule of Renovate's configuration sets a wait other than 14 days for minor or patch updates, or the workflow runs on no daily schedule, cannot be started by hand, runs on any other event, grants the workflow anything but `contents: read` or its job anything but `contents: read`, `pull-requests: read` and `issues: read`, gives its job no time limit of 15 minutes or less, or checks out the code keeping its credentials
 - **THEN** a test fails and names the difference
+
+### Requirement: Each security fix ships as a release with a security advisory
+
+Each fix of a vulnerability in released code SHALL reach the default branch without a public pull request, through the temporary private fork of its repository security advisory, with an entry under `### Security` in the changelog that the owner writes, and SHALL ship in a release, after which the owner publishes the advisory, which SHALL name the affected releases and the commit that fixes it. The release workflow SHALL publish no release whose `### Security` entry names no advisory.
+
+#### Scenario: A security line that names no advisory stops the release
+
+- **WHEN** a tag's changelog entry holds an entry under `### Security` that names no `GHSA-` identifier
+- **THEN** the release workflow publishes no release, and names the entry
+
+#### Scenario: A security line that names its advisory passes
+
+- **WHEN** each entry under `### Security` in a tag's changelog entry gives its advisory's identifier in full, in text that the release page shows, linked to this repository's advisory page
+- **THEN** the release workflow's check of the security lines passes
+
+### Requirement: A security entry names its advisory in full, and is checked before the tag
+
+Each entry under `### Security` SHALL give, in text that the release page shows, its advisory's identifier in full, `GHSA-` and three groups of four lowercase letters or digits joined by `-`, linked to this repository's page of that advisory. The release workflow, and CI on each pull request that changes the changelog's `## [Unreleased]` section, SHALL fail and name the entry otherwise.
+
+#### Scenario: A malformed advisory identifier stops the release and fails CI
+
+- **WHEN** an entry under `### Security` gives `GHSA-TODO`, an identifier of another form, or an identifier linked to another repository's advisory page
+- **THEN** the release workflow publishes no release and names the entry, and CI on a pull request that adds that entry under `## [Unreleased]` fails and names it
+
+#### Scenario: An identifier only in a link's address stops the release
+
+- **WHEN** an entry under `### Security` holds its advisory's identifier only in a link's address, while the link's text shows something else
+- **THEN** the release workflow publishes no release, and names the entry
+
+#### Scenario: A pull request that leaves the Unreleased section alone is not checked for it
+
+- **WHEN** a pull request changes no line of the changelog's `## [Unreleased]` section
+- **THEN** the check of the security entries passes on it
+
+### Requirement: A version that a refused tag gave is never released
+
+The changelog on the default branch SHALL keep, for each version whose tag the release workflow refused, a heading that gives that version and `[REFUSED]`, which the owner adds when the tag is deleted, and the release workflow SHALL publish no release of a version that the default branch's changelog marks so. The workflow SHALL say whether it refused a tag, and a run that fails without refusing one SHALL spend no version.
+
+#### Scenario: A version that a refused tag gave is not released
+
+- **WHEN** the default branch's changelog gives `## [1.2.0] [REFUSED]`, after the release workflow refused a tag `v1.2.0` that was then deleted, and a tag `v1.2.0` is pushed again
+- **THEN** no release is published, and the workflow says that the version was refused before
+
+#### Scenario: A run that failed without a refusal spends no version
+
+- **WHEN** a run for a tag `v1.2.0` fails because its runner failed, without the workflow refusing the tag, and the tag is pushed again
+- **THEN** the workflow checks the tag as it checks any other, and says nothing of a refusal

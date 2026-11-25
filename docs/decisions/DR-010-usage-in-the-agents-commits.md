@@ -3,12 +3,12 @@
 - **Type:** architecture
 - **Boundary:** outgoing
 - **Reversibility:** reversible with work
-- **Status:** accepted
+- **Status:** closed
 - **Decided by:** the change `add-pr-cost-calculator`
 - **Requirements:** R7
 - **Threats:** T8, T10, T16
 - **Replaces:** none
-- **Closed by:** none
+- **Closed by:** DR-316
 
 ## Context
 

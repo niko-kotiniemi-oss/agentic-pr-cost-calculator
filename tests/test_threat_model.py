@@ -54,7 +54,15 @@ from risk_register import (
     threats_in,
 )
 from test_backlog import AGREED, Item, backlog_items, items_in
-from test_decisions import DECIDER, Record, attribute_problems, base_commits, git, records_of
+from test_decisions import (
+    DECIDER,
+    Record,
+    attribute_problems,
+    base_commits,
+    git,
+    records_of,
+    uncompared_problems,
+)
 from test_roadmap import (
     hidden_text_problems_in,
     link_problems_in,
@@ -945,12 +953,15 @@ def test_no_further_answer_is_rewritten_while_its_item_stands() -> None:
     text = THREAT_MODEL.read_text()
     now = {item.ident: item for item in backlog_items(ROOT)}
     problems = []
-    for base in base_commits(ROOT, os.environ):
+    bases = base_commits(ROOT, os.environ)
+    compared = False
+    for base in bases:
         shown = git(ROOT, "show", f"{base}:docs/threat-model.md")
         if shown.returncode == 0:
+            compared = True
             was = {item.ident: item for item in items_in(ROOT, base).values()}
             problems += rewritten_problems(shown.stdout.decode("utf-8"), text, was, now, base)
-    assert problems == []
+    assert problems + uncompared_problems(compared, bases, "docs/threat-model.md") == []
 
 
 ITEM_PATH = "docs/backlog/B-007-a-thing.md"
@@ -1139,14 +1150,14 @@ def test_no_high_or_critical_rating_is_lowered_alone() -> None:
     text = THREAT_MODEL.read_text()
     compared = 0
     problems = []
-    for base in base_commits(ROOT, os.environ):
+    bases = base_commits(ROOT, os.environ)
+    for base in bases:
         shown = git(ROOT, "show", f"{base}:docs/threat-model.md")
         if shown.returncode == 0:
             compared += 1
             problems += lowered_problems(shown.stdout.decode("utf-8"), text)
+    problems += uncompared_problems(bool(compared), bases, "docs/threat-model.md")
     assert problems == []
-    if not compared:
-        pytest.skip("no base holds the threat model, so there is nothing to compare")
 
 
 LOWERED: Ratings = {"impact": "3 (high)", "likelihood": "1 (unlikely)", "risk": "3", "raw": HIGHEST}

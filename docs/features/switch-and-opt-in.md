@@ -6,7 +6,7 @@ Two switches decide whether anything is recorded. The repository decides whether
 
 **Spec:** `switch-and-opt-in`
 
-**Requirements:** R1, R182, R225, R36, R37, R103, R104, R105, R38, R106, R39, R160, R40, R144, R107, R145, R108, R166, R109, R161, R162, R146, R110, R19, R91, R92, R171, R172, R93
+**Requirements:** R1, R182, R225, R36, R37, R103, R104, R105, R38, R106, R39, R160, R40, R144, R107, R145, R108, R166, R109, R161, R162, R146, R110, R19, R91, R92, R171, R172, R93, R296, R308, R309
 
 ## Expected behaviour
 

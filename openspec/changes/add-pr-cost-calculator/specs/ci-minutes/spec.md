@@ -25,7 +25,7 @@ Each attempt's minutes (see "Every job attempt of the pull request's own runs is
 
 ### Requirement: Every job attempt of the pull request's own runs is counted
 
-The CI cost SHALL count every attempt of every job of every workflow run on the pull request's own commits that no push to the default branch started and that was created before the pull request merged. The pull request's own commits are those that its head holds and that the default branch did not hold before the merge, read from git, however many there are.
+The CI cost SHALL count every attempt that started before the pull request merged, at the merge time that GitHub's API gives, of every job of every workflow run on its own commits that no push to the default branch started and that was created before it merged: the commits that its head holds and that the default branch did not hold before the merge, read from git, however many there are. The comment SHALL say that runs on commits that the head no longer holds are not counted.
 
 #### Scenario: A re-run job counts every attempt
 
@@ -52,6 +52,16 @@ The CI cost SHALL count every attempt of every job of every workflow run on the 
 - **WHEN** a workflow on the pull request's `closed` event runs on its head commit, with a creation time at or after the pull request's merge time
 - **THEN** none of its jobs are counted
 
+#### Scenario: Runs on commits that a force-push removed are not counted
+
+- **WHEN** a commit of the pull request's branch ran CI, and a force-push then removed it from the branch, so that the head does not hold it when the pull request merges
+- **THEN** none of the jobs of the runs on that commit are counted, and the comment says that runs on commits that the pull request's head no longer holds are not counted
+
+#### Scenario: An attempt started after the merge is not counted, also when the report runs again
+
+- **WHEN** a job of a run that was created before the pull request merged is re-run after the merge, and the report then runs again for the merge's push
+- **THEN** the attempt that started after the merge is not counted, and the CI cost is the one that the first run gave
+
 ### Requirement: Runs that the merge's push starts, and runs on other commits, are not counted
 
 The CI cost SHALL NOT count the runs that the merge's push starts, even when they run on one of the pull request's own commits (see "Every job attempt of the pull request's own runs is counted"), as after a fast-forward, and whatever their creation times, and SHALL NOT count runs on any other commit, such as the new commits that a squash or rebase merge makes.
@@ -74,6 +84,11 @@ The CI cost SHALL NOT count the runs that the merge's push starts, even when the
 ### Requirement: The report finds the pull request's runs with the fewest calls it can
 
 The report SHALL find the runs that the CI cost counts (see "Every job attempt of the pull request's own runs is counted") with the fewest calls to GitHub's API that it can: a listing for each commit, or, where that takes fewer calls and GitHub returns the whole of it, the repository's runs listed page by page, filtered by their event and by when they were created.
+
+#### Scenario: The report takes the listing that needs fewer calls
+
+- **WHEN** the report finds the runs of a pull request's commits, and GitHub returns the whole of the repository's runs listing filtered by their event and by when they were created
+- **THEN** it makes at most one call more than the fewer of a listing for each commit and that filtered listing page by page take, bounds the filtered listing by the pull request's creation and merge times as GitHub's API gives them, never by a commit's dates, and counts the same runs either way
 
 #### Scenario: A runs listing that GitHub cuts short is not taken as whole
 

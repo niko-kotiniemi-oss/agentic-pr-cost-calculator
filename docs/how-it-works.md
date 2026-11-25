@@ -44,7 +44,7 @@ flowchart LR
 | Plugin: a manifest, its hooks and the capture step | The machine running the Claude Code session, from the plugin's own folder, outside every working tree, in each session that loads it from the person's claude.ai account or a project's settings | As the capture step, in each repository that its run works on | As the capture step, in each repository that its run works on |
 | Store | Inside the repository's git common directory (`git rev-parse --git-common-dir`), one file for each user, `pr-cost-<uid>/store.json` where the system numbers users and `pr-cost/store.json` where it does not, outside the working tree and shared by its worktrees | Written and read by the hook only, as its owner, its folder and file readable and writable by that owner alone, except on Windows | Never committed; it keeps nothing past its retention window of 30 days, and is removed once it holds nothing |
 | Ledger files | `.pr-cost/ledger/<YYYY-MM>/<random>.jsonl`, committed with the agent's work | A first line that states the ledger format's version, the release of the capture step that wrote it, the count of refused calls and three flags for calls left out, then counts per call, never content | Written once, never changed by the tool |
-| Configuration | `.pr-cost.json` at the repository root | `enabled`, as `true` or `false`, and no other key, since a file that holds a key that its format does not document, gives a key twice or has no `enabled` of `true` or `false` is not valid and leaves the tool off | Changed only by a pull request |
+| Configuration | `.pr-cost.json` at the repository root | `enabled`, as `true` or `false`, `repository`, the `owner/name` of the repository that it turns the tool on in, which a file that enables the tool must hold, and `commit_before_push`, as `true` or `false`, which turns the step's commit before a push off where it is `false` (R320), and no other key, since a file that holds a key that its format does not document, gives a key twice, has no `enabled` of `true` or `false`, or enables the tool without a `repository` in GitHub's form is not valid and leaves the tool off (R296) | Changed only by a pull request |
 | Price table | `prices/models.json` and `prices/github-actions.json`, at the tool's commit | Dated rates, modifiers and the source of each | A new row per price change, by pull request |
 | Report, a reusable workflow and its Python code | A GitHub Actions runner, on the push a merge makes to the default branch | The push event; as git blobs: the ledger files and `.pr-cost.json` before and after the merge, the ledger files of the default branch's first-parent history before it, the hook file at the merged commit and at its own commit, and `.claude/settings.json` and `.claude/settings.local.json` at the merged commit; the price table; GitHub's API | One comment on the merged pull request; its job summary |
 | Release workflow | A GitHub Actions runner, on a pushed tag `vMAJOR.MINOR.PATCH` | `pyproject.toml`, the plugin's manifest, `CHANGELOG.md`, the root marketplace file, the guide, `docs/patterns.md`, the threat model, `docs/threat-model.md`, at the tag and at the default branch's tip (R251), the tag's commit, and the README's checksum of the plugin's zip | A GitHub release with a CycloneDX bill of materials and the plugin's zip, created as a draft and published only once both are attached and checked |
@@ -75,7 +75,7 @@ Everything that crosses the tool's boundary, in three tables, each row with how 
 
 | What | What crosses | How it is pinned | Records |
 |---|---|---|---|
-| Claude Code's transcripts | Each call's model, token counts, attributes, working directory and, where its lines name it, provider, read while the session runs | Not pinned: Claude Code writes them, and capture reads them tolerantly, counting what it cannot read | DR-003, DR-007, DR-032, DR-033, DR-044, DR-057, DR-128, DR-135, DR-172, DR-178, DR-199, DR-302 |
+| Claude Code's transcripts | Each call's model, token counts, attributes, working directory and, where its lines name it, provider, read while the session runs | Not pinned: Claude Code writes them, and capture reads them tolerantly, counting what it cannot read | DR-003, DR-007, DR-032, DR-033, DR-044, DR-057, DR-128, DR-135, DR-172, DR-178, DR-199, DR-302, DR-309 |
 | Claude Code's hook input | The event, the session's id, the transcript's path and the directory | Not pinned: Claude Code gives it | DR-044, DR-172 |
 | The switch and the opt-in | `.pr-cost.json`, and `pr-cost.capture` in the person's git configuration | The repository's own file and the person's own setting, read strictly | DR-169, DR-021, DR-183 |
 | The price table | Dated rates and modifiers in one currency, by provider and model, with a default provider for a model listed under more than one and a model with no price among them, each row added a few days after its price changes, and the day the table was last checked | Pinned with the tool's own commit | DR-020, DR-298, DR-299, DR-300, DR-306 |
@@ -103,15 +103,15 @@ Everything that crosses the tool's boundary, in three tables, each row with how 
 
 | What | What crosses | How it is pinned | Records |
 |---|---|---|---|
-| The hook file | The capture step that adopters copy and register | The commit that a release names | DR-022, DR-025, DR-027, DR-030, DR-031, DR-065, DR-125, DR-134, DR-156, DR-211 |
-| The plugin | The capture step, its manifest and its hooks | A release's zip, checked against its README; or this repository as a marketplace, which Claude Code clones from the default branch, whose plugin folder CI holds to a release's build | DR-197, DR-203, DR-204, DR-205, DR-288 |
+| The hook file | The capture step that adopters copy and register | The commit that a release names | DR-022, DR-025, DR-027, DR-030, DR-031, DR-065, DR-125, DR-134, DR-156, DR-211, DR-314 |
+| The plugin | The capture step, its manifest and its hooks | A release's zip, checked against its README; or this repository as a marketplace, which Claude Code clones from the default branch, whose plugin folder CI holds to a release's build | DR-197, DR-203, DR-204, DR-205, DR-288, DR-314 |
 | The report | A reusable workflow that adopters call | The commit that a release names | DR-005, DR-016, DR-018, DR-063, DR-132, DR-133, DR-139, DR-186, DR-191, DR-216 |
-| Ledger files | Token counts per call, committed with the agent's work in the adopter's repository | Written once by the release that names itself in them | DR-010, DR-015, DR-037, DR-045, DR-052, DR-053, DR-054, DR-127, DR-136, DR-138, DR-181, DR-200, DR-208, DR-301, DR-302 |
-| The switch and the opt-in | What adopters and people set to turn the tool and capture on | Their form, read strictly by each release | DR-021, DR-049, DR-050, DR-183, DR-185, DR-190, DR-192, DR-201, DR-202, DR-235 |
+| Ledger files | Token counts per call, committed with the agent's work in the adopter's repository | Written once by the release that names itself in them | DR-015, DR-037, DR-045, DR-052, DR-053, DR-054, DR-127, DR-136, DR-138, DR-181, DR-200, DR-208, DR-301, DR-302, DR-313, DR-316 |
+| The switch and the opt-in | What adopters and people set to turn the tool and capture on | Their form, read strictly by each release | DR-021, DR-049, DR-050, DR-183, DR-185, DR-190, DR-192, DR-201, DR-202, DR-235, DR-307 |
 | The store | Notes on the person's machine, in the git common directory | Its format's version, which a later release upgrades | DR-171, DR-173 |
-| The comment | The pull request's figure and what it is made of, with a block of its figures for programs | The report's commit and the price table at it | DR-002, DR-004, DR-110, DR-124, DR-155, DR-294, DR-295, DR-296, DR-297, DR-303 |
-| Releases | A tag, the release, its bill of materials and its changelog entry | Immutable, from a tag on the default branch | DR-074, DR-096, DR-097, DR-098, DR-122, DR-123, DR-148, DR-149, DR-154, DR-167, DR-209 |
-| The repository and its pages | The README, the documentation, the licence and every tracked file | The default branch, and the commit that a release names | DR-069, DR-070, DR-116, DR-117, DR-118, DR-157, DR-182, DR-212, DR-213, DR-215, DR-220, DR-229, DR-241, DR-242, DR-243, DR-279, DR-282, DR-286 |
+| The comment | The pull request's figure and what it is made of, with a block of its figures for programs | The report's commit and the price table at it | DR-002, DR-004, DR-110, DR-124, DR-155, DR-294, DR-295, DR-296, DR-297, DR-303, DR-318 |
+| Releases | A tag, the release, its bill of materials and its changelog entry | Immutable, from a tag on the default branch | DR-074, DR-096, DR-097, DR-098, DR-122, DR-123, DR-148, DR-149, DR-154, DR-167, DR-209, DR-311, DR-317, DR-319 |
+| The repository and its pages | The README, the documentation, the licence and every tracked file | The default branch, and the commit that a release names | DR-069, DR-070, DR-116, DR-117, DR-118, DR-157, DR-182, DR-212, DR-213, DR-215, DR-220, DR-229, DR-325, DR-242, DR-243, DR-279, DR-282, DR-286 |
 | What this version leaves out | The uses that later changes take up | Not pinned: each by a record that a later one replaces | DR-189, DR-222, DR-223, DR-234 |
 
 ## How a cost is computed
@@ -306,6 +306,29 @@ flowchart TD
 - 6) If it is over, the run takes the file back, unless a commit holds it (R87, R113).
 - 7) If not, the run leaves it for a later run (R87).
 
+### Calls that wait when the agent pushes
+
+```mermaid
+flowchart TD
+  A["1) Before a git push"] --> B{"2) A push of the checked-out branch, with calls waiting there?"}
+  B -->|no| C["3) Commit nothing"]
+  B -->|yes| D{"4) Index free, nothing staged, no operation in progress, not turned off?"}
+  D -->|no| C
+  D -->|yes| E["5) Commit only a ledger file"]
+  E --> F["6) The push carries it"]
+  E --> G{"7) Did the push run?"}
+  G -->|no| H["8) The next run takes the commit back"]
+```
+
+- 1) The hook runs before a Bash command whose only git command is a top-level `git push` in the foreground (R305, R311).
+- 2) Only a push that sends the checked-out branch to a branch of its own name, with calls recorded on that branch that no commit carries, gets the step's commit (R305, R311).
+- 3) Any other push, or one that the next answer stops, gets no commit, and its calls wait (R305).
+- 4) The index must be free and hold nothing staged, no rebase, merge, cherry-pick or bisect may be in progress, and the configuration file must not turn the commit off (R305, R320).
+- 5) The step writes the calls into a ledger file and commits only that file, running no hook and no program that git's configuration names but the person's own signer, guessing no identity, and signing with the person's global or system signer where git asks for signatures (R312, R320).
+- 6) The push sends that commit with the agent's own (R305).
+- 7) Whether the push ran (R313).
+- 8) Where it did not and the branch's tip is still that commit, the next run takes the commit back, leaving HEAD, the index and the working tree as they were where it cannot (R313).
+
 ### A merge and its report
 
 ```mermaid
@@ -335,7 +358,7 @@ sequenceDiagram
 - 2) The report refuses any other event (R68).
 - 3) It checks out the tool's own code at `job.workflow_sha`, without keeping the token (R24).
 - 4) It lists the pull requests associated with each commit that the push adds (R69).
-- 5) It reads `.pr-cost.json` before and after the merge, and when both leave the tool off, says why in the job summary and stops (R19, R172).
+- 5) It reads `.pr-cost.json` before and after the merge, and when both leave the tool off, or name another repository, says why in the job summary and stops (R19, R172, R296).
 - 6) It fetches the default branch's history and the pull request's head, `refs/pull/<number>/head` (R23).
 - 7) It reads the ledger files that the merge adds, as git blobs, within the size bound, holding each file to the version of the ledger format that its first line states (R23, R35, R58, R66, R158).
 - 8) It reads the call ids of the first-parent history's earlier ledger files, by the versions that they state, so that no call counts twice (R59, R67, R168).
@@ -359,7 +382,7 @@ flowchart LR
 
 - 1) Anthropic, another provider or GitHub publishes a new price (R14, R289).
 - 2) A few days later, a pull request adds a row with its provider, its effective date, the day it is added and its source, dated after the newest row of its provider, model and price and at most 30 days before the day it is added, unless it names its reason, and updates the day the table was last checked (R14, R294, R295, DR-299).
-- 3) Review and CI check it, since prices are read from the table in the repository and never fetched (R30).
+- 3) Review and CI check it, since prices are read from the table at the tool's own commit and never fetched (R30).
 - 4) It merges to the default branch (R30).
 - 5) The next release names the commit in its text (R27).
 - 6) Adopters update the hook and the workflow pin together, to the commit that the release names (R203).
@@ -427,6 +450,8 @@ It needs no `contents: write`, so a ruleset protecting the default branch needs 
 
 **This repository's CI** (`.github/workflows/ci.yml`) grants every job `contents: read` and nothing else. Its checkouts keep no credentials, and no job reads a secret. Each job that runs the tests clones the whole history rather than one commit, so that the decision records' check can compare the records with what the default branch held before the change. The workflow names that commit in `BASE_COMMIT`: the pull request's base commit, or the commit that a push to the default branch replaced. The check also compares with where HEAD left the default branch, since a pull request's base is the branch that its author chose, and a pull request's run starts again when its base changes, and so when its title or description is edited, since GitHub reports these as one event. The repository is public, so the whole history gives those jobs nothing that they could not already read. Every command that a step of this workflow or of the next runs, but one step of the job `ci` that checks the filter from outside it, prints through `scripts/printable_log.py`, the shell that their defaults give, so that what those commands print reaches the log as printable ASCII (R278). The lines that the runner itself writes before each step's command, such as the step's script and its environment, and what an action prints, such as the checkout's, do not go through the filter.
 
+**The base commit's checks** (`.github/workflows/base-checks.yml`), in this repository only, run on every pull request to `main` from the default branch's own copy of the workflow, on `pull_request_target`, so that a pull request cannot change the check that judges it, and grant their one job `contents: read` alone. The job checks out the base's commit, keeps no credentials, reads no secret and restores no cache; it fetches the merge commit that GitHub tests anonymously, over HTTPS, reads that commit's tree from git's objects alone, runs nothing from it, and gets the pull request's number and head only through the step's environment, with GitHub's workflow commands off while it runs; a path that Windows or macOS would write into a checked path fails it (R299, R317, R321, R323, DR-312, DR-321). Its check is the second one that the ruleset on `main` requires, beside `ci` (DR-320, DR-322). GitHub blocks `pull_request_target` in public repositories from 2 December 2026 unless the owner's Actions policy allows it, so the owner allows it for this one workflow file.
+
 **The daily check of Renovate's proposals** (`.github/workflows/renovate-watch.yml`), in this repository only, runs every day and by hand, and grants its one job `contents: read`, to check out the pins, and `pull-requests: read` and `issues: read`, to list Renovate's pull requests and find its dependency dashboard. It holds no write permission and reads no secret: its one credential is the workflow's own token, which it sends to GitHub's API alone (R263, DR-267).
 
 Each job of each workflow in this repository, with the permissions it is granted. `tests/test_documentation.py` fails when a job is granted anything this table does not give it, or the table gives a job something it is not granted:
@@ -438,6 +463,7 @@ Each job of each workflow in this repository, with the permissions it is granted
 | `ci.yml` | `vendor` | `contents: read` |
 | `ci.yml` | `windows-line-endings` | `contents: read` |
 | `ci.yml` | `ci` | `contents: read` |
+| `base-checks.yml` | `base-checks` | `contents: read` |
 | `renovate-watch.yml` | `check` | `contents: read`, `pull-requests: read`, `issues: read` |
 
 ## Connections to the outside world
@@ -484,6 +510,8 @@ Prices are never fetched: the price table is a file at the tool's commit, change
 | CI and cloud sessions | The Python Package Index | HTTPS | Install the pinned development tools in `requirements-dev.txt` |
 | CI and cloud sessions | The npm registry | HTTPS | Install the pinned OpenSpec CLI from `package-lock.json` |
 | CI | `github.com/obra/superpowers` | HTTPS, git | Check that `vendor/superpowers/` matches the commit that `UPSTREAM.lock` pins |
+| The base commit's checks | This repository on GitHub, by git, with no credential | HTTPS, git | Fetch the merge commit that GitHub tests for a pull request, as `refs/pull/<number>/merge`, to read its tree as data (R299, R317) |
+| The base commit's checks | `github.com/obra/superpowers` | HTTPS, git | Check that the pull request's `vendor/superpowers/` matches the commit that its own `UPSTREAM.lock` pins, from GitHub whatever `SYNC_REMOTE_BASE` says (R317) |
 | The daily check of Renovate's proposals | The Python Package Index's JSON API and the npm registry | HTTPS | Read when each release of a pinned tool was published (R263) |
 | The daily check of Renovate's proposals | GitHub's REST API, at the host in `GITHUB_API_URL` | HTTPS | List Renovate's pull requests, the head commits of its open ones and its dependency dashboard, with the workflow's own token (R263) |
 
